@@ -16,7 +16,7 @@ class Signup
 
     @user = User.with_email_address(email_address) || User.new(email_address: email_address)
     if @user.persisted? || @user.save
-      @user.send_magic_link(for: :sign_up)
+      @user.send_magic_link(purpose: :sign_up)
       true
     else
       errors.merge!(@user.errors)

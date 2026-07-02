@@ -18,7 +18,7 @@ class SessionsController < ApplicationController
   # (SetupsController / SignupsController), never here.
   def create
     if params[:email_address].present?
-      User.with_email_address(params[:email_address])&.send_magic_link(for: :sign_in)
+      User.with_email_address(params[:email_address])&.send_magic_link(purpose: :sign_in)
     end
 
     redirect_to new_session_path(sent: true)

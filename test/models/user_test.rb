@@ -13,7 +13,7 @@ class UserTest < ActiveSupport::TestCase
 
     assert_difference -> { alice.sign_in_codes.count }, 1 do
       assert_enqueued_emails 1 do
-        alice.send_magic_link(for: :sign_in)
+        alice.send_magic_link(purpose: :sign_in)
       end
     end
   end

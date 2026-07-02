@@ -16,7 +16,7 @@ class Setup
 
     @user = User.new(email_address: email_address, role: :domain_admin)
     if @user.save
-      @user.send_magic_link(for: :sign_up)
+      @user.send_magic_link(purpose: :sign_up)
       true
     else
       errors.merge!(@user.errors)

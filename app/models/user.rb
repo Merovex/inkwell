@@ -8,19 +8,16 @@ class User < ApplicationRecord
   # the Setup flow) and administers the whole install.
   enum :role, { member: "member", domain_admin: "domain_admin" }, default: :member
 
-  normalizes :email_address, with: ->(e) { e.strip.downcase }
+  normalizes :email_address, with: -> { it.strip.downcase }
 
-  validates :email_address, presence: true, uniqueness: true,
-    format: { with: URI::MailTo::EMAIL_REGEXP }
+  # Uniqueness is enforced by the unique index on email_address; nothing surfaces
+  # a duplicate to a user (setup can't dup, signup reuses), so no validation here.
+  validates :email_address, presence: true, format: { with: URI::MailTo::EMAIL_REGEXP }
 
-  # Generate a fresh single-use code and email its magic link. `for:` names the
-  # intent at the call site (:sign_in / :sign_up); it's a Ruby keyword, so it's
-  # read back through the binding. Returns the SignInCode record.
-  def send_magic_link(for: :sign_in)
-    purpose = binding.local_variable_get(:for)
-    code, plaintext = SignInCode.generate_for(self)
-    code.save!
-    SessionMailer.magic_link(self, plaintext, purpose: purpose).deliver_later
-    code
+  # Generate a fresh single-use code and email its magic link. `purpose`
+  # (:sign_in / :sign_up) tunes the email copy.
+  def send_magic_link(purpose: :sign_in)
+    code = sign_in_codes.create!
+    SessionMailer.magic_link(self, code.plaintext, purpose:).deliver_later
   end
 end
