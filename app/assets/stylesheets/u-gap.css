@@ -1,0 +1,14 @@
+/*
+ * u-gap — gap utilities for flex/grid containers, same proportional scale as
+ * u-pad (half = ÷2, base = 1×, double = ×2 of --u-pad). Row/col target the
+ * two axes independently.
+ */
+@layer utilities {
+  .u-gap        { gap: var(--u-pad); }
+  .u-gap-half   { gap: calc(var(--u-pad) / 2); }
+  .u-gap-double { gap: calc(var(--u-pad) * 2); }
+  .u-gap-0      { gap: 0; }
+
+  .u-gap-row    { row-gap: var(--u-pad); }    /* between rows (block axis) */
+  .u-gap-col    { column-gap: var(--u-pad); } /* between columns (inline axis) */
+}

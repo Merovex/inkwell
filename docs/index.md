@@ -27,10 +27,14 @@ for canonical naming.
 | [0001](decisions/0001-adopt-work-tracking-wiki.md) | Adopt a work-tracking wiki | superseded → 0003 | 2026-07-01 |
 | [0002](decisions/0002-domain-vocabulary-person-user-account.md) | Domain vocabulary — Person / User / Account | accepted | 2026-07-01 |
 | [0003](decisions/0003-collapse-wiki-into-docs.md) | Collapse documentation into a single docs/ folder | accepted | 2026-07-01 |
+| [0004](decisions/0004-top-bar-app-shell.md) | Top-bar app shell — profile & notifications top-right | accepted | 2026-07-02 |
+| [0005](decisions/0005-mobile-hotwire-native-pwa-dev.md) | Mobile — Hotwire Native target, PWA in development | accepted | 2026-07-02 |
 
 ## Concepts
 
 - [domain-vocabulary](concepts/domain-vocabulary.md) — canonical names: Person / User / Account
+- [theme-background-colors](concepts/theme-background-colors.md) — site/canvas backgrounds + rotating light-mode tints → Tailwind classes
+- [app-shell](concepts/app-shell.md) — top-bar shell; responsive nav; the responsive-web vs Hotwire Native mobile fork
 
 ## Entities
 

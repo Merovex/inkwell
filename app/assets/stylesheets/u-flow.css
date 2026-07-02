@@ -1,0 +1,11 @@
+/*
+ * u-flow — vertical rhythm. Adds space BETWEEN flow children (the "owl"),
+ * never above the first or below the last. Tune per-instance with --u-flow-space.
+ */
+@layer utilities {
+  .u-flow > * + * {
+    margin-block-start: var(--u-flow-space, var(--u-pad));
+  }
+  .u-flow-half   { --u-flow-space: calc(var(--u-pad) / 2); }
+  .u-flow-double { --u-flow-space: calc(var(--u-pad) * 2); }
+}

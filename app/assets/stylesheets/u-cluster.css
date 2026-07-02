@@ -1,0 +1,14 @@
+/*
+ * u-cluster — lay children out in a row that wraps, with consistent gaps.
+ * Good for button rows, tag lists, toolbars, avatar groups.
+ */
+@layer utilities {
+  .u-cluster {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--u-cluster-gap, calc(var(--u-pad) / 2));
+    align-items: var(--u-cluster-align, center);
+  }
+  .u-cluster-tight { --u-cluster-gap: calc(var(--u-pad) / 4); }
+  .u-cluster-between { justify-content: space-between; }
+}

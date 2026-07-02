@@ -1,0 +1,22 @@
+/*
+ * .choice — a checkbox or radio with its label. Uses the native input tinted via
+ * accent-color, so it stays fully accessible with no custom check to draw.
+ * Structure: label.choice > input.choice__input + text
+ */
+@layer components {
+  .choice {
+    display: inline-flex;
+    align-items: center;
+    gap: calc(var(--u-pad) / 2);
+    cursor: pointer;
+    font-size: var(--font-size-1);
+  }
+  .choice__input {
+    accent-color: var(--accent);
+    inline-size: 1.1em;
+    block-size: 1.1em;
+    flex-shrink: 0;
+  }
+  .choice__input:focus-visible { outline: var(--border-size-2) solid var(--accent); outline-offset: 2px; }
+  .choice:has(.choice__input:disabled) { color: var(--ink-muted); cursor: not-allowed; }
+}

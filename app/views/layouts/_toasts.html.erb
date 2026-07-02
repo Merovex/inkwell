@@ -1,0 +1,10 @@
+<%# Toast live region — flash messages render here (bottom-right desktop / top banner mobile). %>
+<%# Always present so future JS-added toasts are announced. Auto-dismissed by the toast controller. %>
+<div class="toasts" aria-live="polite" aria-atomic="false">
+  <% flash.each do |type, message| %>
+    <div class="toast toast--<%= type %>" role="status" data-controller="toast">
+      <span class="toast__body"><%= message %></span>
+      <button type="button" class="toast__close" aria-label="Dismiss" data-action="toast#dismiss">&times;</button>
+    </div>
+  <% end %>
+</div>

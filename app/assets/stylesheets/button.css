@@ -1,0 +1,61 @@
+/*
+ * .button — standard action. Works on <button> and <a>. Modifiers set intent:
+ *   .button--primary  filled accent
+ *   .button--ghost    quiet, borderless
+ *   .button--danger   destructive
+ *   .button--small / --large  size
+ */
+@layer components {
+  .button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: calc(var(--u-pad) / 3);
+    padding-block: calc(var(--u-pad) / 2);
+    padding-inline: var(--u-pad);
+    border: var(--border-size-1) solid var(--line);
+    border-radius: var(--radius-ui);
+    background: var(--canvas);
+    color: var(--ink);
+    font-weight: var(--font-weight-6);
+    line-height: 1;
+    text-decoration: none;
+    cursor: pointer;
+    user-select: none;
+    transition: background-color 0.12s var(--ease-3), border-color 0.12s var(--ease-3),
+                transform 0.06s var(--ease-3);
+  }
+  .button:hover { background: color-mix(in oklab, var(--canvas), var(--ink) 6%); }
+  .button:active { transform: translateY(1px); }
+  .button:disabled,
+  .button[aria-disabled="true"] { opacity: 0.5; cursor: not-allowed; }
+
+  .button--primary {
+    background: var(--brand-strong);  /* teal-800 + white text = 7.6:1 (AAA) */
+    border-color: var(--brand-strong);
+    color: #fff;
+  }
+  .button--primary:hover {
+    background: color-mix(in oklab, var(--brand-strong), black 15%);
+    border-color: color-mix(in oklab, var(--brand-strong), black 15%);
+  }
+
+  .button--ghost {
+    background: transparent;
+    border-color: transparent;
+  }
+  .button--ghost:hover { background: var(--accent-soft); }
+
+  .button--danger {
+    background: var(--danger-surface);  /* soft-fill danger (AAA in both modes) */
+    border-color: var(--danger-ink);
+    color: var(--danger-ink);
+  }
+  .button--danger:hover { background: var(--danger-solid); color: #fff; }
+
+  .button--small { padding-block: calc(var(--u-pad) / 3); padding-inline: calc(var(--u-pad) / 1.5); font-size: var(--font-size-0); }
+  .button--large { padding-block: calc(var(--u-pad) / 1.5); padding-inline: calc(var(--u-pad) * 1.25); font-size: var(--font-size-2); }
+
+  /* square, icon-only — equal padding + 1:1 ratio. Keeps the base's slight radius. */
+  .button--icon { padding: calc(var(--u-pad) / 2); aspect-ratio: 1; line-height: 0; }
+}

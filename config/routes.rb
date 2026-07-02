@@ -5,10 +5,17 @@ Rails.application.routes.draw do
   # Can be used by load balancers and uptime monitors to verify that the app is live.
   get "up" => "rails/health#show", as: :rails_health_check
 
-  # Render dynamic PWA files from app/views/pwa/* (remember to link manifest in application.html.erb)
-  # get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
-  # get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
+  # Dynamic PWA files from app/views/pwa/* (manifest is linked in the layout).
+  get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
+  get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
+
+  # Living styleguide for building/eyeballing standard elements + components.
+  get "theme" => "static#theme", as: :theme
+  # Composition demos: a list-view (perma-header + list) and an item-view (editable header).
+  get "list-view" => "static#list_view", as: :list_view
+  get "item-view" => "static#item_view", as: :item_view
 
   # Defines the root path route ("/")
-  # root "posts#index"
+  # Temporary: point root at the styleguide until there's a real home page.
+  root "static#theme"
 end

@@ -1,0 +1,11 @@
+/*
+ * Hotwire Native gating. The native shell provides its own nav chrome (title bar,
+ * tab bar), so hide the web equivalents when running inside the wrapper. The
+ * `hotwire-native` body class is set server-side (see ApplicationController#
+ * hotwire_native?). Design new web chrome to opt in here.
+ * See docs/decisions/0005-mobile-hotwire-native-pwa-dev.md.
+ */
+@layer components {
+  .hotwire-native .app-header { display: none; }
+  .hotwire-native .app-tabbar { display: none; }
+}

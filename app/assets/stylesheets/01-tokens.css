@@ -1,0 +1,121 @@
+/*
+ * Design tokens — COLORS are ours; non-color tokens come from Open Props.
+ *
+ * Left unlayered on purpose: these are custom-property definitions (variables),
+ * not competing rules, so they don't need to sit in a cascade layer.
+ *
+ * Color model: semantic tokens (--ink, --canvas, --site-bg, --line, --accent)
+ * that components read. The site background is driven by a rotating account tint
+ * (--tint); dark mode overrides the structural neutrals. The brand is a teal
+ * family (hue 175). See docs/concepts/theme-background-colors.md for the full
+ * rationale. Tint values are the Tailwind v4 palette's -100 shades (olive, taupe,
+ * mauve, mist, zinc), written as OKLCH literals since there's no Tailwind build.
+ */
+:root {
+  color-scheme: light dark;
+
+  /* --- spacing alias (Open Props supplies the scale) --- */
+  --u-pad: var(--size-3); /* 1rem — the standard pad unit; half/double derive from it */
+
+  /* --- type / radius / elevation aliases (Open Props) --- */
+  --font-body: var(--font-sans, system-ui, sans-serif);
+  --radius-ui: var(--radius-2);
+  --radius-card: var(--radius-3);
+  --elevation-card: var(--shadow-2);
+
+  /* --- structural colors (light) --- */
+  --neutral-bg: oklch(92% 0.004 286.32);    /* fallback when no tint set (= zinc-200) */
+  --tint: var(--neutral-bg);                /* rotating account tint slots in here */
+  --site-bg: var(--tint);                   /* the outer page */
+  --canvas: #ffffff;                        /* card / article surface */
+  --ink: oklch(0.22 0.01 260);              /* primary text */
+  --ink-muted: oklch(0.55 0.01 260);        /* secondary text */
+  --line: oklch(0.92 0.004 260);            /* borders / hairlines */
+  --scrim: oklch(0% 0 0 / 0.4);             /* overlay behind modals & bottom sheets */
+
+  /* --- brand: Tailwind v4 teal, chroma scaled ×0.85 (−15% desaturated) --- */
+  --brand-deep:   oklch(27.7% 0.039 192.524); /* teal-950 −15%C — deep bg, sidebars, strong text */
+  --brand-strong: oklch(43.7% 0.066 188.216); /* teal-800 −15%C — solid fill for white text (AAA) */
+  --brand-muted:  oklch(51.1% 0.082 186.391); /* teal-700 −15%C — secondary borders, inactive states */
+  --brand:        oklch(70.4% 0.119 182.503); /* teal-500 −15%C — key interactive: buttons, progress */
+
+  --accent: var(--brand);                   /* interactive color the components read */
+  --accent-ink: var(--brand-deep);          /* dark teal text reads on the brand fill */
+  --accent-soft: oklch(95.3% 0.043 180.801); /* teal-100 −15%C — subtle fill: hover / selected */
+  --menu-context-bg: oklch(44.1% 0.06 190);  /* teal-800-ish — AAA with near-white ink */
+  --menu-context-ink: oklch(98% 0.01 182);   /* near-white text on the dark teal */
+
+  /* AAA (7:1) foregrounds — muted metadata intentionally stays AA */
+  --link: oklch(44.1% 0.10 186);             /* dark teal link on the canvas (underlined) */
+  --ink-on-soft: oklch(42.1% 0.08 186);      /* text on --accent-soft: avatar initials, accent badge */
+  --brand-text: oklch(44.1% 0.10 186);       /* teal-tinted body text at 7:1 on the canvas */
+
+  /* semantic surfaces + AAA inks (light pills; shared by badges + alerts) */
+  --success-surface: oklch(94% 0.06 150);
+  --success-ink:     oklch(41% 0.12 150);
+  --warning-surface: oklch(95% 0.08 85);
+  --warning-ink:     oklch(42.7% 0.11 70);
+  --danger-surface:  oklch(94% 0.05 25);
+  --danger-ink:      oklch(42.6% 0.18 25);
+  --danger-solid:    oklch(48% 0.16 25);     /* dark red for white text (AAA) */
+}
+
+/* --- rotating light-mode tints (Tailwind v4 palette, -200 shades) --- */
+[data-tint="olive"] { --tint: oklch(93%   0.007 106.5);   } /* olive-200 */
+[data-tint="taupe"] { --tint: oklch(92.2% 0.005  34.3);   } /* taupe-200 */
+[data-tint="mauve"] { --tint: oklch(92.2% 0.005 325.62);  } /* mauve-200 */
+[data-tint="mist"]  { --tint: oklch(92.5% 0.005 214.3);   } /* mist-200 */
+[data-tint="zinc"]  { --tint: oklch(92%   0.004 286.32);  } /* zinc-200 */
+
+/*
+ * Re-declare --site-bg on the SAME element that carries the tint. var(--tint)
+ * substitutes using that element's own --tint, so the background tracks the tint
+ * whether it sits on <html> or a descendant. Without this, --site-bg would stay
+ * frozen at the value it computed up on :root. (Dark mode below overrides this.)
+ */
+[data-tint] { --site-bg: var(--tint); }
+
+/*
+ * Dark mode. Placed AFTER the tint rules so that when an element carries both
+ * data-tint and data-theme="dark" (equal specificity), dark wins and pins the
+ * site background to near-black regardless of tint. Applies via explicit
+ * [data-theme="dark"] or the OS preference when no explicit theme is set.
+ */
+[data-theme="dark"],
+:root:not([data-theme="light"]) {
+  /* left intentionally empty here; real values below to keep the OS fallback clean */
+}
+
+[data-theme="dark"] {
+  --canvas: #1f2937;                        /* gray-800 — article/canvas */
+  --site-bg: #030712;                       /* gray-950 — outer page (ignores tint) */
+  --ink: oklch(0.93 0.006 260);
+  --ink-muted: oklch(0.68 0.01 260);
+  --line: oklch(0.34 0.01 260);
+  --accent: var(--brand);                   /* same vibrant teal pops on dark */
+  --accent-ink: var(--brand-deep);
+  --accent-soft: oklch(38.6% 0.054 188.416); /* teal-900 −15%C */
+  --menu-context-bg: oklch(75.9% 0.12 182);       /* teal-400-ish — AAA with teal-950 ink */
+  --menu-context-ink: var(--brand-deep);          /* dark teal text on the light teal */
+  --link: oklch(75.6% 0.12 182);                  /* light teal link on the dark canvas */
+  --ink-on-soft: oklch(88.7% 0.12 182);           /* light teal on teal-900 (avatar, accent badge) */
+  --brand-text: oklch(75.6% 0.12 182);            /* teal-tinted body text at 7:1 (dark) */
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --canvas: #1f2937;
+    --site-bg: #030712;
+    --ink: oklch(0.93 0.006 260);
+    --ink-muted: oklch(0.68 0.01 260);
+    --line: oklch(0.34 0.01 260);
+    --accent: var(--brand);
+    --accent-ink: var(--brand-deep);
+    --accent-soft: oklch(38.6% 0.054 188.416); /* teal-900 −15%C */
+    --menu-context-bg: oklch(75.9% 0.12 182);
+    --menu-context-ink: var(--brand-deep);
+    --link: oklch(75.6% 0.12 182);
+    --ink-on-soft: oklch(88.7% 0.12 182);
+    --brand-text: oklch(75.6% 0.12 182);
+  }
+}

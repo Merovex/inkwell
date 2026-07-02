@@ -1,0 +1,13 @@
+/*
+ * u-stack — a vertical flex column with a uniform gap. Like u-flow but uses
+ * gap (so it also governs wrapped/flex contexts) and sets a column direction.
+ */
+@layer utilities {
+  .u-stack {
+    display: flex;
+    flex-direction: column;
+    gap: var(--u-stack-gap, var(--u-pad));
+  }
+  .u-stack-half   { --u-stack-gap: calc(var(--u-pad) / 2); }
+  .u-stack-double { --u-stack-gap: calc(var(--u-pad) * 2); }
+}

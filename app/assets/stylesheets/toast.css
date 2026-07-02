@@ -1,0 +1,70 @@
+/*
+ * .toasts — a fixed live region for transient messages. Bottom-right on desktop,
+ * a top banner on mobile (< 48rem). Populated from flash (and future JS).
+ * Dismissed by the toast Stimulus controller (auto + manual).
+ */
+@layer components {
+  .toasts {
+    position: fixed;
+    z-index: 50;
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--u-pad) / 2);
+    inset-block-end: max(var(--u-pad), env(safe-area-inset-bottom));
+    inset-inline-end: var(--u-pad);
+    inline-size: min(22rem, calc(100% - 2 * var(--u-pad)));
+    pointer-events: none; /* let clicks through the empty region */
+  }
+
+  .toast {
+    pointer-events: auto;
+    display: flex;
+    align-items: start;
+    gap: var(--u-pad);
+    padding: var(--u-pad);
+    background: var(--canvas);
+    color: var(--ink);
+    border: var(--border-size-1) solid var(--line);
+    border-inline-start: var(--border-size-3) solid var(--accent);
+    border-radius: var(--radius-ui);
+    box-shadow: var(--shadow-3);
+    animation: toast-in 0.18s var(--ease-3);
+  }
+  .toast--alert, .toast--error   { border-inline-start-color: var(--danger-ink); }
+  .toast--notice, .toast--success { border-inline-start-color: var(--success-ink); }
+
+  .toast__body { flex: 1; }
+  .toast__close {
+    border: none;
+    background: transparent;
+    color: var(--ink-muted);
+    font-size: var(--font-size-3);
+    line-height: 1;
+    padding: 0;
+    cursor: pointer;
+  }
+  .toast__close:hover { color: var(--ink); }
+
+  .toast.is-leaving { animation: toast-out 0.18s var(--ease-3) forwards; }
+
+  @keyframes toast-in  { from { opacity: 0; translate: 0 0.5rem; } }
+  @keyframes toast-out { to   { opacity: 0; translate: 0 0.5rem; } }
+
+  /* mobile: top banner, full width */
+  @media (max-width: 48rem) {
+    .toasts {
+      inset-block-start: max(var(--u-pad), env(safe-area-inset-top));
+      inset-block-end: auto;
+      inset-inline: var(--u-pad);
+      inline-size: auto;
+    }
+    .toast { animation-name: toast-in-top; }
+    .toast.is-leaving { animation-name: toast-out-top; }
+    @keyframes toast-in-top  { from { opacity: 0; translate: 0 -0.5rem; } }
+    @keyframes toast-out-top { to   { opacity: 0; translate: 0 -0.5rem; } }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .toast, .toast.is-leaving { animation: none; }
+  }
+}

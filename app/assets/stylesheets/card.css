@@ -1,0 +1,32 @@
+/*
+ * .card — standard surface container. Use this everywhere; do NOT make bespoke
+ * variants like .message-card — compose with utilities or add a --modifier here.
+ * Structure (BEM): .card > .card__header / .card__body / .card__footer
+ */
+@layer components {
+  .card {
+    display: flex;
+    flex-direction: column;
+    background: var(--canvas);
+    color: var(--ink);
+    border: var(--border-size-1) solid var(--line);
+    border-radius: var(--radius-card);
+    box-shadow: var(--elevation-card);
+    overflow: clip;
+  }
+
+  .card__header,
+  .card__body,
+  .card__footer { padding: var(--u-pad); }
+
+  .card__header { border-block-end: var(--border-size-1) solid var(--line); }
+  .card__footer {
+    border-block-start: var(--border-size-1) solid var(--line);
+    background: color-mix(in oklab, var(--canvas), var(--ink) 3%);
+  }
+  .card__title { font-size: var(--font-size-3); font-weight: var(--font-weight-7); }
+
+  /* modifiers */
+  .card--flat { box-shadow: none; }
+  .card--flush .card__body { padding: 0; }
+}

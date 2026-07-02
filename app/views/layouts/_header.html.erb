@@ -1,0 +1,34 @@
+<%# App header — brand left; notifications + user menu top-right. %>
+<%# .app-header is hidden under Hotwire Native (native nav takes over). %>
+<header class="bar app-header">
+  <%= link_to "Alcovo", root_path, class: "bar__brand" %>
+  <div class="bar__spacer"></div>
+
+  <button type="button" class="button button--icon button--ghost" aria-label="Notifications">
+    <%= inline_svg_tag "lucide/bell.svg", class: "lucide", size: "20px" %>
+  </button>
+
+  <button type="button" class="avatar" popovertarget="user-menu" aria-haspopup="menu" aria-label="Account menu">AL</button>
+
+  <div class="menu menu--user" popover id="user-menu" role="menu">
+    <button type="button" class="menu__item" role="menuitem">My Profile</button>
+    <button type="button" class="menu__item" role="menuitem">Settings</button>
+    <hr class="menu__separator">
+    <div class="menu__row">
+      <button type="button" class="menu__item theme-toggle" role="menuitem" data-mode="light"
+              data-controller="theme" data-action="theme#cycle" aria-label="Theme">
+        <%= inline_svg_tag "lucide/sun.svg", class: "lucide theme-toggle__icon theme-toggle__icon--light", size: "16px" %>
+        <%= inline_svg_tag "lucide/moon.svg", class: "lucide theme-toggle__icon theme-toggle__icon--dark", size: "16px" %>
+        <%= inline_svg_tag "lucide/monitor.svg", class: "lucide theme-toggle__icon theme-toggle__icon--auto", size: "16px" %>
+        <span data-theme-target="label">Light</span>
+      </button>
+      <button type="button" class="menu__item tint-toggle" role="menuitem" aria-label="Background color"
+              data-controller="tint" data-tint-tints-value='["olive","taupe","mauve","mist","zinc"]'
+              data-action="tint#cycle">
+        <%= inline_svg_tag "lucide/droplet.svg", class: "lucide", size: "16px" %>
+        <span data-tint-target="label">Zinc</span>
+      </button>
+    </div>
+    <button type="button" class="menu__item" role="menuitem">Sign out</button>
+  </div>
+</header>

@@ -1,0 +1,36 @@
+/*
+ * .button-group — a segmented control: a track holding pill segments, one
+ * active. Segments can be links, buttons, or a dropdown trigger.
+ * Structure: .button-group > .button-group__btn (+ .is-active)
+ */
+@layer components {
+  .button-group {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px;
+    background: color-mix(in oklab, var(--canvas), var(--ink) 5%);
+    border-radius: var(--radius-ui);
+  }
+  .button-group__btn {
+    display: inline-flex;
+    align-items: center;
+    gap: calc(var(--u-pad) / 3);
+    block-size: 1.75rem;
+    padding-inline: calc(var(--u-pad) / 1.5);
+    border: none;
+    background: none;
+    color: var(--ink);
+    font: inherit;
+    font-size: var(--font-size-0);
+    border-radius: calc(var(--radius-ui) - 2px);
+    text-decoration: none;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .button-group__btn:hover { color: var(--ink); }
+  .button-group__btn.is-active {
+    background: var(--canvas);
+    font-weight: var(--font-weight-6);
+    box-shadow: var(--shadow-1);
+  }
+}

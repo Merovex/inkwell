@@ -1,0 +1,13 @@
+/*
+ * u-text — inline text utilities: emphasis, muting, size, alignment.
+ * Sizes read the Open Props type scale.
+ */
+@layer utilities {
+  .u-text-muted  { color: var(--ink-muted); }
+  .u-text-strong { font-weight: var(--font-weight-7); }
+  .u-text-small  { font-size: var(--font-size-0); }
+  .u-text-large  { font-size: var(--font-size-3); }
+  .u-text-center { text-align: center; }
+  .u-text-nowrap { white-space: nowrap; }
+  .u-text-balance { text-wrap: balance; }
+}

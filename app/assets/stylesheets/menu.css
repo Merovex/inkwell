@@ -1,0 +1,137 @@
+/*
+ * .menu — a list of actions in a popover (native Popover API; no JS). The UA
+ * keeps [popover] display:none until open and handles light-dismiss + top layer.
+ * Structure (BEM): .menu > .menu__item / .menu__separator
+ *
+ * Positioning: plain position:fixed + inset (widely supported), rather than CSS
+ * anchor positioning. Placement modifiers set the inset (e.g. .menu--user).
+ */
+@layer components {
+  .menu {
+    position: fixed;
+    margin: 0;
+    min-inline-size: 12rem;
+    padding: calc(var(--u-pad) / 3);
+    background: var(--canvas);
+    color: var(--ink);
+    border: var(--border-size-1) solid var(--line);
+    border-radius: var(--radius-ui);
+    box-shadow: var(--shadow-2);
+
+    /* animate open/close — allow-discrete keeps it in the top layer while closing */
+    opacity: 0;
+    transition:
+      opacity 0.12s var(--ease-3),
+      translate 0.12s var(--ease-3),
+      clip-path 0.15s var(--ease-3),
+      overlay 0.12s allow-discrete,
+      display 0.12s allow-discrete;
+  }
+  .menu:popover-open { opacity: 1; }
+
+  .menu__item {
+    display: flex;
+    align-items: center;
+    gap: calc(var(--u-pad) / 2);
+    inline-size: 100%;
+    padding: calc(var(--u-pad) / 3) calc(var(--u-pad) / 2);
+    border: none;
+    border-radius: var(--radius-1);
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    font-size: var(--font-size-0); /* match the breadcrumb */
+    text-align: start;
+    text-decoration: none;
+    cursor: pointer;
+  }
+  .menu__item:hover { background: var(--accent-soft); }
+
+  /* trailing check for single-select menus (role=menuitemradio) */
+  .menu__check { margin-inline-start: auto; opacity: 0; }
+  .menu__item[aria-checked="true"] .menu__check { opacity: 1; }
+
+  /* close button — shape comes from .button.button--icon.button--ghost (same as
+     the toggle); this just pins it to the panel's top-right, above the items
+     (same top layer → z-index applies). */
+  .menu__close {
+    position: absolute;
+    inset-block-start: 0;
+    inset-inline-end: 0;
+    z-index: 1;
+  }
+
+  .menu__separator {
+    block-size: var(--border-size-1);
+    margin-block: calc(var(--u-pad) / 3);
+    border: none;
+    background: var(--line);
+  }
+
+  /* a row of side-by-side controls (e.g. theme + tint toggles), each sharing space */
+  .menu__row { display: flex; gap: calc(var(--u-pad) / 3); }
+  .menu__row > .menu__item { flex: 1; inline-size: auto; }
+
+  /* user menu — desktop: dropdown anchored under the top-right header */
+  .menu--user {
+    inset-block-start: calc(var(--u-pad) * 3.25);
+    inset-inline-end: var(--u-pad);
+    inset-inline-start: auto;
+    inset-block-end: auto;
+    translate: 0 -0.5rem;
+  }
+  .menu--user:popover-open { translate: 0 0; }
+
+  @starting-style {
+    .menu:popover-open { opacity: 0; }
+    .menu--user:popover-open { translate: 0 -0.5rem; }
+  }
+
+  /* mobile: full-width bottom sheet that slides up over a dimmed backdrop */
+  @media (max-width: 48rem) {
+    .menu--user {
+      inset-block-start: auto;
+      inset-block-end: 0;
+      inset-inline: 0;
+      min-inline-size: 0;
+      padding: var(--u-pad);
+      padding-block-end: max(var(--u-pad), env(safe-area-inset-bottom));
+      border-radius: var(--radius-card) var(--radius-card) 0 0;
+      translate: 0 100%;
+    }
+    .menu--user::backdrop { background: var(--scrim); }
+    @starting-style {
+      .menu--user:popover-open { translate: 0 100%; }
+    }
+  }
+
+  /* context menu — top of the canvas, flush right (positioned by the
+     anchored-popover controller; the inset below is the no-JS fallback). Slides
+     in from the right; padding-block-start clears the internal close button. */
+  .menu--context {
+    inset: 4rem 1.5rem auto auto;
+    min-inline-size: 14rem;
+    padding-block-start: calc(var(--u-pad) * 2.5);
+    clip-path: inset(0 0 0 100%);       /* revealed from its right (canvas) edge */
+    background: var(--menu-context-bg); /* dark teal (light) / light teal (dark) */
+    color: var(--menu-context-ink);
+    border-color: transparent;
+  }
+  .menu--context:popover-open { clip-path: inset(0 0 0 0); }
+  @starting-style { .menu--context:popover-open { clip-path: inset(0 0 0 100%); } }
+
+  /* keep the close/items/separator legible on the teal */
+  .menu--context .menu__close { color: var(--menu-context-ink); }
+  .menu--context .menu__item:hover,
+  .menu--context .menu__close:hover {
+    background: color-mix(in oklab, var(--menu-context-bg), var(--menu-context-ink) 15%);
+  }
+  .menu--context .menu__separator {
+    background: color-mix(in oklab, var(--menu-context-ink), transparent 70%);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .menu { transition: none; }
+    .menu--user, .menu--context { translate: none; }
+  }
+}

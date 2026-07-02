@@ -1,0 +1,17 @@
+/*
+ * .bar — horizontal chrome strip (top nav / toolbar). Transparent, so it floats
+ * over the tinted page background. .bar__brand anchors the left; use utilities
+ * for the rest.
+ */
+@layer components {
+  .bar {
+    display: flex;
+    align-items: center;
+    gap: var(--u-pad);
+    padding-block: calc(var(--u-pad) / 2);
+    padding-inline: var(--u-pad);
+    background: transparent;
+  }
+  .bar__brand { font-weight: var(--font-weight-7); font-size: var(--font-size-2); color: var(--ink); text-decoration: none; }
+  .bar__spacer { margin-inline-start: auto; }
+}

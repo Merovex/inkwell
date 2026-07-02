@@ -1,0 +1,12 @@
+<%# locals: (model:) %>
+<%# Renders an ActiveModel's validation errors at the top of a form. %>
+<% if model.errors.any? %>
+  <div class="error-summary" role="alert">
+    <p class="error-summary__title"><%= pluralize(model.errors.count, "error") %> prevented this from being saved:</p>
+    <ul class="error-summary__list">
+      <% model.errors.each do |error| %>
+        <li><%= error.full_message %></li>
+      <% end %>
+    </ul>
+  </div>
+<% end %>
