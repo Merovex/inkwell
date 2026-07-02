@@ -1,6 +1,6 @@
-# Writer Group — Notional Data Model
+# Alcovo — Notional Data Model
 
-*A first-pass data model for an author writer-group site, modeled on the
+*A first-pass data model for Alcovo, a writing-community site, modeled on the
 Basecamp **delegated-type** (`Record`/`Recordable`) pattern. This is
 **notional** — a thinking document, not a migration. Column names are idiomatic
 Rails guesses; anything I'm inferring rather than certain of is flagged.*
@@ -15,8 +15,8 @@ notional Rails `schema.rb`.
 A private community of authors runs its work inside a shared space. Members
 post to topic **boards**, keep durable **documents**, answer a recurring
 **check-in question** each week, and chat in a lightweight back-channel. The
-site needs to treat all of that heterogeneous content uniformly — scope it to a
-group, attribute it to a person, let it be commented on, trashed, and listed on
+site needs to treat all of that heterogeneous content uniformly — scope it to an
+account, attribute it to a person, let it be commented on, trashed, and listed on
 a timeline — without duplicating that plumbing per content type.
 
 That is exactly the problem Basecamp's **delegated types** solve, so we adopt
@@ -37,7 +37,7 @@ recordings                              messages / documents / questions / answe
 │ id                      │            │ id                         │
 │ recordable_type ────────┼───────────▶│ (type-specific columns)    │
 │ recordable_id           │  1  ──  1  │                            │
-│ bucket_id   (the group) │            └────────────────────────────┘
+│ account_id  (the tenant)│            └────────────────────────────┘
 │ creator_id  (Person)    │
 │ parent_id   (self-ref)  │◀── comments & answers point back here
 │ status                  │
@@ -52,7 +52,7 @@ recordings                              messages / documents / questions / answe
 - **STI (one wide table):** every type shares one sparse table full of nulls.
   Columns explode; every new field touches all types.
 - **Plain polymorphic + duplication:** each type re-declares `creator`,
-  `status`, `group`, comments… behavior drifts apart over time.
+  `status`, `account`, comments… behavior drifts apart over time.
 - **Delegated type (chosen):** shared behavior written **once** on `Recording`;
   type-specific data isolated per table. New content type = new small table +
   `include Recordable`.
@@ -61,9 +61,9 @@ recordings                              messages / documents / questions / answe
 
 - `recordable_type` / `recordable_id` is the delegated-type join to the specific
   row.
-- **`bucket`** is our word for the container a member works in — here, an author
-  **Group** (Basecamp calls it a "bucket"; we keep the name internally to match
-  the pattern, expose it as *Group* in the UI).
+- **`account`** is the container a member works in — an author community.
+  (Basecamp calls this a "bucket" and models it as `Account`; we call it
+  **Account** consistently in both code and UI.)
 - **`parent_id` is self-referential on `Recording`.** A comment is just a
   Recording whose `recordable` is a `Comment` and whose `parent` is the
   Recording being commented on. Same mechanism scopes a check-in **Answer** to
@@ -76,7 +76,7 @@ recordings                              messages / documents / questions / answe
 
 ## 3. Containers (the "dock")
 
-A **Group** (`bucket`) enables a set of tools. Each tool is a container that
+An **Account** enables a set of tools. Each tool is a container that
 recordings hang off of. For the four content types in scope:
 
 | Container         | Holds            | Recordable it parents |
@@ -86,9 +86,9 @@ recordings hang off of. For the four content types in scope:
 | `Questionnaire`   | Questions        | `Question`            |
 | `Chat`            | Chat lines       | `Chat::Line` (*not* a recording — see §5) |
 
-A group can have **several boards** (e.g. a "Workshop" board, a "Kickoffs"
+An account can have **several boards** (e.g. a "Workshop" board, a "Kickoffs"
 board, a "Heartbeats" board) — the board is itself a lightweight record scoped
-to the bucket.
+to the account.
 
 ---
 
@@ -137,7 +137,7 @@ Campfire-style chat lines are high-volume and ephemeral: they can't be commented
 on or trashed individually, only posted and deleted. Wrapping each line in the
 full Recording envelope would be over-modeling. So:
 
-- **`Chat`** — the container (belongs to the group/bucket).
+- **`Chat`** — the container (belongs to the account).
 - **`Chat::Line`** — a lightweight row: `chat_id`, `creator_id`, `content`,
   `created_at`. Not a recordable, no `parent_id`, no status machinery.
 
@@ -146,12 +146,12 @@ This is an intentional asymmetry, and the one place the model departs from
 
 ---
 
-## 6. People and membership
+## 6. People and accounts
 
 - **`Person`** — a member (name, email, etc.).
-- **`Group`** (the bucket) — the community space.
-- **`Membership`** — join between Person and Group (role: owner / member),
-  since a person can belong to more than one group and a group has many people.
+- **`Account`** — the community space (the tenant).
+- **`User`** — join between Person and Account (role: owner / member),
+  since a person can belong to more than one account and an account has many people.
 - Every `Recording.creator_id` → a Person.
 
 ---
@@ -174,9 +174,8 @@ model (flagged because I'm inferring, not observing, their exact shape):
 Explicitly notional — these are decisions or unknowns, not settled facts:
 
 1. **Column names are idiomatic guesses**, not Basecamp's real internals.
-2. **`bucket` vs `Group` naming** — kept `bucket` internally to match the
-   pattern; UI term is *Group*. Could rename fully to `Group` if we don't care
-   about pattern fidelity.
+2. **Tenant naming resolved** — the tenant/container is `Account` in both code
+   and UI; Basecamp's `bucket` / `Group` terminology is retired (ADR 0002).
 3. **Status model** — assumed an enum `active / archived / trashed` on Recording.
 4. **Answer↔week keying** (`group_on`) — mechanism assumed, not observed in detail.
 5. **Rich text / attachments** — assumed Action Text + Active Storage are in play.
@@ -191,7 +190,7 @@ Explicitly notional — these are decisions or unknowns, not settled facts:
 ## 9. At a glance
 
 ```
-Person ──< Membership >── Group (bucket)
+Person ──< User >──────── Account
                             │
         ┌───────────────────┼───────────────────┬─────────────┐
         │                   │                   │             │

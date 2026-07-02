@@ -1,0 +1,41 @@
+# Documentation Index
+
+Catalog of everything in `docs/`. Keep this in sync whenever a page is added,
+renamed, or superseded. See [[CLAUDE]] (`CLAUDE.md`) for conventions.
+
+- **[overview.md](overview.md)** — living synthesis of the current project state
+- **[log.md](log.md)** — chronological work log (append-only)
+
+## Reference & design docs
+
+Polished research/design (modeled on Basecamp's Fizzy). See [[domain-vocabulary]]
+for canonical naming.
+
+- [data-model.md](data-model.md) — delegated-type (`Recording`/`Recordable`) content model
+- [schema.rb](schema.rb) — notional Rails schema for the data model
+- [account-creation-concern.md](account-creation-concern.md) — `Account::Foundable` + `Signup` flow
+- [fizzy-authentication.md](fizzy-authentication.md) — Fizzy's passwordless auth protocol
+- [fizzy-user-account-model.md](fizzy-user-account-model.md) — Fizzy's User / Account / Access layer
+- [multi-tenancy.md](multi-tenancy.md) — shared-DB, row-level tenancy (`Current.account`)
+- [database-and-scaling.md](database-and-scaling.md) — SQLite vs MariaDB; when to split app servers
+- [lexxy-and-active-record.md](lexxy-and-active-record.md) — Lexxy editor + Action Text coupling
+
+## Decisions (ADRs)
+
+| # | Title | Status | Date |
+|---|-------|--------|------|
+| [0001](decisions/0001-adopt-work-tracking-wiki.md) | Adopt a work-tracking wiki | superseded → 0003 | 2026-07-01 |
+| [0002](decisions/0002-domain-vocabulary-person-user-account.md) | Domain vocabulary — Person / User / Account | accepted | 2026-07-01 |
+| [0003](decisions/0003-collapse-wiki-into-docs.md) | Collapse documentation into a single docs/ folder | accepted | 2026-07-01 |
+
+## Concepts
+
+- [domain-vocabulary](concepts/domain-vocabulary.md) — canonical names: Person / User / Account
+
+## Entities
+
+_None yet. Create from `_templates/entity.md` → `entities/<slug>.md`._
+
+## Summaries
+
+_None yet. Create from `_templates/summary.md` → `summaries/<slug>.md`._

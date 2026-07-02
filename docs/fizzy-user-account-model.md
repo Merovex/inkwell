@@ -1,12 +1,12 @@
 # Fizzy's User / Account Model
 
 *Captured from the actual source of [`basecamp/fizzy`](https://github.com/basecamp/fizzy)
-(`main`), as reference for the Writer Group site. This documents the
+(`main`), as reference for Alcovo. This documents the
 **membership + tenancy + access** layer that sits under the auth protocol in
 [`fizzy-authentication.md`](./fizzy-authentication.md).*
 
 > **Scope note (per request):** the **account-creation flow** — `Account`'s
-> `create_with_owner` / join-code seeding, i.e. the "each user creates a group"
+> `create_with_owner` / join-code seeding, i.e. the "each user creates an account"
 > path — is **intentionally left out** of this doc. What's captured here is the
 > steady-state shape of Users, Accounts, Roles, and Access, not how a new
 > account is born.
@@ -204,7 +204,7 @@ end
 > *Omitted per scope:* the `create_with_owner` class method and the
 > `before_create :assign_external_account_id` / `after_create :create_join_code`
 > callbacks that provision a brand-new account and its first owner. That's the
-> "user creates a group" path we're deliberately not documenting here.
+> "user creates an account" path we're deliberately not documenting here.
 
 Notes on the steady-state shape:
 - The tenant **owns everything** (`users`, `boards`, `cards`, `columns`, `tags`,
@@ -316,21 +316,21 @@ How access works:
 
 ---
 
-## 7. Mapping to Writer Group
+## 7. Mapping to Alcovo
 
 Lines up directly with the sketch in [`data-model.md`](./data-model.md):
 
-| Fizzy | Writer Group equivalent | Notes |
-|-------|------------------------|-------|
+| Fizzy | Alcovo equivalent | Notes |
+|-------|-------------------|-------|
 | `Identity` | `Person` | Global login, one email. |
-| `User` | `Membership` | Per-group membership; carries role + name. |
-| `Account` | `Group` (bucket) | The tenant / community space. |
-| `Access` | *(new)* per-board/board-access grant | Adopt if boards should be individually access-controlled rather than group-wide. |
-| `User::Role` (owner/admin/member/system) | group roles | The **"admin or creator"** rule is worth copying wholesale. |
+| `User` | `User` | Per-account membership; carries role + name. |
+| `Account` | `Account` | The tenant / community space. |
+| `Access` | *(new)* per-board access grant | Adopt if boards should be individually access-controlled rather than account-wide. |
+| `User::Role` (owner/admin/member/system) | account roles | The **"admin or creator"** rule is worth copying wholesale. |
 
 Two patterns especially worth carrying over:
-1. **Identity ≠ membership.** Keeping credentials on `Person` and role/access on
-   `Membership` is what makes an author belonging to multiple groups clean.
+1. **Person ≠ user.** Keeping credentials on `Person` and role/access on
+   `User` is what makes an author belonging to multiple accounts clean.
 2. **"Admin or creator" authorization** as the default predicate for editing a
    board/message/doc — simple, no policy framework needed.
 

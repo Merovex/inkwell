@@ -1,7 +1,7 @@
 # Fizzy's Authentication Protocol
 
 *Captured from the actual source of [`basecamp/fizzy`](https://github.com/basecamp/fizzy)
-(`main`), for reference while designing the Writer Group site's auth. Fizzy is
+(`main`), for reference while designing Alcovo's auth. Fizzy is
 37signals' open-source Kanban app; its auth is **passwordless, identity-centric,
 and multi-tenant**. Code blocks below are verbatim from the repo.*
 
@@ -333,15 +333,16 @@ mixed into the concern).
 
 ---
 
-## 6. Summary — what to carry into Writer Group
+## 6. Summary — what to carry into Alcovo
 
 - **Drop passwords.** Identity + magic link (email) is the minimum viable human
   path; passkeys and API tokens layer on without changing the session core.
-- **Split `Identity` (global login) from `User` (per-group membership).** Even if
-  the Writer Group starts single-tenant, this split is what makes multi-group
-  ("boardroom of author groups") clean later. Maps directly onto our
-  `Person`/`Membership`/`Group` sketch in [`data-model.md`](./data-model.md):
-  `Identity` ≈ `Person`, `User` ≈ `Membership`, `Account` ≈ `Group` (bucket).
+- **Split `Identity` (global login) from `User` (per-account membership).** Even
+  if Alcovo starts single-tenant, this split is what makes multi-account
+  ("boardroom of author communities") clean later. Maps onto Alcovo's
+  `Person`/`User`/`Account` model in [`data-model.md`](./data-model.md):
+  Fizzy `Identity` → Alcovo `Person`; Fizzy `User` → Alcovo `User`;
+  Fizzy `Account` → Alcovo `Account`.
 - **Resolve tenant before identity.** `require_account` runs before
   `require_authentication`; `Current` cascades session → identity → account-scoped
   user.

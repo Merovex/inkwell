@@ -1,13 +1,13 @@
 # frozen_string_literal: true
 #
-# NOTIONAL schema for the Writer Group site — a thinking artifact, NOT a real
-# migration. Modeled on Basecamp's delegated-type (Record/Recordable) pattern.
+# NOTIONAL schema for Alcovo — a thinking artifact, NOT a real migration.
+# Modeled on Basecamp's delegated-type (Record/Recordable) pattern.
 # See data-model.md for the narrative. Column names/types are idiomatic guesses;
 # anything inferred rather than observed is noted inline.
 
 ActiveRecord::Schema[7.2].define(version: 0) do
 
-  # ── People & membership ────────────────────────────────────────────────────
+  # ── People & accounts ──────────────────────────────────────────────────────
 
   create_table "people", force: :cascade do |t|
     t.string   "name",          null: false
@@ -16,19 +16,20 @@ ActiveRecord::Schema[7.2].define(version: 0) do
     t.index ["email_address"], unique: true
   end
 
-  # A "bucket" in Basecamp terms — the community space. Exposed as "Group" in UI.
-  create_table "groups", force: :cascade do |t|
+  # The tenant — a writing community's shared space. ("bucket" in Basecamp terms.)
+  create_table "accounts", force: :cascade do |t|
     t.string   "name",       null: false
     t.text     "description"
     t.timestamps
   end
 
-  create_table "memberships", force: :cascade do |t|
-    t.references "person", null: false, foreign_key: true
-    t.references "group",  null: false, foreign_key: true
-    t.string     "role",   null: false, default: "member"   # owner | member
+  # A Person's membership in one Account (Fizzy names this model "User" too).
+  create_table "users", force: :cascade do |t|
+    t.references "person",  null: false, foreign_key: true
+    t.references "account", null: false, foreign_key: true
+    t.string     "role",    null: false, default: "member"   # owner | member
     t.timestamps
-    t.index ["group_id", "person_id"], unique: true
+    t.index ["account_id", "person_id"], unique: true
   end
 
   # ── The spine: Recording (delegated-type parent) ───────────────────────────
@@ -38,7 +39,7 @@ ActiveRecord::Schema[7.2].define(version: 0) do
     t.string   "recordable_type", null: false
     t.bigint   "recordable_id",   null: false
 
-    t.references "group",   null: false, foreign_key: true   # the bucket
+    t.references "account", null: false, foreign_key: true   # the tenant
     t.references "creator", null: false,
                  foreign_key: { to_table: :people }
 
@@ -53,7 +54,7 @@ ActiveRecord::Schema[7.2].define(version: 0) do
 
     t.index ["recordable_type", "recordable_id"], unique: true,
             name: "index_recordings_on_recordable"
-    t.index ["group_id", "status"]
+    t.index ["account_id", "status"]
     t.index ["parent_id"]
   end
   # add_foreign_key "recordings", "recordings", column: "parent_id"
@@ -61,26 +62,26 @@ ActiveRecord::Schema[7.2].define(version: 0) do
   # ── Containers (the dock) ──────────────────────────────────────────────────
 
   create_table "message_boards", force: :cascade do |t|
-    t.references "group", null: false, foreign_key: true
+    t.references "account", null: false, foreign_key: true
     t.string     "name",  null: false      # "Workshop", "Kickoffs", "Heartbeats"
     t.integer    "position"
     t.timestamps
   end
 
   create_table "vaults", force: :cascade do |t|
-    t.references "group", null: false, foreign_key: true
+    t.references "account", null: false, foreign_key: true
     t.string     "name",  null: false, default: "Docs & Files"
     t.timestamps
   end
 
   create_table "questionnaires", force: :cascade do |t|
-    t.references "group", null: false, foreign_key: true
+    t.references "account", null: false, foreign_key: true
     t.string     "name",  null: false, default: "Automatic Check-ins"
     t.timestamps
   end
 
   create_table "chats", force: :cascade do |t|
-    t.references "group", null: false, foreign_key: true
+    t.references "account", null: false, foreign_key: true
     t.string     "name",  null: false, default: "Chat"
     t.timestamps
   end
