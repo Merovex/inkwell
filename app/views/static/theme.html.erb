@@ -1,0 +1,370 @@
+<% content_for :title, "Theme — Alcovo Styleguide" %>
+
+<%# Page-scoped scaffolding only — .sg-* helpers lay out the styleguide itself. %>
+<% content_for :head do %>
+  <style>
+    .sg-section { padding-block: var(--u-pad); }
+    .sg-section + .sg-section { border-block-start: var(--border-size-1) solid var(--line); }
+    .sg-h { font-size: var(--font-size-0); text-transform: uppercase; letter-spacing: .08em; color: var(--ink-muted); margin-block-end: var(--u-pad); }
+    .sg-grid { display: grid; gap: var(--u-pad); grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr)); }
+    .sg-swatch { block-size: var(--size-10); border-radius: var(--radius-ui); border: var(--border-size-1) solid var(--line); background: var(--tint); }
+    .sg-swatch--solid { background: var(--sg-color); }
+    .sg-swatch-label { display: flex; justify-content: space-between; gap: var(--u-pad); margin-block-start: calc(var(--u-pad) / 3); font-size: var(--font-size-0); }
+    .sg-box { background: var(--accent-soft); border-radius: var(--radius-1); outline: var(--border-size-1) dashed var(--accent); }
+  </style>
+<% end %>
+
+<%# Tint + theme live on <html> (see layout); cycle them from the user menu (top-right). %>
+<%= render "shared/canvas_head", crumbs: [["Alcovo", root_path], ["Styleguide", nil]] do %>
+  <button type="button" class="menu__item" role="menuitem">Rename</button>
+  <button type="button" class="menu__item" role="menuitem">Duplicate</button>
+  <button type="button" class="menu__item" role="menuitem">Move…</button>
+  <hr class="menu__separator">
+  <button type="button" class="menu__item" role="menuitem">Archive</button>
+<% end %>
+
+    <div class="u-flow">
+      <h1 class="u-text-balance">Elements &amp; Components</h1>
+      <p class="u-text-muted">A living catalog of the standard elements. Cycle the account <strong>tint</strong> and the <strong>light/dark/auto</strong> theme from the user menu (top-right).</p>
+      <div class="u-cluster">
+        <%= link_to "List view", list_view_path, class: "button button--small button--primary" %>
+        <%= link_to "Item view", item_view_path, class: "button button--small" %>
+      </div>
+    </div>
+
+    <%# ---- Colors & tints ---- %>
+    <section class="sg-section">
+      <p class="sg-h">Tints — light-mode site background</p>
+      <div class="sg-grid">
+        <% %w[olive taupe mauve mist zinc].each do |tint| %>
+          <div>
+            <div class="sg-swatch" data-tint="<%= tint %>"></div>
+            <div class="sg-swatch-label"><span><%= tint %></span><span class="u-text-muted">--tint</span></div>
+          </div>
+        <% end %>
+      </div>
+
+      <p class="sg-h" style="margin-block-start: var(--u-pad);">Structural colors</p>
+      <div class="sg-grid">
+        <% { "canvas" => "--canvas", "ink" => "--ink", "muted" => "--ink-muted", "accent" => "--accent", "line" => "--line" }.each do |name, var| %>
+          <div>
+            <div class="sg-swatch sg-swatch--solid" style="--sg-color: var(<%= var %>);"></div>
+            <div class="sg-swatch-label"><span><%= name %></span><span class="u-text-muted"><%= var %></span></div>
+          </div>
+        <% end %>
+      </div>
+    </section>
+
+    <%# ---- Spacing utilities ---- %>
+    <section class="sg-section">
+      <p class="sg-h">Spacing — <code>.u-pad</code> family</p>
+      <div class="u-cluster" style="--u-cluster-gap: var(--u-pad); align-items: flex-start;">
+        <% %w[u-pad-half u-pad u-pad-double].each do |u| %>
+          <div class="card card--flat">
+            <div class="<%= u %>"><div class="sg-box" style="min-inline-size: 4rem; min-block-size: 2rem;"></div></div>
+            <div class="card__footer"><code><%= ".#{u}" %></code></div>
+          </div>
+        <% end %>
+      </div>
+
+      <p class="sg-h" style="margin-block-start: var(--u-pad);">Spacing — <code>.u-margin</code> family</p>
+      <div class="u-cluster" style="--u-cluster-gap: var(--u-pad); align-items: flex-start;">
+        <% %w[u-margin-half u-margin u-margin-double].each do |u| %>
+          <div class="card card--flat">
+            <%# bordered container so the margin (space between border and box) reads clearly %>
+            <div style="display: flow-root; border: var(--border-size-1) solid var(--line); border-radius: var(--radius-1);">
+              <div class="sg-box <%= u %>" style="min-inline-size: 4rem; min-block-size: 2rem;"></div>
+            </div>
+            <div class="card__footer"><code><%= ".#{u}" %></code></div>
+          </div>
+        <% end %>
+      </div>
+    </section>
+
+    <%# ---- Typography ---- %>
+    <section class="sg-section">
+      <p class="sg-h">Typography</p>
+      <div class="u-flow">
+        <h1>Heading 1</h1>
+        <h2>Heading 2</h2>
+        <h3>Heading 3</h3>
+        <h4>Heading 4</h4>
+        <p>Body text with a <a href="#">link</a>, <strong>strong</strong>, and <em>emphasis</em>.</p>
+        <p class="u-text-small u-text-muted">Small muted caption text.</p>
+      </div>
+    </section>
+
+    <%# ---- Buttons ---- %>
+    <section class="sg-section">
+      <p class="sg-h">Buttons</p>
+      <div class="u-stack">
+        <div class="u-cluster">
+          <button class="button">Default</button>
+          <button class="button button--primary">Primary</button>
+          <button class="button button--ghost">Ghost</button>
+          <button class="button button--danger">Danger</button>
+          <button class="button" disabled>Disabled</button>
+        </div>
+        <div class="u-cluster">
+          <button class="button button--small button--primary">Small</button>
+          <button class="button button--primary">Medium</button>
+          <button class="button button--large button--primary">Large</button>
+        </div>
+      </div>
+    </section>
+
+    <%# ---- Avatars ---- %>
+    <section class="sg-section">
+      <p class="sg-h">Avatars</p>
+      <div class="u-cluster">
+        <span class="avatar avatar--small">AB</span>
+        <span class="avatar">CD</span>
+        <span class="avatar avatar--large">EF</span>
+        <span class="avatar-group">
+          <span class="avatar">AB</span>
+          <span class="avatar">CD</span>
+          <span class="avatar">EF</span>
+          <span class="avatar">+3</span>
+        </span>
+      </div>
+    </section>
+
+    <%# ---- Badges ---- %>
+    <section class="sg-section">
+      <p class="sg-h">Badges</p>
+      <div class="u-cluster">
+        <span class="badge">Default</span>
+        <span class="badge badge--accent">Accent</span>
+        <span class="badge badge--success">Success</span>
+        <span class="badge badge--warning">Warning</span>
+        <span class="badge badge--danger">Danger</span>
+      </div>
+    </section>
+
+    <%# ---- Cards ---- %>
+    <section class="sg-section">
+      <p class="sg-h">Cards</p>
+      <div class="sg-grid">
+        <article class="card">
+          <header class="card__header"><span class="card__title">Card title</span></header>
+          <div class="card__body u-flow"><p>Standard card with header, body, and footer. Compose it with utilities — never a bespoke <code>.message-card</code>.</p></div>
+          <footer class="card__footer u-cluster u-cluster-between">
+            <span class="u-text-muted u-text-small">Updated just now</span>
+            <button class="button button--small button--primary">Open</button>
+          </footer>
+        </article>
+
+        <article class="card card--flat">
+          <div class="card__body u-flow">
+            <span class="card__title">Flat card</span>
+            <p class="u-text-muted">No shadow modifier (<code>.card--flat</code>).</p>
+            <div class="u-cluster"><span class="badge badge--accent">new</span><span class="badge">draft</span></div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <%# ---- Form fields ---- %>
+    <section class="sg-section">
+      <p class="sg-h">Form fields</p>
+      <div class="card" style="max-inline-size: 32rem;">
+        <div class="card__body u-stack">
+          <div class="error-summary" role="alert">
+            <p class="error-summary__title">2 errors prevented this from being saved:</p>
+            <ul class="error-summary__list"><li>Title can't be blank</li><li>Email is invalid</li></ul>
+          </div>
+
+          <div class="field">
+            <label class="field__label" for="sg-name">Name</label>
+            <input class="field__control" id="sg-name" type="text" placeholder="Ada Lovelace">
+            <span class="field__hint">We'll only use this for magic-link sign in.</span>
+          </div>
+
+          <div class="field">
+            <label class="field__label" for="sg-role">Role</label>
+            <div class="field__select">
+              <select class="field__control" id="sg-role"><option>Owner</option><option>Editor</option><option>Viewer</option></select>
+              <%= inline_svg_tag "lucide/chevron-down.svg", class: "lucide", size: "18px" %>
+            </div>
+          </div>
+
+          <div class="field">
+            <label class="field__label" for="sg-bio">Bio</label>
+            <textarea class="field__control" id="sg-bio" placeholder="A few words…"></textarea>
+          </div>
+
+          <div class="field">
+            <label class="field__label" for="sg-site">Website</label>
+            <div class="field__group">
+              <span class="field__affix">https://</span>
+              <input class="field__control" id="sg-site" type="text" placeholder="alcovo.example">
+            </div>
+          </div>
+
+          <div class="field field--invalid">
+            <label class="field__label field__label--required" for="sg-handle">Handle</label>
+            <input class="field__control" id="sg-handle" type="text" value="taken" aria-invalid="true">
+            <span class="field__error">That handle is already in use.</span>
+          </div>
+
+          <div class="u-stack u-stack-half">
+            <label class="choice"><input class="choice__input" type="checkbox" checked> Email me updates</label>
+            <div class="u-cluster">
+              <label class="choice"><input class="choice__input" type="radio" name="sg-plan" checked> Free</label>
+              <label class="choice"><input class="choice__input" type="radio" name="sg-plan"> Pro</label>
+              <label class="choice"><input class="choice__input" type="radio" name="sg-plan" disabled> Enterprise</label>
+            </div>
+            <label class="switch"><input class="switch__input" type="checkbox" checked> Public profile</label>
+          </div>
+
+          <div class="field">
+            <label class="field__label" for="sg-dis">Disabled</label>
+            <input class="field__control" id="sg-dis" type="text" value="Read-only" disabled>
+          </div>
+
+          <div class="u-cluster u-cluster-between">
+            <button class="button button--ghost">Cancel</button>
+            <button class="button button--primary">Save</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <%# ---- Data tables ---- %>
+    <section class="sg-section">
+      <p class="sg-h">Data tables</p>
+      <div class="table-scroll">
+        <table class="table table--zebra">
+          <thead>
+            <tr>
+              <th scope="col">Title</th>
+              <th scope="col">Author</th>
+              <th scope="col">Status</th>
+              <th scope="col" data-align="end">Words</th>
+              <th scope="col">Updated</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>The Winter Draft</td>
+              <td>Ada Lovelace</td>
+              <td><span class="badge badge--success">Published</span></td>
+              <td data-align="end">2,481</td>
+              <td class="u-text-muted">2h ago</td>
+            </tr>
+            <tr>
+              <td>Notes on Typography</td>
+              <td>Grace Hopper</td>
+              <td><span class="badge badge--accent">Draft</span></td>
+              <td data-align="end">912</td>
+              <td class="u-text-muted">yesterday</td>
+            </tr>
+            <tr>
+              <td>Untitled</td>
+              <td>Alan Turing</td>
+              <td><span class="badge">Idea</span></td>
+              <td data-align="end">0</td>
+              <td class="u-text-muted">3 days ago</td>
+            </tr>
+            <tr>
+              <td>Archived Thoughts</td>
+              <td>Katherine Johnson</td>
+              <td><span class="badge badge--warning">Review</span></td>
+              <td data-align="end">5,043</td>
+              <td class="u-text-muted">last week</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <%# ---- List ---- %>
+    <section class="sg-section">
+      <p class="sg-h">List (summary rows)</p>
+      <ul class="list">
+        <%= render "shared/list_item", href: "#", title: "Kickoff notes for the winter issue",
+              author: "Ada Lovelace", date: "Jun 27",
+              excerpt: "Pulling together the themes we landed on last week — the long-form essay, two shorter pieces, and the interview. Draft outline attached.",
+              client_visible: true, comment_count: 3 %>
+        <%= render "shared/list_item", href: "#",
+              title: "A very long subject line that should truncate cleanly with an ellipsis when it runs past the available row width",
+              author: "Grace Hopper", date: "Jun 26",
+              excerpt: "Second row with no badges and a two-line excerpt that clamps once it exceeds the height of two lines of text in this row." %>
+        <%= render "shared/list_item", href: "#", title: "Reminder", author: "Alan Turing", date: "Jun 25",
+              excerpt: "Short one.", comment_count: 12 %>
+      </ul>
+    </section>
+
+    <%# ---- Alerts ---- %>
+    <section class="sg-section">
+      <p class="sg-h">Alerts</p>
+      <div class="u-stack u-stack-half">
+        <div class="alert alert--info"><div><span class="alert__title">Heads up.</span> Informational message.</div></div>
+        <div class="alert alert--success"><div><span class="alert__title">Saved.</span> Your changes are live.</div></div>
+        <div class="alert alert--warning"><div><span class="alert__title">Careful.</span> This can't be undone easily.</div></div>
+        <div class="alert alert--danger"><div><span class="alert__title">Error.</span> Something went wrong.</div></div>
+      </div>
+    </section>
+
+    <%# ---- Modal (dialog) ---- %>
+    <section class="sg-section" data-controller="dialog">
+      <p class="sg-h">Modal</p>
+      <button class="button button--primary" data-action="dialog#open">Open modal</button>
+      <dialog class="modal" data-dialog-target="modal" data-action="click->dialog#backdrop" aria-labelledby="sg-modal-title">
+        <div class="modal__header">
+          <span class="modal__title" id="sg-modal-title">Delete draft?</span>
+          <button type="button" class="button button--icon button--ghost" data-action="dialog#close" aria-label="Close">
+            <%= inline_svg_tag "lucide/x.svg", class: "lucide", size: "20px" %>
+          </button>
+        </div>
+        <div class="modal__body u-flow"><p>This permanently removes the draft. This can't be undone.</p></div>
+        <div class="modal__footer">
+          <button class="button button--ghost" data-action="dialog#close">Cancel</button>
+          <button class="button button--danger" data-action="dialog#close">Delete</button>
+        </div>
+      </dialog>
+    </section>
+
+    <%# ---- Pagination ---- %>
+    <section class="sg-section">
+      <p class="sg-h">Pagination</p>
+      <nav class="pagination" aria-label="Pagination">
+        <span class="pagination__item" aria-disabled="true">‹ Prev</span>
+        <a class="pagination__item" href="#">1</a>
+        <span class="pagination__item pagination__item--current" aria-current="page">2</span>
+        <a class="pagination__item" href="#">3</a>
+        <span class="pagination__item pagination__item--gap">…</span>
+        <a class="pagination__item" href="#">9</a>
+        <a class="pagination__item" href="#">Next ›</a>
+      </nav>
+    </section>
+
+    <%# ---- Empty state ---- %>
+    <section class="sg-section">
+      <p class="sg-h">Empty state</p>
+      <div class="card card--flat">
+        <div class="card__body">
+          <div class="empty">
+            <span class="empty__icon"><%= inline_svg_tag "lucide/inbox.svg", class: "lucide", size: "40px" %></span>
+            <p class="empty__title">No drafts yet</p>
+            <p class="empty__text">Start writing and your drafts will show up here.</p>
+            <div class="empty__actions"><button class="button button--primary">New draft</button></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <%# ---- Tabs ---- %>
+    <section class="sg-section">
+      <p class="sg-h">Tabs</p>
+      <div class="tabs" data-controller="tabs">
+        <div class="tabs__list" role="tablist" aria-label="Example tabs" data-action="keydown->tabs#key">
+          <button class="tabs__tab" role="tab" id="sg-tab-1" aria-controls="sg-panel-1" aria-selected="true" data-tabs-target="tab" data-action="click->tabs#show">Overview</button>
+          <button class="tabs__tab" role="tab" id="sg-tab-2" aria-controls="sg-panel-2" data-tabs-target="tab" data-action="click->tabs#show">Activity</button>
+          <button class="tabs__tab" role="tab" id="sg-tab-3" aria-controls="sg-panel-3" data-tabs-target="tab" data-action="click->tabs#show">Settings</button>
+        </div>
+        <div class="tabs__panel" role="tabpanel" id="sg-panel-1" aria-labelledby="sg-tab-1" data-tabs-target="panel"><p>Overview panel — the default, visible tab.</p></div>
+        <div class="tabs__panel" role="tabpanel" id="sg-panel-2" aria-labelledby="sg-tab-2" data-tabs-target="panel"><p>Activity panel content.</p></div>
+        <div class="tabs__panel" role="tabpanel" id="sg-panel-3" aria-labelledby="sg-tab-3" data-tabs-target="panel"><p>Settings panel content.</p></div>
+      </div>
+    </section>

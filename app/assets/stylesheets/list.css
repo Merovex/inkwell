@@ -1,0 +1,88 @@
+/*
+ * .list — a list of summary rows (avatar + linked title/meta + optional trailing
+ * count). Render as <ul class="list"> / <ol class="list"> with .list__item rows
+ * (partial: shared/_list_item). Adapted from Basecamp's article-list; colors use
+ * Alcovo tokens. Structure (BEM):
+ *   .list__item > .list__avatar (.avatar) + a.list__body(.list__titlerow > .list__title
+ *   + badge · .list__meta > .list__byline) + .list__count
+ */
+@layer components {
+  .list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    /* single hairline at the list's bottom; each row draws its own top border,
+       so dividers never double up */
+    border-block-end: var(--border-size-1) solid var(--line);
+  }
+
+  .list__item {
+    position: relative;           /* containing block for the stretched link */
+    display: flex;
+    align-items: flex-start;
+    gap: var(--u-pad);
+    padding-block: calc(var(--u-pad) * 1.5) var(--u-pad); /* 24px top / 16px bottom */
+    border-block-start: var(--border-size-1) solid var(--line);
+  }
+
+  .list__avatar { --avatar-size: 3.5rem; flex-shrink: 0; } /* 56px, on the .avatar */
+
+  .list__body {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    gap: calc(var(--u-pad) / 4);
+    min-inline-size: 0;            /* let title ellipsis / meta clamp inside flex */
+    color: inherit;
+    text-decoration: none;
+    overflow: hidden;
+  }
+  .list__body:hover .list__title { text-decoration: underline; }
+  /* stretched link — the whole row clicks through to the item */
+  .list__body::after { content: ""; position: absolute; inset: 0; }
+
+  .list__titlerow {
+    display: flex;
+    align-items: center;
+    gap: calc(var(--u-pad) / 2);
+    min-inline-size: 0;
+  }
+  .list__title {
+    min-inline-size: 0;
+    font-size: var(--font-size-3);  /* ~20px */
+    font-weight: var(--font-weight-7);
+    color: var(--ink);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .list__meta {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    font-size: var(--font-size-2);  /* ~18px */
+    line-height: var(--font-lineheight-3);
+    color: var(--ink);
+  }
+  .list__byline { color: var(--brand-text); } /* teal-tinted, 7:1 on the canvas */
+
+  /* unread-count bubble — a flex sibling AFTER the link, not inside it */
+  .list__count {
+    flex-shrink: 0;
+    align-self: center;
+    pointer-events: none;          /* indicator only — clicks fall through to the row link */
+    display: grid;
+    place-items: center;
+    min-inline-size: 1.375rem;      /* 22px */
+    block-size: 1.375rem;
+    padding-inline: 0.25rem;
+    border-radius: var(--radius-round);
+    background: var(--brand-strong); /* teal-800 — white text hits 7.6:1 (AAA) */
+    color: #fff;
+    font-size: var(--font-size-0);
+    font-weight: var(--font-weight-7);
+    line-height: 1;
+  }
+}

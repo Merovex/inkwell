@@ -1,0 +1,25 @@
+/*
+ * Alcovo stylesheet architecture — read me.
+ *
+ * This project uses Propshaft with `stylesheet_link_tag :app`, which emits one
+ * <link> per file in this directory, in ALPHABETICAL filename order. We do NOT
+ * @import; instead we keep many small, single-purpose files and let :app include
+ * them all. (The :app layout tag is intentional — do not "fix" it.)
+ *
+ * Because link order is alphabetical, cascade order is controlled with native
+ * CSS @layer instead of source order:
+ *
+ *     00-layers.css   declares:  @layer base, components, utilities;
+ *     01-tokens.css   design tokens — colors, Basecamp tints (OKLCH), dark mode
+ *     02-base.css     reset + base element styles        (@layer base)
+ *     open-props.css  vendored non-color tokens (spacing/radii/shadow/type)
+ *     u-*.css         one utility per file                (@layer utilities)
+ *     <component>.css one component per file              (@layer components)
+ *
+ * Methodology (CUBE-ish): Open Props supplies non-color tokens; utilities live in
+ * the `u-` namespace (.u-pad, .u-pad-half, .u-pad-double); components are STANDARD
+ * (.card, .button, .avatar) — never bespoke (no .message-card). Colors are ours.
+ *
+ * This file itself intentionally holds no rules — it's documentation. Add styles
+ * by creating a new small file here, not by editing this one.
+ */

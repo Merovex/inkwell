@@ -1,0 +1,23 @@
+/*
+ * .badge — small status/label pill. Intent via modifiers.
+ */
+@layer components {
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: calc(var(--u-pad) / 4);
+    padding-block: calc(var(--u-pad) / 5);
+    padding-inline: calc(var(--u-pad) / 2);
+    border-radius: var(--radius-round);
+    background: color-mix(in oklab, var(--ink) 8%, transparent);
+    color: var(--ink);
+    font-size: var(--font-size-0);
+    font-weight: var(--font-weight-6);
+    line-height: 1.4;
+    white-space: nowrap;
+  }
+  .badge--accent  { background: var(--accent-soft);     color: var(--ink-on-soft); }
+  .badge--success { background: var(--success-surface); color: var(--success-ink); }
+  .badge--warning { background: var(--warning-surface); color: var(--warning-ink); }
+  .badge--danger  { background: var(--danger-surface);  color: var(--danger-ink); }
+}

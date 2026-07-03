@@ -1,0 +1,22 @@
+/*
+ * .empty — blank slate for empty index / search results: optional icon, title,
+ * message, and a CTA. Structure (BEM):
+ *   .empty > .empty__icon, .empty__title, .empty__text, .empty__actions
+ */
+@layer components {
+  .empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: calc(var(--u-pad) / 2);
+    padding-block: calc(var(--u-pad) * 3);
+    padding-inline: var(--u-pad);
+    color: var(--ink-muted);
+  }
+  .empty__icon { color: var(--ink-muted); }
+  .empty__icon .lucide { inline-size: 2.5rem; block-size: 2.5rem; }
+  .empty__title { font-size: var(--font-size-3); font-weight: var(--font-weight-7); color: var(--ink); }
+  .empty__text { max-inline-size: 32rem; }
+  .empty__actions { margin-block-start: calc(var(--u-pad) / 2); }
+}

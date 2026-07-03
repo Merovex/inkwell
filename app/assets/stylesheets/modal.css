@@ -1,0 +1,57 @@
+/*
+ * .modal — a native <dialog> opened as a modal (showModal). Centered panel over a
+ * scrim; Esc + backdrop-click close (via the dialog controller). Structure (BEM):
+ * dialog.modal > .modal__header (.modal__title + close) / .modal__body / .modal__footer
+ */
+@layer components {
+  .modal {
+    margin: auto;                 /* centered in the viewport */
+    padding: 0;
+    inline-size: min(32rem, calc(100% - 2rem));
+    max-block-size: calc(100dvh - 2rem);
+    background: var(--canvas);
+    color: var(--ink);
+    border: var(--border-size-1) solid var(--line);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-4);
+    overflow: clip;
+  }
+  .modal::backdrop { background: var(--scrim); }
+
+  .modal__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--u-pad);
+    padding: var(--u-pad);
+    border-block-end: var(--border-size-1) solid var(--line);
+  }
+  .modal__title { font-size: var(--font-size-3); font-weight: var(--font-weight-7); }
+  .modal__body { padding: var(--u-pad); }
+  .modal__footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: calc(var(--u-pad) / 2);
+    padding: var(--u-pad);
+    border-block-start: var(--border-size-1) solid var(--line);
+    background: color-mix(in oklab, var(--canvas), var(--ink) 3%);
+  }
+
+  /* open/close animation — allow-discrete keeps it in the top layer while closing */
+  .modal, .modal::backdrop {
+    opacity: 0;
+    transition: opacity 0.15s var(--ease-3), translate 0.15s var(--ease-3),
+                overlay 0.15s allow-discrete, display 0.15s allow-discrete;
+  }
+  .modal { translate: 0 0.5rem; }
+  .modal[open] { opacity: 1; translate: 0 0; }
+  .modal[open]::backdrop { opacity: 1; }
+  @starting-style {
+    .modal[open] { opacity: 0; translate: 0 0.5rem; }
+    .modal[open]::backdrop { opacity: 0; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .modal, .modal::backdrop { transition: none; }
+    .modal { translate: none; }
+  }
+}

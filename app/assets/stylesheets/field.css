@@ -1,0 +1,73 @@
+/*
+ * .field — form control group: label + control + hint/error. Controls: text
+ * inputs, textarea, and select (wrapped for the chevron). Input groups add
+ * prefix/suffix affixes. See choice.css (checkbox/radio) and switch.css (toggle).
+ * Structure (BEM): .field > .field__label, (.field__control | .field__select |
+ * .field__group), .field__hint / .field__error
+ */
+@layer components {
+  .field { display: flex; flex-direction: column; gap: calc(var(--u-pad) / 3); }
+
+  .field__label { font-weight: var(--font-weight-6); font-size: var(--font-size-0); }
+  .field__label--required::after { content: " *"; color: var(--danger-ink); }
+
+  .field__control {
+    inline-size: 100%;
+    padding-block: calc(var(--u-pad) / 2);
+    padding-inline: calc(var(--u-pad) / 1.5);
+    background: var(--canvas);
+    color: var(--ink);
+    border: var(--border-size-1) solid var(--line);
+    border-radius: var(--radius-ui);
+    transition: border-color 0.12s var(--ease-3), box-shadow 0.12s var(--ease-3);
+  }
+  .field__control::placeholder { color: var(--ink-muted); }
+  .field__control:focus-visible {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 var(--border-size-2) var(--accent-soft);
+  }
+  .field__control:disabled {
+    background: color-mix(in oklab, var(--canvas), var(--ink) 4%);
+    color: var(--ink-muted);
+    cursor: not-allowed;
+  }
+
+  textarea.field__control { min-block-size: 5rem; resize: vertical; }
+
+  .field__control--small { padding-block: calc(var(--u-pad) / 3); padding-inline: calc(var(--u-pad) / 2); font-size: var(--font-size-0); }
+  .field__control--large { padding-block: calc(var(--u-pad) / 1.5); font-size: var(--font-size-2); }
+
+  /* select — native, wrapped so the chevron can overlay it */
+  .field__select { position: relative; display: flex; }
+  .field__select > .field__control { appearance: none; padding-inline-end: calc(var(--u-pad) * 2); }
+  .field__select > .lucide {
+    position: absolute; inset-inline-end: calc(var(--u-pad) / 1.5); inset-block-start: 50%;
+    translate: 0 -50%; color: var(--ink-muted); pointer-events: none;
+  }
+
+  /* input group — prefix/suffix affixes sharing one border with the control */
+  .field__group {
+    display: flex; align-items: stretch;
+    border: var(--border-size-1) solid var(--line);
+    border-radius: var(--radius-ui);
+    overflow: clip;
+  }
+  .field__group:focus-within { border-color: var(--accent); box-shadow: 0 0 0 var(--border-size-2) var(--accent-soft); }
+  .field__group > .field__control { border: none; border-radius: 0; }
+  .field__group > .field__control:focus-visible { box-shadow: none; }
+  .field__affix {
+    display: grid; place-items: center;
+    padding-inline: calc(var(--u-pad) / 1.5);
+    color: var(--ink-muted);
+    background: color-mix(in oklab, var(--canvas), var(--ink) 4%);
+    white-space: nowrap;
+  }
+
+  .field__hint  { color: var(--ink-muted); font-size: var(--font-size-0); }
+  .field__error { color: var(--danger-ink); font-size: var(--font-size-0); font-weight: var(--font-weight-6); }
+
+  /* invalid state */
+  .field--invalid .field__control,
+  .field--invalid .field__group { border-color: var(--danger-ink); }
+}

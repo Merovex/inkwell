@@ -1,0 +1,10 @@
+/*
+ * .theme-toggle — a .menu__item that cycles light/dark/auto. Shows only the icon
+ * matching the current mode (set as data-mode by the theme controller).
+ */
+@layer components {
+  .theme-toggle__icon { display: none; }
+  .theme-toggle[data-mode="light"] .theme-toggle__icon--light,
+  .theme-toggle[data-mode="dark"]  .theme-toggle__icon--dark,
+  .theme-toggle[data-mode="auto"]  .theme-toggle__icon--auto { display: inline; }
+}

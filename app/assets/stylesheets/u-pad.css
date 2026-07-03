@@ -1,0 +1,21 @@
+/*
+ * u-pad — padding utilities. The reference utility for this system.
+ *
+ * Scale is proportional to one token (--u-pad, = Open Props --size-3 / 1rem):
+ *   half   = ÷2      pad = 1×      double = ×2
+ * so the rhythm stays consistent if --u-pad is ever retuned.
+ */
+@layer utilities {
+  .u-pad        { padding: var(--u-pad); }
+  .u-pad-half   { padding: calc(var(--u-pad) / 2); }
+  .u-pad-double { padding: calc(var(--u-pad) * 2); }
+  .u-pad-0      { padding: 0; }
+
+  /* directional — block (top/bottom) and inline (left/right) */
+  .u-pad-block         { padding-block: var(--u-pad); }
+  .u-pad-block-half    { padding-block: calc(var(--u-pad) / 2); }
+  .u-pad-block-double  { padding-block: calc(var(--u-pad) * 2); }
+  .u-pad-inline        { padding-inline: var(--u-pad); }
+  .u-pad-inline-half   { padding-inline: calc(var(--u-pad) / 2); }
+  .u-pad-inline-double { padding-inline: calc(var(--u-pad) * 2); }
+}

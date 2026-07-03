@@ -1,0 +1,25 @@
+/*
+ * .perma-header — a page (permalink view) header: big title + a toolbar of
+ * controls (primary action, filter button-group, sort dropdown, text filter).
+ * Structure (BEM): .perma-header > .perma-header__title + .perma-header__content
+ *   > .perma-header__toolbar
+ */
+@layer components {
+  .perma-header { margin-block-end: calc(var(--u-pad) * 2); }
+
+  .perma-header__title {
+    font-size: var(--font-size-6);
+    font-weight: var(--font-weight-8);
+    line-height: var(--font-lineheight-1);
+    color: var(--ink);
+  }
+
+  .perma-header__content { margin-block-start: calc(var(--u-pad) / 2); }
+
+  .perma-header__toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: calc(var(--u-pad) * 0.75);
+  }
+}

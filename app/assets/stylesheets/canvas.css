@@ -1,0 +1,43 @@
+/*
+ * .canvas — the app content panel (was .main-content): a centered, fixed-width
+ * surface floating on the tinted page background. Grows to fill between header
+ * and footer. `.canvas__head` is a thin strip hugging the top border.
+ */
+@layer components {
+  .canvas {
+    flex: 1;
+    position: relative;
+    width: calc(100% - 3rem);     /* 48px gutter, 24px (1.5rem) each side */
+    max-width: 68rem;             /* 1088px hard cap */
+    margin-inline: auto;
+    margin-block: var(--u-pad);
+    padding-block: calc(var(--u-pad) * 2);
+    padding-inline: 2.5rem;       /* 40px each side */
+    background: var(--canvas);
+    border-radius: var(--radius-2); /* one level less round than cards */
+    box-sizing: border-box;
+  }
+
+  /* thin top strip hugging the canvas border: full-bleed (negates the canvas
+     padding), no block padding, minor inline padding. Breadcrumb left, context
+     menu right. The -4rem / -2×u-pad margins mirror the canvas padding above. */
+  .canvas__head {
+    position: sticky;
+    inset-block-start: 0;         /* sticks to the top when scrolling long content */
+    z-index: 1;                   /* content scrolls under it */
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--u-pad);
+    margin-block-start: calc(var(--u-pad) * -2);
+    margin-inline: -2.5rem;       /* mirror the canvas padding-inline to reach the edges */
+    margin-block-end: calc(var(--u-pad) * 2);
+    padding-block: 0;
+    padding-inline: 2.5rem 0;     /* breadcrumb aligns with content; toggle flush right */
+    background: var(--canvas);    /* opaque so scrolling content doesn't show through */
+    border-block-end: var(--border-size-1) solid var(--line);
+    border-start-start-radius: var(--radius-2); /* match the canvas top corners */
+    border-start-end-radius: var(--radius-2);
+  }
+
+}

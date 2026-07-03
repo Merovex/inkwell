@@ -1,0 +1,13 @@
+/*
+ * u-center — a centered content column with a max measure and inline padding,
+ * so page content doesn't run edge-to-edge. Width tunable via --u-center-max.
+ */
+@layer utilities {
+  .u-center {
+    box-sizing: content-box;
+    max-inline-size: var(--u-center-max, var(--size-content-3, 60rem));
+    margin-inline: auto;
+    padding-inline: var(--u-pad);
+  }
+  .u-center-narrow { --u-center-max: var(--size-content-2, 40rem); }
+}

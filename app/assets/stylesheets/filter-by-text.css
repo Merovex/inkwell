@@ -1,0 +1,40 @@
+/*
+ * .filter-by-text — a compact text filter whose "Filter… [F]" label overlaps the
+ * input (CSS grid, same cell) and hides once the input has content. The input
+ * uses placeholder=" " so :placeholder-shown detects emptiness.
+ * Structure: .filter-by-text > input.filter-by-text__input + label.filter-by-text__hotkey > kbd
+ */
+@layer components {
+  .filter-by-text { display: grid; inline-size: 9.5rem; }
+  .filter-by-text > * { grid-area: 1 / 1; } /* overlap input + label */
+
+  .filter-by-text__input {
+    inline-size: 100%;
+    block-size: 2rem;
+    padding-inline: calc(var(--u-pad) / 2);
+    background: var(--canvas);
+    color: var(--ink);
+    border: var(--border-size-1) solid var(--line);
+    border-radius: var(--radius-ui);
+    font-size: var(--font-size-0);
+  }
+  .filter-by-text__input:focus-visible {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 var(--border-size-2) var(--accent-soft);
+  }
+
+  .filter-by-text__hotkey {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: calc(var(--u-pad) / 3);
+    align-self: center;
+    padding-inline: calc(var(--u-pad) / 2);
+    color: var(--ink-muted);
+    font-size: var(--font-size-0);
+    pointer-events: none; /* clicks fall through to the input */
+  }
+  /* hide the label once the input has content */
+  .filter-by-text__input:not(:placeholder-shown) + .filter-by-text__hotkey { visibility: hidden; }
+}

@@ -1,0 +1,17 @@
+/*
+ * Cascade layer order — the single source of truth.
+ *
+ * This file's name starts with "00" so it sorts FIRST among the alphabetically
+ * ordered <link>s that `stylesheet_link_tag :app` emits. Whatever order the other
+ * files load in, this declaration fixes the layer precedence:
+ *
+ *   base       < components < utilities        (later = wins)
+ *
+ * base       — resets and bare element defaults (weakest)
+ * components — standard components (.card, .button, .avatar, …)
+ * utilities  — single-purpose overrides (.u-pad, …) — win over components
+ *
+ * Anything defined outside a layer (e.g. Open Props tokens, our :root tokens)
+ * beats all layered rules, which is fine: those are variables, not conflicts.
+ */
+@layer base, components, utilities;

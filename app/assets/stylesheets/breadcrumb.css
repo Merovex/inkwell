@@ -1,0 +1,17 @@
+/*
+ * .breadcrumb — trail of links ending in the current page. Lives in .canvas__head
+ * (and anywhere a location trail is useful).
+ */
+@layer components {
+  .breadcrumb {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: calc(var(--u-pad) / 2);
+    font-size: var(--font-size-0);
+  }
+  .breadcrumb__item { color: var(--ink-muted); text-decoration: none; }
+  .breadcrumb__item:hover { color: var(--ink); }
+  .breadcrumb__item--current { color: var(--ink); font-weight: var(--font-weight-6); }
+  .breadcrumb__sep { color: var(--ink-muted); user-select: none; }
+}

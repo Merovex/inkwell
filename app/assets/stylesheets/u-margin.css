@@ -1,0 +1,45 @@
+/*
+ * u-margin — margin utilities, same proportional scale as u-pad (half = ÷2,
+ * base = 1×, double = ×2 of --u-pad). Covers all-sides, block/inline axes, each
+ * logical edge, and auto (centering / pushing).
+ */
+@layer utilities {
+  .u-margin        { margin: var(--u-pad); }
+  .u-margin-half   { margin: calc(var(--u-pad) / 2); }
+  .u-margin-double { margin: calc(var(--u-pad) * 2); }
+  .u-margin-0      { margin: 0; }
+
+  /* block (top+bottom) */
+  .u-margin-block        { margin-block: var(--u-pad); }
+  .u-margin-block-half   { margin-block: calc(var(--u-pad) / 2); }
+  .u-margin-block-double { margin-block: calc(var(--u-pad) * 2); }
+
+  /* inline (left+right) */
+  .u-margin-inline        { margin-inline: var(--u-pad); }
+  .u-margin-inline-half   { margin-inline: calc(var(--u-pad) / 2); }
+  .u-margin-inline-double { margin-inline: calc(var(--u-pad) * 2); }
+
+  /* single edges */
+  .u-margin-block-start        { margin-block-start: var(--u-pad); }
+  .u-margin-block-start-half   { margin-block-start: calc(var(--u-pad) / 2); }
+  .u-margin-block-start-double { margin-block-start: calc(var(--u-pad) * 2); }
+
+  .u-margin-block-end          { margin-block-end: var(--u-pad); }
+  .u-margin-block-end-half     { margin-block-end: calc(var(--u-pad) / 2); }
+  .u-margin-block-end-double   { margin-block-end: calc(var(--u-pad) * 2); }
+
+  .u-margin-inline-start        { margin-inline-start: var(--u-pad); }
+  .u-margin-inline-start-half   { margin-inline-start: calc(var(--u-pad) / 2); }
+  .u-margin-inline-start-double { margin-inline-start: calc(var(--u-pad) * 2); }
+
+  .u-margin-inline-end          { margin-inline-end: var(--u-pad); }
+  .u-margin-inline-end-half     { margin-inline-end: calc(var(--u-pad) / 2); }
+  .u-margin-inline-end-double   { margin-inline-end: calc(var(--u-pad) * 2); }
+
+  /* auto — centering / pushing to one side */
+  .u-margin-auto        { margin: auto; }
+  .u-margin-inline-auto { margin-inline: auto; }
+  .u-margin-block-start-auto  { margin-block-start: auto; }
+  .u-margin-inline-start-auto { margin-inline-start: auto; }
+  .u-margin-inline-end-auto   { margin-inline-end: auto; }
+}

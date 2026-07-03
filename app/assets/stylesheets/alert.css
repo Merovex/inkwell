@@ -1,0 +1,22 @@
+/*
+ * .alert — inline message banner. Intent via modifiers. Compose with utilities
+ * for spacing between stacked alerts.
+ */
+@layer components {
+  .alert {
+    display: flex;
+    gap: calc(var(--u-pad) / 2);
+    padding: var(--u-pad);
+    border: var(--border-size-1) solid var(--line);
+    border-inline-start-width: var(--border-size-3);
+    border-radius: var(--radius-ui);
+    background: var(--canvas);
+    color: var(--ink);
+  }
+  .alert__title { font-weight: var(--font-weight-7); }
+
+  .alert--info    { border-inline-start-color: var(--accent); background: var(--accent-soft); }
+  .alert--success { border-inline-start-color: var(--success-ink); background: var(--success-surface); color: var(--success-ink); }
+  .alert--warning { border-inline-start-color: var(--warning-ink); background: var(--warning-surface); color: var(--warning-ink); }
+  .alert--danger  { border-inline-start-color: var(--danger-ink);  background: var(--danger-surface);  color: var(--danger-ink); }
+}
