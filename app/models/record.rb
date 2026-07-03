@@ -5,7 +5,7 @@
 # agnostic: host apps that need scoping add their own column on this spine.
 class Record < ApplicationRecord
   # Content types that may live in the envelope; grows as recordables are added.
-  RECORDABLE_TYPES = %w[ Post ]
+  RECORDABLE_TYPES = %w[ Post Comment ]
 
   delegated_type :recordable, types: RECORDABLE_TYPES, optional: true
   belongs_to :creator, class_name: "User", default: -> { Current.user }
@@ -20,15 +20,17 @@ class Record < ApplicationRecord
   scope :trashed, -> { where.not(trashed_at: nil) }
   scope :purgeable, -> { trashed.where(purge_after: ..Time.current) }
   scope :posts, -> { where(recordable_type: "Post") }
+  scope :comments, -> { where(recordable_type: "Comment") }
 
   before_destroy :destroy_versions
 
   # Birth of a record: the row must exist before its first version can carry
   # record_id, then the cursor points at that version — one transaction. The
-  # record's creator is the first version's author, always.
-  def self.originate(version)
+  # record's creator is the first version's author, always. Child content
+  # (comments) passes the record it hangs from as parent.
+  def self.originate(version, parent: nil)
     transaction do
-      create!(recordable_type: version.class.name, creator: version.creator).tap do |record|
+      create!(recordable_type: version.class.name, creator: version.creator, parent: parent).tap do |record|
         version.update!(record: record)
         record.update!(recordable: version)
       end
@@ -67,6 +69,13 @@ class Record < ApplicationRecord
     else
       revise(event: :updated, creator: creator, **changes)
     end
+  end
+
+  # Live comments under this record — current versions only, oldest first
+  # (record ids are creation-ordered; version ids aren't, once edits land).
+  def comments
+    Comment.where(id: children.active.comments.select(:recordable_id))
+      .includes(:creator, :record, :rich_text_content).order(:record_id)
   end
 
   def trashed? = trashed_at.present?

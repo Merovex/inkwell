@@ -1,0 +1,28 @@
+<% content_for :title, "Edit comment — Alcovo" %>
+
+<%# Rendered into the comment's turbo frame on the post page: the row keeps %>
+<%# its .list__item shape but the content column becomes an editor. "Never %>
+<%# mind" navigates the frame back to the post page, which restores the %>
+<%# displayed comment. %>
+<%= turbo_frame_tag "comment_#{@record.id}", class: "list__item comment" do %>
+  <span class="avatar list__avatar" aria-hidden="true"><%= avatar_initials(@comment.creator) %></span>
+
+  <div class="comment__content">
+    <%= render "shared/error_summary", model: @comment %>
+    <%# Autosaved to localStorage; the revision guard drops the draft if the %>
+    <%# comment was edited elsewhere since it was typed. %>
+    <%= form_with model: @comment, url: comment_path(@record), class: "comment__form",
+          data: { controller: "autosave",
+                  autosave_key_value: "Record/#{@record.id}/edit",
+                  autosave_revision_value: @record.recordable_id,
+                  action: "input->autosave#write lexxy:change->autosave#write turbo:submit-end->autosave#submitted" } do |f| %>
+      <%= f.rich_textarea :content, "aria-label": "Comment" %>
+      <div class="u-cluster">
+        <%= f.submit "Save changes", class: "button button--primary" %>
+        <%= link_to "Never mind", post_path(@parent), class: "button" %>
+      </div>
+    <% end %>
+  </div>
+
+  <div class="list__action comment__actions"></div>
+<% end %>

@@ -1,0 +1,5 @@
+<%# Swapped into the post page's prompt frame: the prompt row becomes the %>
+<%# composer row. %>
+<%= turbo_frame_tag "new_comment" do %>
+  <%= render "comments/form", record: @record %>
+<% end %>

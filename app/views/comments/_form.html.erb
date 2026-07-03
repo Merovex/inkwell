@@ -1,0 +1,28 @@
+<%# locals: (record:) %>
+<%# The composer row: same .list__item shape as a comment — your avatar | %>
+<%# editor | reserved action zone — so the row it draws is the row the saved %>
+<%# comment occupies. Submits _top: the saved comment lands outside the %>
+<%# prompt frame, so the whole page re-renders (and the prompt collapses). %>
+<div class="list__item comment comment--composer">
+  <span class="avatar list__avatar" aria-hidden="true"><%= avatar_initials(Current.user) %></span>
+
+  <%# Autosaved to localStorage, keyed to the record being commented on — a %>
+  <%# draft survives "Never mind" and reappears when the composer reopens. %>
+  <%= form_with model: Comment.new, url: post_comments_path(record), class: "comment__content comment__form",
+        data: { turbo_frame: "_top",
+                controller: "autosave",
+                autosave_key_value: "Record/#{record.id}/comment",
+                action: "input->autosave#write lexxy:change->autosave#write turbo:submit-end->autosave#submitted" } do |f| %>
+    <%= f.rich_textarea :content, placeholder: "Add a comment…", "aria-label": "Comment", autofocus: true %>
+    <div class="u-cluster">
+      <%= f.submit "Add this comment", class: "button button--primary" %>
+      <%# Navigates the frame back to the post page, whose response holds the %>
+      <%# collapsed prompt — the form goes away. Explicit frame target: the %>
+      <%# enclosing form aims _top, which must not leak onto this link. %>
+      <%= link_to "Never mind", post_path(record), class: "button",
+            data: { turbo_frame: "new_comment" } %>
+    </div>
+  <% end %>
+
+  <div class="list__action comment__actions"></div>
+</div>

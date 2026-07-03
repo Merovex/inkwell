@@ -37,8 +37,15 @@ Rails.application.routes.draw do
       resources :events, only: :index
       resources :changes, only: :show
       resources :versions, only: :show
+      # The comment composer on the post page (new swaps into the prompt's
+      # turbo frame); member actions are shallow.
+      resources :comments, only: %i[new create]
     end
   end
+
+  # Comment member actions — shallow, since a comment's Record id is globally
+  # unique (:id is always the Record id, same as everywhere else).
+  resources :comments, only: %i[edit update destroy]
 
   # Living styleguide for building/eyeballing standard elements + components.
   get "theme" => "static#theme", as: :theme

@@ -8,6 +8,9 @@ class PostsController < ApplicationController
     @posts = Post.current.published
       .includes(:record, :creator, body: :rich_text_content).feed_ordered
 
+    @comment_counts = Record.active.comments
+      .where(parent_id: @posts.map(&:record_id)).group(:parent_id).count
+
     unpublished = Post.current.where.not(status: :published).group(:status).count
     @drafts_count = unpublished["drafted"].to_i
     @scheduled_count = unpublished["scheduled"].to_i

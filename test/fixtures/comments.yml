@@ -1,0 +1,4 @@
+kickoff_comment:
+  record: kickoff_comment
+  creator: alice
+  event: created

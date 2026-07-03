@@ -2,3 +2,8 @@ kickoff_content:
   record: kickoff_body (Body)
   name: content
   body: <p>Pulling together the themes we landed on last week — the long-form essay, two shorter pieces, and the interview.</p>
+
+kickoff_comment_content:
+  record: kickoff_comment (Comment)
+  name: content
+  body: <p>Great kickoff — I can take the interview piece.</p>

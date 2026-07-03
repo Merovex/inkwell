@@ -1,0 +1,69 @@
+/*
+ * Comment — the thread under a record. Rows are standard .list__item rows
+ * (avatar, hairline dividers, far-right .list__action zone come from
+ * list.css); only the content column differs: byline + rich text for a
+ * comment, a Lexxy editor for the composer (.comment--composer) and inline
+ * edit. The composer keeps an empty action zone so every row's content
+ * column lines up.
+ *
+ * Structure (BEM): .comments > .comments__heading + .list >
+ *   turbo-frame.list__item.comment > .list__avatar (.avatar) +
+ *   .comment__content (.comment__byline + .comment__body | .comment__form) +
+ *   .list__action.comment__actions
+ */
+@layer components {
+  .comments {
+    display: grid;
+    gap: var(--u-pad);
+    margin-block-start: var(--size-8);
+  }
+
+  .comments__heading {
+    margin: 0;
+    font-size: var(--font-size-2);
+    font-weight: var(--font-weight-7);
+  }
+
+  /* The collapsed entry point: a plain text button (no border), wide enough
+     that the label never wraps. Clicking it turbo-swaps the prompt row for
+     the composer row. */
+  .comment__prompt {
+    display: inline-block;
+    inline-size: 200px;
+    color: var(--ink-muted);
+    font-size: var(--font-size-1);
+    text-align: start;
+    text-decoration: none;
+    cursor: pointer;
+  }
+  .comment__prompt:hover {
+    color: var(--ink);
+  }
+
+  /* The content column: takes the track a list item's linked body would. */
+  .comment__content {
+    flex: 1;
+    display: grid;
+    gap: calc(var(--u-pad) / 4);
+    min-inline-size: 0; /* let long rich text wrap instead of overflowing */
+  }
+
+  .comment__byline {
+    margin: 0;
+    font-size: var(--font-size-0);
+  }
+
+  /* Editor rows (composer + inline edit): editor above compact actions. */
+  .comment__form {
+    display: grid;
+    gap: calc(var(--u-pad) / 2);
+  }
+
+  /* Reserve the action zone even when it holds nothing (composer, edit
+     mode) so the content column is the same width on every row. */
+  .comment__actions {
+    min-inline-size: var(--size-7);
+    display: flex;
+    justify-content: flex-end;
+  }
+}

@@ -53,6 +53,16 @@ class PostsControllerTest < ActionDispatch::IntegrationTest
     assert_select ".canvas__head button[form=composer]", count: 3
   end
 
+  test "composer autosaves: new posts share one draft slot, edits key to the record" do
+    get new_post_path
+    assert_select "form#composer[data-controller=autosave][data-autosave-key-value=?]", "posts/new"
+
+    get edit_post_path(records(:kickoff))
+    assert_select "form#composer[data-autosave-key-value=?]", "Record/#{records(:kickoff).id}/edit"
+    # The revision guard is the record's current version id.
+    assert_select "form#composer[data-autosave-revision-value=?]", posts(:kickoff).id.to_s
+  end
+
   test "create as draft wraps the post in a record" do
     assert_difference [ "Post.count", "Record.count" ], 1 do
       post posts_path, params: { post: { title: "Hello spine", content: "<p>Hi</p>" } }

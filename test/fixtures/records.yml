@@ -5,3 +5,8 @@ kickoff:
 typography:
   recordable: typography (Post)
   creator: alice
+
+kickoff_comment:
+  recordable: kickoff_comment (Comment)
+  creator: alice
+  parent: kickoff
