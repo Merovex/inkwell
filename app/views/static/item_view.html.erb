@@ -3,7 +3,7 @@
 <%# The title is editable: click it, or use the standard context menu's Rename. %>
 <%# Both live inside this editable controller's scope (no persistence — stub). %>
 <div data-controller="editable">
-  <%= render "shared/canvas_head", crumbs: [["Alcovo", root_path], ["Message Board", list_view_path], ["Kickoff notes", nil]] do %>
+  <%= render "shared/canvas_head", crumbs: [["Message Board", list_view_path], ["Kickoff notes", nil]] do %>
     <button type="button" class="menu__item" role="menuitem" data-action="editable#edit" popovertarget="canvas-menu" popovertargetaction="hide">Rename</button>
     <button type="button" class="menu__item" role="menuitem">Duplicate</button>
     <hr class="menu__separator">

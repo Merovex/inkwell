@@ -29,6 +29,8 @@ for canonical naming.
 | [0003](decisions/0003-collapse-wiki-into-docs.md) | Collapse documentation into a single docs/ folder | accepted | 2026-07-01 |
 | [0004](decisions/0004-top-bar-app-shell.md) | Top-bar app shell — profile & notifications top-right | accepted | 2026-07-02 |
 | [0005](decisions/0005-mobile-hotwire-native-pwa-dev.md) | Mobile — Hotwire Native target, PWA in development | accepted | 2026-07-02 |
+| [0006](decisions/0006-record-recordable-generic-spine.md) | Record/Recordable — generic, tenant-agnostic content spine | accepted | 2026-07-03 |
+| [0007](decisions/0007-versioned-recordables.md) | Versioned recordables — event-tagged immutable versions | accepted | 2026-07-03 |
 
 ## Concepts
 

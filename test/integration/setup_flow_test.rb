@@ -12,13 +12,13 @@ class SetupFlowTest < ActionDispatch::IntegrationTest
   end
 
   test "on a fresh install, the sign-in screen sends you to setup" do
-    User.delete_all
+    simulate_fresh_install
     get new_session_path
     assert_redirected_to new_setup_path
   end
 
   test "the first visitor sets up the install and becomes domain admin" do
-    User.delete_all
+    simulate_fresh_install
 
     get new_setup_path
     assert_response :success
@@ -35,11 +35,19 @@ class SetupFlowTest < ActionDispatch::IntegrationTest
   end
 
   test "setup rejects an invalid email without creating a user" do
-    User.delete_all
+    simulate_fresh_install
 
     assert_no_difference "User.count" do
       post setup_path, params: { setup: { email_address: "not-an-email" } }
     end
     assert_response :unprocessable_entity
   end
+
+  private
+    # Simulate a fresh install: no content (records reference their creators),
+    # then no users.
+    def simulate_fresh_install
+      Record.destroy_all
+      User.delete_all
+    end
 end

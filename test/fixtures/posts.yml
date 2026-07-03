@@ -1,0 +1,16 @@
+kickoff:
+  record: kickoff
+  creator: alice
+  body: kickoff_body
+  event: created
+  title: Kickoff notes for the winter issue
+  status: published
+  published_at: <%= 3.days.ago %>
+
+typography:
+  record: typography
+  creator: alice
+  body: typography_body
+  event: created
+  title: Notes on typography
+  status: drafted

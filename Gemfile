@@ -70,3 +70,7 @@ group :test do
 end
 
 gem "inline_svg", "~> 1.10"
+
+gem "lexxy", "~> 0.9.22"
+
+gem "diff-lcs", "~> 2.0"

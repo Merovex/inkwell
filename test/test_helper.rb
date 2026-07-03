@@ -2,6 +2,15 @@ ENV["RAILS_ENV"] ||= "test"
 require_relative "../config/environment"
 require "rails/test_help"
 
+module ActionDispatch
+  class IntegrationTest
+    # Sign in by minting and redeeming a magic-link code (the real flow).
+    def sign_in_as(user)
+      get verify_session_path(code: user.sign_in_codes.create!.plaintext)
+    end
+  end
+end
+
 module ActiveSupport
   class TestCase
     # Run tests in parallel with specified workers

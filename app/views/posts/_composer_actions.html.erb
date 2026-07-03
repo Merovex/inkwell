@@ -1,0 +1,22 @@
+<%# locals: (post:) %>
+<%# The composer's canvas-head actions, state-aware: %>
+<%#   published — Update + Never mind (no publish controls; it's already live) %>
+<%#   scheduled — reschedule clock + "Post on ..." + Never mind + Save %>
+<%#   draft/new — clock, Save draft, Publish %>
+<% if post.persisted? && post.published? %>
+  <%= link_to "Never mind", post_path(post.record), class: "button" %>
+  <%= button_tag "Update", form: "composer", class: "button button--primary" %>
+<% elsif post.persisted? && post.scheduled? %>
+  <%= render "shared/scheduler", form: "composer", post: post %>
+  <span class="u-text-muted">
+    Post on <time datetime="<%= post.published_at.iso8601 %>" data-controller="local-time"
+                  data-local-time-datetime-value="<%= post.published_at.iso8601 %>"
+                  data-local-time-weekday-value="true"><%= post.published_at.strftime("%a, %b %-d at %H:%M") %></time>
+  </span>
+  <%= link_to "Never mind", post_path(post.record), class: "button" %>
+  <%= button_tag "Save", form: "composer", class: "button button--primary" %>
+<% else %>
+  <%= render "shared/scheduler", form: "composer" %>
+  <%= button_tag "Save draft", form: "composer", class: "button" %>
+  <%= button_tag "Publish", form: "composer", name: "publish", value: "1", class: "button button--primary" %>
+<% end %>

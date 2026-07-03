@@ -1,0 +1,7 @@
+<% content_for :title, "#{@post.title} — Alcovo" %>
+
+<%= render "shared/canvas_head", crumbs: [["Posts", posts_path], [@post.title, nil]], menu: false do %>
+  <%= render "composer_actions", post: @post %>
+<% end %>
+
+<%= render "form", post: @post, url: post_path(@record) %>

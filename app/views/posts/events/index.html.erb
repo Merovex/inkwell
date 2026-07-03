@@ -1,0 +1,30 @@
+<% content_for :title, "Change Log: #{@post.title} — Alcovo" %>
+
+<%= render "shared/canvas_head", crumbs: [["Posts", posts_path], [@post.title, post_path(@record)], ["Change Log", nil]] do %>
+  <%= link_to "Back to post", post_path(@record), class: "menu__item", role: "menuitem" %>
+<% end %>
+
+<header class="perma-header">
+  <h1 class="perma-header__title">Change Log</h1>
+</header>
+
+<ol class="history">
+  <% @versions.each_with_index do |version, i| %>
+    <% previous = i.positive? ? @versions[i - 1] : nil %>
+    <li class="history__entry">
+      <p class="history__stamp u-text-muted"><%= version_timestamp(version) %></p>
+      <p class="history__line">
+        <span class="u-text-strong"><%= version.creator.name.presence || version.creator.email_address %></span>
+        <%= version_event_line(version, previous) %>
+      </p>
+      <%# "See the changes" diffs this past version against the CURRENT one; %>
+      <%# offered whenever they differ (column compare — no rich text loads). %>
+      <% if version != @current && (version.body_id != @current.body_id || version.title != @current.title) %>
+        <%= link_to "See the changes", post_change_path(@record, version), class: "history__action" %>
+      <% end %>
+      <% if previous.nil? %>
+        <%= link_to "View this version", post_version_path(@record, version), class: "history__action" %>
+      <% end %>
+    </li>
+  <% end %>
+</ol>

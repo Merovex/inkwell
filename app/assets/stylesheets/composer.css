@@ -1,0 +1,43 @@
+/*
+ * Composer — the borderless write/edit surface for a recordable (posts for
+ * now): big bare title input + frameless Lexxy editor whose toolbar runs the
+ * full width under a hairline.
+ *
+ * Structure (BEM): form.composer > .composer__title + lexxy-editor
+ */
+@layer components {
+  .composer {
+    display: grid;
+    gap: var(--u-pad);
+  }
+
+  /* Title: H1-scale, no chrome; the caret is the focus indicator. */
+  .composer__title {
+    background: none;
+    border: none;
+    color: var(--ink);
+    font-size: var(--font-size-6);
+    font-weight: var(--font-weight-8);
+    inline-size: 100%;
+    line-height: var(--font-lineheight-1);
+    outline: none;
+    padding: 0 var(--u-pad);
+  }
+
+  .composer__title::placeholder { color: var(--ink-muted); }
+
+  /* Editor: no frame; toolbar spans edge to edge with just the hairline. */
+  .composer lexxy-editor {
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    /* Keep the text off the edges now the border is gone; inline inset lines
+       the body up with the title above. */
+    --lexxy-editor-padding: var(--u-pad);
+  }
+
+  /* Optically align the first toolbar icon with the title/body text. */
+  .composer lexxy-toolbar {
+    padding-inline: calc(var(--u-pad) - 2px);
+  }
+}

@@ -1,0 +1,11 @@
+<%# locals: (post:, url:) %>
+<%= render "shared/error_summary", model: post %>
+
+<%# Borderless composer: no visible labels (accessible names via aria-label). %>
+<%# Submits from the canvas-head buttons (form: "composer"). %>
+<%= form_with model: post, url: url, id: "composer", class: "composer" do |f| %>
+  <%= f.text_field :title, class: "composer__title", placeholder: "Post title",
+        "aria-label": "Title", required: true, autofocus: true %>
+
+  <%= f.rich_textarea :content, placeholder: "Write away…", "aria-label": "Body" %>
+<% end %>

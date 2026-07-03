@@ -1,0 +1,39 @@
+<% content_for :title, "Posts — Alcovo" %>
+
+<%= render "shared/canvas_head", crumbs: [["Posts", nil]] %>
+
+<header class="perma-header">
+  <h1 class="perma-header__title">Posts</h1>
+  <div class="perma-header__content">
+    <nav class="perma-header__toolbar" aria-label="Actions">
+      <%= link_to new_post_path, class: "button button--primary button--small" do %>
+        <%= inline_svg_tag "lucide/plus.svg", class: "lucide", size: "16px" %> New post
+      <% end %>
+    </nav>
+  </div>
+</header>
+
+<% if (@drafts_count + @scheduled_count).positive? %>
+  <p class="u-margin-block-end"><%= link_to unpublished_posts_label(@drafts_count, @scheduled_count), drafts_path %></p>
+<% end %>
+
+<% if @posts.any? %>
+  <ul class="list">
+    <% @posts.each do |post| %>
+      <%= render "shared/list_item",
+            href: post_path(post.record),
+            title: post.title,
+            author: post.record.creator.name.presence || post.record.creator.email_address,
+            date: l(post.published_at.to_date, format: :short),
+            excerpt: post.content.to_plain_text.to_s.truncate(140),
+            pinned: post.pinned_at.present? %>
+    <% end %>
+  </ul>
+<% else %>
+  <div class="empty">
+    <span class="empty__icon"><%= inline_svg_tag "lucide/inbox.svg", class: "lucide", size: "40px" %></span>
+    <p class="empty__title">No posts yet</p>
+    <p class="empty__text">Write the first post and it will show up here.</p>
+    <div class="empty__actions"><%= link_to "New post", new_post_path, class: "button button--primary" %></div>
+  </div>
+<% end %>

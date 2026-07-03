@@ -34,10 +34,49 @@
     margin-block-end: calc(var(--u-pad) * 2);
     padding-block: 0;
     padding-inline: 2.5rem 0;     /* breadcrumb aligns with content; toggle flush right */
+    /* ≈ the ⋯ icon-button height, so heads without the menu keep the standard strip size */
+    min-block-size: calc(var(--u-pad) * 2.5);
     background: var(--canvas);    /* opaque so scrolling content doesn't show through */
     border-block-end: var(--border-size-1) solid var(--line);
     border-start-start-radius: var(--radius-2); /* match the canvas top corners */
     border-start-end-radius: var(--radius-2);
   }
+
+  /* Right-side group on menu pages: keeps Edit snug against the ... trigger
+     (the head is space-between, so they must share one flex child). Half a
+     pad of air from the canvas edge; the popover compensates to stay flush
+     (see .menu--context). */
+  .canvas__head-actions {
+    display: flex;
+    align-items: center;
+    gap: calc(var(--u-pad) / 4);
+    padding-inline-end: calc(var(--u-pad) / 2);
+  }
+
+  /* the ... trigger matches the other head buttons: 32px, square */
+  .canvas__head-actions .button--icon {
+    block-size: calc(var(--u-pad) * 2);
+    inline-size: calc(var(--u-pad) * 2);
+    padding: 0;
+  }
+
+  /* Action buttons in the head (menu: false clusters, and the standalone Edit
+     link beside the ... menu): shorter than the standard button so about half a
+     pad of air sits above/below them inside the standard-height strip, which
+     stays exactly as tall as on menu pages. */
+  .canvas__head .u-cluster { padding-inline-end: calc(var(--u-pad) / 2); }
+
+  .canvas__head .u-cluster .button,
+  .canvas__head .canvas__head-action {
+    /* 32px in the 40px strip — about a quarter-pad of air above/below */
+    block-size: calc(var(--u-pad) * 2);
+    padding-block: 0;             /* inline-flex centers the label vertically */
+    padding-inline: calc(var(--u-pad) / 1.5);
+    font-size: var(--font-size-0);
+  }
+
+  /* icon buttons (e.g. the scheduler clock) square up via aspect-ratio; the
+     label padding above would crush their content box and shrink the icon */
+  .canvas__head .u-cluster .button--icon { padding-inline: 0; }
 
 }

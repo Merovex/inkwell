@@ -6,3 +6,6 @@ import "controllers"
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("/service-worker").catch(() => {})
 }
+
+// Rich text editor for Action Text bodies (replaces Trix; speaks the same protocol).
+import "lexxy"

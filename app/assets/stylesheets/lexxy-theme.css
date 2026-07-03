@@ -1,0 +1,53 @@
+/*
+ * Lexxy → Alcovo theme bridge.
+ *
+ * Lexxy (editor AND rendered .lexxy-content) paints exclusively from --lexxy-*
+ * custom properties, defined light-only on :root in the gem's
+ * lexxy-variables.css. Remapping them onto our semantic tokens themes both
+ * surfaces in both modes: every token referenced here flips with
+ * [data-theme="dark"] (or the OS preference) on the same <html> element, so a
+ * single mapping tracks the theme — same substitution rule 01-tokens.css
+ * documents for --site-bg/--tint.
+ *
+ * Cascade note: the gem stylesheet is linked BEFORE :app in the layout so
+ * these equal-specificity :root definitions win.
+ *
+ * Not remapped: --highlight-* (author-picked text-highlight colors; mid-tone,
+ * acceptable in both modes) and --lexxy-color-red/green/blue/purple
+ * (fixed mid-lightness functional colors).
+ */
+:root {
+  /* neutrals */
+  --lexxy-color-ink: var(--ink);
+  --lexxy-color-ink-medium: var(--ink-muted);
+  --lexxy-color-ink-light: var(--ink-muted);
+  --lexxy-color-ink-lighter: var(--line);
+  --lexxy-color-ink-lightest: var(--fill-subtle);
+  --lexxy-color-ink-inverted: var(--canvas);  /* text on ink-colored surfaces (tooltips) */
+
+  --lexxy-color-canvas: var(--canvas);
+  --lexxy-color-text: var(--ink);
+  --lexxy-color-text-subtle: var(--ink-muted);
+  --lexxy-color-link: var(--link);
+
+  /* brand accents: selection, focus ring (chains from accent-dark), active states */
+  --lexxy-color-accent-dark: var(--link);     /* AAA teal per mode */
+  --lexxy-color-accent-medium: var(--accent);
+  --lexxy-color-accent-light: color-mix(in oklch, var(--accent) 25%, var(--accent-soft));
+  --lexxy-color-accent-lightest: var(--accent-soft);
+
+  /* code blocks */
+  --lexxy-color-code-bg: var(--fill-subtle);
+  --lexxy-color-code-token-att: var(--code-att);
+  --lexxy-color-code-token-comment: var(--code-comment);
+  --lexxy-color-code-token-function: var(--code-function);
+  --lexxy-color-code-token-operator: var(--code-operator);
+  --lexxy-color-code-token-property: var(--code-property);
+  --lexxy-color-code-token-punctuation: var(--code-punctuation);
+  --lexxy-color-code-token-selector: var(--code-selector);
+  --lexxy-color-code-token-variable: var(--code-variable);
+
+  /* typography + shape */
+  --lexxy-font-base: var(--font-body);
+  --lexxy-radius: var(--radius-ui);
+}

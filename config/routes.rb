@@ -19,6 +19,27 @@ Rails.application.routes.draw do
   # Open self-registration; only when the registration policy is :open.
   resource :signup, only: %i[new create]
 
+  # Unpublished work: drafts + scheduled posts. Declared before resources :posts
+  # so /posts/drafts isn't swallowed by /posts/:id. DELETE destroys outright —
+  # unpublished work is discardable, no trash ceremony (:id = Record id).
+  scope module: :posts do
+    resources :drafts, only: %i[index destroy], path: "posts/drafts"
+  end
+
+  # Blog posts — the first recordable on the Record/Recordable spine.
+  # :id here is always the Record id (the stable identity), never a version id.
+  resources :posts do
+    scope module: :posts do
+      # State transitions as resources (Fizzy style): POST does, DELETE undoes.
+      resource :publish, only: %i[create destroy]
+      resource :pin, only: %i[create destroy]
+      # Version history: the feed, a specific tracked change, a frozen version.
+      resources :events, only: :index
+      resources :changes, only: :show
+      resources :versions, only: :show
+    end
+  end
+
   # Living styleguide for building/eyeballing standard elements + components.
   get "theme" => "static#theme", as: :theme
   # Composition demos: a list-view (perma-header + list) and an item-view (editable header).

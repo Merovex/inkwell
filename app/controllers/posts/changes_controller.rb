@@ -1,0 +1,11 @@
+# The changes between a past version and the CURRENT one: GET
+# /posts/:post_id/changes/:id where :id is the past version. Renders what has
+# changed since that version, tracked-changes style.
+class Posts::ChangesController < ApplicationController
+  include PostScoped
+
+  def show
+    @version = @record.versions.find(params[:id])
+    @current = @record.recordable
+  end
+end

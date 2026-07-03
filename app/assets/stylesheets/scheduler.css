@@ -1,0 +1,48 @@
+/*
+ * Scheduler — the "When would you like to post this?" popover panel, anchored
+ * to the clock button in the composer head (native popover protocol; rides on
+ * .menu for the popover shell).
+ *
+ * Structure (BEM): .scheduler > .scheduler__heading + .scheduler__selects
+ *   (.field__select, "at", .field__select) + submit + .scheduler__note
+ */
+@layer components {
+  .scheduler {
+    /* no-JS fallback placement (anchored-popover repositions under the clock) */
+    inset: 4rem 1.5rem auto auto;
+    inline-size: 20rem;
+    padding: var(--u-pad);
+  }
+
+  .scheduler__heading {
+    font-weight: var(--font-weight-6);
+    margin-block: 0 var(--u-pad);
+  }
+
+  .scheduler__selects {
+    display: flex;
+    align-items: center;
+    gap: calc(var(--u-pad) / 2);
+    margin-block-end: var(--u-pad);
+  }
+
+  .scheduler__selects .field__select { flex: 1; }
+
+  .scheduler__secondary { margin-block-start: calc(var(--u-pad) / 2); }
+
+  .scheduler__note {
+    font-size: var(--font-size-0);
+    margin-block: var(--u-pad) 0;
+  }
+
+  /* an inline, link-styled submit (the "unschedule and save" footnote action) */
+  .scheduler__link {
+    background: none;
+    border: none;
+    padding: 0;
+    font: inherit;
+    color: var(--link);
+    text-decoration: underline;
+    cursor: pointer;
+  }
+}

@@ -45,5 +45,9 @@ export default class extends Controller {
     // clientWidth excludes the scrollbar; window.innerWidth would over-offset by it
     style.insetBlockStart = `${top}px`
     style.insetInlineEnd = `${document.documentElement.clientWidth - rect.right}px`
+    // neutralize the UA's [popover] inset:0 — otherwise left:0 wins the
+    // over-constrained fixed box and the panel pins to the screen edge
+    style.insetInlineStart = "auto"
+    style.insetBlockEnd = "auto"
   }
 }

@@ -1,0 +1,23 @@
+<% content_for :title, "Changes: #{@post.title} — Alcovo" %>
+
+<%= render "shared/canvas_head", crumbs: [["Posts", posts_path], [@post.title, post_path(@record)], ["Change Log", post_events_path(@record)], ["Change", nil]] do %>
+  <%= link_to "Change Log", post_events_path(@record), class: "menu__item", role: "menuitem" %>
+  <%= link_to "Back to post", post_path(@record), class: "menu__item", role: "menuitem" %>
+<% end %>
+
+<%# Old version (deletions) against the current version (insertions). %>
+<header class="perma-header">
+  <% if @version.title == @current.title %>
+    <h1 class="perma-header__title"><%= @current.title %></h1>
+  <% else %>
+    <h1 class="perma-header__title"><del><%= @version.title %></del> <ins><%= @current.title %></ins></h1>
+  <% end %>
+  <p class="perma-header__content u-text-muted">
+    Changes since the version from <%= version_timestamp(@version) %>
+    by <span class="u-text-strong"><%= @version.creator.name.presence || @version.creator.email_address %></span>
+  </p>
+</header>
+
+<article class="u-flow lexxy-content history__diff">
+  <%= HtmlDiff.between(sanitize(@version.content.to_s), sanitize(@current.content.to_s)) %>
+</article>

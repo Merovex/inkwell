@@ -1,11 +1,18 @@
-<%# locals: (crumbs: [], menu_id: "canvas-menu") %>
-<%# Standard canvas head: breadcrumb (left) + context menu (right). crumbs is an %>
-<%# array of [label, href]; a nil href marks the current page. Menu contents are %>
-<%# context-specific — pass them as a block (yielded into the popover). %>
+<%# locals: (crumbs: [], menu_id: "canvas-menu", menu: true, edit_href: nil) %>
+<%# Standard canvas head: breadcrumb (left) + contextual actions (right). %>
+<%# crumbs is an array of [label, href]; a nil href marks the current page. %>
+<%# With menu: true (default) the block yields menu items into the ... popover; %>
+<%# with menu: false the block yields buttons rendered directly (e.g. Save/Publish). %>
+<%# edit_href puts an Edit link beside the menu — the most common action, %>
+<%# pulled out of the popover (Basecamp-style). %>
 <div class="canvas__head">
   <nav class="breadcrumb" aria-label="Breadcrumb">
-    <% crumbs.each_with_index do |(label, href), i| %>
-      <% if i.positive? %><span class="breadcrumb__sep" aria-hidden="true">/</span><% end %>
+    <%# Every trail starts at home — a house, not the app name. %>
+    <%= link_to root_path, class: "breadcrumb__item breadcrumb__item--home", "aria-label": "Home" do %>
+      <%= inline_svg_tag "lucide/house.svg", class: "lucide", size: "16px" %>
+    <% end %>
+    <% crumbs.each do |label, href| %>
+      <span class="breadcrumb__sep" aria-hidden="true">/</span>
       <% if href %>
         <%= link_to label, href, class: "breadcrumb__item" %>
       <% else %>
@@ -14,10 +21,28 @@
     <% end %>
   </nav>
 
-  <button type="button" class="button button--icon button--ghost" popovertarget="<%= menu_id %>" aria-haspopup="menu" aria-label="Actions">
-    <%= inline_svg_tag "lucide/ellipsis-vertical.svg", class: "lucide", size: "20px" %>
-  </button>
-  <div class="menu menu--context" popover id="<%= menu_id %>" role="menu" data-controller="anchored-popover" data-anchored-popover-placement-value="top">
-    <%= yield %>
-  </div>
+  <%# No block content = breadcrumb only (list views — the context menu is for individual records). %>
+  <% actions = block_given? ? capture { yield } : nil %>
+  <% if actions.present? %>
+    <% if menu %>
+      <div class="canvas__head-actions">
+        <% if edit_href %>
+          <%= link_to "Edit", edit_href, class: "button button--ghost canvas__head-action" %>
+        <% end %>
+        <button type="button" class="button button--icon button--ghost" popovertarget="<%= menu_id %>" aria-haspopup="menu" aria-label="Actions">
+          <%= inline_svg_tag "lucide/ellipsis-vertical.svg", class: "lucide", size: "20px" %>
+        </button>
+        <div class="menu menu--context" popover id="<%= menu_id %>" role="menu" data-controller="anchored-popover" data-anchored-popover-placement-value="top">
+          <button type="button" class="button button--icon button--ghost menu__close" popovertarget="<%= menu_id %>" popovertargetaction="hide" aria-label="Close menu">
+            <%= inline_svg_tag "lucide/x.svg", class: "lucide", size: "20px" %>
+          </button>
+          <%= actions %>
+        </div>
+      </div>
+    <% else %>
+      <div class="u-cluster">
+        <%= actions %>
+      </div>
+    <% end %>
+  <% end %>
 </div>

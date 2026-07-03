@@ -32,6 +32,17 @@
   --ink-muted: oklch(0.55 0.01 260);        /* secondary text */
   --line: oklch(0.92 0.004 260);            /* borders / hairlines */
   --scrim: oklch(0% 0 0 / 0.4);             /* overlay behind modals & bottom sheets */
+  --fill-subtle: oklch(96% 0.004 260);      /* subtle neutral fill: code bg, quiet hovers */
+
+  /* --- code syntax highlighting (GitHub light palette) --- */
+  --code-att:         #d73a49;
+  --code-comment:     #6a737d;
+  --code-function:    #6f42c1;
+  --code-operator:    #d73a49;
+  --code-property:    #005cc5;
+  --code-punctuation: #24292e;
+  --code-selector:    #22863a;
+  --code-variable:    #e36209;
 
   /* --- brand: Tailwind v4 teal, chroma scaled ×0.85 (−15% desaturated) --- */
   --brand-deep:   oklch(27.7% 0.039 192.524); /* teal-950 −15%C — deep bg, sidebars, strong text */
@@ -92,6 +103,17 @@
   --ink: oklch(0.93 0.006 260);
   --ink-muted: oklch(0.68 0.01 260);
   --line: oklch(0.34 0.01 260);
+  --fill-subtle: oklch(0.33 0.01 260);      /* a step lighter than the dark canvas */
+
+  /* code syntax (GitHub dark palette) */
+  --code-att:         #ff7b72;
+  --code-comment:     #8b949e;
+  --code-function:    #d2a8ff;
+  --code-operator:    #ff7b72;
+  --code-property:    #79c0ff;
+  --code-punctuation: #c9d1d9;
+  --code-selector:    #7ee787;
+  --code-variable:    #ffa657;
   --accent: var(--brand);                   /* same vibrant teal pops on dark */
   --accent-ink: var(--brand-deep);
   --accent-soft: oklch(38.6% 0.054 188.416); /* teal-900 −15%C */
@@ -109,6 +131,17 @@
     --ink: oklch(0.93 0.006 260);
     --ink-muted: oklch(0.68 0.01 260);
     --line: oklch(0.34 0.01 260);
+    --fill-subtle: oklch(0.33 0.01 260);
+
+    /* code syntax (GitHub dark palette) */
+    --code-att:         #ff7b72;
+    --code-comment:     #8b949e;
+    --code-function:    #d2a8ff;
+    --code-operator:    #ff7b72;
+    --code-property:    #79c0ff;
+    --code-punctuation: #c9d1d9;
+    --code-selector:    #7ee787;
+    --code-variable:    #ffa657;
     --accent: var(--brand);
     --accent-ink: var(--brand-deep);
     --accent-soft: oklch(38.6% 0.054 188.416); /* teal-900 −15%C */
