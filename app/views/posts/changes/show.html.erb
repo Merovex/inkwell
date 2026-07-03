@@ -14,7 +14,7 @@
   <% end %>
   <p class="perma-header__content u-text-muted">
     Changes since the version from <%= version_timestamp(@version) %>
-    by <span class="u-text-strong"><%= @version.creator.name.presence || @version.creator.email_address %></span>
+    by <span class="u-text-strong"><%= @version.creator.display_name %></span>
   </p>
 </header>
 

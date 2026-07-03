@@ -30,7 +30,7 @@
                     action: "blur->editable#save keydown.enter->editable#save keydown.esc->editable#cancel" } %>
     <% end %>
     <p class="perma-header__content u-text-muted">
-      <span class="u-text-strong"><%= @record.creator.name.presence || @record.creator.email_address %></span>
+      <span class="u-text-strong"><%= @record.creator.display_name %></span>
       <% if @post.published? %>
         · <%= l @post.published_at.to_date, format: :long %>
       <% elsif @post.scheduled? %>

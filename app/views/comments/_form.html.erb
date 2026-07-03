@@ -4,15 +4,14 @@
 <%# comment occupies. Submits _top: the saved comment lands outside the %>
 <%# prompt frame, so the whole page re-renders (and the prompt collapses). %>
 <div class="list__item comment comment--composer">
-  <span class="avatar list__avatar" aria-hidden="true"><%= avatar_initials(Current.user) %></span>
+  <span class="avatar list__avatar" aria-hidden="true"><%= avatar_content(Current.user) %></span>
 
   <%# Autosaved to localStorage, keyed to the record being commented on — a %>
   <%# draft survives "Never mind" and reappears when the composer reopens. %>
   <%= form_with model: Comment.new, url: post_comments_path(record), class: "comment__content comment__form",
         data: { turbo_frame: "_top",
                 controller: "autosave",
-                autosave_key_value: "Record/#{record.id}/comment",
-                action: "input->autosave#write lexxy:change->autosave#write turbo:submit-end->autosave#submitted" } do |f| %>
+                autosave_key_value: "Record/#{record.id}/comment" } do |f| %>
     <%= f.rich_textarea :content, placeholder: "Add a comment…", "aria-label": "Comment", autofocus: true %>
     <div class="u-cluster">
       <%= f.submit "Add this comment", class: "button button--primary" %>

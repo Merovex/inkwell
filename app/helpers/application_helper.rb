@@ -3,10 +3,18 @@ module ApplicationHelper
   # app/assets/images (e.g. app/assets/images/lucide/*.svg). Never hand-write
   # icon path data here.
 
-  # Up-to-two-letter monogram for the avatar. Uses the user's name when set,
-  # otherwise the first letters of their email address.
+  # What goes inside an .avatar: the uploaded picture when there is one,
+  # otherwise the monogram.
+  def avatar_content(user)
+    if user.avatar.attached?
+      image_tag user.avatar.variant(:thumb), alt: user.display_name, class: "avatar__img"
+    else
+      avatar_initials(user)
+    end
+  end
+
+  # Up-to-two-letter monogram for the avatar.
   def avatar_initials(user)
-    source = user.name.presence || user.email_address
-    source.scan(/[[:alpha:]]+/).first(2).map { |w| w[0] }.join.upcase
+    user.display_name.scan(/[[:alpha:]]+/).first(2).map { |w| w[0] }.join.upcase
   end
 end

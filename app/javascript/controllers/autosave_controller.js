@@ -17,19 +17,25 @@ const DEBOUNCE_MS = 300
 // Edit forms also pass data-autosave-revision-value (the record's current
 // version id): a draft taken against a version that has since changed is
 // stale and gets dropped rather than clobbering newer content.
-//
-// Route the events in data-action:
-//   input->autosave#write lexxy:change->autosave#write
-//   turbo:submit-end->autosave#submitted
 export default class extends Controller {
   static values = { key: String, revision: String }
 
   connect() {
+    this.write = this.write.bind(this)
+    this.submitted = this.submitted.bind(this)
+    this.element.addEventListener("input", this.write)
+    this.element.addEventListener("lexxy:change", this.write)
+    this.element.addEventListener("turbo:submit-end", this.submitted)
+
     this.prune()
     this.restore()
   }
 
   disconnect() {
+    this.element.removeEventListener("input", this.write)
+    this.element.removeEventListener("lexxy:change", this.write)
+    this.element.removeEventListener("turbo:submit-end", this.submitted)
+
     // A pending debounce means unsnapshotted keystrokes — flush them, unless
     // the form just submitted successfully and the draft is already gone.
     if (this.timer) this.persist()

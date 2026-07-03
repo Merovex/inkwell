@@ -1,6 +1,6 @@
 # Shallow member actions for a comment. Edit and update swap within the
 # comment's turbo frame on the post page; comments are never mutable, so
-# every update lands as a tracked version (Record#save_edit → revise).
+# every update lands as a tracked version.
 class CommentsController < ApplicationController
   include CommentScoped
 
@@ -8,7 +8,7 @@ class CommentsController < ApplicationController
   end
 
   def update
-    @comment = @record.save_edit(**comment_params.to_h.symbolize_keys)
+    @comment = @record.revise(event: :updated, **comment_params.to_h.symbolize_keys)
 
     if @comment.errors.none?
       redirect_to post_path(@parent, anchor: "comment_#{@record.id}")

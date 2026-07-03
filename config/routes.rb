@@ -47,6 +47,13 @@ Rails.application.routes.draw do
   # unique (:id is always the Record id, same as everywhere else).
   resources :comments, only: %i[edit update destroy]
 
+  # Personal settings — always Current.user, no id in the URL. The avatar is
+  # its own resource so picking/dropping a picture can auto-submit.
+  namespace :user do
+    resource :settings, only: %i[show update]
+    resource :avatar, only: %i[update destroy]
+  end
+
   # Living styleguide for building/eyeballing standard elements + components.
   get "theme" => "static#theme", as: :theme
   # Composition demos: a list-view (perma-header + list) and an item-view (editable header).

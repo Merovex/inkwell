@@ -30,5 +30,8 @@ module Alcovo
     #                  flow, which runs only when no users exist — see SetupsController.)
     #   :open        — anyone may self-register via the Signup flow.
     config.x.authentication.registration_policy = :invite_only
+
+    # ImageMagick is what's installed here; the Rails default (:vips) needs libvips.
+    config.active_storage.variant_processor = :mini_magick
   end
 end

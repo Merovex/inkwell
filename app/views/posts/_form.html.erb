@@ -8,8 +8,7 @@
 <%= form_with model: post, url: url, id: "composer", class: "composer",
       data: { controller: "autosave",
               autosave_key_value: (post.record_id ? "Record/#{post.record_id}/edit" : "posts/new"),
-              autosave_revision_value: post.record&.recordable_id,
-              action: "input->autosave#write lexxy:change->autosave#write turbo:submit-end->autosave#submitted" } do |f| %>
+              autosave_revision_value: post.record&.recordable_id } do |f| %>
   <%= f.text_field :title, class: "composer__title", placeholder: "Post title",
         "aria-label": "Title", required: true, autofocus: true %>
 

@@ -1,0 +1,47 @@
+/*
+ * Settings — personal settings page (display name + avatar picture).
+ * The avatar well is a drop target: the whole form highlights while a file
+ * is dragged over it; clicking the avatar (a <label>) opens the picker.
+ *
+ * Structure (BEM): .settings > .settings__section >
+ *   form.settings__avatar-well > label.settings__avatar (.avatar)
+ */
+@layer components {
+  .settings {
+    display: grid;
+    gap: calc(var(--u-pad) * 2);
+    margin-block-start: var(--u-pad);
+  }
+
+  .settings__section {
+    display: grid;
+    gap: var(--u-pad);
+    justify-items: start;
+  }
+
+  /* The picture section centers as a unit: avatar well, hint, remove button. */
+  .settings__section--picture {
+    justify-items: center;
+  }
+
+  .settings__avatar-well {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: calc(var(--u-pad) / 2);
+    padding: var(--u-pad);
+    border: var(--border-size-1) dashed var(--line);
+    border-radius: var(--radius-card);
+    text-align: center;
+  }
+
+  .settings__avatar-well--dragover {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+  }
+
+  .settings__avatar {
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+}

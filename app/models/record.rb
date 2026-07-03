@@ -75,7 +75,8 @@ class Record < ApplicationRecord
   # (record ids are creation-ordered; version ids aren't, once edits land).
   def comments
     Comment.where(id: children.active.comments.select(:recordable_id))
-      .includes(:creator, :record, :rich_text_content).order(:record_id)
+      .includes(:record, :rich_text_content, creator: { avatar_attachment: :blob })
+      .order(:record_id)
   end
 
   def trashed? = trashed_at.present?

@@ -13,7 +13,7 @@
 
     <%= turbo_frame_tag "new_comment" do %>
       <div class="list__item comment">
-        <span class="avatar list__avatar" aria-hidden="true"><%= avatar_initials(Current.user) %></span>
+        <span class="avatar list__avatar" aria-hidden="true"><%= avatar_content(Current.user) %></span>
 
         <div class="comment__content">
           <%= link_to "Add your comment…", new_post_comment_path(record), class: "comment__prompt" %>

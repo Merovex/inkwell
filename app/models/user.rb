@@ -1,8 +1,19 @@
 class User < ApplicationRecord
   include Registration
 
+  AVATAR_CONTENT_TYPES = %w[ image/jpeg image/png image/avif image/webp ]
+  AVATAR_MAX_SIZE = 5.megabytes
+
   has_many :sessions, dependent: :destroy
   has_many :sign_in_codes, dependent: :destroy
+
+  # The uploaded picture behind the avatar; absent means the monogram
+  # (see ApplicationHelper#avatar_content).
+  has_one_attached :avatar do |attachable|
+    attachable.variant :thumb, resize_to_fill: [ 160, 160 ]
+  end
+
+  validate :acceptable_avatar
 
   # :member is the baseline; :domain_admin is granted to the first user ever (via
   # the Setup flow) and administers the whole install.
@@ -14,10 +25,28 @@ class User < ApplicationRecord
   # a duplicate to a user (setup can't dup, signup reuses), so no validation here.
   validates :email_address, presence: true, format: { with: URI::MailTo::EMAIL_REGEXP }
 
+  # What we call the user everywhere: their name, or their email until
+  # they've set one.
+  def display_name
+    name.presence || email_address
+  end
+
   # Generate a fresh single-use code and email its magic link. `purpose`
   # (:sign_in / :sign_up) tunes the email copy.
   def send_magic_link(purpose: :sign_in)
     code = sign_in_codes.create!
     SessionMailer.magic_link(self, code.plaintext, purpose:).deliver_later
   end
+
+  private
+    def acceptable_avatar
+      return unless avatar.attached?
+
+      unless avatar.blob.content_type.in?(AVATAR_CONTENT_TYPES)
+        errors.add(:avatar, "must be a JPG, PNG, AVIF, or WebP image")
+      end
+      if avatar.blob.byte_size > AVATAR_MAX_SIZE
+        errors.add(:avatar, "must be smaller than #{AVATAR_MAX_SIZE / 1.megabyte} MB")
+      end
+    end
 end

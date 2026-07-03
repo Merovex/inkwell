@@ -14,7 +14,7 @@
     <li class="history__entry">
       <p class="history__stamp u-text-muted"><%= version_timestamp(version) %></p>
       <p class="history__line">
-        <span class="u-text-strong"><%= version.creator.name.presence || version.creator.email_address %></span>
+        <span class="u-text-strong"><%= version.creator.display_name %></span>
         <%= version_event_line(version, previous) %>
       </p>
       <%# "See the changes" diffs this past version against the CURRENT one; %>

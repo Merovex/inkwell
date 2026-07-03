@@ -11,11 +11,8 @@ class Comment < ApplicationRecord
 
   validates :content, presence: true
 
-  # The current version of every live (untrashed) comment.
-  scope :current, -> { where(id: Record.active.comments.select(:recordable_id)) }
-
-  # Never mutable: the world sees a comment from its first save, so
-  # Record#save_edit always falls through to a new version.
+  # Never mutable: the world sees a comment from its first save, so every
+  # edit lands as a new version (see CommentsController#update).
   def mutable? = false
 
   # dup copies columns but not the Action Text association; carry the text

@@ -4,11 +4,11 @@
 <%# title. The frame id (comment_<record id>) doubles as the copy-link %>
 <%# anchor and the inline-edit swap target. %>
 <%= turbo_frame_tag "comment_#{comment.record_id}", class: "list__item comment" do %>
-  <span class="avatar list__avatar" aria-hidden="true"><%= avatar_initials(comment.creator) %></span>
+  <span class="avatar list__avatar" aria-hidden="true"><%= avatar_content(comment.creator) %></span>
 
   <div class="comment__content">
     <p class="comment__byline u-text-muted">
-      <span class="u-text-strong"><%= comment.creator.name.presence || comment.creator.email_address %></span>
+      <span class="u-text-strong"><%= comment.creator.display_name %></span>
       · <time datetime="<%= comment.record.created_at.iso8601 %>"><%= comment.record.created_at.strftime("%b %-d at %H:%M") %></time>
       <% if comment.event_updated? %>
         · Edited

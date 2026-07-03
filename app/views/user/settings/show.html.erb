@@ -1,0 +1,44 @@
+<% content_for :title, "Settings — Alcovo" %>
+
+<%= render "shared/canvas_head", crumbs: [["Settings", nil]] %>
+
+<header class="perma-header">
+  <h1 class="perma-header__title">Settings</h1>
+</header>
+
+<div class="settings u-center u-center-narrow">
+  <section class="settings__section settings__section--picture" aria-label="Picture">
+    <%# Click the avatar to pick a file, or drop one anywhere on the well; %>
+    <%# either way the form auto-submits (avatar-upload controller). Explicit %>
+    <%# multipart: form_with only infers it from builder-rendered file fields, %>
+    <%# and without it Turbo serializes urlencoded and drops the file. %>
+    <%= form_with url: user_avatar_path, method: :patch, multipart: true, class: "settings__avatar-well",
+          data: { controller: "avatar-upload",
+                  action: "dragover->avatar-upload#dragover dragleave->avatar-upload#dragleave drop->avatar-upload#drop" } do %>
+      <label class="avatar avatar--large settings__avatar" title="Change picture">
+        <%= avatar_content(Current.user) %>
+        <%= file_field_tag "user[avatar]", accept: User::AVATAR_CONTENT_TYPES.join(","), hidden: true,
+              "aria-label": "Upload picture",
+              data: { avatar_upload_target: "input", action: "change->avatar-upload#submit" } %>
+      </label>
+      <p class="u-text-muted">Click the avatar or drop an image on it.<br>JPG, PNG, AVIF, or WebP, up to <%= User::AVATAR_MAX_SIZE / 1.megabyte %> MB.</p>
+    <% end %>
+
+    <% if Current.user.avatar.attached? %>
+      <%= button_to "Remove picture and use initials", user_avatar_path, method: :delete, class: "button" %>
+    <% end %>
+  </section>
+
+  <section class="settings__section" aria-label="Display name">
+    <%= render "shared/error_summary", model: Current.user %>
+
+    <%= form_with model: Current.user, url: user_settings_path, method: :patch do |f| %>
+      <div class="field">
+        <%= f.text_field :name, class: "field__control", placeholder: "Display name",
+              "aria-label": "Display name" %>
+        <p class="field__hint u-text-muted">Shown on your posts and comments; leave blank to go by your email address.</p>
+      </div>
+      <%= f.submit "Save", class: "button button--primary" %>
+    <% end %>
+  </section>
+</div>

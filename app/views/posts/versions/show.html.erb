@@ -9,7 +9,7 @@
   <h1 class="perma-header__title"><%= @version.title %></h1>
   <p class="perma-header__content u-text-muted">
     Version from <%= version_timestamp(@version) %>
-    by <span class="u-text-strong"><%= @version.creator.name.presence || @version.creator.email_address %></span>
+    by <span class="u-text-strong"><%= @version.creator.display_name %></span>
   </p>
 </header>
 
