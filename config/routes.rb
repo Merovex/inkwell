@@ -47,6 +47,16 @@ Rails.application.routes.draw do
   # unique (:id is always the Record id, same as everywhere else).
   resources :comments, only: %i[edit update destroy]
 
+  # Boosts — tiny appreciations pinned to any record (:record_id is the
+  # Record id, so one route serves posts, comments, and future recordables).
+  # Nested create mirrors comments; destroy is shallow and only ever your own.
+  resources :records, only: [] do
+    scope module: :records do
+      resources :boosts, only: :create
+    end
+  end
+  resources :boosts, only: :destroy
+
   # Personal settings — always Current.user, no id in the URL. The avatar is
   # its own resource so picking/dropping a picture can auto-submit.
   namespace :user do

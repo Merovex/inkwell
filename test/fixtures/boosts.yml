@@ -1,0 +1,9 @@
+alice_kickoff:
+  record: kickoff
+  creator: alice
+  content: "🙌"
+
+bob_kickoff:
+  record: kickoff
+  creator: bob
+  content: "nice!"

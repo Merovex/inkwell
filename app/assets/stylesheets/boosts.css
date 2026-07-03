@@ -1,0 +1,108 @@
+/*
+ * Boosts — the strip of tiny appreciation badges under a record's content.
+ * Badges reuse .badge; a .boost adds the booster's mini avatar, and your own
+ * carries a circle-x to take it back. The "+ Boost" chip discloses a bordered
+ * field (input + smiley/check/x triggers inside the border); the smiley opens
+ * the emoji palette — a plain .menu (canvas background) floated above the
+ * trigger by anchored-popover's "above" placement.
+ *
+ * Structure: turbo-frame.boosts > span.badge.boost* +
+ *   details.boosts__composer (summary.boosts__prompt + form.boosts__field >
+ *   input.boosts__input + button.boosts__icon×3) +
+ *   .menu.boosts__palette[popover] > form.boost__form > button.boosts__emoji
+ */
+@layer components {
+  .boosts {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: calc(var(--u-pad) / 2);
+  }
+
+  /* button_to's wrapping form shouldn't disturb the flex flow. */
+  .boost__form { display: contents; }
+
+  .boost__avatar { --avatar-size: var(--size-4); }
+
+  .boost__remove {
+    display: inline-grid;
+    place-items: center;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: var(--ink-muted);
+    cursor: pointer;
+  }
+  .boost__remove:hover { color: var(--danger-ink); }
+
+  .boosts__composer { display: inline-flex; align-items: center; }
+
+  .boosts__prompt {
+    list-style: none;
+    color: var(--ink-muted);
+    background: transparent;
+    border: var(--border-size-1) dashed color-mix(in oklab, var(--ink) 30%, transparent);
+    cursor: pointer;
+    user-select: none;
+  }
+  .boosts__prompt::-webkit-details-marker { display: none; }
+  .boosts__prompt:hover { color: var(--ink); }
+
+  /* Open: the chip yields to the field. */
+  .boosts__composer[open] .boosts__prompt { display: none; }
+
+  /* One pill-shaped border around the input and its three triggers. */
+  .boosts__field {
+    display: inline-flex;
+    align-items: center;
+    gap: calc(var(--u-pad) / 4);
+    padding-block: calc(var(--u-pad) / 5);
+    padding-inline: calc(var(--u-pad) / 2);
+    border: var(--border-size-1) solid var(--line);
+    border-radius: var(--radius-round);
+    background: var(--canvas);
+  }
+  .boosts__field:focus-within { border-color: var(--accent); }
+
+  .boosts__input {
+    inline-size: 14ch;
+    border: none;
+    background: transparent;
+    color: var(--ink);
+    font-size: var(--font-size-0);
+  }
+  .boosts__input:focus { outline: none; } /* the field border carries focus */
+
+  .boosts__icon {
+    display: inline-grid;
+    place-items: center;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: var(--ink-muted);
+    cursor: pointer;
+  }
+  .boosts__icon:hover { color: var(--ink); }
+
+  /* The palette: a single emoji row on the plain menu surface, sized to its
+     content rather than the 12rem action-list the base menu assumes. */
+  .boosts__palette { min-inline-size: 0; }
+  .boosts__palette:popover-open {
+    display: flex;
+    flex-wrap: wrap;
+    gap: calc(var(--u-pad) / 4);
+    /* two tidy rows of six rather than one strip off the viewport edge */
+    max-inline-size: 15rem;
+  }
+
+  .boosts__emoji {
+    padding: calc(var(--u-pad) / 4);
+    border: none;
+    border-radius: var(--radius-1);
+    background: transparent;
+    font-size: var(--font-size-2);
+    line-height: 1;
+    cursor: pointer;
+  }
+  .boosts__emoji:hover { background: color-mix(in oklab, var(--ink) 8%, transparent); }
+}

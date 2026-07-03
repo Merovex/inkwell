@@ -1,0 +1,13 @@
+<%# locals: (boost:) %>
+<%# One boost badge: the booster's mini avatar + their words. Your own badge %>
+<%# carries a circle-x to take it back; anyone else's is inert. %>
+<span class="badge boost" title="<%= boost.creator.display_name %>">
+  <span class="avatar boost__avatar" aria-hidden="true"><%= avatar_content(boost.creator) %></span>
+  <%= boost.content %>
+  <% if boost.creator == Current.user %>
+    <%= button_to boost_path(boost), method: :delete, class: "boost__remove",
+          form: { class: "boost__form" }, title: "Remove your boost", aria: { label: "Remove your boost" } do %>
+      <%= inline_svg_tag "lucide/circle-x.svg", class: "lucide", size: "14px" %>
+    <% end %>
+  <% end %>
+</span>

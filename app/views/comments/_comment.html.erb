@@ -15,6 +15,7 @@
       <% end %>
     </p>
     <div class="comment__body u-flow"><%= comment.content %></div>
+    <%= render "boosts/boosts", record: comment.record %>
   </div>
 
   <div class="list__action comment__actions">

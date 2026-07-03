@@ -6,6 +6,8 @@ class User < ApplicationRecord
 
   has_many :sessions, dependent: :destroy
   has_many :sign_in_codes, dependent: :destroy
+  # Exists so "your own boost" authorization can be a scope (BoostsController).
+  has_many :boosts, foreign_key: :creator_id, inverse_of: :creator, dependent: :delete_all
 
   # The uploaded picture behind the avatar; absent means the monogram
   # (see ApplicationHelper#avatar_content).

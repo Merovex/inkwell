@@ -2,3 +2,8 @@ alice:
   email_address: alice@example.com
   name: Alice Example
   role: member
+
+bob:
+  email_address: bob@example.com
+  name: Bob Example
+  role: member

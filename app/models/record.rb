@@ -4,6 +4,8 @@
 # trash history itself lives in the version rows). Deliberately tenant-
 # agnostic: host apps that need scoping add their own column on this spine.
 class Record < ApplicationRecord
+  include Boostable
+
   # Content types that may live in the envelope; grows as recordables are added.
   RECORDABLE_TYPES = %w[ Post Comment ]
 
