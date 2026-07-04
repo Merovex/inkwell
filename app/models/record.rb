@@ -7,7 +7,7 @@ class Record < ApplicationRecord
   include Boostable
 
   # Content types that may live in the envelope; grows as recordables are added.
-  RECORDABLE_TYPES = %w[ Post Comment ]
+  RECORDABLE_TYPES = %w[ Post Comment ChatLine ]
 
   delegated_type :recordable, types: RECORDABLE_TYPES, optional: true
   belongs_to :creator, class_name: "User", default: -> { Current.user }
@@ -23,6 +23,7 @@ class Record < ApplicationRecord
   scope :purgeable, -> { trashed.where(purge_after: ..Time.current) }
   scope :posts, -> { where(recordable_type: "Post") }
   scope :comments, -> { where(recordable_type: "Comment") }
+  scope :chat_lines, -> { where(recordable_type: "ChatLine") }
 
   before_destroy :destroy_versions
 
@@ -77,7 +78,8 @@ class Record < ApplicationRecord
   # (record ids are creation-ordered; version ids aren't, once edits land).
   def comments
     Comment.where(id: children.active.comments.select(:recordable_id))
-      .includes(:record, :rich_text_content, creator: { avatar_attachment: :blob })
+      .includes(:rich_text_content, creator: { avatar_attachment: :blob },
+        record: { boosts: { creator: { avatar_attachment: :blob } } })
       .order(:record_id)
   end
 

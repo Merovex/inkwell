@@ -1,0 +1,19 @@
+<% content_for :title, "Chatroom — Alcovo" %>
+
+<%= render "shared/canvas_head", crumbs: [ [ "Chatroom", nil ] ] %>
+
+<header class="perma-header">
+  <h1 class="perma-header__title">Chatroom</h1>
+</header>
+
+<section class="chat" aria-label="Chatroom">
+  <div class="list">
+    <%= render partial: "chat_lines/chat_line", collection: @chat_lines %>
+  </div>
+
+  <%= form_with url: chat_lines_path, scope: :chat_line, class: "chat__composer" do |f| %>
+    <%= f.text_field :content, placeholder: "Say something…", autocomplete: "off",
+          class: "chat__input", aria: { label: "Say something" } %>
+    <%= f.submit "Say", class: "button button--primary" %>
+  <% end %>
+</section>

@@ -7,13 +7,7 @@
   <span class="avatar list__avatar" aria-hidden="true"><%= avatar_content(comment.creator) %></span>
 
   <div class="comment__content">
-    <p class="comment__byline u-text-muted">
-      <span class="u-text-strong"><%= comment.creator.display_name %></span>
-      · <time datetime="<%= comment.record.created_at.iso8601 %>"><%= comment.record.created_at.strftime("%b %-d at %H:%M") %></time>
-      <% if comment.event_updated? %>
-        · Edited
-      <% end %>
-    </p>
+    <%= byline comment.creator, comment.record.created_at, edited: comment.event_updated? %>
     <div class="comment__body u-flow"><%= comment.content %></div>
     <%= render "boosts/boosts", record: comment.record %>
   </div>

@@ -1,0 +1,10 @@
+/*
+ * .byline — the standard "who · when" line under list rows (comments, chat
+ * lines). Rendered by ApplicationHelper#byline.
+ */
+@layer components {
+  .byline {
+    margin: 0;
+    font-size: var(--font-size-0);
+  }
+}

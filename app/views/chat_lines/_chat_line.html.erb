@@ -1,0 +1,22 @@
+<%# locals: (chat_line:) %>
+<%# One line in the room — the same .list__item anatomy as a comment row %>
+<%# (avatar | byline + text + boosts | far-right action), reusing the %>
+<%# comment classes rather than minting bespoke ones. The id doubles as %>
+<%# the anchor boost actions land back on. %>
+<div id="chat_line_<%= chat_line.record_id %>" class="list__item comment">
+  <span class="avatar list__avatar" aria-hidden="true"><%= avatar_content(chat_line.creator) %></span>
+
+  <div class="comment__content">
+    <%= byline chat_line.creator, chat_line.record.created_at %>
+    <div class="comment__body u-flow"><%= chat_line.content %></div>
+    <%= render "boosts/boosts", record: chat_line.record %>
+  </div>
+
+  <div class="list__action comment__actions">
+    <%= button_to chat_line_path(chat_line.record), method: :delete,
+          class: "button button--icon button--ghost", title: "Move to trash", aria: { label: "Move to trash" },
+          form: { data: { turbo_confirm: "Move this chat line to trash?" } } do %>
+      <%= inline_svg_tag "lucide/trash-2.svg", class: "lucide", size: "16px" %>
+    <% end %>
+  </div>
+</div>

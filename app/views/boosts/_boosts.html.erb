@@ -6,13 +6,13 @@
 <%# the page and Turbo extracts this frame from it, so the strip swaps in %>
 <%# place with the composer back at rest. %>
 <%= turbo_frame_tag dom_id(record, :boosts), class: "boosts" do %>
-  <%= render partial: "boosts/boost", collection: record.boosts.includes(creator: { avatar_attachment: :blob }) %>
+  <%= render partial: "boosts/boost", collection: record.boosts %>
 
   <details class="boosts__composer" data-controller="disclosure">
     <summary class="badge boosts__prompt">+ Boost</summary>
 
-    <%= form_with url: record_boosts_path(record), scope: :boost, class: "boosts__field" do %>
-      <%= text_field_tag "boost[content]", nil, maxlength: Boost::MAX_LENGTH, class: "boosts__input",
+    <%= form_with url: record_boosts_path(record), scope: :boost, class: "boosts__field" do |f| %>
+      <%= f.text_field :content, maxlength: Boost::MAX_LENGTH, id: nil, class: "boosts__input",
             placeholder: "🙌 or a few words", autocomplete: "off", aria: { label: "Boost" } %>
       <button type="button" class="boosts__icon" popovertarget="boost-menu-<%= record.id %>" aria-label="Pick an emoji">
         <%= inline_svg_tag "lucide/smile-plus.svg", class: "lucide", size: "16px" %>
@@ -26,11 +26,14 @@
     <% end %>
   </details>
 
-  <div class="menu boosts__palette" popover id="boost-menu-<%= record.id %>"
-       data-controller="anchored-popover" data-anchored-popover-placement-value="above">
+  <%# The palette is ONE form (the popover itself); each emoji is a submit %>
+  <%# button carrying its value — not a form per emoji. %>
+  <%= form_with url: record_boosts_path(record), class: "menu boosts__palette",
+        html: { popover: "auto", id: "boost-menu-#{record.id}",
+                data: { controller: "anchored-popover", anchored_popover_placement_value: "above" } } do %>
     <% Boost::COMMON_EMOJIS.each do |emoji| %>
-      <%= button_to emoji, record_boosts_path(record), params: { boost: { content: emoji } },
-            class: "boosts__emoji", form: { class: "boost__form" }, aria: { label: "Boost with #{emoji}" } %>
+      <button name="boost[content]" value="<%= emoji %>" class="boosts__emoji"
+              aria-label="Boost with <%= emoji %>"><%= emoji %></button>
     <% end %>
-  </div>
+  <% end %>
 <% end %>

@@ -47,6 +47,12 @@ Rails.application.routes.draw do
   # unique (:id is always the Record id, same as everywhere else).
   resources :comments, only: %i[edit update destroy]
 
+  # The chatroom — a single room for the whole install, so a singular
+  # resource with no id. Lines are recordables; their member actions are
+  # shallow on the Record id like everything else.
+  resource :chatroom, only: :show
+  resources :chat_lines, only: %i[create destroy]
+
   # Boosts — tiny appreciations pinned to any record (:record_id is the
   # Record id, so one route serves posts, comments, and future recordables).
   # Nested create mirrors comments; destroy is shallow and only ever your own.

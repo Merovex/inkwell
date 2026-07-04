@@ -9,7 +9,7 @@
  * Structure: turbo-frame.boosts > span.badge.boost* +
  *   details.boosts__composer (summary.boosts__prompt + form.boosts__field >
  *   input.boosts__input + button.boosts__icon×3) +
- *   .menu.boosts__palette[popover] > form.boost__form > button.boosts__emoji
+ *   form.menu.boosts__palette[popover] > button.boosts__emoji×N
  */
 @layer components {
   .boosts {

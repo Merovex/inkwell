@@ -7,3 +7,8 @@ kickoff_comment_content:
   record: kickoff_comment (Comment)
   name: content
   body: <p>Great kickoff — I can take the interview piece.</p>
+
+hello_line_content:
+  record: hello_line (ChatLine)
+  name: content
+  body: <p>Morning, everyone!</p>

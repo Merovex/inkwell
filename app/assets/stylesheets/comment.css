@@ -8,7 +8,7 @@
  *
  * Structure (BEM): .comments > .comments__heading + .list >
  *   turbo-frame.list__item.comment > .list__avatar (.avatar) +
- *   .comment__content (.comment__byline + .comment__body | .comment__form) +
+ *   .comment__content (.byline + .comment__body | .comment__form) +
  *   .list__action.comment__actions
  */
 @layer components {
@@ -46,11 +46,6 @@
     display: grid;
     gap: calc(var(--u-pad) / 4);
     min-inline-size: 0; /* let long rich text wrap instead of overflowing */
-  }
-
-  .comment__byline {
-    margin: 0;
-    font-size: var(--font-size-0);
   }
 
   /* Editor rows (composer + inline edit): editor above compact actions. */

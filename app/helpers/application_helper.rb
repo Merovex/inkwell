@@ -17,4 +17,16 @@ module ApplicationHelper
   def avatar_initials(user)
     user.display_name.scan(/[[:alpha:]]+/).first(2).map { |w| w[0] }.join.upcase
   end
+
+  # The standard "who · when" line under list rows (comments, chat lines).
+  def byline(creator, time, edited: false)
+    tag.p class: "byline u-text-muted" do
+      safe_join [
+        tag.span(creator.display_name, class: "u-text-strong"),
+        " · ",
+        tag.time(time.strftime("%b %-d at %H:%M"), datetime: time.iso8601),
+        (" · Edited" if edited)
+      ].compact
+    end
+  end
 end

@@ -10,3 +10,7 @@ kickoff_comment:
   recordable: kickoff_comment (Comment)
   creator: alice
   parent: kickoff
+
+hello_line:
+  recordable: hello_line (ChatLine)
+  creator: alice

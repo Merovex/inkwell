@@ -6,6 +6,6 @@ class BoostsController < ApplicationController
     record = boost.record
     boost.destroy
 
-    redirect_to post_path(record.parent_id || record.id, anchor: helpers.dom_id(record, :boosts))
+    redirect_to record_page_path(record)
   end
 end

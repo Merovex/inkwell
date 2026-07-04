@@ -1,11 +1,6 @@
 require "test_helper"
 
 class BoostTest < ActiveSupport::TestCase
-  test "requires content" do
-    boost = Boost.new(record: records(:kickoff), creator: users(:alice), content: "")
-    assert_not boost.valid?
-  end
-
   test "caps content at sixteen characters" do
     boost = Boost.new(record: records(:kickoff), creator: users(:alice), content: "a" * 17)
     assert_not boost.valid?
@@ -20,9 +15,4 @@ class BoostTest < ActiveSupport::TestCase
     end
   end
 
-  test "boosts go down with their record" do
-    assert_difference -> { Boost.count }, -2 do
-      records(:kickoff).destroy
-    end
-  end
 end

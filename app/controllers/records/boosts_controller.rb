@@ -7,18 +7,11 @@ class Records::BoostsController < ApplicationController
     @record = Record.active.find(params[:record_id])
     @record.boosts.create(boost_params)
 
-    redirect_to page_path(@record)
+    redirect_to record_page_path(@record)
   end
 
   private
     def boost_params
       params.expect(boost: [ :content ])
-    end
-
-    # The page carrying the record's boost strip: the post page, whether the
-    # record is the post itself or a comment under it. Turbo extracts the
-    # strip's frame from the response, so the swap happens in place.
-    def page_path(record)
-      post_path(record.parent_id || record.id, anchor: helpers.dom_id(record, :boosts))
     end
 end
