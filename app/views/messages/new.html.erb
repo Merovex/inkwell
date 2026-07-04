@@ -1,0 +1,7 @@
+<% content_for :title, "New message — Alcovo" %>
+
+<%= render "shared/canvas_head", crumbs: [["Forum", messages_path], ["New message", nil]], menu: false do %>
+  <%= render "composer_actions", message: @message %>
+<% end %>
+
+<%= render "form", message: @message, url: messages_path %>

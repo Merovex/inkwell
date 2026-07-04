@@ -1,0 +1,17 @@
+<% content_for :title, "Not found — Alcovo" %>
+
+<%= render "shared/canvas_head", crumbs: [["Not found", nil]] %>
+
+<div class="empty">
+  <span class="empty__icon"><%= inline_svg_tag "lucide/circle-x.svg", class: "lucide", size: "40px" %></span>
+  <p class="empty__title">There's nothing at this address</p>
+  <p class="empty__text">It may have been moved to the trash, or the link may be mistyped.</p>
+  <div class="empty__actions">
+    <% if @back_url %>
+      <%= link_to "Go back", @back_url, class: "button button--primary" %>
+      <%= link_to "Go home", root_path, class: "button" %>
+    <% else %>
+      <%= link_to "Go home", root_path, class: "button button--primary" %>
+    <% end %>
+  </div>
+</div>

@@ -15,7 +15,7 @@
       <p class="history__stamp u-text-muted"><%= version_timestamp(version) %></p>
       <p class="history__line">
         <span class="u-text-strong"><%= version.creator.display_name %></span>
-        <%= version_event_line(version, previous) %>
+        <%= version_event_line(version, previous, noun: "post") %>
       </p>
       <%# "See the changes" diffs this past version against the CURRENT one; %>
       <%# offered whenever they differ (column compare — no rich text loads). %>

@@ -47,6 +47,26 @@ class BoostsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to post_path(records(:kickoff), anchor: "boosts_record_#{record.id}")
   end
 
+  test "create on a message record lands back on the message page" do
+    record = records(:welcome)
+
+    assert_difference -> { record.boosts.count } do
+      post record_boosts_path(record), params: { boost: { content: "🎉" } }
+    end
+
+    assert_redirected_to message_path(record, anchor: "boosts_record_#{record.id}")
+  end
+
+  test "create on a comment under a message lands back on the message page" do
+    record = records(:welcome_comment)
+
+    assert_difference -> { record.boosts.count } do
+      post record_boosts_path(record), params: { boost: { content: "hi" } }
+    end
+
+    assert_redirected_to message_path(records(:welcome), anchor: "boosts_record_#{record.id}")
+  end
+
   test "create ignores blank content" do
     assert_no_difference -> { Boost.count } do
       post record_boosts_path(records(:kickoff)), params: { boost: { content: "" } }

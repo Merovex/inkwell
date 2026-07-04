@@ -2,3 +2,8 @@ kickoff_comment:
   record: kickoff_comment
   creator: alice
   event: created
+
+welcome_comment:
+  record: welcome_comment
+  creator: alice
+  event: created

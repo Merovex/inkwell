@@ -88,4 +88,27 @@ class CommentsControllerTest < ActionDispatch::IntegrationTest
     get posts_path
     assert_select ".list__count", text: "1"
   end
+
+  test "member actions are yours-only: someone else's comment 404s" do
+    sign_in_as users(:bob)
+
+    get edit_comment_path(records(:kickoff_comment))
+    assert_response :not_found
+
+    patch comment_path(records(:kickoff_comment)), params: { comment: { content: "<p>Hijacked.</p>" } }
+    assert_response :not_found
+
+    delete comment_path(records(:kickoff_comment))
+    assert_response :not_found
+    assert_not records(:kickoff_comment).reload.trashed?
+  end
+
+  test "the menu hides Edit and trash on someone else's comment" do
+    sign_in_as users(:bob)
+
+    get post_path(records(:kickoff))
+    assert_select "#comments .menu__item", text: "Copy link"
+    assert_select "#comments .menu__item", text: "Edit", count: 0
+    assert_select "#comments .menu__item", text: "Move to trash", count: 0
+  end
 end

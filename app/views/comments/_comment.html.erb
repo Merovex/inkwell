@@ -22,14 +22,18 @@
       </button>
       <button type="button" class="menu__item" role="menuitem"
               data-controller="clipboard" data-action="clipboard#copy"
-              data-clipboard-text-value="<%= post_url(comment.record.parent_id, anchor: "comment_#{comment.record_id}") %>"
+              data-clipboard-text-value="<%= commentable_url(comment.record.parent, anchor: "comment_#{comment.record_id}") %>"
               popovertarget="comment-menu-<%= comment.record_id %>" popovertargetaction="hide">Copy link</button>
-      <%= link_to "Edit", edit_comment_path(comment.record), class: "menu__item", role: "menuitem" %>
-      <hr class="menu__separator">
-      <%# Break out of the comment frame: after a trash the comment is gone %>
-      <%# from the page, so the response has no matching frame to extract. %>
-      <%= button_to "Move to trash", comment_path(comment.record), method: :delete, class: "menu__item", role: "menuitem",
-            form: { data: { turbo_confirm: "Move this comment to trash?", turbo_frame: "_top" } } %>
+      <%# Edit and trash are yours-only, like chat lines — the controller %>
+      <%# scopes by creator, so hiding them here is just honesty. %>
+      <% if comment.record.creator == Current.user %>
+        <%= link_to "Edit", edit_comment_path(comment.record), class: "menu__item", role: "menuitem" %>
+        <hr class="menu__separator">
+        <%# Break out of the comment frame: after a trash the comment is gone %>
+        <%# from the page, so the response has no matching frame to extract. %>
+        <%= button_to "Move to trash", comment_path(comment.record), method: :delete, class: "menu__item", role: "menuitem",
+              form: { data: { turbo_confirm: "Move this comment to trash?", turbo_frame: "_top" } } %>
+      <% end %>
     </div>
   </div>
 <% end %>

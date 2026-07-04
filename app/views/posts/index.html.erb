@@ -14,7 +14,7 @@
 </header>
 
 <% if (@drafts_count + @scheduled_count).positive? %>
-  <p class="u-margin-block-end"><%= link_to unpublished_posts_label(@drafts_count, @scheduled_count), drafts_path %></p>
+  <p class="u-margin-block-end"><%= link_to unpublished_work_label(@drafts_count, @scheduled_count, noun: "post"), drafts_path %></p>
 <% end %>
 
 <% if @posts.any? %>

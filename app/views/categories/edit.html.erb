@@ -1,0 +1,11 @@
+<% content_for :title, "Edit category — Alcovo" %>
+
+<%= render "shared/canvas_head", crumbs: [["Forum", messages_path], ["Categories", categories_path], [@category.name, nil]] %>
+
+<header class="perma-header">
+  <h1 class="perma-header__title">Edit category</h1>
+</header>
+
+<div class="u-center u-center-narrow">
+  <%= render "form", category: @category %>
+</div>

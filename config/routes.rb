@@ -43,6 +43,30 @@ Rails.application.routes.draw do
     end
   end
 
+  # Unpublished forum work: drafts + scheduled messages. Declared before
+  # resources :messages so /forum/drafts isn't swallowed by /forum/:id.
+  scope module: :messages do
+    resources :drafts, only: %i[index destroy], path: "forum/drafts", as: :message_drafts
+  end
+
+  # The message board — one board for the install, at /forum: the messages
+  # index IS the tool page. Messages mirror posts on the spine (:id is the
+  # Record id), with the same transition/history/comment sub-resources.
+  resources :messages, path: "forum" do
+    scope module: :messages do
+      resource :publish, only: %i[create destroy]
+      resource :pin, only: %i[create destroy]
+      resources :events, only: :index
+      resources :changes, only: :show
+      resources :versions, only: :show
+      resources :comments, only: %i[new create]
+    end
+  end
+
+  # Message-board categories — a plain lookup table with its own tiny CRUD
+  # (no versioning ceremony), edited from the board's toolbar.
+  resources :categories, except: :show
+
   # Comment member actions — shallow, since a comment's Record id is globally
   # unique (:id is always the Record id, same as everywhere else).
   resources :comments, only: %i[edit update destroy]

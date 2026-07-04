@@ -1,0 +1,21 @@
+<% content_for :title, "Edit chat line — Alcovo" %>
+
+<%# Rendered into the line's turbo frame on the chatroom page: the row keeps %>
+<%# its shape but the bubble becomes an editor. "Never mind" navigates the %>
+<%# frame back to the chatroom page, which restores the displayed line. %>
+<%= turbo_frame_tag "chat_line_#{@record.id}", class: "chat__line" do %>
+  <span class="avatar" aria-hidden="true"><%= avatar_content(@chat_line.creator) %></span>
+
+  <div class="chat__content">
+    <%= render "shared/error_summary", model: @chat_line %>
+    <%= form_with url: chat_line_path(@record), method: :patch, scope: :chat_line, class: "chat__form" do |f| %>
+      <%= f.text_area :content, value: @chat_line.content.to_plain_text, rows: 2, class: "chat__input",
+            aria: { label: "Chat line" },
+            data: { controller: "chat-composer", action: "keydown.enter->chat-composer#send" } %>
+      <div class="u-cluster">
+        <%= f.submit "Save changes", class: "button button--primary" %>
+        <%= link_to "Never mind", chatroom_path, class: "button" %>
+      </div>
+    <% end %>
+  </div>
+<% end %>

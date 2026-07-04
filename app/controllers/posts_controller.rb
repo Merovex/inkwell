@@ -1,5 +1,5 @@
 class PostsController < ApplicationController
-  include PostScoped
+  include PostScoped, Publishing
   skip_before_action :set_record, only: %i[index new create]
 
   # The default view is the published feed; unpublished work (drafts +
@@ -30,7 +30,7 @@ class PostsController < ApplicationController
     @post.valid?
     # The model validates schedule times on the transition version; at create
     # the record doesn't exist yet, so pre-flight the check here.
-    if scheduling? && !scheduled_at.future?
+    if scheduling? && !scheduled_at&.future?
       @post.errors.add(:base, "That scheduled time has already passed — pick a later one.")
     end
 
@@ -70,34 +70,6 @@ class PostsController < ApplicationController
   private
     def post_params
       params.expect(post: [ :title, :content ])
-    end
-
-    def publishing?
-      params[:publish].present?
-    end
-
-    def scheduling?
-      params[:scheduled_posting] == "true"
-    end
-
-    # The panel's "unschedule and save" submits scheduled_posting=false
-    # ("Post now instead" also sends false, but publish wins the ladder).
-    def unscheduling?
-      params[:scheduled_posting] == "false" && !publishing?
-    end
-
-    # "2026-07-04" + hour 9 → that day at 9:00 in the browser's zone (falling
-    # back to the app zone if the hidden zone field didn't make it).
-    def scheduled_at
-      @scheduled_at ||= begin
-        zone = Time.find_zone(params[:scheduled_posting_at_zone]) || Time.zone
-        date = Date.iso8601(params[:scheduled_posting_at_date])
-        zone.local(date.year, date.month, date.day, params[:scheduled_posting_at_hour].to_i)
-      end
-    end
-
-    def initial_status
-      publishing? ? :published : :drafted
     end
 
     def create_notice

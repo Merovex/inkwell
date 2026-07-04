@@ -1,0 +1,18 @@
+welcome:
+  record: welcome
+  creator: alice
+  body: welcome_body
+  event: created
+  title: Welcome to the forum
+  status: published
+  category: announcement
+  published_at: <%= 2.days.ago %>
+
+roadmap:
+  record: roadmap
+  creator: alice
+  body: roadmap_body
+  event: created
+  title: Roadmap questions
+  status: drafted
+  category: question

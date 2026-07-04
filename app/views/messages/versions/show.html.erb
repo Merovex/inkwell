@@ -1,0 +1,18 @@
+<% content_for :title, "Version: #{@version.title} — Alcovo" %>
+
+<%= render "shared/canvas_head", crumbs: [["Forum", messages_path], [@message.title, message_path(@record)], ["Change Log", message_events_path(@record)], ["Version", nil]] do %>
+  <%= link_to "Change Log", message_events_path(@record), class: "menu__item", role: "menuitem" %>
+  <%= link_to "Back to message", message_path(@record), class: "menu__item", role: "menuitem" %>
+<% end %>
+
+<header class="perma-header">
+  <h1 class="perma-header__title"><%= @version.title %></h1>
+  <p class="perma-header__content u-text-muted">
+    Version from <%= version_timestamp(@version) %>
+    by <span class="u-text-strong"><%= @version.creator.display_name %></span>
+  </p>
+</header>
+
+<article class="u-flow">
+  <%= @version.content %>
+</article>

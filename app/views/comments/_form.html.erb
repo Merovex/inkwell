@@ -8,17 +8,17 @@
 
   <%# Autosaved to localStorage, keyed to the record being commented on — a %>
   <%# draft survives "Never mind" and reappears when the composer reopens. %>
-  <%= form_with model: Comment.new, url: post_comments_path(record), class: "comment__content comment__form",
+  <%= form_with model: Comment.new, url: commentable_comments_path(record), class: "comment__content comment__form",
         data: { turbo_frame: "_top",
                 controller: "autosave",
                 autosave_key_value: "Record/#{record.id}/comment" } do |f| %>
     <%= f.rich_textarea :content, placeholder: "Add a comment…", "aria-label": "Comment", autofocus: true %>
     <div class="u-cluster">
       <%= f.submit "Add this comment", class: "button button--primary" %>
-      <%# Navigates the frame back to the post page, whose response holds the %>
-      <%# collapsed prompt — the form goes away. Explicit frame target: the %>
+      <%# Navigates the frame back to the parent's page, whose response holds %>
+      <%# the collapsed prompt — the form goes away. Explicit frame target: the %>
       <%# enclosing form aims _top, which must not leak onto this link. %>
-      <%= link_to "Never mind", post_path(record), class: "button",
+      <%= link_to "Never mind", commentable_path(record), class: "button",
             data: { turbo_frame: "new_comment" } %>
     </div>
   <% end %>

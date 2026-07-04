@@ -16,7 +16,7 @@
         <span class="avatar list__avatar" aria-hidden="true"><%= avatar_content(Current.user) %></span>
 
         <div class="comment__content">
-          <%= link_to "Add your comment…", new_post_comment_path(record), class: "comment__prompt" %>
+          <%= link_to "Add your comment…", new_commentable_comment_path(record), class: "comment__prompt" %>
         </div>
 
         <div class="list__action comment__actions"></div>

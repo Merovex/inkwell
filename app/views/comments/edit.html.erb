@@ -18,7 +18,7 @@
       <%= f.rich_textarea :content, "aria-label": "Comment" %>
       <div class="u-cluster">
         <%= f.submit "Save changes", class: "button button--primary" %>
-        <%= link_to "Never mind", post_path(@parent), class: "button" %>
+        <%= link_to "Never mind", commentable_path(@parent), class: "button" %>
       </div>
     <% end %>
   </div>

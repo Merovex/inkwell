@@ -1,9 +1,10 @@
 /*
- * Composer — the borderless write/edit surface for a recordable (posts for
- * now): big bare title input + frameless Lexxy editor whose toolbar runs the
- * full width under a hairline.
+ * Composer — the borderless write/edit surface for a recordable (posts,
+ * messages): big bare title input + frameless Lexxy editor whose toolbar
+ * runs the full width under a hairline.
  *
- * Structure (BEM): form.composer > .composer__title + lexxy-editor
+ * Structure (BEM): form.composer > .composer__title [+ .composer__category]
+ * + lexxy-editor
  */
 @layer components {
   .composer {
@@ -25,6 +26,10 @@
   }
 
   .composer__title::placeholder { color: var(--ink-muted); }
+
+  /* Category picker (messages): a quarter of the composer, not a full-width
+     bar; the floor keeps the prompt readable on narrow screens. */
+  .composer__category { inline-size: clamp(13rem, 25%, 100%); }
 
   /* Editor: no frame; toolbar spans edge to edge with just the hairline. */
   .composer lexxy-editor {

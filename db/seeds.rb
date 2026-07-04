@@ -7,3 +7,15 @@
 #   ["Action", "Comedy", "Drama", "Horror"].each do |genre_name|
 #     MovieGenre.find_or_create_by!(name: genre_name)
 #   end
+
+# The message board's default categories (Basecamp's set). Idempotent by
+# name; icons only apply on first creation, so renamed icons stick.
+[
+  [ "📢", "Announcement" ],
+  [ "✋", "FYI" ],
+  [ "💓", "Heartbeat" ],
+  [ "💡", "Pitch" ],
+  [ "🤔", "Question" ]
+].each do |icon, name|
+  Category.find_or_create_by!(name: name) { |category| category.icon = icon }
+end

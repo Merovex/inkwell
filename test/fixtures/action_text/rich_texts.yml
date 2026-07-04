@@ -12,3 +12,13 @@ hello_line_content:
   record: hello_line (ChatLine)
   name: content
   body: <p>Morning, everyone!</p>
+
+welcome_content:
+  record: welcome_body (Body)
+  name: content
+  body: <p>Say hello and introduce yourself — this board is for announcements and open questions.</p>
+
+welcome_comment_content:
+  record: welcome_comment (Comment)
+  name: content
+  body: <p>Hello from the first reply.</p>

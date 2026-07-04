@@ -31,7 +31,7 @@ class PostsSchedulingTest < ActionDispatch::IntegrationTest
   end
 
   test "schedule and save creates a scheduled version and enqueues the publish job" do
-    assert_enqueued_with job: Post::PublishLaterJob do
+    assert_enqueued_with job: Record::PublishLaterJob do
       post posts_path, params: {
         post: { title: "Later", content: "<p>soon</p>" },
         scheduled_posting: "true",
@@ -62,7 +62,7 @@ class PostsSchedulingTest < ActionDispatch::IntegrationTest
     record = schedule_typography
 
     travel_to @tomorrow_nine + 1.minute do
-      perform_enqueued_jobs only: Post::PublishLaterJob
+      perform_enqueued_jobs only: Record::PublishLaterJob
     end
 
     current = record.reload.recordable
@@ -76,7 +76,7 @@ class PostsSchedulingTest < ActionDispatch::IntegrationTest
     record.trash
 
     travel_to @tomorrow_nine + 1.minute do
-      perform_enqueued_jobs only: Post::PublishLaterJob
+      perform_enqueued_jobs only: Record::PublishLaterJob
     end
     assert_not record.reload.recordable.published?
   end
@@ -106,7 +106,7 @@ class PostsSchedulingTest < ActionDispatch::IntegrationTest
   end
 
   test "scheduling a time that already passed is rejected, not insta-published" do
-    assert_no_enqueued_jobs only: Post::PublishLaterJob do
+    assert_no_enqueued_jobs only: Record::PublishLaterJob do
       assert_no_difference "Post.count" do
         patch post_path(records(:typography)), params: {
           post: { title: "Too late" },
@@ -115,6 +115,19 @@ class PostsSchedulingTest < ActionDispatch::IntegrationTest
           scheduled_posting_at_hour: "0"
         }
       end
+    end
+    assert_response :unprocessable_entity
+    assert_match "already passed", response.body
+  end
+
+  test "a tampered schedule date is rejected, not a 500" do
+    assert_no_difference "Post.count" do
+      post posts_path, params: {
+        post: { title: "Garbage date", content: "<p>?</p>" },
+        scheduled_posting: "true",
+        scheduled_posting_at_date: "not-a-date",
+        scheduled_posting_at_hour: "9"
+      }
     end
     assert_response :unprocessable_entity
     assert_match "already passed", response.body
