@@ -120,7 +120,7 @@ class PostsSchedulingTest < ActionDispatch::IntegrationTest
     assert_match "already passed", response.body
   end
 
-  test "a tampered schedule date is rejected, not a 500" do
+  test "a tampered schedule date or hour is rejected, not a 500" do
     assert_no_difference "Post.count" do
       post posts_path, params: {
         post: { title: "Garbage date", content: "<p>?</p>" },
@@ -131,6 +131,16 @@ class PostsSchedulingTest < ActionDispatch::IntegrationTest
     end
     assert_response :unprocessable_entity
     assert_match "already passed", response.body
+
+    assert_no_difference "Post.count" do
+      post posts_path, params: {
+        post: { title: "Garbage hour", content: "<p>?</p>" },
+        scheduled_posting: "true",
+        scheduled_posting_at_date: Date.tomorrow.iso8601,
+        scheduled_posting_at_hour: "99"
+      }
+    end
+    assert_response :unprocessable_entity
   end
 
   test "editing a scheduled post gets the reschedule composer" do

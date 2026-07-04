@@ -1,10 +1,13 @@
 # Unpublished work: drafts and scheduled posts, most recently touched first.
+# Yours only — unpublished work stays between its creator and the admin,
+# who sees everyone's.
 class Posts::DraftsController < ApplicationController
   include PostScoped
   skip_before_action :set_record, only: :index
+  before_action -> { authorize! @record, to: :manage }, only: :destroy
 
   def index
-    @posts = Post.current.where.not(status: :published)
+    @posts = RecordPolicy.scope_for(Current.user, Post.current.where.not(status: :published))
       .includes(:record, :creator, body: :rich_text_content).order(updated_at: :desc)
   end
 

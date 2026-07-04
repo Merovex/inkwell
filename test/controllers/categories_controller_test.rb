@@ -2,10 +2,25 @@ require "test_helper"
 
 class CategoriesControllerTest < ActionDispatch::IntegrationTest
   setup do
-    sign_in_as users(:alice)
+    sign_in_as users(:admin)
   end
 
-  test "the board's toolbar links to category management" do
+  test "category management is admin-only: members get the 404, and no toolbar link" do
+    sign_in_as users(:alice)
+
+    get categories_path
+    assert_response :not_found
+
+    assert_no_difference "Category.count" do
+      post categories_path, params: { category: { icon: "💥", name: "Sneaky" } }
+    end
+    assert_response :not_found
+
+    get messages_path
+    assert_select ".perma-header__toolbar a[href=?]", categories_path, count: 0
+  end
+
+  test "the board's toolbar links the admin to category management" do
     get messages_path
     assert_select ".perma-header__toolbar a[href=?]", categories_path, text: "Edit categories"
   end
@@ -30,6 +45,18 @@ class CategoriesControllerTest < ActionDispatch::IntegrationTest
   test "create rejects a duplicate name" do
     assert_no_difference "Category.count" do
       post categories_path, params: { category: { icon: "📣", name: "Announcement" } }
+    end
+    assert_response :unprocessable_entity
+  end
+
+  test "create rejects an over-long name or icon" do
+    assert_no_difference "Category.count" do
+      post categories_path, params: { category: { icon: "📣", name: "N" * 65 } }
+    end
+    assert_response :unprocessable_entity
+
+    assert_no_difference "Category.count" do
+      post categories_path, params: { category: { icon: "x" * 17, name: "Fine" } }
     end
     assert_response :unprocessable_entity
   end

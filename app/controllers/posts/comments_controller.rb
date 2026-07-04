@@ -3,6 +3,8 @@
 # CommentsController.
 class Posts::CommentsController < ApplicationController
   include PostScoped
+  # Commenting follows visibility: you can't reply to a draft you can't see.
+  before_action -> { authorize! @record, to: :view }
 
   # The composer, fetched into the post page's new_comment turbo frame when
   # the "Add your comment…" prompt is clicked.

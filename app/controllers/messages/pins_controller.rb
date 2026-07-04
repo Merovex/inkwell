@@ -2,6 +2,7 @@
 # posted messages (the menu only shows the control there).
 class Messages::PinsController < ApplicationController
   include MessageScoped
+  before_action -> { authorize! @record, to: :manage }
 
   def create
     @message.pin

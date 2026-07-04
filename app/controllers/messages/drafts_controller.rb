@@ -1,11 +1,13 @@
 # Unpublished forum work: drafts and scheduled messages, most recently
-# touched first.
+# touched first. Yours only — unpublished work stays between its creator
+# and the admin, who sees everyone's.
 class Messages::DraftsController < ApplicationController
   include MessageScoped
   skip_before_action :set_record, only: :index
+  before_action -> { authorize! @record, to: :manage }, only: :destroy
 
   def index
-    @messages = Message.current.where.not(status: :published)
+    @messages = RecordPolicy.scope_for(Current.user, Message.current.where.not(status: :published))
       .includes(:record, :creator, :category, body: :rich_text_content).order(updated_at: :desc)
   end
 

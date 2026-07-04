@@ -7,4 +7,8 @@ class Message < ApplicationRecord
   include Publishable
 
   belongs_to :category, optional: true
+
+  # optional: true skips existence checks, so a tampered category_id would
+  # otherwise sail through valid? and die on the FK mid-transaction.
+  validates :category, presence: { message: "must exist" }, if: -> { category_id.present? }
 end

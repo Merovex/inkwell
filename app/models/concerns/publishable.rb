@@ -32,6 +32,11 @@ module Publishable
     scope :feed_ordered, -> {
       order(Arel.sql("pinned_at DESC NULLS LAST, COALESCE(published_at, #{table_name}.created_at) DESC"))
     }
+
+    # Rows whose record — the stable identity — belongs to the user. Drafts
+    # lists and counts scope to "yours" unless you're the admin (the version
+    # rows carry their own creator; identity lives on the record).
+    scope :created_by, ->(user) { joins(:record).where(records: { creator_id: user.id }) }
   end
 
   def content

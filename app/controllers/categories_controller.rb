@@ -1,6 +1,7 @@
 # Managing the board's categories: a plain lookup-table CRUD, no spine
-# ceremony. Anyone can tend the list, Basecamp style.
+# ceremony. Admin only — categories are install-wide vocabulary.
 class CategoriesController < ApplicationController
+  before_action -> { authorize! Category, to: :manage }
   before_action :set_category, only: %i[edit update destroy]
 
   def index
@@ -35,7 +36,9 @@ class CategoriesController < ApplicationController
   end
 
   # A category worn by any message version — current or historical — is
-  # load-bearing history and can't be deleted, only renamed.
+  # load-bearing history and can't be deleted, only renamed. The rescue
+  # covers the race where a message claims it between the check and the
+  # delete (the FK holds the line either way).
   def destroy
     if Message.exists?(category_id: @category.id)
       redirect_to categories_path, alert: "That category is in use on the board, so it can't be deleted — rename it instead."
@@ -43,6 +46,8 @@ class CategoriesController < ApplicationController
       @category.destroy
       redirect_to categories_path, notice: "Category deleted."
     end
+  rescue ActiveRecord::InvalidForeignKey
+    redirect_to categories_path, alert: "That category is in use on the board, so it can't be deleted — rename it instead."
   end
 
   private

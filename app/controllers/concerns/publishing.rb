@@ -21,14 +21,15 @@ module Publishing
 
     # "2026-07-04" + hour 9 → that day at 9:00 in the browser's zone (falling
     # back to the app zone if the hidden zone field didn't make it). A
-    # tampered or missing date parses to nil rather than a 500; callers
-    # treat nil like a past time and reject the schedule.
+    # tampered or missing date or hour parses to nil rather than a 500
+    # (Date::Error and zone.local's out-of-range are both ArgumentErrors);
+    # callers treat nil like a past time and reject the schedule.
     def scheduled_at
       @scheduled_at ||= begin
         zone = Time.find_zone(params[:scheduled_posting_at_zone]) || Time.zone
         date = Date.iso8601(params[:scheduled_posting_at_date].to_s)
         zone.local(date.year, date.month, date.day, params[:scheduled_posting_at_hour].to_i)
-      rescue Date::Error
+      rescue ArgumentError
         nil
       end
     end

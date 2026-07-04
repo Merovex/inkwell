@@ -5,6 +5,8 @@
 class Records::BoostsController < ApplicationController
   def create
     @record = Record.active.find(params[:record_id])
+    # Boosting follows visibility: no cheering for a draft you can't see.
+    authorize! @record, to: :view
     @record.boosts.create(boost_params)
 
     redirect_to record_page_path(@record)

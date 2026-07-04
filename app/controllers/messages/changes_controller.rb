@@ -3,6 +3,7 @@
 # has changed since that version, tracked-changes style.
 class Messages::ChangesController < ApplicationController
   include MessageScoped
+  before_action -> { authorize! @record, to: :view }
 
   def show
     @version = @record.versions.find(params[:id])

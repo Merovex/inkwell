@@ -4,6 +4,7 @@
 # versions.
 class Messages::EventsController < ApplicationController
   include MessageScoped
+  before_action -> { authorize! @record, to: :view }
 
   def index
     @versions = @record.versions.includes(:creator).to_a

@@ -3,6 +3,7 @@
 # is never loaded here — the whole page is a column read over the versions.
 class Posts::EventsController < ApplicationController
   include PostScoped
+  before_action -> { authorize! @record, to: :view }
 
   def index
     @versions = @record.versions.includes(:creator).to_a

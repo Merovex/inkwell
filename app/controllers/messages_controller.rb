@@ -4,6 +4,8 @@
 class MessagesController < ApplicationController
   include MessageScoped, Publishing
   skip_before_action :set_record, only: %i[index new create]
+  before_action -> { authorize! @record, to: :view }, only: :show
+  before_action -> { authorize! @record, to: :manage }, only: %i[edit update destroy]
 
   # The board: published messages, pinned first; unpublished work (drafts +
   # scheduled) lives behind the counted link to forum/drafts.
@@ -14,7 +16,8 @@ class MessagesController < ApplicationController
     @comment_counts = Record.active.comments
       .where(parent_id: @messages.map(&:record_id)).group(:parent_id).count
 
-    unpublished = Message.current.where.not(status: :published).group(:status).count
+    unpublished = RecordPolicy.scope_for(Current.user, Message.current.where.not(status: :published))
+      .group(:status).count
     @drafts_count = unpublished["drafted"].to_i
     @scheduled_count = unpublished["scheduled"].to_i
   end

@@ -1,33 +1,44 @@
 <% content_for :title, "#{@post.title} — Alcovo" %>
+<% can_manage = allowed_to?(:manage, @record) %>
 
-<%# The title is editable in place: click it. Saving submits the enclosed %>
-<%# form (PATCH posts#update) — on a published post that's a tracked rename. %>
+<%# The title is editable in place (creator/admin only): click it. Saving %>
+<%# submits the enclosed form (PATCH posts#update) — on a published post %>
+<%# that's a tracked rename. %>
 <div data-controller="editable">
-  <%= render "shared/canvas_head", crumbs: [["Posts", posts_path], [@post.title, nil]], edit_href: edit_post_path(@record) do %>
-    <% if @post.published? %>
-      <% if @post.pinned_at %>
-        <%= button_to "Unpin", post_pin_path(@record), method: :delete, class: "menu__item", role: "menuitem" %>
+  <%= render "shared/canvas_head", crumbs: [["Posts", posts_path], [@post.title, nil]],
+        edit_href: (edit_post_path(@record) if can_manage) do %>
+    <% if can_manage %>
+      <% if @post.published? %>
+        <% if @post.pinned_at %>
+          <%= button_to "Unpin", post_pin_path(@record), method: :delete, class: "menu__item", role: "menuitem" %>
+        <% else %>
+          <%= button_to "Pin", post_pin_path(@record), class: "menu__item", role: "menuitem" %>
+        <% end %>
+        <%= button_to "Revert to draft", post_publish_path(@record), method: :delete, class: "menu__item", role: "menuitem" %>
       <% else %>
-        <%= button_to "Pin", post_pin_path(@record), class: "menu__item", role: "menuitem" %>
+        <%= button_to "Publish", post_publish_path(@record), class: "menu__item", role: "menuitem" %>
       <% end %>
-      <%= button_to "Revert to draft", post_publish_path(@record), method: :delete, class: "menu__item", role: "menuitem" %>
-    <% else %>
-      <%= button_to "Publish", post_publish_path(@record), class: "menu__item", role: "menuitem" %>
+      <hr class="menu__separator">
     <% end %>
-    <hr class="menu__separator">
     <%= link_to "View History", post_events_path(@record), class: "menu__item", role: "menuitem" %>
-    <hr class="menu__separator">
-    <%= button_to "Move to trash", post_path(@record), method: :delete, class: "menu__item", role: "menuitem" %>
+    <% if can_manage %>
+      <hr class="menu__separator">
+      <%= button_to "Move to trash", post_path(@record), method: :delete, class: "menu__item", role: "menuitem" %>
+    <% end %>
   <% end %>
 
   <header class="perma-header">
-    <h1 class="perma-header__title editable__display" data-editable-target="display"
-        data-action="click->editable#edit" title="Click to rename" tabindex="0"><%= @post.title %></h1>
-    <%= form_with model: @post, url: post_path(@record) do |f| %>
-      <%= f.text_field :title, hidden: true, class: "perma-header__title editable__input",
-            aria: { label: "Title" },
-            data: { editable_target: "input",
-                    action: "blur->editable#save keydown.enter->editable#save keydown.esc->editable#cancel" } %>
+    <% if can_manage %>
+      <h1 class="perma-header__title editable__display" data-editable-target="display"
+          data-action="click->editable#edit" title="Click to rename" tabindex="0"><%= @post.title %></h1>
+      <%= form_with model: @post, url: post_path(@record) do |f| %>
+        <%= f.text_field :title, hidden: true, class: "perma-header__title editable__input",
+              aria: { label: "Title" },
+              data: { editable_target: "input",
+                      action: "blur->editable#save keydown.enter->editable#save keydown.esc->editable#cancel" } %>
+      <% end %>
+    <% else %>
+      <h1 class="perma-header__title"><%= @post.title %></h1>
     <% end %>
     <p class="perma-header__content u-text-muted">
       <span class="u-text-strong"><%= @record.creator.display_name %></span>

@@ -3,8 +3,13 @@
 # table off the version spine — message versions reference one by id, and
 # the defaults are seeded (db/seeds.rb); there is no management UI yet.
 class Category < ApplicationRecord
-  validates :name, presence: true, uniqueness: true
-  validates :icon, presence: true
+  # The name rides in every byline; the icon slot fits any emoji sequence
+  # (same budget as a Boost).
+  NAME_MAX_LENGTH = 64
+  ICON_MAX_LENGTH = 16
+
+  validates :name, presence: true, uniqueness: true, length: { maximum: NAME_MAX_LENGTH }
+  validates :icon, presence: true, length: { maximum: ICON_MAX_LENGTH }
 
   scope :ordered, -> { order(:name) }
 

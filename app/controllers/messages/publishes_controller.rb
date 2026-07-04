@@ -2,6 +2,7 @@
 # message, DELETE reverts it. Both are event versions on the history.
 class Messages::PublishesController < ApplicationController
   include MessageScoped
+  before_action -> { authorize! @record, to: :manage }
 
   def create
     @message.publish

@@ -2,6 +2,7 @@
 # published posts (the menu only shows the control there).
 class Posts::PinsController < ApplicationController
   include PostScoped
+  before_action -> { authorize! @record, to: :manage }
 
   def create
     @post.pin

@@ -1,6 +1,8 @@
 class PostsController < ApplicationController
   include PostScoped, Publishing
   skip_before_action :set_record, only: %i[index new create]
+  before_action -> { authorize! @record, to: :view }, only: :show
+  before_action -> { authorize! @record, to: :manage }, only: %i[edit update destroy]
 
   # The default view is the published feed; unpublished work (drafts +
   # scheduled) lives behind the counted link to posts/drafts.
@@ -11,7 +13,8 @@ class PostsController < ApplicationController
     @comment_counts = Record.active.comments
       .where(parent_id: @posts.map(&:record_id)).group(:parent_id).count
 
-    unpublished = Post.current.where.not(status: :published).group(:status).count
+    unpublished = RecordPolicy.scope_for(Current.user, Post.current.where.not(status: :published))
+      .group(:status).count
     @drafts_count = unpublished["drafted"].to_i
     @scheduled_count = unpublished["scheduled"].to_i
   end

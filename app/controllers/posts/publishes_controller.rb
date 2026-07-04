@@ -2,6 +2,7 @@
 # DELETE unpublishes. Both are event versions on the history.
 class Posts::PublishesController < ApplicationController
   include PostScoped
+  before_action -> { authorize! @record, to: :manage }
 
   def create
     @post.publish
