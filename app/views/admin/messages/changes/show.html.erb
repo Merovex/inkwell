@@ -1,0 +1,23 @@
+<% content_for :title, "Changes: #{@message.title} — Inkwell" %>
+
+<%= render "admin/shared/canvas_head", crumbs: [["Forum", admin_messages_path], [@message.title, admin_message_path(@record)], ["Change Log", admin_message_events_path(@record)], ["Change", nil]] do %>
+  <%= link_to "Change Log", admin_message_events_path(@record), class: "menu__item", role: "menuitem" %>
+  <%= link_to "Back to message", admin_message_path(@record), class: "menu__item", role: "menuitem" %>
+<% end %>
+
+<%# Old version (deletions) against the current version (insertions). %>
+<header class="perma-header">
+  <% if @version.title == @current.title %>
+    <h1 class="perma-header__title"><%= @current.title %></h1>
+  <% else %>
+    <h1 class="perma-header__title"><del><%= @version.title %></del> <ins><%= @current.title %></ins></h1>
+  <% end %>
+  <p class="perma-header__content u-text-muted">
+    Changes since the version from <%= version_timestamp(@version) %>
+    by <span class="u-text-strong"><%= @version.creator.display_name %></span>
+  </p>
+</header>
+
+<article class="u-flow lexxy-content history__diff">
+  <%= HtmlDiff.between(sanitize(@version.content.to_s), sanitize(@current.content.to_s)) %>
+</article>

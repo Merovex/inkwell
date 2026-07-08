@@ -1,0 +1,11 @@
+<% content_for :title, "New category — Inkwell" %>
+
+<%= render "admin/shared/canvas_head", crumbs: [["Forum", admin_messages_path], ["Categories", admin_categories_path], ["New category", nil]] %>
+
+<header class="perma-header">
+  <h1 class="perma-header__title">New category</h1>
+</header>
+
+<div class="u-center u-center-narrow">
+  <%= render "form", category: @category %>
+</div>

@@ -1,0 +1,85 @@
+<%# locals: (form:, schedulable: nil, panel_id: "scheduler-panel", drafts_href: nil, drafts_label: "Post Drafts", noun: "post") %>
+<%# "When would you like to post this?" — native-popover panel anchored to a %>
+<%# clock trigger, shared by every publishable composer (posts, messages); %>
+<%# drafts_href/drafts_label/noun word the note for the host type. Two modes: %>
+<%#   booking (draft/new)  — "Schedule and save" flips scheduled_posting to true %>
+<%#   editing (scheduled)  — appointment preselected; "Save" reschedules, %>
+<%#     "Post now instead" publishes, "unschedule and save" reverts to draft %>
+<%# Controls belong to `form` via the form attribute and stay disabled until %>
+<%# the popover opens (controls-disabler), so ordinary saves never carry them. %>
+<% drafts_href ||= admin_drafts_path %>
+<% scheduled = schedulable&.scheduled? %>
+<% selected_date = scheduled ? schedulable.published_at.to_date.iso8601 : Date.tomorrow.iso8601 %>
+<% selected_hour = scheduled ? schedulable.published_at.hour : 9 %>
+
+<button type="button" class="button button--icon" popovertarget="<%= panel_id %>"
+        title="<%= scheduled ? "Edit scheduled posting" : "Schedule this to post later" %>"
+        aria-label="<%= scheduled ? "Edit scheduled posting…" : "Post later…" %>">
+  <%= inline_svg_tag "lucide/clock.svg", class: "lucide", size: "16px" %>
+</button>
+
+<div class="menu scheduler" popover id="<%= panel_id %>"
+     data-controller="anchored-popover set-input controls-disabler schedule-defaults"
+     data-anchored-popover-placement-value="below"
+     data-schedule-defaults-at-value="<%= schedulable.published_at.iso8601 if scheduled %>"
+     data-action="toggle->controls-disabler#sync">
+  <p class="scheduler__heading">When would you like to post this?</p>
+
+  <div class="scheduler__selects">
+    <span class="field__select">
+      <select name="scheduled_posting_at_date" id="scheduled_posting_at_date" class="field__control"
+              form="<%= form %>" aria-label="Date"
+              data-controls-disabler-target="control" data-schedule-defaults-target="date" disabled>
+        <% (Date.current..Date.current + 29).each_with_index do |date, i| %>
+          <option value="<%= date.iso8601 %>" <%= "selected" if date.iso8601 == selected_date %>><%= i.zero? ? "Today" : i == 1 ? "Tomorrow" : date.strftime("%a, %b %d") %></option>
+        <% end %>
+      </select>
+      <%= inline_svg_tag "lucide/chevron-down.svg", class: "lucide", size: "16px" %>
+    </span>
+
+    <span>at</span>
+
+    <span class="field__select">
+      <select name="scheduled_posting_at_hour" id="scheduled_posting_at_hour" class="field__control"
+              form="<%= form %>" aria-label="Hour"
+              data-controls-disabler-target="control" data-schedule-defaults-target="hour" disabled>
+        <% 24.times do |hour| %>
+          <option value="<%= hour %>" <%= "selected" if hour == selected_hour %>><%= "#{hour}:00" %></option>
+        <% end %>
+      </select>
+      <%= inline_svg_tag "lucide/chevron-down.svg", class: "lucide", size: "16px" %>
+    </span>
+  </div>
+
+  <% if scheduled %>
+    <button type="submit" form="<%= form %>" class="button button--primary u-full-width"
+            data-controls-disabler-target="control" disabled>Save</button>
+    <button type="submit" form="<%= form %>" name="publish" value="1"
+            class="button u-full-width scheduler__secondary"
+            data-action="set-input#set" data-set-input-value-param="false"
+            data-controls-disabler-target="control" disabled>Post now instead</button>
+  <% else %>
+    <button type="submit" form="<%= form %>" class="button button--primary u-full-width"
+            data-action="set-input#set" data-set-input-value-param="true"
+            data-controls-disabler-target="control" disabled>Schedule and save</button>
+  <% end %>
+
+  <input type="hidden" name="scheduled_posting" id="scheduled_posting" value="<%= scheduled ? "true" : "false" %>"
+         form="<%= form %>" data-set-input-target="input"
+         data-controls-disabler-target="control" disabled>
+
+  <%# The browser's zone, so "11:00" means the user's 11:00, not the server's. %>
+  <input type="hidden" name="scheduled_posting_at_zone" id="scheduled_posting_at_zone" value=""
+         form="<%= form %>" data-controller="timezone"
+         data-controls-disabler-target="control" disabled>
+
+  <p class="scheduler__note u-text-muted">
+    Note: scheduled <%= noun.pluralize %> stay in <%= link_to drafts_label, drafts_href %> until they publish.
+    <% if scheduled %>
+      If you change your mind you can
+      <button type="submit" form="<%= form %>" class="scheduler__link"
+              data-action="set-input#set" data-set-input-value-param="false"
+              data-controls-disabler-target="control" disabled>unschedule and save</button>.
+    <% end %>
+  </p>
+</div>

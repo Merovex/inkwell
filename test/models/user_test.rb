@@ -18,6 +18,28 @@ class UserTest < ActiveSupport::TestCase
     end
   end
 
+  test "display_name is the name, or the email address until one is set" do
+    assert_equal "Alice Example", users(:alice).display_name
+
+    users(:alice).update!(name: nil)
+    assert_equal "alice@example.com", users(:alice).display_name
+  end
+
+  test "avatar rejects files over the size limit" do
+    blob = ActiveStorage::Blob.create_before_direct_upload!(
+      filename: "huge.png", byte_size: User::AVATAR_MAX_SIZE + 1,
+      checksum: "irrelevant", content_type: "image/png")
+    blob.update!(identified: true) # skip identification — the blob has no real bytes
+
+    # An unpersisted user defers the attach, so validation reads the blob's
+    # metadata without ever touching (nonexistent) file bytes.
+    user = User.new(email_address: "big@example.com")
+    user.avatar.attach(blob)
+
+    assert_not user.valid?
+    assert_match(/smaller than 5 MB/, user.errors[:avatar].to_sentence)
+  end
+
   test "registration policy reflects configuration" do
     assert_equal :invite_only, User.registration_policy
     assert_not User.registration_open?

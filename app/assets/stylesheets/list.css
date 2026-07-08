@@ -2,7 +2,7 @@
  * .list — a list of summary rows (avatar + linked title/meta + optional trailing
  * count). Render as <ul class="list"> / <ol class="list"> with .list__item rows
  * (partial: shared/_list_item). Adapted from Basecamp's article-list; colors use
- * Alcovo tokens. Structure (BEM):
+ * Inkwell tokens. Structure (BEM):
  *   .list__item > .list__avatar (.avatar) + a.list__body(.list__titlerow > .list__title
  *   + badge · .list__meta > .list__byline) + .list__count
  */
@@ -41,6 +41,12 @@
   /* stretched link — the whole row clicks through to the item */
   .list__body::after { content: ""; position: absolute; inset: 0; }
 
+  /* far-right row action (e.g. delete draft) — lifted above the stretched
+     link, and the link overlay stops short of the action zone entirely so
+     the trashcan can never be covered */
+  .list__action { position: relative; z-index: 1; }
+  .list__item:has(.list__action) .list__body::after { inset-inline-end: 3.5rem; }
+
   .list__titlerow {
     display: flex;
     align-items: center;
@@ -67,6 +73,23 @@
     color: var(--ink);
   }
   .list__byline { color: var(--brand-text); } /* teal-tinted, 7:1 on the canvas */
+
+  /* flag pill under the meta line (scheduled time, pinned): solid primary —
+     same teal-800 + white pair as the primary button (AAA both modes),
+     metrics matching .badge; shrink-wraps inside the row's column flex */
+  .list__flag {
+    display: inline-flex;
+    align-items: center;
+    align-self: start;
+    gap: calc(var(--u-pad) / 3);
+    margin-block-start: calc(var(--u-pad) / 4);
+    padding-block: calc(var(--u-pad) / 5);
+    padding-inline: calc(var(--u-pad) / 2);
+    border-radius: var(--radius-round);
+    font-size: var(--font-size-0);
+    background: var(--brand-strong);
+    color: #fff;
+  }
 
   /* unread-count bubble — a flex sibling AFTER the link, not inside it */
   .list__count {

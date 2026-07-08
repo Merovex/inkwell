@@ -1,0 +1,23 @@
+<% content_for :title, "Chatroom — Inkwell" %>
+
+<%= render "admin/shared/canvas_head", crumbs: [ [ "Chatroom", nil ] ] %>
+
+<header class="perma-header">
+  <h1 class="perma-header__title">Chatroom</h1>
+</header>
+
+<section class="chat" aria-label="Chatroom">
+  <div class="chat__transcript">
+    <%= render partial: "admin/chat_lines/chat_line", collection: @chat_lines %>
+  </div>
+
+  <%# Enter sends, Ctrl+Enter is a newline (chat-composer); a reply arrives %>
+  <%# with the quoted line prefilled. %>
+  <%= form_with url: admin_chat_lines_path, scope: :chat_line, class: "chat__composer" do |f| %>
+    <%= f.text_area :content, value: @composer_text, rows: 1, placeholder: "Say something…",
+          autocomplete: "off", autofocus: @composer_text.present?, class: "chat__input",
+          aria: { label: "Say something" },
+          data: { controller: "chat-composer", action: "keydown.enter->chat-composer#send" } %>
+    <%= f.submit "Say", class: "button button--primary" %>
+  <% end %>
+</section>

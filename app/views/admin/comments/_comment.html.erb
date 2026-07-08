@@ -1,0 +1,39 @@
+<%# locals: (comment:) %>
+<%# One comment row — a .list__item (avatar | content | far-right action), %>
+<%# except the content column is byline + rich text instead of a linked %>
+<%# title. The frame id (comment_<record id>) doubles as the copy-link %>
+<%# anchor and the inline-edit swap target. %>
+<%= turbo_frame_tag "comment_#{comment.record_id}", class: "list__item comment" do %>
+  <span class="avatar list__avatar" aria-hidden="true"><%= avatar_content(comment.creator) %></span>
+
+  <div class="comment__content">
+    <%= byline comment.creator, comment.record.created_at, edited: comment.event_updated? %>
+    <div class="comment__body u-flow"><%= comment.content %></div>
+    <%= render "admin/boosts/boosts", record: comment.record %>
+  </div>
+
+  <div class="list__action comment__actions">
+    <button type="button" class="button button--icon button--ghost" popovertarget="comment-menu-<%= comment.record_id %>" aria-haspopup="menu" aria-label="Comment actions">
+      <%= inline_svg_tag "lucide/ellipsis-vertical.svg", class: "lucide", size: "16px" %>
+    </button>
+    <div class="menu menu--context" popover id="comment-menu-<%= comment.record_id %>" role="menu" data-controller="anchored-popover" data-anchored-popover-placement-value="top">
+      <button type="button" class="button button--icon button--ghost menu__close" popovertarget="comment-menu-<%= comment.record_id %>" popovertargetaction="hide" aria-label="Close menu">
+        <%= inline_svg_tag "lucide/x.svg", class: "lucide", size: "20px" %>
+      </button>
+      <button type="button" class="menu__item" role="menuitem"
+              data-controller="clipboard" data-action="clipboard#copy"
+              data-clipboard-text-value="<%= commentable_url(comment.record.parent, anchor: "comment_#{comment.record_id}") %>"
+              popovertarget="comment-menu-<%= comment.record_id %>" popovertargetaction="hide">Copy link</button>
+      <%# Edit and trash are yours-only, like chat lines — the controller %>
+      <%# scopes by creator, so hiding them here is just honesty. %>
+      <% if comment.record.creator == Current.user %>
+        <%= link_to "Edit", edit_admin_comment_path(comment.record), class: "menu__item", role: "menuitem" %>
+        <hr class="menu__separator">
+        <%# Break out of the comment frame: after a trash the comment is gone %>
+        <%# from the page, so the response has no matching frame to extract. %>
+        <%= button_to "Move to trash", admin_comment_path(comment.record), method: :delete, class: "menu__item", role: "menuitem",
+              form: { data: { turbo_confirm: "Move this comment to trash?", turbo_frame: "_top" } } %>
+      <% end %>
+    </div>
+  </div>
+<% end %>

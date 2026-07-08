@@ -1,0 +1,39 @@
+<%# locals: (record:) %>
+<%# The boost strip under a record's content: one badge per boost, then the %>
+<%# "+ Boost" chip. It discloses a bordered field holding the text input and %>
+<%# three triggers: smiley (emoji palette popover, floated above), circle- %>
+<%# check (submit), circle-x (reset + close). Every action redirects back to %>
+<%# the page and Turbo extracts this frame from it, so the strip swaps in %>
+<%# place with the composer back at rest. %>
+<%= turbo_frame_tag dom_id(record, :boosts), class: "boosts" do %>
+  <%= render partial: "admin/boosts/boost", collection: record.boosts %>
+
+  <details class="boosts__composer" data-controller="disclosure">
+    <summary class="badge boosts__prompt">+ Boost</summary>
+
+    <%= form_with url: admin_record_boosts_path(record), scope: :boost, class: "boosts__field" do |f| %>
+      <%= f.text_field :content, maxlength: Boost::MAX_LENGTH, id: nil, class: "boosts__input",
+            placeholder: "🙌 or a few words", autocomplete: "off", aria: { label: "Boost" } %>
+      <button type="button" class="boosts__icon" popovertarget="boost-menu-<%= record.id %>" aria-label="Pick an emoji">
+        <%= inline_svg_tag "lucide/smile-plus.svg", class: "lucide", size: "16px" %>
+      </button>
+      <button type="submit" class="boosts__icon" title="Add boost" aria-label="Add boost">
+        <%= inline_svg_tag "lucide/circle-check.svg", class: "lucide", size: "16px" %>
+      </button>
+      <button type="reset" class="boosts__icon" data-action="disclosure#close" title="Cancel" aria-label="Cancel">
+        <%= inline_svg_tag "lucide/circle-x.svg", class: "lucide", size: "16px" %>
+      </button>
+    <% end %>
+  </details>
+
+  <%# The palette is ONE form (the popover itself); each emoji is a submit %>
+  <%# button carrying its value — not a form per emoji. %>
+  <%= form_with url: admin_record_boosts_path(record), class: "menu boosts__palette",
+        html: { popover: "auto", id: "boost-menu-#{record.id}",
+                data: { controller: "anchored-popover", anchored_popover_placement_value: "above" } } do %>
+    <% Boost::COMMON_EMOJIS.each do |emoji| %>
+      <button name="boost[content]" value="<%= emoji %>" class="boosts__emoji"
+              aria-label="Boost with <%= emoji %>"><%= emoji %></button>
+    <% end %>
+  <% end %>
+<% end %>

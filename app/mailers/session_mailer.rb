@@ -1,7 +1,7 @@
 class SessionMailer < ApplicationMailer
   SUBJECTS = {
-    sign_in: "Your Alcovo sign-in link",
-    sign_up: "Welcome to Alcovo — confirm your email"
+    sign_in: "Your Inkwell sign-in link",
+    sign_up: "Welcome to Inkwell — confirm your email"
   }.freeze
 
   # Emails a magic-link sign-in code. `plaintext` is the raw 8-letter code; it
@@ -11,7 +11,7 @@ class SessionMailer < ApplicationMailer
     @user = user
     @code = plaintext
     @formatted_code = SignInCode.format(plaintext)
-    @verify_url = verify_session_url(code: plaintext)
+    @verify_url = admin_verify_session_url(code: plaintext)
 
     mail to: user.email_address, subject: SUBJECTS.fetch(purpose, SUBJECTS[:sign_in])
   end

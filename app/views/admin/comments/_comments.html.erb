@@ -1,0 +1,26 @@
+<%# locals: (record:) %>
+<%# The comment thread under a record: existing comments (current versions, %>
+<%# oldest first) then the "Add your comment…" prompt, as rows of a standard %>
+<%# .list. The prompt row is a turbo frame — clicking it fetches %>
+<%# comments#new, which replaces the prompt with the composer. %>
+<section id="comments" class="comments" aria-label="Comments">
+  <% comments = record.comments %>
+  <% if comments.any? %>
+    <h2 class="comments__heading"><%= pluralize(comments.size, "comment") %></h2>
+  <% end %>
+  <div class="list">
+    <%= render partial: "admin/comments/comment", collection: comments %>
+
+    <%= turbo_frame_tag "new_comment" do %>
+      <div class="list__item comment">
+        <span class="avatar list__avatar" aria-hidden="true"><%= avatar_content(Current.user) %></span>
+
+        <div class="comment__content">
+          <%= link_to "Add your comment…", new_commentable_comment_path(record), class: "comment__prompt" %>
+        </div>
+
+        <div class="list__action comment__actions"></div>
+      </div>
+    <% end %>
+  </div>
+</section>

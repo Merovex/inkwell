@@ -2,6 +2,148 @@
 
 Append-only. Newest first. Format defined in [[CLAUDE]] (`CLAUDE.md`).
 
+## [2026-07-04] note | CSS architecture page — the CUBE/BEM hybrid, written down
+- New concept page describing the styling methodology: CUBE decides the rule's kind and cascade home (compositions + utilities in `u-*` files, standard BEM blocks one-per-file, exceptions as modifiers/data-attributes), BEM names the block internals. Covers the Propshaft one-link-per-file + `@layer base, components, utilities` delivery, the two token sources (Open Props for non-color, our OKLCH semantic colors), the "standard components, never bespoke" rule, and a decision ladder for adding styles.
+- pages touched: [[css-architecture]] (new), index.md
+- refs: ../app/assets/stylesheets/application.css, ../app/assets/stylesheets/00-layers.css
+
+## [2026-07-04] note | Playbook now carries the actual color settings
+- Added the shipped OKLCH values and the derivation rule to the theme playbook: tints are Tailwind v4 `-200` shades desaturated by 15% (keep L/H, chroma ×0.85), and the teal brand ramp follows the same −15% chroma rule (teal-950/-800/-700/-500/-100 by role). The add-a-tint procedure now shows the recipe applied (slate-200 → `oklch(92.9% 0.011 255.508)`).
+- pages touched: [[theme-model-playbook]]
+- refs: ../app/assets/stylesheets/01-tokens.css:74, [[theme-background-colors]]
+
+## [2026-07-04] note | Theme model playbook — mode / tint / accent axes + how-to
+- Interrogated the runtime appearance system and wrote a task-oriented playbook: three orthogonal axes (mode `data-theme` light/dark/auto, rotating `data-tint` background, fixed teal accent/brand), all resolved in 01-tokens.css and steered by two `<html>` attributes rendered from sanitized cookies. Documents the cookie→helper→attribute→token→component flow and step-by-step procedures (add/remove/reorder tints, change defaults, change accent, add tokens, wire toggles) plus gotchas (accent doesn't rotate; duplicated dark blocks; cascade order; doc-only `--accent-pale`).
+- pages touched: [[theme-model-playbook]] (new), index.md
+- refs: ../app/assets/stylesheets/01-tokens.css, ../app/javascript/controllers/{theme,tint}_controller.js, ../app/controllers/application_controller.rb:29, ../app/views/layouts/_header.html.erb
+
+## [2026-07-03] tweak | Context menu flush to the canvas corner; X mirrors the trigger
+- `.menu--context` now compensates on both axes (negative end margin + negative quarter-pad top margin) so the panel hugs the canvas's top-right corner exactly, and its top-end radius matches the canvas corner. The X close is inset quarter-pad down / half-pad in — the exact spot the ⋯ trigger occupies on the page, so opening the menu reads as the trigger flipping to an X.
+- refs: menu.css
+
+## [2026-07-03] tweak | ⋯ and X triggers sized to match head buttons
+- The ⋯ trigger and the menu's X close are now 32px squares matching the other head buttons. The trigger sits half a pad in from the canvas edge (`.canvas__head-actions` end padding); the anchored popover compensates with a negative end margin on `.menu--context` so the panel itself stays flush to the canvas's right, as before.
+- refs: canvas.css, menu.css
+
+## [2026-07-03] tweak | Head-action buttons taller
+- Canvas-head buttons (Update / Never mind / Edit / Save draft / Publish …) grew from 24px to 32px (`block-size: 2 * --u-pad`) — halving the air above/below to about a quarter-pad each side. The strip's 40px min-height is unchanged.
+- refs: canvas.css
+
+## [2026-07-03] fix | Context menu close (X) restored
+- The ⋯ popover's internal close button (menu__close, top-right — the space `.menu--context`'s padding-block-start reserves) had been lost in the canvas_head rework. Restored: ghost icon X with `popovertargetaction="hide"`, no JS.
+- refs: shared/_canvas_head.html.erb
+
+## [2026-07-03] tweak | List views lose the context menu; house breadcrumb
+- Context menus are for individual records only: the posts index and Post Drafts heads are now breadcrumb-only. Gotcha: `block_given?` isn't reliable in partials (the renderer supplies a block context), so an empty ⋯ shell still rendered — the partial now `capture`s the block and branches on `actions.present?`. Test pins the no-menu index. Post Drafts gained the same "New post" perma-header button as the index to replace its menu items.
+- The breadcrumb's leading "Alcovo" is now a house icon (lucide house.svg, vendored), auto-prepended by the partial as the home link — all callers dropped their `["Alcovo", root_path]` crumb; separators now precede every listed crumb.
+- refs: shared/_canvas_head.html.erb, breadcrumb.css, posts/index+drafts views, all crumb callers
+
+## [2026-07-03] tweak | Pinned flag in the published list
+- Pinned posts show a "📌 Pinned" pill in the index rows — the `.scheduled-badge` generalized into `.list__flag` (moved scheduler.css → list.css; both the drafts clock flag and the new pin flag use it; solid primary pill, same metrics). `_list_item` gained `pinned:` alongside `scheduled_at:`. Ordering was already right (`feed_ordered` sorts `pinned_at DESC NULLS LAST` first) — now it's visible; test pins a post older than a fresh one and asserts it tops the list with the flag. Lucide pin.svg vendored. Also `Record.originate` sets the record's creator from the first version explicitly (was leaning on `Current.user`, nil outside requests).
+- refs: list.css, scheduler.css, shared/_list_item.html.erb, posts/index.html.erb, record.rb, posts_controller_test.rb, posts_drafts_test.rb
+
+## [2026-07-03] tweak | Edit out of the context menu; menu reordered
+- Basecamp-style: Edit is the most common action, so it's now a standalone link beside the ⋯ trigger — `shared/_canvas_head` gained an `edit_href:` local (short ghost button, same head-action sizing as the menu:false clusters). The show-page menu is now: Pin/Unpin · Revert to draft (or Publish for drafts) · — · **View History** (renamed from Change Log in the menu; the page keeps its title) · — · Move to trash. Separators above View History and Move to trash.
+- Follow-up: the head is `justify-content: space-between`, so Edit + trigger (+ popover) now share one flex child — new `.canvas__head-actions` wrapper (quarter-pad gap, no end padding so the ⋯ stays flush right) instead of three spread-out children.
+- refs: shared/_canvas_head.html.erb, posts/show.html.erb, canvas.css
+
+## [2026-07-03] refactor | DHH-review remedies (Post implementation)
+- **Transition ladder into the model**: `Record#save_edit` now takes intent kwargs (`publish:`, `schedule_at:`, `unschedule:`) — a requested transition wins and folds the edit into the transition version; otherwise the regime rule. `Post#publish/schedule/unschedule` accept `**changes` + `creator:`. `PostsController#update` gutted to one call + one branch (was four jobs on param sniffing).
+- **`Record.originate(version)`**: the record-birth dance (row → first version → cursor, one transaction) moved from the controller to the spine.
+- **Past-schedule guard is a model validation** (`appointment_in_future`, on new scheduled versions only — an existing appointment naturally becomes past) — the predicate-that-writes controller helper is gone; create keeps a one-line pre-flight (no record exists yet to revise).
+- Nits: `amend` de-golfed (and its local no longer shadows `#content`); `Record.posts` scope replaces the thrice-repeated `where(recordable_type: "Post")`; `Posts::DraftsController` includes `PostScoped`; `scheduled_at` memoized; `PublishLaterJob` de-defended (expanded guards, no `&.`); helper's updated-branch boiled to two arms; index counts via one `group(:status).count`.
+- Behavior unchanged: all 77 tests green without modification. ADR 0007 consequences updated (originate + ladder).
+- refs: record.rb, post.rb, posts_controller.rb, concerns/post_scoped.rb, posts/drafts_controller.rb, jobs/post/publish_later_job.rb, posts_helper.rb
+
+## [2026-07-03] fix | Trashcan no longer covered by the row link
+- The stretched row link (`.list__body::after`, inset 0) was capturing the trashcan's clicks despite the action's z-index. Fixed structurally: on rows with a `.list__action`, the overlay stops 3.5rem short of the inline end (`:has()` — the app already requires modern browsers), so the trash zone is simply outside the link. z-index lift kept as belt-and-suspenders.
+- refs: list.css
+
+## [2026-07-03] build | Trash retention clocks + drafts trashcan
+- **Retention policy as data**: `records.purge_after` (indexed) set at trash time from `Recordable#retention_period` — 30 days default; `Post` overrides to **2 years when `ever_published?`** (any version with status published; scheduled-never-published doesn't count) — legal hold: exposure outlives the unpublish button. `restore` clears it. `Record.purgeable` scope + `Record::PurgeTrashJob` wired into config/recurring.yml (4am daily, production).
+- **Post Drafts trashcan** (far right, above the stretched row link via `.list__action`): never-published drafts are destroyed **outright** (per user: "toss immediately" — no trash ceremony; `turbo_confirm` warns no-undo; `PublishLaterJob` gains `discard_on DeserializationError` for tossed scheduled posts). A *reverted once-published* draft can't be shredded: the same button routes it to the trash on the two-year clock, with matching confirm copy. Currently-published posts rejected outright. Lucide trash-2.svg vendored.
+- refs: db/migrate/20260703300001, record.rb, concerns/recordable.rb, post.rb, jobs/record/purge_trash_job.rb, jobs/post/publish_later_job.rb, posts/drafts_controller.rb, shared/_list_item.html.erb, posts/drafts/index.html.erb, list.css, config/recurring.yml, routes.rb, posts_drafts_test.rb
+
+## [2026-07-03] tweak | Scheduled badge → solid primary pill
+- `.scheduled-badge` is now a solid pill: `--brand-strong` (teal-800) + white — the same AAA pair as the primary button, both modes — with `.badge` metrics (radius-round, same padding). Was quiet teal text; user wanted it to stand out. Follow-up: `align-self: start` so it shrink-wraps inside `.list__body`'s column flex instead of stretching full width.
+- refs: scheduler.css
+
+## [2026-07-03] tweak | "Posts on <time>" badge for scheduled rows in Post Drafts
+- Scheduled rows in Post Drafts show a clock badge — "Posts on Jul 4 at 11:00" — localized to the browser zone/locale. `shared/_list_item` gained an optional `scheduled_at:` local (renders the badge under the meta line); `local-time` controller upgraded to locale-aware time (12h/24h follows the browser, replacing HEY's dual-format trick) with an optional weekday value (composer head keeps "Fri, Jul 3…"). Byline label simplified to "Scheduled" — the badge carries the specifics. `.scheduled-badge` styled in brand-text teal, tokens only.
+- refs: shared/_list_item.html.erb, posts/drafts/index.html.erb, local_time_controller.js, posts/_composer_actions.html.erb, scheduler.css, posts_drafts_test.rb
+
+## [2026-07-03] build | Reschedule composer for scheduled posts
+- Editing a scheduled post gets its own head: reschedule clock + "Post on <time>" (localized to the browser zone by a new `local-time` controller) + Never mind + **Save** (plain save keeps the appointment — panel fields stay disabled while closed). The scheduler panel gains an editing mode: appointment preselected (server renders app-zone fallback; `schedule-defaults` controller corrects to browser zone), **Save** (reschedules — a fresh `scheduled` event + job; stale jobs no-op), **Post now instead** (flips the flag false + publish → published stamped now), and an inline **unschedule and save** footnote submit. New `unscheduled` event + `Post#unschedule` (→ drafted, `published_at` cleared — it was a booking, not a publish date). Controller: `unscheduling?` branch (flag=false, not publishing, currently scheduled) so the show-page rename PATCH stays unaffected.
+- refs: shared/_scheduler.html.erb, posts/_composer_actions.html.erb, posts_controller.rb, post.rb, concerns/recordable.rb, schedule_defaults_controller.js, local_time_controller.js, scheduler.css, posts_helper.rb, posts_scheduling_test.rb
+
+## [2026-07-03] fix | Scheduling respects the browser's time zone
+- Scheduled times were parsed in the app zone (UTC), so "11:00" picked at 10:35 EDT was 7:00 AM local — already past — and `Post::PublishLaterJob`'s `wait_until` fired immediately, insta-publishing the "scheduled" post (and making subsequent edits version-track, since the post was now genuinely published). Scheduler panel now carries a hidden `scheduled_posting_at_zone` filled by a tiny `timezone` Stimulus controller (`Intl.DateTimeFormat().resolvedOptions().timeZone`); the server parses the appointment via `Time.find_zone(zone).local(...)` (app-zone fallback). Plus a guard: scheduling a time that already passed 422s with "That scheduled time has already passed" instead of silently publishing — on both create and update, before anything saves.
+- refs: timezone_controller.js, shared/_scheduler.html.erb, posts_controller.rb, posts_scheduling_test.rb
+
+## [2026-07-03] fix | Scheduler polish (icon, order, popover placement) + drafts naming
+- Clock icon was crushed to ~2px: the head-cluster button rule's padding-inline + `aspect-ratio: 1` left a sliver of content box and the SVG flex-shrank — icon buttons in the cluster now get `padding-inline: 0`. Clock moved BEFORE Save draft. Scheduler popover pinned to the screen's left edge: bare `.menu` popovers rely on the UA `[popover] inset: 0`, and in the over-constrained fixed box `left: 0` beats the controller's `inset-inline-end` — `anchored-popover#reposition` now also sets `inset-inline-start/inset-block-end: auto` (fixes every bare-menu dropdown, e.g. list-view sort menus), plus a no-JS fallback inset on `.scheduler`. "Edit your…" link moved ABOVE the published list. Drafts page renamed **Post Drafts** (heading, crumb, title).
+- refs: canvas.css, scheduler.css, anchored_popover_controller.js, posts/_composer_actions.html.erb, posts/index.html.erb, posts/drafts/index.html.erb
+
+## [2026-07-03] build | Published-only index + counted drafts link
+- `/posts` now lists only published posts (`Post.current.published`, via a new `Post.current` scope = current versions of untrashed records — also refactored into the index). Below the list, a counted link to `/posts/drafts` worded by what exists: "Edit your N drafts…" / "Edit your N scheduled posts" / "Edit your N scheduled posts and M drafts…" (posts, not "messages"; hidden when everything's published). `Posts::DraftsController#index` lists drafts + scheduled (most recently touched first), rows linking straight into the composer, with Scheduled/Draft labels.
+- refs: posts_controller.rb, posts/drafts_controller.rb, posts/drafts/index.html.erb, posts/index.html.erb, posts_helper.rb, post.rb, routes.rb, posts_drafts_test.rb
+
+## [2026-07-03] build | Post scheduling ("When would you like to post this?")
+- Third publication path: **scheduled** — a new `status` value + `scheduled` event. Scheduling is a transition version (`event: scheduled`, `published_at` = the appointment); the post then stays **mutable** (`mutable? = drafted? || scheduled?`) — edits amend silently until `Post::PublishLaterJob` (Active Job, `wait_until:` the appointment) publishes it, stamped with the scheduled time. Job guards no-op on trash/early-publish/reschedule (each reschedule enqueues its own job; stale ones fail the `published_at.future?` check). Publishing early discards the future date and stamps now (`publish` keeps `published_at` only when already past).
+- UI per spec, adapted to house components + **native popover protocol** (not `<dialog>`): clock trigger (`popovertarget`) + `.scheduler` panel riding the `.menu` popover shell with `anchored-popover` placement below; date select (Today/Tomorrow/+28, ISO values, default Tomorrow), hour select (0–23, default 9), "Schedule and save" submits the composer form; hidden `scheduled_posting` flag flipped to "true" by a new `set-input` Stimulus controller; all panel controls start `disabled` and a `controls-disabler` controller syncs them to the popover's native `toggle` event, so ordinary saves never carry scheduler fields. Composer head actions extracted to `posts/_composer_actions` (state-aware: published → Update/Never mind; draft/scheduled → Save draft/clock/Publish); scheduler itself is `shared/_scheduler` (form id parameterized) for reuse. Lucide clock.svg vendored from source. Index shows "Scheduled <date>", show page a "Scheduled · <time>" badge, change log narrates "scheduled this post to publish <time>".
+- refs: post.rb, concerns/recordable.rb, jobs/post/publish_later_job.rb, posts_controller.rb, shared/_scheduler.html.erb, posts/_composer_actions.html.erb, posts/new+edit+show+index views, set_input_controller.js, controls_disabler_controller.js, scheduler.css, lucide/clock.svg, posts_helper.rb, posts_scheduling_test.rb
+
+## [2026-07-03] tweak | "Change Log" naming + published-edit buttons
+- History view renamed **Change Log** everywhere (page heading, crumbs, page titles, the ⋯ menu item, and the back-links from change/version pages). Editing a *published* post now offers **Update** (primary) + **Never mind** (link back to the post) instead of Save draft/Publish; drafts keep Save draft + Publish.
+- refs: posts/events/index.html.erb, posts/changes/show.html.erb, posts/versions/show.html.erb, posts/show.html.erb, posts/edit.html.erb, posts_controller_test.rb
+
+## [2026-07-03] fix | Changes page = past version vs CURRENT (Basecamp URL shape)
+- Per user correction (replacing the short-lived inline `<details>` compare): each past stop that differs from the current version gets a **"See the changes"** link → `/posts/:record_id/changes/:old_version_id`, and that page diffs the OLD version (deletions) against the CURRENT version (insertions) — not against its neighbor. Title renders as del/ins in the header; byline reads "Changes since the version from … by …". Link presence decided by column compare (body_id/title), so the events feed stays free of rich-text loads. Test proves non-adjacency: a v1 change page shows edits introduced two versions later.
+- refs: posts/changes_controller.rb, posts/changes/show.html.erb, posts/events/index.html.erb, posts/events_controller.rb, posts_helper.rb, history.css, posts_history_test.rb
+
+## [2026-07-03] tweak | Events feed as a vertical subway line
+- The change-history feed renders as a subway line: a continuous 3px rail in `--accent` teal with a canvas-filled, teal-ringed stop at each event; rail spans entries + gaps and trims to the terminal stops (first/last-child; hidden for a single entry). List is half the canvas width, centered (full width under 48rem). All sizes tunable via `--history-*` custom properties; colors token-only, mode-aware.
+- refs: history.css
+
+## [2026-07-03] build | Versioned recordables + change history (ADR 0007)
+- Recordables are now immutable event-tagged versions. `posts` gained `record_id` (back-pointer), `creator_id` (per-version actor), `event` (created/updated/published/unpublished/pinned/unpinned/trashed/restored — display tag, prefix-enumed; state queries stay on `status`), `body_id` → new `bodies` table (shareable rich-text owner: content edits mint a new Body via `Post#content=`; action-only versions share; "did the body change" = integer compare). Backfill migration moved existing rich text Post→Body. Records' cursor (`recordable_id`) made DB-nullable for the create transaction only.
+- Spine API on Record: `versions`, `revise` (build successor via dup → insert → repoint cursor, transactional; invalid version leaves cursor alone), `save_edit` (regime rule: `mutable?`/drafted → amend in place, published → version per save; transitions always revise), `trash`/`restore` (event version + `trashed_at` cache — trash is tracked draft OR published). Record destroy cascades versions and garbage-collects orphaned bodies.
+- **Identity re-keyed: `/posts/:id` is the Record id** (Basecamp-style; version ids are ephemeral). `PostScoped` controller concern resolves record + current version everywhere. Publish/pin as resources; composer Publish folds edits into the published version; inline rename of a live post = tracked title change.
+- History UI: `/posts/:id/events` (feed lines derived from adjacent-version deltas — event tag, title from/to, body_id compare; zero rich-text loads), `/posts/:id/changes/:version_id` (word-level tracked-changes diff: `diff-lcs` gem + in-repo `HtmlDiff`, ins/del styled via success/danger tokens in history.css), `/posts/:id/versions/:version_id` (frozen render). Context menu: added **View changes**, removed Rename (title click covers it), Pin/Unpin for published posts.
+- Tests: 53 runs green (regime branches, publish-date preservation across versions, body sharing vs minting, trash events, cascade destroy, the full six-line draft→publish→edit→revert→redraft→publish scenario, title from/to line, diff ins/del, frozen version). Rubocop clean.
+- pages touched: [[0007-versioned-recordables]], [[overview]], [[index]]
+- refs: db/migrate/20260703200001-3, record.rb, concerns/recordable.rb, post.rb, body.rb, html_diff.rb, posts_controller.rb, posts/{publishes,pins,events,changes,versions}_controller.rb, concerns/post_scoped.rb, posts_helper.rb, posts views, history.css, routes.rb, Gemfile (diff-lcs)
+
+## [2026-07-03] tweak | Shorter head-action buttons, standard strip height
+- Canvas-head action buttons (menu: false cluster) are now a short variant: fixed `block-size: 1.5 * --u-pad` (24px), zero block padding (inline-flex centers the label), small font — leaving ~half a pad of air above/below inside the strip. `.canvas__head` gains `min-block-size: 2.5 * --u-pad` (≈ the ⋯ icon-button height) so menu-less heads keep exactly the standard strip height instead of shrinking or growing. Cluster gets half-pad inline-end padding so buttons aren't flush against the rounded corner.
+- refs: canvas.css
+
+## [2026-07-03] fix | Composer pages use the standard canvas head
+- New/edit now open with the standard breadcrumb head (Alcovo / Posts / …) like the item view — per user correction; the "New post"/"Edit post" perma-headers are gone (the composer title speaks for itself). The head's right side carries **Save draft** + **Publish** (primary) instead of the ⋯ menu: `shared/_canvas_head` gained a `menu:` local (default true = popover as before; false = block yields buttons in a `.u-cluster`). Buttons submit the composer form from outside it via the HTML `form="composer"` attribute; Publish sends `publish=1` and the controller publishes after save. The show-page rename form hits the same `update` with no publish param, so renames never touch status (covered by test). "Save draft" on an already-published post keeps it published for now — unpublish stays in the show page's ⋯ menu; flip later if draft-on-save is wanted.
+- refs: shared/_canvas_head.html.erb, posts/new+edit.html.erb, posts/_form.html.erb, posts_controller.rb, posts_controller_test.rb
+
+## [2026-07-03] build | Borderless composer for the post form
+- New `composer.css`: bare H1-scale title input (no border/outline, placeholder, `--font-size-6`/weight-8 to match page titles) + frameless Lexxy (`border: none`, transparent bg, full-width toolbar with just its hairline; `--lexxy-editor-padding: var(--u-pad)` keeps text off the edges; toolbar padding-inline optically aligns first icon with title/body text). `_form` dropped `.field` wrappers and visible labels — accessible names via `aria-label`; body gets a "Write away…" placeholder for affordance (Lexxy renders placeholders natively). Error summary + submit row unchanged.
+- refs: composer.css, posts/_form.html.erb
+
+## [2026-07-03] build | Lexxy dark mode via token bridge
+- Lexxy paints (editor + rendered `.lexxy-content`) entirely from `--lexxy-*` :root variables, shipped light-only — hence black body text on the dark canvas. Added `lexxy-theme.css` remapping them onto our semantic tokens (ink/canvas/line/link/accent-soft…), which already flip with `[data-theme]`/OS preference; one :root mapping themes both modes. Gem stylesheet link moved ABOVE the `:app` tag so the app-side :root overrides win the cascade (the :app tag itself untouched).
+- New tokens in 01-tokens.css (light + dark + OS-fallback blocks): `--fill-subtle` (code bg / quiet hovers) and `--code-*` syntax palette (GitHub light/dark). Also mapped Lexxy font → `--font-body`, radius → `--radius-ui`. Left as-is: `--highlight-*` author text-highlights and fixed functional red/green/blue/purple.
+- Verified served CSS: link order gem→tokens→bridge, 24 `--lexxy-*` remaps and dark `--code-*` present in the served assets. Visual dark-mode pass in a browser still worth an eyeball.
+- refs: lexxy-theme.css, 01-tokens.css, layouts/application.html.erb
+
+## [2026-07-03] fix | Publish route → /posts/:id/publish (Fizzy naming)
+- Renamed `resource :publication` → `resource :publish` (Posts::PublishesController) to match the house style Fizzy/Basecamp use (`resource :publish` nested under the item — still a resource with create/destroy, not a custom member action). Per user correction.
+- refs: config/routes.rb, app/controllers/posts/publishes_controller.rb, posts/show.html.erb, posts_controller_test.rb
+
+## [2026-07-03] build | Record/Recordable spine + Post recordable (Lexxy)
+- Implemented the delegated-type content spine per ADR 0006: `records` (recordable pointer, creator → users, self-ref parent, position, trashed_at) + `Record` model (delegated_type, creator defaults to Current.user, children, trash/restore), `Recordable` concern (has_one :record, delegates creator/trash), and first recordable `Post` (title, drafted/published enum à la Fizzy `Card::Statuses`, published_at stamped on first publish only, pinned_at). Spine is deliberately tenant-agnostic — no account_id; Alcovo adds scoping later.
+- Installed Action Text + Active Storage; replaced Trix with **Lexxy** (gem 0.9.22, adapter mode on edge Rails: `form.rich_textarea` → `<lexxy-editor>`; importmap pin, layout stylesheet link, content wrapper class trix-content → lexxy-content, deleted actiontext.css).
+- Posts CRUD on the existing components: index (perma-header + `.list`, feed order = pinned first then newest published), show (canvas head + editable title now *persisting* via an enclosing PATCH form — editable_controller submits `input.form` and guards blur-after-Enter), new/edit (field.css + Lexxy body), destroy → `record.trash` (recoverable; purge job deferred), publish/unpublish as `resource :publication`.
+- Tests: model (envelope autosave, trash/restore, cascade destroy, threading, unique envelope; publish-date preservation, feed order) + controller (CRUD, trash hides/404s, publication, Lexxy renders, auth). Setup-flow tests now `simulate_fresh_install` (records FK ← users). 40 runs green; rubocop clean; smoke-tested Lexxy assets through Propshaft (@import rewriting OK).
+- pages touched: [[0006-record-recordable-generic-spine]], [[overview]], [[index]]
+- refs: db/migrate/20260703000001-2, app/models/record.rb, app/models/concerns/recordable.rb, app/models/post.rb, app/controllers/posts_controller.rb, app/controllers/posts/publications_controller.rb, app/views/posts/*, editable_controller.js, config/importmap.rb, config/routes.rb, Gemfile (lexxy)
+
 ## [2026-07-02] tweak | --brand-text token (teal, 7:1) for the list byline
 - Added mode-aware `--brand-text` (teal-tinted body text, 7:1 on the canvas: dark teal light / light teal dark). List byline (name · date) now uses it instead of neutral --ink-muted.
 - refs: 01-tokens.css, list.css

@@ -1,0 +1,41 @@
+<% content_for :title, "Categories — Inkwell" %>
+
+<%= render "admin/shared/canvas_head", crumbs: [["Forum", admin_messages_path], ["Categories", nil]] %>
+
+<header class="perma-header">
+  <h1 class="perma-header__title">Categories</h1>
+  <div class="perma-header__content">
+    <nav class="perma-header__toolbar" aria-label="Actions">
+      <%= link_to new_admin_category_path, class: "button button--primary button--small" do %>
+        <%= inline_svg_tag "lucide/plus.svg", class: "lucide", size: "16px" %> New category
+      <% end %>
+    </nav>
+  </div>
+</header>
+
+<% if @categories.any? %>
+  <ul class="list">
+    <% @categories.each do |category| %>
+      <li class="list__item">
+        <%= link_to edit_admin_category_path(category), class: "list__body" do %>
+          <span class="list__titlerow">
+            <span class="list__title"><%= category.label %></span>
+          </span>
+        <% end %>
+        <%= button_to admin_category_path(category), method: :delete, form_class: "list__action",
+              class: "button button--icon button--ghost", title: "Delete",
+              "aria-label": "Delete #{category.name}",
+              form: { data: { turbo_confirm: "Delete the “#{category.name}” category?" } } do %>
+          <%= inline_svg_tag "lucide/trash-2.svg", class: "lucide", size: "16px" %>
+        <% end %>
+      </li>
+    <% end %>
+  </ul>
+<% else %>
+  <div class="empty">
+    <span class="empty__icon"><%= inline_svg_tag "lucide/inbox.svg", class: "lucide", size: "40px" %></span>
+    <p class="empty__title">No categories</p>
+    <p class="empty__text">Add one and it will be offered in the message composer.</p>
+    <div class="empty__actions"><%= link_to "New category", new_admin_category_path, class: "button button--primary" %></div>
+  </div>
+<% end %>

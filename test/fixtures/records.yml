@@ -1,0 +1,29 @@
+kickoff:
+  recordable: kickoff (Post)
+  creator: alice
+
+typography:
+  recordable: typography (Post)
+  creator: alice
+
+kickoff_comment:
+  recordable: kickoff_comment (Comment)
+  creator: alice
+  parent: kickoff
+
+hello_line:
+  recordable: hello_line (ChatLine)
+  creator: alice
+
+welcome:
+  recordable: welcome (Message)
+  creator: alice
+
+roadmap:
+  recordable: roadmap (Message)
+  creator: alice
+
+welcome_comment:
+  recordable: welcome_comment (Comment)
+  creator: alice
+  parent: welcome

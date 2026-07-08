@@ -1,0 +1,54 @@
+<%# locals: (href:, title:, author:, date:, excerpt:, avatar_user: nil, avatar_src: nil, avatar_alt: "", client_visible: false, comment_count: 0, scheduled_at: nil, pinned: false, discard_path: nil, discard_confirm: nil) %>
+<%# Generic list row — avatar + linked (title + meta) + optional trailing count. %>
+<%# avatar_user renders that user's picture-or-monogram; avatar_src takes a raw %>
+<%# image (styleguide demos); otherwise initials derive from the author string. %>
+<%# scheduled_at adds a "Posts on <time>" clock flag; pinned adds a "Pinned" flag. %>
+<%# discard_path adds a far-right trashcan (DELETE, with discard_confirm prompt). %>
+<li class="list__item">
+  <span class="avatar list__avatar">
+    <% if avatar_user %>
+      <%= avatar_content(avatar_user) %>
+    <% elsif avatar_src.present? %>
+      <%= image_tag avatar_src, alt: avatar_alt, class: "avatar__img" %>
+    <% else %>
+      <%= author.to_s.split.map { |w| w[0] }.first(2).join %>
+    <% end %>
+  </span>
+
+  <a href="<%= href %>" class="list__body">
+    <span class="list__titlerow">
+      <span class="list__title"><%= title %></span>
+      <% if client_visible %>
+        <span class="badge badge--warning"><%= inline_svg_tag "lucide/eye.svg", class: "lucide", size: "14px" %> Client visible</span>
+      <% end %>
+    </span>
+    <span class="list__meta"><span class="list__byline"><%= author %> · <%= date %></span> <%= excerpt %></span>
+    <% if scheduled_at %>
+      <span class="list__flag">
+        <%= inline_svg_tag "lucide/clock.svg", class: "lucide", size: "14px" %>
+        Posts on
+        <time datetime="<%= scheduled_at.iso8601 %>" data-controller="local-time"
+              data-local-time-datetime-value="<%= scheduled_at.iso8601 %>"><%= scheduled_at.strftime("%b %-d at %H:%M") %></time>
+      </span>
+    <% end %>
+    <% if pinned %>
+      <span class="list__flag">
+        <%= inline_svg_tag "lucide/pin.svg", class: "lucide", size: "14px" %>
+        Pinned
+      </span>
+    <% end %>
+  </a>
+
+  <% if comment_count.to_i.positive? %>
+    <span class="list__count" aria-label="<%= comment_count %> comments"><%= comment_count %></span>
+  <% end %>
+
+  <% if discard_path %>
+    <%= button_to discard_path, method: :delete, form_class: "list__action",
+          class: "button button--icon button--ghost", title: "Delete",
+          "aria-label": "Delete",
+          form: { data: { turbo_confirm: discard_confirm } } do %>
+      <%= inline_svg_tag "lucide/trash-2.svg", class: "lucide", size: "16px" %>
+    <% end %>
+  <% end %>
+</li>

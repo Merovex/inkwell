@@ -1,0 +1,38 @@
+<% content_for :title, "Post Drafts — Inkwell" %>
+
+<%= render "admin/shared/canvas_head", crumbs: [["Posts", admin_posts_path], ["Post Drafts", nil]] %>
+
+<header class="perma-header">
+  <h1 class="perma-header__title">Post Drafts</h1>
+  <div class="perma-header__content">
+    <nav class="perma-header__toolbar" aria-label="Actions">
+      <%= link_to new_admin_post_path, class: "button button--primary button--small" do %>
+        <%= inline_svg_tag "lucide/plus.svg", class: "lucide", size: "16px" %> New post
+      <% end %>
+    </nav>
+  </div>
+</header>
+
+<% if @posts.any? %>
+  <ul class="list">
+    <% @posts.each do |post| %>
+      <%= render "admin/shared/list_item",
+            href: edit_admin_post_path(post.record),
+            title: post.title,
+            author: post.record.creator.display_name,
+            avatar_user: post.record.creator,
+            date: post.scheduled? ? "Scheduled" : "Draft",
+            excerpt: post.content.to_plain_text.to_s.truncate(140),
+            scheduled_at: (post.published_at if post.scheduled?),
+            discard_path: admin_draft_path(post.record),
+            discard_confirm: post.ever_published? ? "Move this once-published post to the trash?" : "Delete this draft forever? There's no undo." %>
+    <% end %>
+  </ul>
+<% else %>
+  <div class="empty">
+    <span class="empty__icon"><%= inline_svg_tag "lucide/inbox.svg", class: "lucide", size: "40px" %></span>
+    <p class="empty__title">No drafts</p>
+    <p class="empty__text">Start writing and your drafts will show up here.</p>
+    <div class="empty__actions"><%= link_to "New post", new_admin_post_path, class: "button button--primary" %></div>
+  </div>
+<% end %>

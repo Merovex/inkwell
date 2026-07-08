@@ -39,11 +39,43 @@ export default class extends Controller {
     if (!trigger) return
     const rect = trigger.getBoundingClientRect()
     const style = this.element.style
+    if (this.placementValue === "centered") {
+      // Centered on the trigger, dropping below it — except when the trigger
+      // sits in the bottom 10% of the viewport, where below would clip, so
+      // the panel opens upward instead.
+      style.insetInlineStart = `${rect.left + rect.width / 2}px`
+      style.translate = "-50% 0"
+      style.insetInlineEnd = "auto"
+      if (rect.bottom > document.documentElement.clientHeight * 0.9) {
+        style.insetBlockEnd = `${document.documentElement.clientHeight - rect.top + 6}px`
+        style.insetBlockStart = "auto"
+      } else {
+        style.insetBlockStart = `${rect.bottom + 6}px`
+        style.insetBlockEnd = "auto"
+      }
+      return
+    }
+    if (this.placementValue === "above") {
+      // "above" floats the panel over the trigger, horizontally centered on it —
+      // for triggers that sit in the content flow rather than at the right edge.
+      // The translate does the centering so the panel's width never needs
+      // measuring (it's still display:none when this first runs).
+      style.insetBlockEnd = `${document.documentElement.clientHeight - rect.top + 6}px`
+      style.insetInlineStart = `${rect.left + rect.width / 2}px`
+      style.translate = "-50% 0"
+      style.insetBlockStart = "auto"
+      style.insetInlineEnd = "auto"
+      return
+    }
     // "top" aligns the panel top with the trigger (covers it, e.g. canvas ⋯);
     // "below" drops it just under the trigger (dropdowns).
     const top = this.placementValue === "top" ? rect.top : rect.bottom + 6
     // clientWidth excludes the scrollbar; window.innerWidth would over-offset by it
     style.insetBlockStart = `${top}px`
     style.insetInlineEnd = `${document.documentElement.clientWidth - rect.right}px`
+    // neutralize the UA's [popover] inset:0 — otherwise left:0 wins the
+    // over-constrained fixed box and the panel pins to the screen edge
+    style.insetInlineStart = "auto"
+    style.insetBlockEnd = "auto"
   }
 }

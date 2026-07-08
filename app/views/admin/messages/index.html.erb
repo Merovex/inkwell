@@ -1,0 +1,44 @@
+<% content_for :title, "Forum — Inkwell" %>
+
+<%= render "admin/shared/canvas_head", crumbs: [["Forum", nil]] %>
+
+<header class="perma-header">
+  <h1 class="perma-header__title">Forum</h1>
+  <div class="perma-header__content">
+    <nav class="perma-header__toolbar" aria-label="Actions">
+      <% if allowed_to?(:manage, Category) %>
+        <%= link_to "Edit categories", admin_categories_path, class: "button button--small" %>
+      <% end %>
+      <%= link_to new_admin_message_path, class: "button button--primary button--small" do %>
+        <%= inline_svg_tag "lucide/plus.svg", class: "lucide", size: "16px" %> New message
+      <% end %>
+    </nav>
+  </div>
+</header>
+
+<% if (@drafts_count + @scheduled_count).positive? %>
+  <p class="u-margin-block-end"><%= link_to unpublished_work_label(@drafts_count, @scheduled_count, noun: "message"), admin_message_drafts_path %></p>
+<% end %>
+
+<% if @messages.any? %>
+  <ul class="list">
+    <% @messages.each do |message| %>
+      <%= render "admin/shared/list_item",
+            href: admin_message_path(message.record),
+            title: message.title,
+            author: message_author_line(message),
+            avatar_user: message.record.creator,
+            date: l(message.published_at.to_date, format: :short),
+            excerpt: message.content.to_plain_text.to_s.truncate(140),
+            comment_count: @comment_counts[message.record_id].to_i,
+            pinned: message.pinned_at.present? %>
+    <% end %>
+  </ul>
+<% else %>
+  <div class="empty">
+    <span class="empty__icon"><%= inline_svg_tag "lucide/inbox.svg", class: "lucide", size: "40px" %></span>
+    <p class="empty__title">No messages yet</p>
+    <p class="empty__text">Post the first message and it will show up here.</p>
+    <div class="empty__actions"><%= link_to "New message", new_admin_message_path, class: "button button--primary" %></div>
+  </div>
+<% end %>

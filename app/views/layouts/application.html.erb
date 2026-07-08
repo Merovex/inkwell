@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html data-theme="<%= current_theme %>" data-tint="<%= current_tint %>">
   <head>
-    <title><%= content_for(:title) || "Alcovo" %></title>
+    <title><%= content_for(:title) || "Inkwell" %></title>
     <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="application-name" content="Alcovo">
+    <meta name="application-name" content="Inkwell">
     <meta name="mobile-web-app-capable" content="yes">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
@@ -18,6 +18,9 @@
     <link rel="icon" href="/icon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="/icon.png">
 
+    <%# Lexxy editor + rendered rich-text content styles (gem asset, outside the :app bundle). %>
+    <%# Linked BEFORE :app so lexxy-theme.css can override the gem's :root variables. %>
+    <%= stylesheet_link_tag "lexxy", "data-turbo-track": "reload" %>
     <%# Includes all stylesheet files in app/assets/stylesheets %>
     <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>

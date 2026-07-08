@@ -1,0 +1,16 @@
+<%# locals: (post:, url:) %>
+<%= render "admin/shared/error_summary", model: post %>
+
+<%# Borderless composer: no visible labels (accessible names via aria-label). %>
+<%# Submits from the canvas-head buttons (form: "composer"). %>
+<%# Autosaved to localStorage: new posts share the posts/new draft slot; %>
+<%# edits key to the record, guarded by the current version id. %>
+<%= form_with model: post, url: url, id: "composer", class: "composer",
+      data: { controller: "autosave",
+              autosave_key_value: (post.record_id ? "Record/#{post.record_id}/edit" : "posts/new"),
+              autosave_revision_value: post.record&.recordable_id } do |f| %>
+  <%= f.text_field :title, class: "composer__title", placeholder: "Post title",
+        "aria-label": "Title", required: true, autofocus: true %>
+
+  <%= f.rich_textarea :content, placeholder: "Write away…", "aria-label": "Body" %>
+<% end %>

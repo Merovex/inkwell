@@ -1,7 +1,8 @@
 import { Controller } from "@hotwired/stimulus"
 
 // Click-to-edit (or trigger via a menu). Swaps a display element for an input;
-// Enter/blur saves, Esc cancels. No persistence here — stub for the item view.
+// Enter/blur saves, Esc cancels. If the input lives inside a form, saving
+// submits it (e.g. PATCH posts#update); otherwise it's display-only.
 export default class extends Controller {
   static targets = ["display", "input"]
 
@@ -14,8 +15,13 @@ export default class extends Controller {
   }
 
   save() {
+    if (this.inputTarget.hidden) return // blur re-fires after Enter/Esc already closed the editor
+
     const value = this.inputTarget.value.trim()
-    if (value) this.displayTarget.textContent = value
+    if (value) {
+      this.displayTarget.textContent = value
+      this.inputTarget.form?.requestSubmit()
+    }
     this.done()
   }
 

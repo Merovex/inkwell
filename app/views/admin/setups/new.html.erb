@@ -1,0 +1,16 @@
+<% content_for :title, "Set up Inkwell" %>
+
+<div class="card auth__card">
+  <header class="card__header"><span class="card__title">Set up Inkwell</span></header>
+  <div class="card__body u-stack">
+    <p class="u-text-muted">You're the first one here. Enter your email to create the owner account — we'll send a magic link to confirm it.</p>
+
+    <%= render "admin/shared/error_summary", model: @setup %>
+
+    <%= form_with model: @setup, url: admin_setup_path, class: "field" do |f| %>
+      <%= f.label :email_address, "Email", class: "field__label" %>
+      <%= f.email_field :email_address, class: "field__control", placeholder: "you@example.com", required: true, autofocus: true, autocomplete: "email" %>
+      <%= f.submit "Create owner account", class: "button button--primary u-full-width", style: "margin-block-start: var(--u-pad);" %>
+    <% end %>
+  </div>
+</div>

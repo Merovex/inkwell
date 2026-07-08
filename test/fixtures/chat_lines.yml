@@ -1,0 +1,4 @@
+hello_line:
+  record: hello_line
+  creator: alice
+  event: created

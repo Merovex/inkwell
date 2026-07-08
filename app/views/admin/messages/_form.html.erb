@@ -1,0 +1,23 @@
+<%# locals: (message:, url:) %>
+<%= render "admin/shared/error_summary", model: message %>
+
+<%# Borderless composer, same as posts: no visible labels (accessible names %>
+<%# via aria-label), submits from the canvas-head buttons (form: "composer"). %>
+<%# Autosaved to localStorage: new messages share the messages/new draft %>
+<%# slot; edits key to the record, guarded by the current version id. %>
+<%= form_with model: message, url: url, id: "composer", class: "composer",
+      data: { controller: "autosave",
+              autosave_key_value: (message.record_id ? "Record/#{message.record_id}/edit" : "messages/new"),
+              autosave_revision_value: message.record&.recordable_id } do |f| %>
+  <%= f.text_field :title, class: "composer__title", placeholder: "Type a title…",
+        "aria-label": "Title", required: true, autofocus: true %>
+
+  <span class="field__select composer__category">
+    <%= f.collection_select :category_id, Category.ordered, :id, :label,
+          { include_blank: "Pick a category (optional)" },
+          class: "field__control", "aria-label": "Category" %>
+    <%= inline_svg_tag "lucide/chevron-down.svg", class: "lucide", size: "16px" %>
+  </span>
+
+  <%= f.rich_textarea :content, placeholder: "Write away…", "aria-label": "Body" %>
+<% end %>

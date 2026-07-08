@@ -1,0 +1,268 @@
+/*
+ * Merovex Press — public front-of-house styles.
+ *
+ * EVERYTHING here is scoped under `.press` (set on the public <body>). The app's
+ * `stylesheet_link_tag :app` globs app/assets/**/*.css, so this file also loads
+ * on Inkwell admin pages — but with no `.press` ancestor there, none of it
+ * applies. Ported from ~/Work/merovex.press (variables/home/components) onto the
+ * shared syō-ro / mountain-mist scales defined in 01-tokens.css.
+ */
+
+/* Self-hosted Merovex Press fonts (ported from ~/Work/merovex.press). Variable
+   woff2s — one file covers the 400–700 weight range. */
+@font-face {
+  font-family: "Source Sans 3";
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url("source-sans-3.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Source Serif 4";
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url("source-serif-4.woff2") format("woff2");
+}
+
+.press {
+  --press-serif: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --press-sans:  "Source Sans 3", system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  /* semantic tokens — light */
+  --surface-0: var(--color-mountain-mist-50);
+  --surface-1: var(--color-mountain-mist-100);
+  --surface-2: var(--color-mountain-mist-200);
+  --border-1:  var(--color-mountain-mist-300);
+  --border-2:  var(--color-mountain-mist-400);
+  --text-1:    var(--color-mountain-mist-900);
+  --text-2:    var(--color-mountain-mist-700);
+  --text-3:    var(--color-mountain-mist-500);
+  --accent:      var(--color-syo-ro-600);
+  --link-color:  var(--color-syo-ro-600);
+  --link-hover:  var(--color-syo-ro-700);
+  --button-bg:   var(--color-syo-ro-500);
+  --button-text: var(--color-mountain-mist-50);
+
+  min-height: 100dvh;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--surface-0);
+  color: var(--text-1);
+  font-family: var(--press-sans);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Fill the space between nav and footer so the footer's top border always
+   sits at the bottom of the viewport, separating main from footer. */
+.press > #main-content { flex: 1; }
+
+@media (prefers-color-scheme: dark) {
+  .press {
+    --surface-0: var(--color-mountain-mist-950);
+    --surface-1: var(--color-syo-ro-950);
+    --surface-2: var(--color-syo-ro-900);
+    --border-1:  var(--color-mountain-mist-700);
+    --border-2:  var(--color-mountain-mist-600);
+    --text-1:    var(--color-mountain-mist-100);
+    --text-2:    var(--color-mountain-mist-200);
+    --text-3:    var(--color-mountain-mist-500);
+    --accent:      var(--color-syo-ro-300);
+    --link-color:  var(--color-syo-ro-300);
+    --link-hover:  var(--color-syo-ro-200);
+    --button-bg:   var(--color-syo-ro-300);
+    --button-text: var(--color-mountain-mist-800);
+  }
+}
+
+/* --- shared bits --- */
+.press-link {
+  color: var(--link-color);
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+  transition: color 200ms ease;
+}
+.press-link:hover { color: var(--link-hover); }
+
+.press-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.6em 1.4em;
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  text-decoration: none;
+  border: 1px solid transparent;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  transition: background-color 200ms ease, color 200ms ease, border-color 200ms ease;
+}
+.press-btn--primary { background: var(--button-bg); color: var(--button-text); }
+.press-btn--primary:hover { background: var(--link-hover); }
+.press-btn--outline { background: transparent; border-color: var(--link-color); color: var(--link-color); }
+.press-btn--outline:hover { background: var(--link-color); color: var(--button-text); }
+
+/* --- nav --- */
+.press-nav {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: var(--surface-1);
+  border-block-end: 1px solid var(--border-1);
+}
+.press-nav__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  max-width: 1100px;
+  margin-inline: auto;
+  padding: 0.75rem 1.5rem;
+}
+.press-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  color: var(--text-1);
+  text-decoration: none;
+}
+.press-brand__mark { display: inline-flex; width: 32px; height: 32px; color: var(--text-1); }
+.press-brand__mark svg { width: 100%; height: 100%; }
+.press-brand__word {
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+.press-nav__links { display: flex; align-items: center; gap: 1.5rem; }
+.press-nav__link {
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  color: var(--text-2);
+  text-decoration: none;
+  transition: color 200ms ease;
+}
+.press-nav__link:hover { color: var(--text-1); }
+.press-nav__link.is-active { color: var(--accent); }
+
+@media (max-width: 640px) {
+  .press-nav__links, .press-nav__cta { display: none; }
+}
+
+/* --- split hero --- */
+.press-hero {
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: center;
+  gap: 3rem;
+  max-width: 1100px;
+  margin-inline: auto;
+  padding: 5rem 1.5rem 3.5rem;
+  text-align: center;
+}
+.press-hero__text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+}
+.press-hero__headline {
+  margin: 0;
+  font-family: var(--press-serif);
+  font-weight: 700;
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  line-height: 1.12;
+  color: var(--text-1);
+}
+.press-hero__lede {
+  margin: 0;
+  max-width: 34ch;
+  font-size: 1.3rem;
+  line-height: 1.6;
+  color: var(--text-2);
+}
+.press-hero__actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 1rem; }
+.press-hero__photo { flex-shrink: 0; }
+.press-hero__ring {
+  width: min(280px, 70vw);
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+}
+.press-hero__ring img { width: 100%; height: 100%; object-fit: cover; object-position: center top; display: block; }
+
+@media (min-width: 900px) {
+  .press-hero { flex-direction: row; justify-content: space-between; text-align: left; gap: 4rem; }
+  .press-hero__text { align-items: flex-start; }
+  .press-hero__ring { width: 340px; }
+}
+
+/* --- genre cards --- */
+.press-genres {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+  max-width: 1100px;
+  margin: 0 auto 5rem;
+  padding-inline: 1.5rem;
+}
+@media (min-width: 640px) {
+  .press-genres { grid-template-columns: 1fr 1fr; }
+}
+.press-genre-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  background: var(--surface-1);
+  border: 1px solid var(--border-1);
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  transition: border-color 200ms ease;
+}
+.press-genre-card:hover { border-color: var(--border-2); }
+.press-genre-card__label {
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.press-genre-card__title {
+  margin: 0;
+  font-family: var(--press-serif);
+  font-size: 1.6rem;
+  line-height: 1.2;
+  color: var(--text-1);
+}
+.press-genre-card__blurb { margin: 0; color: var(--text-2); }
+.press-genre-card__more {
+  margin-top: 0.25rem;
+  align-self: flex-start;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--link-color);
+  text-decoration: none;
+}
+.press-genre-card__more:hover { text-decoration: underline; text-underline-offset: 0.15em; }
+
+/* --- footer --- */
+.press-footer {
+  border-block-start: 1px solid var(--border-1);
+  padding-block: 3rem;
+  text-align: center;
+}
+.press-footer__inner { max-width: 1100px; margin-inline: auto; padding-inline: 1.5rem; }
+.press-footer__mark {
+  display: block;
+  width: 40px;
+  margin: 0 auto 1.5rem;
+  color: var(--text-3);
+}
+.press-footer__mark svg { width: 100%; height: 100%; }
+.press-footer__legal { margin: 0; color: var(--text-2); font-size: 0.875rem; }

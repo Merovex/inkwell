@@ -1,0 +1,66 @@
+<% content_for :title, "Message Board — Inkwell" %>
+
+<%= render "admin/shared/canvas_head", crumbs: [["Message Board", nil]] do %>
+  <button type="button" class="menu__item" role="menuitem">Subscribe</button>
+  <button type="button" class="menu__item" role="menuitem">Manage categories…</button>
+  <hr class="menu__separator">
+  <button type="button" class="menu__item" role="menuitem">Board settings</button>
+<% end %>
+
+<header class="perma-header">
+  <h1 class="perma-header__title">Message Board</h1>
+  <div class="perma-header__content">
+    <nav class="perma-header__toolbar" aria-label="Filters">
+      <a class="button button--primary button--small" href="#">
+        <%= inline_svg_tag "lucide/plus.svg", class: "lucide", size: "16px" %> New message
+      </a>
+
+      <%# category filter — active segment + a dropdown of categories %>
+      <div class="button-group">
+        <button type="button" class="button-group__btn is-active">All messages</button>
+        <button type="button" class="button-group__btn" popovertarget="cat-menu" aria-haspopup="menu">
+          Categories <%= inline_svg_tag "lucide/chevron-down.svg", class: "lucide", size: "16px" %>
+        </button>
+      </div>
+      <div class="menu" popover id="cat-menu" role="menu" data-controller="anchored-popover">
+        <button type="button" class="menu__item" role="menuitem">📢 Announcement</button>
+        <button type="button" class="menu__item" role="menuitem">✨ FYI</button>
+        <button type="button" class="menu__item" role="menuitem">❤️ Heartbeat</button>
+        <button type="button" class="menu__item" role="menuitem">💡 Pitch</button>
+        <button type="button" class="menu__item" role="menuitem">👋 Question</button>
+        <hr class="menu__separator">
+        <button type="button" class="menu__item" role="menuitem">Edit categories…</button>
+      </div>
+
+      <%# sort dropdown — single-select with a check on the active option %>
+      <div class="button-group">
+        <button type="button" class="button-group__btn is-active" popovertarget="sort-menu" aria-haspopup="menu">
+          Newest post <%= inline_svg_tag "lucide/chevron-down.svg", class: "lucide", size: "16px" %>
+        </button>
+      </div>
+      <div class="menu" popover id="sort-menu" role="menu" data-controller="anchored-popover">
+        <button type="button" class="menu__item" role="menuitemradio" aria-checked="true">Newest post <%= inline_svg_tag "lucide/check.svg", class: "lucide menu__check", size: "16px" %></button>
+        <button type="button" class="menu__item" role="menuitemradio" aria-checked="false">Latest comment <%= inline_svg_tag "lucide/check.svg", class: "lucide menu__check", size: "16px" %></button>
+        <button type="button" class="menu__item" role="menuitemradio" aria-checked="false">Alphabetically (A–Z) <%= inline_svg_tag "lucide/check.svg", class: "lucide menu__check", size: "16px" %></button>
+      </div>
+
+      <%# compact text filter — the "Filter… F" label overlaps the input until typed %>
+      <div class="filter-by-text">
+        <input class="filter-by-text__input" type="text" placeholder=" " autocomplete="off" aria-label="Filter messages by name">
+        <label class="filter-by-text__hotkey">Filter… <kbd class="kbd">F</kbd></label>
+      </div>
+    </nav>
+  </div>
+</header>
+
+<ul class="list">
+  <%= render "admin/shared/list_item", href: admin_item_view_path, title: "Kickoff notes for the winter issue",
+        author: "Ada Lovelace", date: "Jun 27",
+        excerpt: "Pulling together the themes we landed on last week — the long-form essay, two shorter pieces, and the interview.",
+        client_visible: true, comment_count: 3 %>
+  <%= render "admin/shared/list_item", href: admin_item_view_path, title: "Notes on typography",
+        author: "Grace Hopper", date: "Jun 26",
+        excerpt: "A pass on the type scale and measure for the reading view; draft values attached for review." %>
+  <%= render "admin/shared/list_item", href: admin_item_view_path, title: "Reminder: submissions close Friday",
+        author: "Alan Turing", date: "Jun 25", excerpt: "Last call for the winter issue.", comment_count: 12 %>
+</ul>

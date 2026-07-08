@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= content_for(:title) || "Merovex Press — Stories where humans meet the impossible" %></title>
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+    <meta name="application-name" content="Merovex Press">
+    <meta name="description" content="Science fiction, fantasy, and alternate history from pen names Ben Wilson and Troy Buzby.">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+
+    <link rel="icon" href="/icon.svg" type="image/svg+xml">
+
+    <%# Shared color scales + dark mode (the syō-ro / mountain-mist palette). %>
+    <%= stylesheet_link_tag "01-tokens", "data-turbo-track": "reload" %>
+    <%# Public-site styles. Everything is scoped under .press, so even though the
+        :app glob also loads this file on admin pages, none of it applies there. %>
+    <%= stylesheet_link_tag "press", "data-turbo-track": "reload" %>
+  </head>
+
+  <body class="press">
+    <nav class="press-nav" aria-label="Main navigation">
+      <div class="press-nav__inner">
+        <a href="#" class="press-brand" aria-label="Merovex Press home">
+          <span class="press-brand__mark"><%= inline_svg_tag "merovex-mark.svg" %></span>
+          <span class="press-brand__word">Merovex Press</span>
+        </a>
+
+        <div class="press-nav__links">
+          <a href="#" class="press-nav__link is-active" aria-current="page">Home</a>
+          <a href="#" class="press-nav__link">Books</a>
+          <a href="#" class="press-nav__link">Blog</a>
+          <a href="#" class="press-nav__link">About</a>
+        </div>
+
+        <a href="#" class="press-btn press-btn--primary press-nav__cta">Join the Newsletter</a>
+      </div>
+    </nav>
+
+    <main id="main-content"><%= yield %></main>
+
+    <footer class="press-footer">
+      <div class="press-footer__inner">
+        <span class="press-footer__mark"><%= inline_svg_tag "merovex-mark.svg" %></span>
+        <p class="press-footer__legal">
+          &copy; 2026 Merovex Press.
+          <a href="#" class="press-link">RSS Feed</a>
+        </p>
+      </div>
+    </footer>
+  </body>
+</html>

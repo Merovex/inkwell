@@ -1,7 +1,7 @@
 <%# App header — brand left; notifications + user menu top-right. %>
 <%# .app-header is hidden under Hotwire Native (native nav takes over). %>
 <header class="bar app-header">
-  <%= link_to "Alcovo", root_path, class: "bar__brand" %>
+  <%= link_to "Inkwell", admin_root_path, class: "bar__brand" %>
   <div class="bar__spacer"></div>
 
   <% if authenticated? %>
@@ -9,11 +9,11 @@
     <%= inline_svg_tag "lucide/bell.svg", class: "lucide", size: "20px" %>
   </button>
 
-  <button type="button" class="avatar" popovertarget="user-menu" aria-haspopup="menu" aria-label="Account menu"><%= avatar_initials(Current.user) %></button>
+  <button type="button" class="avatar" popovertarget="user-menu" aria-haspopup="menu" aria-label="Account menu"><%= avatar_content(Current.user) %></button>
 
   <div class="menu menu--user" popover id="user-menu" role="menu">
     <button type="button" class="menu__item" role="menuitem">My Profile</button>
-    <button type="button" class="menu__item" role="menuitem">Settings</button>
+    <%= link_to "Settings", admin_user_settings_path, class: "menu__item", role: "menuitem" %>
     <hr class="menu__separator">
     <div class="menu__row">
       <button type="button" class="menu__item theme-toggle" role="menuitem" data-mode="light"
@@ -30,9 +30,9 @@
         <span data-tint-target="label">Zinc</span>
       </button>
     </div>
-    <%= button_to "Sign out", session_path, method: :delete, class: "menu__item", role: "menuitem" %>
+    <%= button_to "Sign out", admin_session_path, method: :delete, class: "menu__item", role: "menuitem" %>
   </div>
   <% else %>
-  <%= link_to "Sign in", new_session_path, class: "button button--ghost" %>
+  <%= link_to "Sign in", new_admin_session_path, class: "button button--ghost" %>
   <% end %>
 </header>

@@ -1,0 +1,7 @@
+announcement:
+  name: Announcement
+  icon: 📢
+
+question:
+  name: Question
+  icon: 🤔

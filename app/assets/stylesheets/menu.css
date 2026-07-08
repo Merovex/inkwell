@@ -56,9 +56,15 @@
      (same top layer → z-index applies). */
   .menu__close {
     position: absolute;
-    inset-block-start: 0;
-    inset-inline-end: 0;
+    /* the panel is flush to the canvas corner, so these offsets place the X
+       exactly where the ... trigger sits (quarter pad down, half pad in) */
+    inset-block-start: calc(var(--u-pad) / 4);
+    inset-inline-end: calc(var(--u-pad) / 2);
     z-index: 1;
+    /* match the canvas-head action buttons: 32px square */
+    block-size: calc(var(--u-pad) * 2);
+    inline-size: calc(var(--u-pad) * 2);
+    padding: 0;
   }
 
   .menu__separator {
@@ -110,6 +116,12 @@
      in from the right; padding-block-start clears the internal close button. */
   .menu--context {
     inset: 4rem 1.5rem auto auto;
+    /* the ... trigger sits half a pad in from the canvas edge and a quarter
+       pad down inside the strip (see .canvas__head-actions); pull the anchored
+       panel back out+up so it sits flush to the canvas's top-right corner */
+    margin-inline-end: calc(-0.5 * var(--u-pad));
+    margin-block-start: calc(-0.25 * var(--u-pad));
+    border-start-end-radius: var(--radius-2); /* match the canvas corner it hugs */
     min-inline-size: 14rem;
     padding-block-start: calc(var(--u-pad) * 2.5);
     clip-path: inset(0 0 0 100%);       /* revealed from its right (canvas) edge */

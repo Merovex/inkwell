@@ -1,0 +1,82 @@
+/*
+ * History — the change feed of a post (events list) and the tracked-changes
+ * diff view. The feed is a vertical "subway line": a continuous rail with a
+ * stop at each event, the whole list half the canvas width, centered.
+ *
+ * Structure (BEM): .history > .history__entry > .history__stamp +
+ *   .history__line + .history__action; .history__diff wraps diffed content.
+ */
+@layer components {
+  .history {
+    --history-rail-gap: calc(var(--u-pad) * 1.75); /* stop column → text */
+    --history-dot-size: 0.75rem;
+    --history-line-size: 3px;
+    --history-stop-center: 0.5rem;                 /* dot center below entry top */
+
+    list-style: none;
+    margin-block: 0;
+    margin-inline: auto;
+    padding: 0;
+    display: grid;
+    gap: calc(var(--u-pad) * 1.5);
+    inline-size: 50%;
+  }
+
+  @media (width < 48rem) {
+    .history { inline-size: 100%; }
+  }
+
+  .history__entry {
+    position: relative;
+    padding-inline-start: var(--history-rail-gap);
+  }
+
+  /* The rail: spans each entry plus the gap below it, so it reads as one
+     continuous line; trimmed to the stop on the ends. Stops paint over it. */
+  .history__entry::before {
+    content: "";
+    position: absolute;
+    inset-inline-start: calc((var(--history-dot-size) - var(--history-line-size)) / 2);
+    inset-block-start: 0;
+    inset-block-end: calc(-1.5 * var(--u-pad));
+    inline-size: var(--history-line-size);
+    background: var(--accent);
+  }
+
+  .history__entry:first-child::before { inset-block-start: var(--history-stop-center); }
+  .history__entry:last-child::before { inset-block-end: auto; block-size: var(--history-stop-center); }
+  .history__entry:only-child::before { display: none; }
+
+  /* The stop: a canvas-filled circle ringed in the line color. */
+  .history__entry::after {
+    content: "";
+    position: absolute;
+    inset-inline-start: 0;
+    inset-block-start: calc(var(--history-stop-center) - var(--history-dot-size) / 2);
+    inline-size: var(--history-dot-size);
+    block-size: var(--history-dot-size);
+    border-radius: 50%;
+    background: var(--canvas);
+    border: var(--history-line-size) solid var(--accent);
+  }
+
+  .history__stamp { font-size: var(--font-size-0); margin: 0; }
+  .history__line { margin: 0; }
+  .history__action { color: var(--link); }
+
+  /* Tracked changes: insertions green, deletions struck-through red — token
+     surfaces already tuned for both modes. */
+  .history__diff ins,
+  .perma-header ins {
+    background: var(--success-surface);
+    color: var(--success-ink);
+    text-decoration: none;
+  }
+
+  .history__diff del,
+  .perma-header del {
+    background: var(--danger-surface);
+    color: var(--danger-ink);
+    text-decoration: line-through;
+  }
+}

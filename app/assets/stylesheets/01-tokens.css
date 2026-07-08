@@ -5,11 +5,12 @@
  * not competing rules, so they don't need to sit in a cascade layer.
  *
  * Color model: semantic tokens (--ink, --canvas, --site-bg, --line, --accent)
- * that components read. The site background is driven by a rotating account tint
- * (--tint); dark mode overrides the structural neutrals. The brand is a teal
- * family (hue 175). See docs/concepts/theme-background-colors.md for the full
- * rationale. Tint values are the Tailwind v4 palette's -100 shades (olive, taupe,
- * mauve, mist, zinc), written as OKLCH literals since there's no Tailwind build.
+ * that components read. Inkwell shares the Merovex Press palette so the admin
+ * backend and the public site converge: the accent is the "syō-ro" teal family
+ * and the neutral surfaces are the "mountain-mist" family (both ported from
+ * ~/Work/merovex.press/assets/css/colors.css as OKLCH literals). Dark mode
+ * overrides the structural neutrals. The rotating account tint is retired — the
+ * site background is a fixed mountain-mist. See docs/concepts/theme-background-colors.md.
  */
 :root {
   color-scheme: light dark;
@@ -23,32 +24,69 @@
   --radius-card: var(--radius-3);
   --elevation-card: var(--shadow-2);
 
+  /* --- syō-ro: the Merovex teal accent scale --- */
+  --color-syo-ro-50:  oklch(97.63%  0.00408 158.604);
+  --color-syo-ro-100: oklch(92.46%  0.01287 172.808);
+  --color-syo-ro-200: oklch(84.571% 0.02514 171.062);
+  --color-syo-ro-300: oklch(74.285% 0.03827 172.481);
+  --color-syo-ro-400: oklch(63.23%  0.04428 174.688);
+  --color-syo-ro-500: oklch(54.198% 0.04443 173.71);
+  --color-syo-ro-600: oklch(47.902% 0.04013 175.196);
+  --color-syo-ro-700: oklch(40.292% 0.03011 176.88);
+  --color-syo-ro-800: oklch(35.533% 0.02296 178.963);
+  --color-syo-ro-900: oklch(32.359% 0.0187  174.479);
+  --color-syo-ro-950: oklch(22.542% 0.01361 180.001);
+
+  /* --- mountain-mist: the Merovex neutral surface/ink scale (warm-tinted) --- */
+  --color-mountain-mist-50:  oklch(98.407% 0.00168 145.562);
+  --color-mountain-mist-100: oklch(96.911% 0.00169 145.562);
+  --color-mountain-mist-200: oklch(92.466% 0.00134 106.425);
+  --color-mountain-mist-300: oklch(86.966% 0.00136 106.427);
+  --color-mountain-mist-400: oklch(65.604% 0.00292 106.480);
+  --color-mountain-mist-500: oklch(55.489% 0.00304 106.498);
+  --color-mountain-mist-600: oklch(44.192% 0.00161 106.465);
+  --color-mountain-mist-700: oklch(37.460% 0.00335 106.560);
+  --color-mountain-mist-800: oklch(27.236% 0.00182 106.519);
+  --color-mountain-mist-900: oklch(21.739% 0.00192 106.558);
+  --color-mountain-mist-950: oklch(14.914% 0.00210 106.652);
+
   /* --- structural colors (light) --- */
-  --neutral-bg: oklch(92% 0.004 286.32);    /* fallback when no tint set (= zinc-200) */
-  --tint: var(--neutral-bg);                /* rotating account tint slots in here */
-  --site-bg: var(--tint);                   /* the outer page */
-  --canvas: #ffffff;                        /* card / article surface */
-  --ink: oklch(0.22 0.01 260);              /* primary text */
-  --ink-muted: oklch(0.55 0.01 260);        /* secondary text */
-  --line: oklch(0.92 0.004 260);            /* borders / hairlines */
-  --scrim: oklch(0% 0 0 / 0.4);             /* overlay behind modals & bottom sheets */
+  --neutral-bg: var(--color-mountain-mist-200); /* the outer page — fixed mountain-mist */
+  --tint: var(--neutral-bg);                    /* kept for compatibility; no longer rotates */
+  --site-bg: var(--tint);                       /* the outer page */
+  --canvas: #ffffff;                            /* card / article surface */
+  --ink: var(--color-mountain-mist-900);        /* primary text */
+  --ink-muted: var(--color-mountain-mist-600);  /* secondary text */
+  --line: var(--color-mountain-mist-300);       /* borders / hairlines */
+  --scrim: oklch(0% 0 0 / 0.4);                 /* overlay behind modals & bottom sheets */
+  --fill-subtle: var(--color-mountain-mist-100); /* subtle neutral fill: code bg, quiet hovers */
 
-  /* --- brand: Tailwind v4 teal, chroma scaled ×0.85 (−15% desaturated) --- */
-  --brand-deep:   oklch(27.7% 0.039 192.524); /* teal-950 −15%C — deep bg, sidebars, strong text */
-  --brand-strong: oklch(43.7% 0.066 188.216); /* teal-800 −15%C — solid fill for white text (AAA) */
-  --brand-muted:  oklch(51.1% 0.082 186.391); /* teal-700 −15%C — secondary borders, inactive states */
-  --brand:        oklch(70.4% 0.119 182.503); /* teal-500 −15%C — key interactive: buttons, progress */
+  /* --- code syntax highlighting (GitHub light palette) --- */
+  --code-att:         #d73a49;
+  --code-comment:     #6a737d;
+  --code-function:    #6f42c1;
+  --code-operator:    #d73a49;
+  --code-property:    #005cc5;
+  --code-punctuation: #24292e;
+  --code-selector:    #22863a;
+  --code-variable:    #e36209;
 
-  --accent: var(--brand);                   /* interactive color the components read */
-  --accent-ink: var(--brand-deep);          /* dark teal text reads on the brand fill */
-  --accent-soft: oklch(95.3% 0.043 180.801); /* teal-100 −15%C — subtle fill: hover / selected */
-  --menu-context-bg: oklch(44.1% 0.06 190);  /* teal-800-ish — AAA with near-white ink */
-  --menu-context-ink: oklch(98% 0.01 182);   /* near-white text on the dark teal */
+  /* --- brand: the syō-ro teal family --- */
+  --brand-deep:   var(--color-syo-ro-950); /* deep bg, sidebars, strong text */
+  --brand-strong: var(--color-syo-ro-800); /* solid fill for white text (AAA) — primary buttons */
+  --brand-muted:  var(--color-syo-ro-600); /* secondary borders, inactive states */
+  --brand:        var(--color-syo-ro-500); /* key interactive: focus rings, switches, progress */
+
+  --accent: var(--brand);                  /* interactive color the components read */
+  --accent-ink: var(--brand-deep);         /* dark teal text reads on the brand fill */
+  --accent-soft: var(--color-syo-ro-100);  /* subtle fill: hover / selected */
+  --menu-context-bg: var(--color-syo-ro-800); /* dark teal — AAA with near-white ink */
+  --menu-context-ink: var(--color-mountain-mist-50); /* near-white text on the dark teal */
 
   /* AAA (7:1) foregrounds — muted metadata intentionally stays AA */
-  --link: oklch(44.1% 0.10 186);             /* dark teal link on the canvas (underlined) */
-  --ink-on-soft: oklch(42.1% 0.08 186);      /* text on --accent-soft: avatar initials, accent badge */
-  --brand-text: oklch(44.1% 0.10 186);       /* teal-tinted body text at 7:1 on the canvas */
+  --link: var(--color-syo-ro-700);         /* dark teal link on the canvas (underlined) */
+  --ink-on-soft: var(--color-syo-ro-800);  /* text on --accent-soft: avatar initials, accent badge */
+  --brand-text: var(--color-syo-ro-700);   /* teal-tinted body text at 7:1 on the canvas */
 
   /* semantic surfaces + AAA inks (light pills; shared by badges + alerts) */
   --success-surface: oklch(94% 0.06 150);
@@ -60,26 +98,10 @@
   --danger-solid:    oklch(48% 0.16 25);     /* dark red for white text (AAA) */
 }
 
-/* --- rotating light-mode tints (Tailwind v4 palette, -200 shades) --- */
-[data-tint="olive"] { --tint: oklch(93%   0.007 106.5);   } /* olive-200 */
-[data-tint="taupe"] { --tint: oklch(92.2% 0.005  34.3);   } /* taupe-200 */
-[data-tint="mauve"] { --tint: oklch(92.2% 0.005 325.62);  } /* mauve-200 */
-[data-tint="mist"]  { --tint: oklch(92.5% 0.005 214.3);   } /* mist-200 */
-[data-tint="zinc"]  { --tint: oklch(92%   0.004 286.32);  } /* zinc-200 */
-
 /*
- * Re-declare --site-bg on the SAME element that carries the tint. var(--tint)
- * substitutes using that element's own --tint, so the background tracks the tint
- * whether it sits on <html> or a descendant. Without this, --site-bg would stay
- * frozen at the value it computed up on :root. (Dark mode below overrides this.)
- */
-[data-tint] { --site-bg: var(--tint); }
-
-/*
- * Dark mode. Placed AFTER the tint rules so that when an element carries both
- * data-tint and data-theme="dark" (equal specificity), dark wins and pins the
- * site background to near-black regardless of tint. Applies via explicit
- * [data-theme="dark"] or the OS preference when no explicit theme is set.
+ * Dark mode. Applies via explicit [data-theme="dark"] or the OS preference when
+ * no explicit theme is set. Structural neutrals drop down the mountain-mist
+ * scale; the syō-ro accent lifts to a lighter shade so it pops on the dark canvas.
  */
 [data-theme="dark"],
 :root:not([data-theme="light"]) {
@@ -87,35 +109,57 @@
 }
 
 [data-theme="dark"] {
-  --canvas: #1f2937;                        /* gray-800 — article/canvas */
-  --site-bg: #030712;                       /* gray-950 — outer page (ignores tint) */
-  --ink: oklch(0.93 0.006 260);
-  --ink-muted: oklch(0.68 0.01 260);
-  --line: oklch(0.34 0.01 260);
-  --accent: var(--brand);                   /* same vibrant teal pops on dark */
-  --accent-ink: var(--brand-deep);
-  --accent-soft: oklch(38.6% 0.054 188.416); /* teal-900 −15%C */
-  --menu-context-bg: oklch(75.9% 0.12 182);       /* teal-400-ish — AAA with teal-950 ink */
-  --menu-context-ink: var(--brand-deep);          /* dark teal text on the light teal */
-  --link: oklch(75.6% 0.12 182);                  /* light teal link on the dark canvas */
-  --ink-on-soft: oklch(88.7% 0.12 182);           /* light teal on teal-900 (avatar, accent badge) */
-  --brand-text: oklch(75.6% 0.12 182);            /* teal-tinted body text at 7:1 (dark) */
+  --canvas: var(--color-mountain-mist-800);  /* article/canvas */
+  --site-bg: var(--color-mountain-mist-950); /* outer page */
+  --ink: var(--color-mountain-mist-100);
+  --ink-muted: var(--color-mountain-mist-400);
+  --line: var(--color-mountain-mist-700);
+  --fill-subtle: var(--color-mountain-mist-800); /* a step lighter than the dark canvas */
+
+  /* code syntax (GitHub dark palette) */
+  --code-att:         #ff7b72;
+  --code-comment:     #8b949e;
+  --code-function:    #d2a8ff;
+  --code-operator:    #ff7b72;
+  --code-property:    #79c0ff;
+  --code-punctuation: #c9d1d9;
+  --code-selector:    #7ee787;
+  --code-variable:    #ffa657;
+  --accent: var(--color-syo-ro-300);              /* lighter teal pops on dark */
+  --accent-ink: var(--color-syo-ro-950);
+  --accent-soft: var(--color-syo-ro-800);
+  --menu-context-bg: var(--color-syo-ro-300);     /* light teal — AAA with syō-ro-950 ink */
+  --menu-context-ink: var(--color-syo-ro-950);    /* dark teal text on the light teal */
+  --link: var(--color-syo-ro-300);                /* light teal link on the dark canvas */
+  --ink-on-soft: var(--color-syo-ro-100);         /* light teal on syō-ro-800 (avatar, accent badge) */
+  --brand-text: var(--color-syo-ro-300);          /* teal-tinted body text on dark */
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --canvas: #1f2937;
-    --site-bg: #030712;
-    --ink: oklch(0.93 0.006 260);
-    --ink-muted: oklch(0.68 0.01 260);
-    --line: oklch(0.34 0.01 260);
-    --accent: var(--brand);
-    --accent-ink: var(--brand-deep);
-    --accent-soft: oklch(38.6% 0.054 188.416); /* teal-900 −15%C */
-    --menu-context-bg: oklch(75.9% 0.12 182);
-    --menu-context-ink: var(--brand-deep);
-    --link: oklch(75.6% 0.12 182);
-    --ink-on-soft: oklch(88.7% 0.12 182);
-    --brand-text: oklch(75.6% 0.12 182);
+    --canvas: var(--color-mountain-mist-800);
+    --site-bg: var(--color-mountain-mist-950);
+    --ink: var(--color-mountain-mist-100);
+    --ink-muted: var(--color-mountain-mist-400);
+    --line: var(--color-mountain-mist-700);
+    --fill-subtle: var(--color-mountain-mist-800);
+
+    /* code syntax (GitHub dark palette) */
+    --code-att:         #ff7b72;
+    --code-comment:     #8b949e;
+    --code-function:    #d2a8ff;
+    --code-operator:    #ff7b72;
+    --code-property:    #79c0ff;
+    --code-punctuation: #c9d1d9;
+    --code-selector:    #7ee787;
+    --code-variable:    #ffa657;
+    --accent: var(--color-syo-ro-300);
+    --accent-ink: var(--color-syo-ro-950);
+    --accent-soft: var(--color-syo-ro-800);
+    --menu-context-bg: var(--color-syo-ro-300);
+    --menu-context-ink: var(--color-syo-ro-950);
+    --link: var(--color-syo-ro-300);
+    --ink-on-soft: var(--color-syo-ro-100);
+    --brand-text: var(--color-syo-ro-300);
   }
 }
