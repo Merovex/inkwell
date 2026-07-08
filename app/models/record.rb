@@ -84,6 +84,15 @@ class Record < ApplicationRecord
       .order(:record_id)
   end
 
+  # A pretty, id-first permalink slug used by the public site: the id followed
+  # by the parameterized title (e.g. "3-my-upcoming-book-title"). The id is all
+  # a lookup needs — String#to_i drops the tail, so Record.find works with the
+  # whole slug — which keeps links stable when a title is later edited. Records
+  # with no title (comments, chat lines) slug to just the id.
+  def to_slug
+    [ id, recordable&.try(:title).presence&.parameterize ].compact.join("-")
+  end
+
   def trashed? = trashed_at.present?
 
   # Staged deletion, always on the history regardless of draft/published.

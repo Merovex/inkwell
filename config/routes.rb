@@ -109,6 +109,11 @@ Rails.application.routes.draw do
     root "static#theme"
   end
 
+  # Public blog. The index lists published posts only; :id on the article page
+  # is the Record id (the stable public identity), matching the admin side.
+  get "blog" => "blog#index", as: :blog
+  get "blog/:id" => "blog#show", as: :blog_post
+
   # The public Merovex Press site. Static for now; the admin backend lives at
   # /admin.
   root "pages#home"

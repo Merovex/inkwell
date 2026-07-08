@@ -1,0 +1,13 @@
+<% content_for :title, "Not found — Merovex Press" %>
+
+<section class="press-notfound">
+  <p class="press-notfound__code">404</p>
+  <h1 class="press-notfound__title">There's nothing at this address</h1>
+  <p class="press-notfound__text">
+    The page may have moved, or the link may be mistyped.
+  </p>
+  <div class="press-notfound__actions">
+    <%= link_to "Back to the blog", blog_path, class: "press-btn press-btn--outline" %>
+    <%= link_to "Go home", root_path, class: "press-btn press-btn--primary" %>
+  </div>
+</section>

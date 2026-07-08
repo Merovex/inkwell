@@ -1,0 +1,20 @@
+<% content_for :title, "#{@post.title} — Merovex Press" %>
+
+<article class="press-article">
+  <a href="<%= blog_path %>" class="press-article__back">
+    <%= inline_svg_tag "lucide/chevron-right.svg", class: "lucide press-article__back-icon", size: "16px" %>
+    Back to the blog
+  </a>
+
+  <header class="press-article__head">
+    <time class="press-article__date" datetime="<%= @post.published_at.iso8601 %>">
+      <%= @post.published_at.strftime("%B %-d, %Y") %>
+    </time>
+    <h1 class="press-article__title"><%= @post.title %></h1>
+    <p class="press-article__byline">by <%= @post.record.creator.display_name %></p>
+  </header>
+
+  <div class="press-article__body">
+    <%= @post.content %>
+  </div>
+</article>

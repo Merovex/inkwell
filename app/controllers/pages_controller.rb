@@ -2,10 +2,7 @@
 # required — and rendered in the standalone "public" layout rather than the
 # Inkwell admin chrome. Static for now; links are placeholders (#) until the
 # real destinations exist.
-class PagesController < ApplicationController
-  allow_unauthenticated_access
-  layout "public"
-
+class PagesController < PublicController
   def home
   end
 end

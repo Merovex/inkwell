@@ -1,135 +1,94 @@
 <!doctype html>
-
 <html lang="en">
-
   <head>
-
-    <title>The page you were looking for doesn't exist (404 Not found)</title>
-
+    <title>Not found (404) — Merovex Press</title>
     <meta charset="utf-8">
     <meta name="viewport" content="initial-scale=1, width=device-width">
     <meta name="robots" content="noindex, nofollow">
-
     <style>
-
-      *, *::before, *::after {
-        box-sizing: border-box;
-      }
-
-      * {
-        margin: 0;
-      }
-
-      html {
-        font-size: 16px;
-      }
-
-      body {
-        background: #FFF;
-        color: #261B23;
-        display: grid;
-        font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Aptos, Roboto, "Segoe UI", "Helvetica Neue", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
-        font-size: clamp(1rem, 2.5vw, 2rem);
-        -webkit-font-smoothing: antialiased;
-        font-style: normal;
-        font-weight: 400;
-        letter-spacing: -0.0025em;
-        line-height: 1.4;
-        min-height: 100dvh;
-        place-items: center;
-        text-rendering: optimizeLegibility;
-        -webkit-text-size-adjust: 100%;
-      }
-
-      #error-description {
-        fill: #d30001;
-      }
-
-      #error-id {
-        fill: #f0eff0;
-      }
-
-      @media (prefers-color-scheme: dark) {
-        body {
-          background: #101010;
-          color: #e0e0e0;
-        }
-
-        #error-description {
-          fill: #FF6161;
-        }
-
-        #error-id {
-          fill: #2c2c2c;
-        }
-      }
-
-      a {
-        color: inherit;
-        font-weight: 700;
-        text-decoration: underline;
-        text-underline-offset: 0.0925em;
-      }
-
-      b, strong {
-        font-weight: 700;
-      }
-
-      i, em {
-        font-style: italic;
-      }
-
-      main {
-        display: grid;
-        gap: 1em;
-        padding: 2em;
-        place-items: center;
-        text-align: center;
-      }
-
-      main header {
-        width: min(100%, 12em);
-      }
-
-      main header svg {
-        height: auto;
-        max-width: 100%;
-        width: 100%;
-      }
-
-      main article {
-        width: min(100%, 30em);
-      }
-
-      main article p {
-        font-size: 75%;
-      }
-
-      main article br {
-        display: none;
-
-        @media(min-width: 48em) {
-          display: inline;
-        }
-      }
-
+/* Self-contained: these pages are served when the app/asset pipeline may
+   be down, so no external assets. Colors mirror the Merovex Press palette
+   (syō-ro teal + mountain-mist); the serif falls back to Georgia. */
+:root {
+  --bg:     oklch(98.407% 0.00168 145.562);
+  --text:   oklch(21.739% 0.00192 106.558);
+  --muted:  oklch(37.460% 0.00335 106.560);
+  --accent: oklch(47.902% 0.04013 175.196);
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg:     oklch(14.914% 0.00210 106.652);
+    --text:   oklch(96.911% 0.00169 145.562);
+    --muted:  oklch(65.604% 0.00292 106.480);
+    --accent: oklch(74.285% 0.03827 172.481);
+  }
+}
+*, *::before, *::after { box-sizing: border-box; }
+* { margin: 0; }
+html { font-size: 16px; }
+body {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 2rem 1.5rem;
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Source Sans 3", system-ui, -apple-system, "Segoe UI", sans-serif;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  text-align: center;
+}
+.mark { display: block; width: 48px; height: 48px; color: var(--accent); margin-inline: auto; }
+.mark svg { width: 100%; height: 100%; }
+.code {
+  margin-top: 1.5rem;
+  font-family: "Source Serif 4", Georgia, "Times New Roman", serif;
+  font-weight: 700;
+  font-size: clamp(3.5rem, 12vw, 6rem);
+  line-height: 1;
+  color: var(--accent);
+}
+.title {
+  margin-top: 0.5rem;
+  font-family: "Source Serif 4", Georgia, "Times New Roman", serif;
+  font-weight: 700;
+  font-size: clamp(1.4rem, 4vw, 2rem);
+  color: var(--text);
+}
+.text { margin-top: 0.75rem; color: var(--muted); max-width: 34rem; }
+.home {
+  display: inline-flex;
+  align-items: center;
+  margin-top: 2rem;
+  padding: 0.6em 1.4em;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  text-decoration: none;
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  border-radius: 0.25rem;
+}
+.home:hover { background: var(--accent); color: var(--bg); }
     </style>
-
   </head>
-
   <body>
-
-    <!-- This file lives in public/404.html -->
-
     <main>
-      <header>
-        <svg height="172" viewBox="0 0 480 172" width="480" xmlns="http://www.w3.org/2000/svg"><path d="m124.48 3.00509-45.6889 100.02991h26.2239v-28.1168h38.119v28.1168h21.628v35.145h-21.628v30.82h-37.308v-30.82h-72.1833v-31.901l50.2851-103.27391zm115.583 168.69891c-40.822 0-64.884-35.146-64.884-85.7015 0-50.5554 24.062-85.700907 64.884-85.700907 40.823 0 64.884 35.145507 64.884 85.700907 0 50.5555-24.061 85.7015-64.884 85.7015zm0-133.2831c-17.572 0-22.709 21.8984-22.709 47.5816 0 25.6835 5.137 47.5815 22.709 47.5815 17.303 0 22.71-21.898 22.71-47.5815 0-25.6832-5.407-47.5816-22.71-47.5816zm165.328-35.41581-45.689 100.02991h26.224v-28.1168h38.119v28.1168h21.628v35.145h-21.628v30.82h-37.308v-30.82h-72.184v-31.901l50.285-103.27391z" id="error-id"/><path d="m157.758 68.9967v34.0033h-7.199l-14.233-19.8814v19.8814h-8.584v-34.0033h8.307l13.125 18.7184v-18.7184zm28.454 21.5428c0 7.6978-5.15 13.0145-12.737 13.0145-7.532 0-12.738-5.3167-12.738-13.0145s5.206-13.0143 12.738-13.0143c7.587 0 12.737 5.3165 12.737 13.0143zm-8.528 0c0-3.4336-1.496-5.8703-4.209-5.8703-2.659 0-4.154 2.4367-4.154 5.8703s1.495 5.8149 4.154 5.8149c2.713 0 4.209-2.3813 4.209-5.8149zm13.184 3.8766v-9.5807h-3.655v-6.7564h3.655v-6.8671h8.584v6.8671h5.205v6.7564h-5.205v8.307c0 1.9383.941 2.769 2.658 2.769.941 0 1.994-.2216 2.769-.5538v7.3654c-.997.443-2.88.775-4.818.775-5.87 0-9.193-2.769-9.193-9.0819zm37.027 8.5839h-8.806v-34.0033h23.924v7.6978h-15.118v6.7564h13.9v7.5316h-13.9zm41.876-12.4605c0 7.6978-5.15 13.0145-12.737 13.0145-7.532 0-12.738-5.3167-12.738-13.0145s5.206-13.0143 12.738-13.0143c7.587 0 12.737 5.3165 12.737 13.0143zm-8.529 0c0-3.4336-1.495-5.8703-4.208-5.8703-2.659 0-4.154 2.4367-4.154 5.8703s1.495 5.8149 4.154 5.8149c2.713 0 4.208-2.3813 4.208-5.8149zm35.337-12.4605v24.921h-8.695v-2.16c-1.329 1.551-3.821 2.714-6.646 2.714-5.482 0-8.75-3.5999-8.75-9.1379v-16.3371h8.64v14.288c0 2.1045.997 3.5997 3.212 3.5997 1.606 0 3.101-1.0522 3.544-2.769v-15.1187zm4.076 24.921v-24.921h8.694v2.1598c1.385-1.5506 3.822-2.7136 6.701-2.7136 5.538 0 8.806 3.5997 8.806 9.1377v16.3371h-8.639v-14.2327c0-2.049-1.053-3.5443-3.268-3.5443-1.717 0-3.156.9969-3.6 2.7136v15.0634zm44.113 0v-1.994c-1.163 1.329-3.6 2.548-6.147 2.548-7.2 0-11.132-5.8151-11.132-13.0145s3.932-13.0143 11.132-13.0143c2.547 0 4.984 1.2184 6.147 2.5475v-13.0697h8.695v35.997zm0-9.1931v-6.5902c-.665-1.3291-2.16-2.326-3.821-2.326-2.991 0-4.763 2.4368-4.763 5.6488s1.772 5.5934 4.763 5.5934c1.717 0 3.156-.9415 3.821-2.326z" id="error-description"/></svg>
-      </header>
-      <article>
-        <p><strong>The page you were looking for doesn't exist.</strong> You may have mistyped the address or the page may have moved. If you're the application owner check the logs for more information.</p>
-      </article>
+      <span class="mark" aria-hidden="true">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1600" fill="currentColor">
+  <polygon points="967.64 795.15 990.96 859.46 1055.27 882.78 990.96 906.11 967.64 970.41 944.31 906.11 880.01 882.78 944.31 859.46 967.64 795.15"/>
+  <polygon points="880.01 930.49 890.63 959.78 919.93 970.41 890.63 981.04 880.01 1010.34 869.38 981.04 840.08 970.41 869.38 959.78 880.01 930.49"/>
+  <rect x="85.17" y="1095.32" width="324.56" height="47.7" transform="translate(-718.9 502.77) rotate(-45)"/>
+  <circle cx="362.2" cy="1004.42" r="55.77"/>
+  <path d="M1585.58,543.64c-18.05-75.01-140.32-86.06-239.48-82.04-416.7,16.42-642.36,221.15-758.27,390.01-86.56,126.09-125.8,249.7-142.11,316.43-100.15-17.46-194.04-3.73-260.24,13.1,17-66.88,30.86-162.03,12.55-263.36,69.87-21.17,205.31-69.7,305.91-151.77l26.83,26.83,67.46-67.48-92.52-92.52-33.73,33.74c-116.18,116.17-339.41,170.46-341.65,170.99l-48.28,11.52,13.39,47.77c47.58,169.68-28.03,338.16-28.76,339.76l-54.46,117.77,117.77-54.45c1.68-.78,168.93-76.68,339.77-28.76l52.3,14.58,7.8-53.75c3.82-26.4,101.95-646.77,820.03-675.08,39.29-1.54,82.77,1.45,112.81,6.88,8.93,1.62,11.85,13.02,4.78,18.7-19.35,15.53-53.31,38.29-112.4,69.44,3.97,19.72,8.88,54.97,7.35,103.51,174.9-86.9,238.41-148.37,223.16-211.83Z"/>
+  <path d="M799.8,1272.42c-50.73-.74-101.61-9.09-151.26-25.17-25.06-8.12-38.8-35.02-30.68-60.08,8.1-25.06,34.91-38.86,60.09-30.68,106.16,34.41,219.42,25.37,318.81-25.4,99.4-50.76,173.09-137.21,207.48-243.39,34.39-106.19,25.38-219.41-25.39-318.82-50.77-99.41-137.21-173.1-243.4-207.49-219.16-70.99-455.29,49.58-526.3,268.79-8.1,25.06-35,38.78-60.09,30.68-25.06-8.12-38.8-35.02-30.68-60.08,87.2-269.25,377.18-417.34,646.48-330.16,130.43,42.24,236.59,132.75,298.96,254.86,62.37,122.1,73.43,261.18,31.18,391.61-42.25,130.43-132.75,236.61-254.86,298.97-75.63,38.63-157.79,57.58-240.35,56.37Z"/>
+</svg>
+      </span>
+      <p class="code">404</p>
+      <h1 class="title">There's nothing at this address</h1>
+      <p class="text">The page may have moved, or the link may be mistyped.</p>
+      <a class="home" href="/">Go home</a>
     </main>
-
   </body>
-
 </html>
