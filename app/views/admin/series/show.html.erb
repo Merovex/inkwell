@@ -1,0 +1,32 @@
+<% content_for :title, "#{@series.title} — Inkwell" %>
+<% can_manage = allowed_to?(:manage, @record) %>
+
+<%= render "admin/shared/canvas_head", crumbs: [["Series", admin_series_index_path], [@series.title, nil]],
+      edit_href: (edit_admin_series_path(@record) if can_manage) do %>
+  <% if can_manage %>
+    <% if @series.published? %>
+      <%= button_to "Revert to draft", admin_series_publish_path(@record), method: :delete, class: "menu__item", role: "menuitem" %>
+    <% else %>
+      <%= button_to "Publish", admin_series_publish_path(@record), class: "menu__item", role: "menuitem" %>
+    <% end %>
+    <hr class="menu__separator">
+    <%= button_to "Move to trash", admin_series_path(@record), method: :delete, class: "menu__item", role: "menuitem" %>
+  <% end %>
+<% end %>
+
+<header class="perma-header">
+  <h1 class="perma-header__title"><%= @series.title %></h1>
+  <p class="perma-header__content u-text-muted">
+    <% if @series.published? %>
+      <span class="badge badge--accent">Published</span>
+    <% elsif @series.scheduled? %>
+      <span class="badge badge--accent">Scheduled · <%= @series.published_at.strftime("%b %-d") %></span>
+    <% else %>
+      <span class="badge">Draft</span>
+    <% end %>
+  </p>
+</header>
+
+<article class="u-flow"><%= @series.content %></article>
+
+<%= render "books", series: @series, record: @record %>

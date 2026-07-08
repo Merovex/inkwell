@@ -1,0 +1,9 @@
+<% content_for :title, "#{@series.title} — Inkwell" %>
+
+<%= render "admin/shared/canvas_head", crumbs: [["Series", admin_series_index_path], [@series.title, nil]], menu: false do %>
+  <%= render "composer_actions", series: @series %>
+<% end %>
+
+<%= render "form", series: @series, url: admin_series_path(@record) %>
+
+<%= render "books", series: @series, record: @record %>

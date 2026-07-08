@@ -1,0 +1,37 @@
+<% content_for :title, "Series — Inkwell" %>
+
+<%= render "admin/shared/canvas_head", crumbs: [["Series", nil]] %>
+
+<header class="perma-header">
+  <h1 class="perma-header__title">Series</h1>
+  <div class="perma-header__content">
+    <nav class="perma-header__toolbar" aria-label="Actions">
+      <%= link_to new_admin_series_path, class: "button button--primary button--small" do %>
+        <%= inline_svg_tag "lucide/plus.svg", class: "lucide", size: "16px" %> New series
+      <% end %>
+    </nav>
+  </div>
+</header>
+
+<% if @series.any? %>
+  <ul class="list">
+    <% @series.each do |series| %>
+      <%= render "admin/shared/list_item",
+            href: admin_series_path(series.record),
+            title: series.title,
+            author: series.record.creator.display_name,
+            avatar_user: series.record.creator,
+            date: l((series.published_at || series.created_at).to_date, format: :short),
+            excerpt: series.content.to_plain_text.to_s.truncate(140),
+            scheduled_at: (series.published_at if series.scheduled?),
+            pinned: series.pinned_at.present? %>
+    <% end %>
+  </ul>
+<% else %>
+  <div class="empty">
+    <span class="empty__icon"><%= inline_svg_tag "lucide/inbox.svg", class: "lucide", size: "40px" %></span>
+    <p class="empty__title">No series yet</p>
+    <p class="empty__text">Create a series and add books to it.</p>
+    <div class="empty__actions"><%= link_to "New series", new_admin_series_path, class: "button button--primary" %></div>
+  </div>
+<% end %>

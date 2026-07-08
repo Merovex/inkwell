@@ -1,0 +1,65 @@
+<% content_for :title, "#{@book.title} — Inkwell" %>
+<% can_manage = allowed_to?(:manage, @record) %>
+
+<%# The title is editable in place (creator/admin only): double-click it. Saving %>
+<%# submits the enclosed form (PATCH books#update) — on a published book that's a %>
+<%# tracked rename on the history. %>
+<div data-controller="editable">
+  <%= render "admin/shared/canvas_head", crumbs: [["Books", admin_books_path], [@book.title, nil]],
+        edit_href: (edit_admin_book_path(@record) if can_manage) do %>
+    <% if can_manage %>
+      <% if @book.published? %>
+        <%= button_to "Revert to draft", admin_book_publish_path(@record), method: :delete, class: "menu__item", role: "menuitem" %>
+      <% else %>
+        <%= button_to "Publish", admin_book_publish_path(@record), class: "menu__item", role: "menuitem" %>
+      <% end %>
+      <hr class="menu__separator">
+    <% end %>
+    <%= link_to "Change log", admin_book_events_path(@record), class: "menu__item", role: "menuitem" %>
+    <% if can_manage %>
+      <hr class="menu__separator">
+      <%= button_to "Move to trash", admin_book_path(@record), method: :delete, class: "menu__item", role: "menuitem" %>
+    <% end %>
+  <% end %>
+
+  <header class="perma-header">
+    <% if can_manage %>
+      <h1 class="perma-header__title editable__display" data-editable-target="display"
+          data-action="dblclick->editable#edit" title="Double-click to rename" tabindex="0"><%= @book.title %></h1>
+      <%= form_with model: @book, url: admin_book_path(@record) do |f| %>
+        <%= f.text_field :title, hidden: true, class: "perma-header__title editable__input",
+              aria: { label: "Title" },
+              data: { editable_target: "input",
+                      action: "blur->editable#save keydown.enter->editable#save keydown.esc->editable#cancel" } %>
+      <% end %>
+    <% else %>
+      <h1 class="perma-header__title"><%= @book.title %></h1>
+    <% end %>
+    <p class="perma-header__content u-text-muted">
+      <% if @book.published? %>
+        <span class="badge badge--accent">Published</span>
+      <% elsif @book.scheduled? %>
+        <span class="badge badge--accent">Scheduled · <%= @book.published_at.strftime("%b %-d") %></span>
+      <% else %>
+        <span class="badge">Draft</span>
+      <% end %>
+      <% if @book.publication_date %> · Released <%= @book.publication_date.strftime("%B %Y") %><% end %>
+    </p>
+  </header>
+</div>
+
+<div class="book-detail">
+  <% if @book.cover? %>
+    <%= image_tag @book.cover, class: "book-detail__cover", alt: "#{@book.title} cover" %>
+  <% else %>
+    <span class="book-detail__cover book-detail__cover--empty" aria-hidden="true">No cover</span>
+  <% end %>
+  <article class="u-flow"><%= @book.content %></article>
+</div>
+
+<% book_series = @book.series %>
+<% if book_series.any? %>
+  <p class="u-text-muted">In series:
+    <%= safe_join(book_series.map { |s| link_to s.title, admin_series_path(s.record) }, ", ") %>
+  </p>
+<% end %>

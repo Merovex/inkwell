@@ -7,7 +7,7 @@ class Record < ApplicationRecord
   include Boostable
 
   # Content types that may live in the envelope; grows as recordables are added.
-  RECORDABLE_TYPES = %w[ Post Comment ChatLine Message ]
+  RECORDABLE_TYPES = %w[ Post Comment ChatLine Message Book Series ]
 
   delegated_type :recordable, types: RECORDABLE_TYPES, optional: true
   belongs_to :creator, class_name: "User", default: -> { Current.user }
@@ -25,6 +25,8 @@ class Record < ApplicationRecord
   scope :comments, -> { where(recordable_type: "Comment") }
   scope :chat_lines, -> { where(recordable_type: "ChatLine") }
   scope :messages, -> { where(recordable_type: "Message") }
+  scope :books, -> { where(recordable_type: "Book") }
+  scope :series, -> { where(recordable_type: "Series") }
 
   before_destroy :destroy_versions
 

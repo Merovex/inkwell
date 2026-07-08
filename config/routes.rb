@@ -91,6 +91,33 @@ Rails.application.routes.draw do
     end
     resources :boosts, only: :destroy
 
+    # Book series — recordables on the spine. A series' show/edit page lists
+    # its books, drag-sortable; reorder PATCHes the Installment positions.
+    resources :series do
+      patch :reorder, on: :member
+      get :search, on: :collection
+      scope module: :series do
+        resource :publish, only: %i[create destroy]
+      end
+    end
+
+    # Books — recordables with a versioned cover (depiction). Series membership
+    # is managed with the typeahead (Installments), not the book form.
+    resources :books do
+      get :search, on: :collection
+      scope module: :books do
+        resource :publish, only: %i[create destroy]
+        resource :depiction, only: %i[create destroy]
+        resources :events, only: :index
+        resources :changes, only: :show
+        resources :versions, only: :show
+      end
+    end
+
+    # Series↔book membership, added/removed immediately from the typeahead on
+    # either the book page (add a series) or the series page (add a book).
+    resources :installments, only: %i[create destroy]
+
     # Personal settings — always Current.user, no id in the URL. The avatar is
     # its own resource so picking/dropping a picture can auto-submit.
     namespace :user do

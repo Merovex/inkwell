@@ -1,0 +1,9 @@
+<%# locals: (installment:, series:) %>
+<li class="mrow" id="<%= dom_id(installment) %>">
+  <span class="mrow__label"><%= link_to series.title, admin_series_path(series.record) %></span>
+  <% unless series.published? %><span class="badge">Draft</span><% end %>
+  <%= button_to admin_installment_path(installment), method: :delete, class: "mrow__remove",
+        aria: { label: "Remove from #{series.title}" } do %>
+    <%= inline_svg_tag "lucide/trash-2.svg", class: "lucide", size: "16px" %>
+  <% end %>
+</li>

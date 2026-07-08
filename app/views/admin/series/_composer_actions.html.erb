@@ -1,0 +1,15 @@
+<%# locals: (series:) %>
+<% if series.persisted? && series.published? %>
+  <%= link_to "Never mind", admin_series_path(series.record), class: "button" %>
+  <%= button_tag "Update", form: "composer", class: "button button--primary" %>
+<% elsif series.persisted? && series.scheduled? %>
+  <%= render "admin/shared/scheduler", form: "composer", schedulable: series,
+        noun: "series", drafts_href: admin_series_index_path, drafts_label: "Series" %>
+  <%= link_to "Never mind", admin_series_path(series.record), class: "button" %>
+  <%= button_tag "Save", form: "composer", class: "button button--primary" %>
+<% else %>
+  <%= render "admin/shared/scheduler", form: "composer",
+        noun: "series", drafts_href: admin_series_index_path, drafts_label: "Series" %>
+  <%= button_tag "Save draft", form: "composer", class: "button" %>
+  <%= button_tag "Publish", form: "composer", name: "publish", value: "1", class: "button button--primary" %>
+<% end %>

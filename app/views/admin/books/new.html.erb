@@ -1,0 +1,9 @@
+<% content_for :title, "New book — Inkwell" %>
+
+<%= render "admin/shared/canvas_head", crumbs: [["Books", admin_books_path], ["New book", nil]], menu: false do %>
+  <%= render "composer_actions", book: @book %>
+<% end %>
+
+<%= render "form", book: @book, url: admin_books_path %>
+
+<p class="u-text-muted">Save the book first, then add a cover and assign it to series.</p>

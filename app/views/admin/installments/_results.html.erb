@@ -1,0 +1,12 @@
+<%# locals: (results:) %>
+<% if results.any? %>
+  <% results.each do |result| %>
+    <li class="combobox__option" role="option" id="combobox-option-<%= result.record_id %>"
+        data-record-id="<%= result.record_id %>"
+        data-action="mousedown->combobox#select mouseover->combobox#activate">
+      <%= result.title %>
+    </li>
+  <% end %>
+<% else %>
+  <li class="combobox__empty" role="presentation">No matches</li>
+<% end %>

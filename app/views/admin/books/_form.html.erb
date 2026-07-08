@@ -1,0 +1,31 @@
+<%# locals: (book:, url:) %>
+
+<%# Duet Date Picker (accessible, open-source web component) — loaded only where
+    it's used. It renders a light-DOM input under the given name and submits the
+    value in ISO YYYY-MM-DD, which maps straight to the date column. %>
+<% content_for :head do %>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@duetds/date-picker@1.4.0/dist/duet/themes/default.css">
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@duetds/date-picker@1.4.0/dist/duet/duet.esm.js"></script>
+  <script nomodule src="https://cdn.jsdelivr.net/npm/@duetds/date-picker@1.4.0/dist/duet/duet.js"></script>
+  <style>
+    duet-date-picker:not(.hydrated) { visibility: hidden; }
+    /* Keep the field to a date's width rather than stretching the full form. */
+    duet-date-picker { display: inline-block; width: 15rem; max-width: 100%; }
+  </style>
+<% end %>
+
+<%= render "admin/shared/error_summary", model: book %>
+
+<%= form_with model: book, url: url, id: "composer", class: "composer" do |f| %>
+  <%= f.text_field :title, class: "composer__title", placeholder: "Book title",
+        "aria-label": "Title", required: true, autofocus: true %>
+
+  <%= f.rich_textarea :content, placeholder: "About this book…", "aria-label": "Body" %>
+
+  <div class="field">
+    <label for="publication_date" class="field__label">Publication date</label>
+    <duet-date-picker identifier="publication_date" name="book[publication_date]"
+      value="<%= book.publication_date&.iso8601 %>"></duet-date-picker>
+    <p class="field__hint u-text-muted">When the book was released to the world (not when this record goes live).</p>
+  </div>
+<% end %>

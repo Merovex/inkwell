@@ -1,0 +1,9 @@
+<% if @context == "series" %>
+  <%= turbo_stream.append "series_books" do %>
+    <%= render "admin/series/book_row", installment: @installment, book: @book_record.recordable %>
+  <% end %>
+<% else %>
+  <%= turbo_stream.append "book_series" do %>
+    <%= render "admin/books/series_row", installment: @installment, series: @series_record.recordable %>
+  <% end %>
+<% end %>

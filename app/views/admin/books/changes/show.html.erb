@@ -1,0 +1,22 @@
+<% content_for :title, "Changes: #{@book.title} — Inkwell" %>
+
+<%= render "admin/shared/canvas_head", crumbs: [["Books", admin_books_path], [@book.title, admin_book_path(@record)], ["Change Log", admin_book_events_path(@record)], ["Change", nil]] do %>
+  <%= link_to "Change Log", admin_book_events_path(@record), class: "menu__item", role: "menuitem" %>
+  <%= link_to "Back to book", admin_book_path(@record), class: "menu__item", role: "menuitem" %>
+<% end %>
+
+<header class="perma-header">
+  <% if @version.title == @current.title %>
+    <h1 class="perma-header__title"><%= @current.title %></h1>
+  <% else %>
+    <h1 class="perma-header__title"><del><%= @version.title %></del> <ins><%= @current.title %></ins></h1>
+  <% end %>
+  <p class="perma-header__content u-text-muted">
+    Changes since the version from <%= version_timestamp(@version) %>
+    by <span class="u-text-strong"><%= @version.creator.display_name %></span>
+  </p>
+</header>
+
+<article class="u-flow lexxy-content history__diff">
+  <%= HtmlDiff.between(sanitize(@version.content.to_s), sanitize(@current.content.to_s)) %>
+</article>

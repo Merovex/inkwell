@@ -1,0 +1,15 @@
+<%# locals: (context:, url:, anchor_param:, selected_param:, anchor_id:, placeholder:) %>
+<div class="combobox" data-controller="combobox"
+     data-combobox-url-value="<%= url %>"
+     data-combobox-post-url-value="<%= admin_installments_path %>"
+     data-combobox-context-value="<%= context %>"
+     data-combobox-anchor-param-value="<%= anchor_param %>"
+     data-combobox-selected-param-value="<%= selected_param %>"
+     data-combobox-anchor-id-value="<%= anchor_id %>">
+  <input type="text" class="field__control combobox__input" role="combobox"
+         aria-expanded="false" aria-autocomplete="list" autocomplete="off"
+         placeholder="<%= placeholder %>"
+         data-combobox-target="input"
+         data-action="input->combobox#search keydown->combobox#keydown blur->combobox#close">
+  <ul class="combobox__list" role="listbox" data-combobox-target="list" hidden></ul>
+</div>

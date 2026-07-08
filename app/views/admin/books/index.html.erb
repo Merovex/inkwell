@@ -1,0 +1,38 @@
+<% content_for :title, "Books — Inkwell" %>
+
+<%= render "admin/shared/canvas_head", crumbs: [["Books", nil]] %>
+
+<header class="perma-header">
+  <h1 class="perma-header__title">Books</h1>
+  <div class="perma-header__content">
+    <nav class="perma-header__toolbar" aria-label="Actions">
+      <%= link_to new_admin_book_path, class: "button button--primary button--small" do %>
+        <%= inline_svg_tag "lucide/plus.svg", class: "lucide", size: "16px" %> New book
+      <% end %>
+    </nav>
+  </div>
+</header>
+
+<% if @books.any? %>
+  <ul class="list">
+    <% @books.each do |book| %>
+      <%= render "admin/shared/list_item",
+            href: admin_book_path(book.record),
+            title: book.title,
+            author: book.record.creator.display_name,
+            avatar_user: book.record.creator,
+            avatar_src: (book.cover_thumb if book.cover?),
+            date: l((book.publication_date || book.published_at&.to_date || book.created_at.to_date), format: :short),
+            excerpt: book.content.to_plain_text.to_s.truncate(140),
+            scheduled_at: (book.published_at if book.scheduled?),
+            pinned: book.pinned_at.present? %>
+    <% end %>
+  </ul>
+<% else %>
+  <div class="empty">
+    <span class="empty__icon"><%= inline_svg_tag "lucide/inbox.svg", class: "lucide", size: "40px" %></span>
+    <p class="empty__title">No books yet</p>
+    <p class="empty__text">Add the first book to the catalog.</p>
+    <div class="empty__actions"><%= link_to "New book", new_admin_book_path, class: "button button--primary" %></div>
+  </div>
+<% end %>

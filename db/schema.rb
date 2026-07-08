@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.2].define(version: 2026_07_03_600002) do
+ActiveRecord::Schema[8.2].define(version: 2026_07_09_120004) do
   create_table "action_text_rich_texts", force: :cascade do |t|
     t.string "name", null: false
     t.text "body"
@@ -54,6 +54,27 @@ ActiveRecord::Schema[8.2].define(version: 2026_07_03_600002) do
     t.datetime "updated_at", null: false
   end
 
+  create_table "books", force: :cascade do |t|
+    t.string "title", null: false
+    t.string "status", default: "drafted", null: false
+    t.datetime "published_at"
+    t.datetime "pinned_at"
+    t.date "publication_date"
+    t.integer "record_id", null: false
+    t.integer "creator_id", null: false
+    t.integer "body_id", null: false
+    t.integer "depiction_id"
+    t.string "event", default: "created", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["body_id"], name: "index_books_on_body_id"
+    t.index ["creator_id"], name: "index_books_on_creator_id"
+    t.index ["depiction_id"], name: "index_books_on_depiction_id"
+    t.index ["record_id", "id"], name: "index_books_on_record_id_and_id"
+    t.index ["record_id"], name: "index_books_on_record_id"
+    t.index ["status", "published_at"], name: "index_books_on_status_and_published_at"
+  end
+
   create_table "boosts", force: :cascade do |t|
     t.integer "record_id", null: false
     t.integer "creator_id", null: false
@@ -90,6 +111,22 @@ ActiveRecord::Schema[8.2].define(version: 2026_07_03_600002) do
     t.datetime "updated_at", null: false
     t.index ["creator_id"], name: "index_comments_on_creator_id"
     t.index ["record_id", "id"], name: "index_comments_on_record_id_and_id"
+  end
+
+  create_table "depictions", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "installments", force: :cascade do |t|
+    t.integer "series_record_id", null: false
+    t.integer "book_record_id", null: false
+    t.integer "position"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["book_record_id"], name: "index_installments_on_book_record_id"
+    t.index ["series_record_id", "book_record_id"], name: "index_installments_on_series_record_id_and_book_record_id", unique: true
+    t.index ["series_record_id", "position"], name: "index_installments_on_series_record_id_and_position"
   end
 
   create_table "messages", force: :cascade do |t|
@@ -144,6 +181,24 @@ ActiveRecord::Schema[8.2].define(version: 2026_07_03_600002) do
     t.index ["parent_id"], name: "index_records_on_parent_id"
     t.index ["purge_after"], name: "index_records_on_purge_after"
     t.index ["recordable_type", "recordable_id"], name: "index_records_on_recordable_type_and_recordable_id", unique: true
+  end
+
+  create_table "series", force: :cascade do |t|
+    t.string "title", null: false
+    t.string "status", default: "drafted", null: false
+    t.datetime "published_at"
+    t.datetime "pinned_at"
+    t.integer "record_id", null: false
+    t.integer "creator_id", null: false
+    t.integer "body_id", null: false
+    t.string "event", default: "created", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["body_id"], name: "index_series_on_body_id"
+    t.index ["creator_id"], name: "index_series_on_creator_id"
+    t.index ["record_id", "id"], name: "index_series_on_record_id_and_id"
+    t.index ["record_id"], name: "index_series_on_record_id"
+    t.index ["status", "published_at"], name: "index_series_on_status_and_published_at"
   end
 
   create_table "sessions", force: :cascade do |t|

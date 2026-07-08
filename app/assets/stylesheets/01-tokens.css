@@ -51,8 +51,8 @@
   --color-mountain-mist-950: oklch(14.914% 0.00210 106.652);
 
   /* --- structural colors (light) --- */
-  --neutral-bg: var(--color-mountain-mist-200); /* the outer page — fixed mountain-mist */
-  --tint: var(--neutral-bg);                    /* kept for compatibility; no longer rotates */
+  --neutral-bg: var(--color-mountain-mist-200); /* fallback when no account tint is set */
+  --tint: var(--neutral-bg);                    /* rotating account tint slots in here */
   --site-bg: var(--tint);                       /* the outer page */
   --canvas: #ffffff;                            /* card / article surface */
   --ink: var(--color-mountain-mist-900);        /* primary text */
@@ -97,6 +97,20 @@
   --danger-ink:      oklch(42.6% 0.18 25);
   --danger-solid:    oklch(48% 0.16 25);     /* dark red for white text (AAA) */
 }
+
+/*
+ * Rotating light-mode account tints — subtle -100-level hues so each reads
+ * differently as the page background without shouting. Re-declaring --site-bg on
+ * the same element that carries the tint means var(--tint) resolves against that
+ * element's own tint (works whether it sits on <html> or a descendant). Dark mode
+ * below pins the background regardless of tint.
+ */
+[data-tint="olive"] { --tint: oklch(96.7% 0.03  120);  } /* yellow-green */
+[data-tint="taupe"] { --tint: oklch(96.7% 0.02   70);  } /* warm tan */
+[data-tint="mauve"] { --tint: oklch(96.5% 0.025 328);  } /* pink-purple */
+[data-tint="mist"]  { --tint: oklch(96.5% 0.025 235);  } /* cool blue */
+[data-tint="zinc"]  { --tint: oklch(96.9% 0.003 286);  } /* neutral gray */
+[data-tint] { --site-bg: var(--tint); }
 
 /*
  * Dark mode. Applies via explicit [data-theme="dark"] or the OS preference when

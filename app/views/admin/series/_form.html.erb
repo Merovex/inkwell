@@ -1,0 +1,9 @@
+<%# locals: (series:, url:) %>
+<%= render "admin/shared/error_summary", model: series %>
+
+<%= form_with model: series, url: url, id: "composer", class: "composer" do |f| %>
+  <%= f.text_field :title, class: "composer__title", placeholder: "Series title",
+        "aria-label": "Title", required: true, autofocus: true %>
+
+  <%= f.rich_textarea :content, placeholder: "About this series…", "aria-label": "Body" %>
+<% end %>
