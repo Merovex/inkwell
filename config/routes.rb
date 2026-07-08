@@ -118,6 +118,10 @@ Rails.application.routes.draw do
     # either the book page (add a series) or the series page (add a book).
     resources :installments, only: %i[create destroy]
 
+    # Store buy-links, added/removed live from a book or series page. Keyed by
+    # the target Record, so one controller serves both.
+    resources :distributors, only: %i[create destroy]
+
     # Personal settings — always Current.user, no id in the URL. The avatar is
     # its own resource so picking/dropping a picture can auto-submit.
     namespace :user do
@@ -140,6 +144,10 @@ Rails.application.routes.draw do
   # is the Record id (the stable public identity), matching the admin side.
   get "blog" => "blog#index", as: :blog
   get "blog/:id" => "blog#show", as: :blog_post
+
+  # Public book catalog: published books, grouped by series.
+  get "books" => "books#index", as: :books
+  get "books/:id" => "books#show", as: :book
 
   # The public Merovex Press site. Static for now; the admin backend lives at
   # /admin.

@@ -1,0 +1,8 @@
+<% if @distributor.persisted? %>
+  <%= turbo_stream.append "record_distributors" do %>
+    <%= render "admin/distributors/row", distributor: @distributor, manage: true %>
+  <% end %>
+<% end %>
+<%= turbo_stream.replace "distributor_form" do %>
+  <%= render "admin/distributors/form", record: @record, distributor: (@distributor unless @distributor.persisted?) %>
+<% end %>

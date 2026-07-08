@@ -1,0 +1,11 @@
+<%# locals: (distributor:, manage: false) %>
+<li class="mrow" id="<%= dom_id(distributor) %>">
+  <span class="mrow__platform"><%= distributor.display_name %></span>
+  <span class="mrow__label"><%= link_to distributor.url, distributor.url, target: "_blank", rel: "noopener" %></span>
+  <% if manage %>
+    <%= button_to admin_distributor_path(distributor), method: :delete, class: "mrow__remove",
+          aria: { label: "Remove the #{distributor.display_name} link" } do %>
+      <%= inline_svg_tag "lucide/trash-2.svg", class: "lucide", size: "16px" %>
+    <% end %>
+  <% end %>
+</li>

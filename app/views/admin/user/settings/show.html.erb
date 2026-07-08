@@ -14,6 +14,7 @@
     <%# and without it Turbo serializes urlencoded and drops the file. %>
     <%= form_with url: admin_user_avatar_path, method: :patch, multipart: true, class: "settings__avatar-well",
           data: { controller: "avatar-upload",
+                  "avatar-upload-dragover-class": "settings__avatar-well--dragover",
                   action: "dragover->avatar-upload#dragover dragleave->avatar-upload#dragleave drop->avatar-upload#drop" } do %>
       <label class="avatar avatar--large settings__avatar" title="Change picture">
         <%= avatar_content(Current.user) %>

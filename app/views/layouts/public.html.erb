@@ -27,7 +27,7 @@
 
         <div class="press-nav__links">
           <%= link_to "Home", root_path, class: "press-nav__link#{' is-active' if current_page?(root_path)}" %>
-          <a href="#" class="press-nav__link">Books</a>
+          <%= link_to "Books", books_path, class: "press-nav__link#{' is-active' if controller_name == 'books'}" %>
           <%= link_to "Blog", blog_path, class: "press-nav__link#{' is-active' if controller_name == 'blog'}" %>
           <a href="#" class="press-nav__link">About</a>
         </div>

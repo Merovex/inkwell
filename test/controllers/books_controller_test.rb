@@ -30,7 +30,7 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
     # editable title, change-log menu link, and a cover placeholder
     assert_select "[data-controller=editable] h1[data-action*=?]", "editable#edit"
     assert_select "a[href=?]", admin_book_events_path(record), text: "Change log"
-    assert_select ".book-detail__cover--empty"
+    assert_select ".cover-drop"   # click/drop cover uploader (no cover yet)
   end
 
   test "the change log renders the version history" do
@@ -45,7 +45,17 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
     assert_select "a[href=?]", admin_book_change_path(record, record.versions.first)
   end
 
-  test "new and edit render the composer, date picker, cover upload and series typeahead" do
+  test "adding a cover to a published book records it in the change log" do
+    post admin_books_path, params: { book: { title: "Covered", content: "x" }, publish: "1" }
+    record = Record.books.order(:id).last
+    post admin_book_depiction_path(record), params: { depiction: fixture_file_upload("avatar.png", "image/png") }
+
+    get admin_book_events_path(record)
+    assert_response :success
+    assert_select ".history__entry", text: /cover/
+  end
+
+  test "edit is just the blurb; cover, series and distributors are managed on show" do
     get new_admin_book_path
     assert_response :success
     assert_select "form#composer"
@@ -53,12 +63,19 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
 
     post admin_books_path, params: { book: { title: "Editable", content: "x" } }
     record = Record.books.order(:id).last
+
     get edit_admin_book_path(record)
     assert_response :success
     assert_select "form#composer"
-    assert_select "input[type=file][name=depiction]"
-    assert_select "[data-controller=combobox]"
+    # cover, series, and distributors all live on show now
+    assert_select "input[type=file][name=depiction]", count: 0
+    assert_select "[data-controller=combobox]", count: 0
+
+    get admin_book_path(record)
+    assert_select "input[type=file][name=depiction]"   # click/drop cover uploader
+    assert_select "[data-controller=combobox]"         # series typeahead
     assert_select "ul#book_series"
+    assert_select "form.distributor-form"              # distributors
   end
 
   test "series search returns current series matching the query" do

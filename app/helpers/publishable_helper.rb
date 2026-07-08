@@ -10,11 +10,15 @@ module PublishableHelper
 
     case version.event
     when "updated"
-      if version.body_id == previous.body_id && version.title != previous.title
+      if version.respond_to?(:depiction_id) && version.depiction_id != previous.depiction_id
+        cover_event_line(version, previous, noun)
+      elsif version.body_id == previous.body_id && version.title != previous.title
         %(changed the title of this #{noun} from “#{previous.title}” to “#{version.title}”)
       else
         "saved a new version of this #{noun}"
       end
+    when "link_added"   then "added a distributor link"
+    when "link_removed" then "removed a distributor link"
     when "scheduled"   then "scheduled this #{noun} to publish #{version.published_at.strftime('%b %-d at %H:%M')}"
     when "unscheduled" then "unscheduled this #{noun}"
     when "published"   then "published this #{noun}"
@@ -24,6 +28,17 @@ module PublishableHelper
     when "trashed"     then "moved this #{noun} to the trash"
     when "restored"    then "restored this #{noun} from the trash"
     else version.event
+    end
+  end
+
+  # How a cover change (a depiction_id delta on an "updated" version) reads.
+  def cover_event_line(version, previous, noun)
+    if previous.depiction_id.nil?
+      "added a cover to this #{noun}"
+    elsif version.depiction_id.nil?
+      "removed the cover from this #{noun}"
+    else
+      "replaced the cover of this #{noun}"
     end
   end
 

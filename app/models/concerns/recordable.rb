@@ -6,7 +6,7 @@
 module Recordable
   extend ActiveSupport::Concern
 
-  EVENTS = %w[ created updated scheduled unscheduled published unpublished pinned unpinned trashed restored ]
+  EVENTS = %w[ created updated scheduled unscheduled published unpublished pinned unpinned trashed restored link_added link_removed ]
 
   included do
     # Optional at the AR layer only so a first version can validate before its

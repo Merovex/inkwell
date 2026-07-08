@@ -1,0 +1,12 @@
+<%# locals: (record:) %>
+<%# Read-only distributor links for a show page. %>
+<% if record.distributors.any? %>
+  <section class="distributors">
+    <h2 class="distributors__title">Distributors</h2>
+    <ul class="mrows">
+      <% record.distributors.order(:platform).each do |distributor| %>
+        <%= render "admin/distributors/row", distributor: distributor, manage: false %>
+      <% end %>
+    </ul>
+  </section>
+<% end %>

@@ -1,0 +1,11 @@
+<%# locals: (record:) %>
+<%# The manageable distributors block for a book/series show page. %>
+<section class="distributors">
+  <h2 class="distributors__title">Distributors</h2>
+  <%= render "admin/distributors/form", record: record %>
+  <ul class="mrows" id="record_distributors">
+    <% record.distributors.order(:platform).each do |distributor| %>
+      <%= render "admin/distributors/row", distributor: distributor, manage: true %>
+    <% end %>
+  </ul>
+</section>

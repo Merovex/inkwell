@@ -368,6 +368,84 @@
 .press-article__body a { color: var(--link-color); text-decoration: underline; text-underline-offset: 0.15em; }
 .press-article__body img { max-width: 100%; height: auto; border-radius: 0.5rem; }
 
+/* --- book catalog (3-card grid, grouped by series) --- */
+.press-books { max-width: 1100px; margin-inline: auto; padding: 4rem 1.5rem 5rem; }
+.press-books__head { max-width: 40rem; margin: 0 auto 3rem; text-align: center; }
+.press-books__title {
+  margin: 0;
+  font-family: var(--press-serif);
+  font-weight: 700;
+  font-size: clamp(2rem, 5vw, 3rem);
+  line-height: 1.1;
+  color: var(--text-1);
+}
+.press-books__intro { margin: 1rem 0 0; color: var(--text-2); font-size: 1.1rem; }
+.press-books__empty { text-align: center; color: var(--text-2); }
+
+.press-series { margin-block-end: 3.5rem; }
+.press-series__title {
+  margin: 0 0 0.5rem;
+  font-family: var(--press-serif);
+  font-weight: 700;
+  font-size: 1.6rem;
+  color: var(--text-1);
+}
+.press-series__blurb { margin: 0 0 1.5rem; max-width: 60ch; color: var(--text-2); line-height: 1.6; }
+
+/* Cap the columns so covers stay a reasonable height (~330px, matching the
+   book detail cover) rather than filling the full container width. */
+.press-book-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 220px)); gap: 1.5rem; }
+@media (max-width: 760px) { .press-book-grid { grid-template-columns: repeat(2, minmax(0, 220px)); } }
+@media (max-width: 520px) { .press-book-grid { grid-template-columns: minmax(0, 260px); } }
+
+.press-book-card {
+  display: flex;
+  flex-direction: column;
+  background: var(--surface-1);
+  border: 1px solid var(--border-1);
+  border-radius: 0.75rem;
+  overflow: hidden;
+  text-decoration: none;
+  color: inherit;
+  transition: transform 200ms ease, border-color 200ms ease;
+}
+.press-book-card:hover { transform: translateY(-2px); border-color: var(--border-2); }
+.press-book-card__cover,
+.press-book-card__placeholder {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  object-fit: cover;
+}
+.press-book-card__placeholder { background: var(--surface-2); }
+.press-book-card__body { display: flex; flex-direction: column; gap: 0.4rem; padding: 0.75rem 1.25rem 1.25rem; flex: 1; }
+.press-book-card__label {
+  margin: 0; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em;
+  font-weight: 600; color: var(--accent);
+}
+.press-book-card__title { margin: 0; font-family: var(--press-serif); font-size: 1.3rem; line-height: 1.2; color: var(--text-1); }
+.press-book-card__blurb {
+  margin: 0; color: var(--text-2); font-size: 0.9rem; line-height: 1.5;
+  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+}
+.press-book-card__more {
+  margin-top: auto; padding-top: 0.25rem; font-size: 0.72rem; text-transform: uppercase;
+  letter-spacing: 0.08em; font-weight: 600; color: var(--link-color);
+}
+
+/* --- book detail --- */
+.press-book { max-width: 46rem; margin-inline: auto; padding: 3rem 1.5rem 5rem; }
+.press-book__top { display: flex; gap: 2rem; align-items: flex-start; flex-wrap: wrap; margin-block: 2rem; }
+.press-book__cover { width: 220px; flex: none; border-radius: 0.5rem; }
+.press-book__meta { flex: 1; min-width: 15rem; }
+.press-book__series { margin: 0 0 0.25rem; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600; color: var(--accent); }
+.press-book__title { margin: 0; font-family: var(--press-serif); font-weight: 700; font-size: clamp(1.8rem, 4vw, 2.6rem); line-height: 1.12; color: var(--text-1); }
+.press-book__date { margin: 0.5rem 0 0; color: var(--text-3); }
+.press-book__buy { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-block-start: 1.5rem; }
+.press-book__body { color: var(--text-1); line-height: 1.75; }
+.press-book__body > * + * { margin-block-start: 1.25rem; }
+
 /* --- not found --- */
 .press-notfound {
   max-width: 34rem;

@@ -1,0 +1,13 @@
+<%# locals: (record:, distributor: nil) %>
+<div id="distributor_form">
+  <%= form_with url: admin_distributors_path, class: "distributor-form" do %>
+    <%= hidden_field_tag :record_id, record.id %>
+    <input type="url" name="url" class="field__control" required aria-label="Store URL"
+           placeholder="Paste a store link (Amazon, Apple Books, Kobo…)"
+           value="<%= distributor&.url if distributor&.errors&.any? %>">
+    <%= submit_tag "Add link", class: "button button--small" %>
+  <% end %>
+  <% if distributor&.errors&.any? %>
+    <p class="distributor-form__error"><%= distributor.errors.full_messages.to_sentence %></p>
+  <% end %>
+</div>

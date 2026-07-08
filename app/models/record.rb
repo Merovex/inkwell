@@ -18,6 +18,10 @@ class Record < ApplicationRecord
   has_many :children, class_name: "Record", foreign_key: :parent_id,
     inverse_of: :parent, dependent: :destroy
 
+  # Store buy-links (books only in practice); live on the stable identity, not
+  # the versioned recordable. See Distributor.
+  has_many :distributors, dependent: :destroy
+
   scope :active,  -> { where(trashed_at: nil) }
   scope :trashed, -> { where.not(trashed_at: nil) }
   scope :purgeable, -> { trashed.where(purge_after: ..Time.current) }

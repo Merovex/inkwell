@@ -1,17 +1,18 @@
-<%# locals: (href:, title:, author:, date:, excerpt:, avatar_user: nil, avatar_src: nil, avatar_alt: "", client_visible: false, comment_count: 0, scheduled_at: nil, pinned: false, discard_path: nil, discard_confirm: nil) %>
+<%# locals: (href:, title:, author:, date:, excerpt:, avatar_user: nil, avatar_src: nil, avatar_alt: "", avatar_initials: nil, client_visible: false, comment_count: 0, scheduled_at: nil, pinned: false, discard_path: nil, discard_confirm: nil) %>
 <%# Generic list row — avatar + linked (title + meta) + optional trailing count. %>
-<%# avatar_user renders that user's picture-or-monogram; avatar_src takes a raw %>
-<%# image (styleguide demos); otherwise initials derive from the author string. %>
+<%# avatar_src takes a raw image (e.g. a book cover); avatar_user renders that %>
+<%# user's picture-or-monogram; otherwise initials derive from avatar_initials %>
+<%# (e.g. the book title) or, failing that, the author string. %>
 <%# scheduled_at adds a "Posts on <time>" clock flag; pinned adds a "Pinned" flag. %>
 <%# discard_path adds a far-right trashcan (DELETE, with discard_confirm prompt). %>
 <li class="list__item">
   <span class="avatar list__avatar">
-    <% if avatar_user %>
-      <%= avatar_content(avatar_user) %>
-    <% elsif avatar_src.present? %>
+    <% if avatar_src.present? %>
       <%= image_tag avatar_src, alt: avatar_alt, class: "avatar__img" %>
+    <% elsif avatar_user %>
+      <%= avatar_content(avatar_user) %>
     <% else %>
-      <%= author.to_s.split.map { |w| w[0] }.first(2).join %>
+      <%= (avatar_initials.presence || author).to_s.split.map { |w| w[0] }.first(2).join.upcase %>
     <% end %>
   </span>
 

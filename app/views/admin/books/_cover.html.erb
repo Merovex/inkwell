@@ -1,21 +1,21 @@
 <%# locals: (book:, record:) %>
-<%# Cover preview + upload/replace/remove. %>
-<section class="cover">
-  <div class="cover__preview">
-    <% if book.cover? %>
-      <%= image_tag book.cover, class: "cover__image", alt: "#{book.title} cover" %>
-    <% else %>
-      <span class="cover__image cover__image--empty" aria-hidden="true">No cover</span>
-    <% end %>
-  </div>
-
-  <div class="cover__actions">
-    <%= form_with url: admin_book_depiction_path(record), method: :post, multipart: true, class: "cover__upload" do %>
-      <%= file_field_tag :depiction, accept: "image/*", class: "field__control" %>
-      <%= submit_tag(book.cover? ? "Replace cover" : "Upload cover", class: "button button--small") %>
-    <% end %>
-    <% if book.cover? %>
-      <%= button_to "Remove cover", admin_book_depiction_path(record), method: :delete, class: "button button--small" %>
-    <% end %>
-  </div>
-</section>
+<%# The cover doubles as the uploader: click it or drop an image to set/replace. %>
+<div class="cover-drop">
+  <%= form_with url: admin_book_depiction_path(record), method: :post, multipart: true,
+        class: "cover-drop__form", data: { controller: "avatar-upload",
+          "avatar-upload-dragover-class": "cover-drop--dragover",
+          action: "dragover->avatar-upload#dragover dragleave->avatar-upload#dragleave drop->avatar-upload#drop" } do %>
+    <label class="cover-drop__label" title="<%= book.cover? ? "Click or drop to replace the cover" : "Click or drop to upload a cover" %>">
+      <% if book.cover? %>
+        <%= image_tag book.cover, class: "cover-drop__image", alt: "#{book.title} cover" %>
+      <% else %>
+        <span class="cover-drop__hint">Click or drop<br>an image</span>
+      <% end %>
+      <%= file_field_tag :depiction, accept: "image/*", hidden: true, "aria-label": "Upload cover",
+            data: { avatar_upload_target: "input", action: "change->avatar-upload#submit" } %>
+    </label>
+  <% end %>
+  <% if book.cover? %>
+    <%= button_to "Remove cover", admin_book_depiction_path(record), method: :delete, class: "button button--small cover-drop__remove" %>
+  <% end %>
+</div>

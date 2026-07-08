@@ -1,0 +1,35 @@
+<% content_for :title, "#{@book.title} — Merovex Press" %>
+
+<article class="press-book">
+  <a href="<%= books_path %>" class="press-article__back">
+    <%= inline_svg_tag "lucide/chevron-right.svg", class: "lucide press-article__back-icon", size: "16px" %>
+    All books
+  </a>
+
+  <div class="press-book__top">
+    <% if @book.cover? %>
+      <%= image_tag @book.cover, class: "press-book__cover", alt: "#{@book.title} cover" %>
+    <% end %>
+    <div class="press-book__meta">
+      <% series = @book.series %>
+      <% if series.any? %>
+        <p class="press-book__series"><%= series.map(&:title).to_sentence %></p>
+      <% end %>
+      <h1 class="press-book__title"><%= @book.title %></h1>
+      <% if @book.publication_date %>
+        <p class="press-book__date"><%= @book.publication_date.strftime("%B %Y") %></p>
+      <% end %>
+      <% if @record.distributors.any? %>
+        <div class="press-book__buy">
+          <% @record.distributors.order(:platform).each do |distributor| %>
+            <a href="<%= distributor.url %>" class="press-btn press-btn--primary" target="_blank" rel="noopener">
+              <%= distributor.display_name %>
+            </a>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="press-book__body"><%= @book.content %></div>
+</article>

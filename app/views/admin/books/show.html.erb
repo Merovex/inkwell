@@ -49,7 +49,9 @@
 </div>
 
 <div class="book-detail">
-  <% if @book.cover? %>
+  <% if can_manage %>
+    <%= render "cover", book: @book, record: @record %>
+  <% elsif @book.cover? %>
     <%= image_tag @book.cover, class: "book-detail__cover", alt: "#{@book.title} cover" %>
   <% else %>
     <span class="book-detail__cover book-detail__cover--empty" aria-hidden="true">No cover</span>
@@ -57,9 +59,15 @@
   <article class="u-flow"><%= @book.content %></article>
 </div>
 
-<% book_series = @book.series %>
-<% if book_series.any? %>
-  <p class="u-text-muted">In series:
-    <%= safe_join(book_series.map { |s| link_to s.title, admin_series_path(s.record) }, ", ") %>
-  </p>
+<% if can_manage %>
+  <%= render "admin/books/series_membership", record: @record, book: @book %>
+  <%= render "admin/distributors/section", record: @record %>
+<% else %>
+  <% book_series = @book.series %>
+  <% if book_series.any? %>
+    <p class="u-text-muted">In series:
+      <%= safe_join(book_series.map { |s| link_to s.title, admin_series_path(s.record) }, ", ") %>
+    </p>
+  <% end %>
+  <%= render "admin/distributors/list", record: @record %>
 <% end %>

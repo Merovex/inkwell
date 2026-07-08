@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.2].define(version: 2026_07_09_120004) do
+ActiveRecord::Schema[8.2].define(version: 2026_07_09_120005) do
   create_table "action_text_rich_texts", force: :cascade do |t|
     t.string "name", null: false
     t.text "body"
@@ -116,6 +116,17 @@ ActiveRecord::Schema[8.2].define(version: 2026_07_09_120004) do
   create_table "depictions", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+  end
+
+  create_table "distributors", force: :cascade do |t|
+    t.integer "record_id", null: false
+    t.string "url", null: false
+    t.string "platform", null: false
+    t.integer "clicks", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["record_id", "url"], name: "index_distributors_on_record_id_and_url", unique: true
+    t.index ["record_id"], name: "index_distributors_on_record_id"
   end
 
   create_table "installments", force: :cascade do |t|

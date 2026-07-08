@@ -29,4 +29,19 @@
 
 <article class="u-flow"><%= @series.content %></article>
 
-<%= render "books", series: @series, record: @record %>
+<% if can_manage %>
+  <%= render "books", series: @series, record: @record %>
+  <%= render "admin/distributors/section", record: @record %>
+<% else %>
+  <% if @series.books.any? %>
+    <section class="series-books">
+      <h2 class="series-books__title">Books in this series</h2>
+      <ul class="mrows">
+        <% @series.books.each do |book| %>
+          <li class="mrow"><span class="mrow__label"><%= link_to book.title, admin_book_path(book.record) %></span></li>
+        <% end %>
+      </ul>
+    </section>
+  <% end %>
+  <%= render "admin/distributors/list", record: @record %>
+<% end %>

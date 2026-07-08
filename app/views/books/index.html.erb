@@ -1,0 +1,40 @@
+<% content_for :title, "Books — Merovex Press" %>
+
+<div class="press-books">
+  <header class="press-books__head">
+    <h1 class="press-books__title">The Library</h1>
+    <p class="press-books__intro">
+      Alternate history, science fiction, and fantasy — organized by series.
+    </p>
+  </header>
+
+  <% @series.each do |series, books| %>
+    <section class="press-series">
+      <h2 class="press-series__title"><%= series.title %></h2>
+      <% blurb = series.content.to_plain_text.to_s %>
+      <% if blurb.present? %>
+        <p class="press-series__blurb"><%= truncate(blurb, length: 260) %></p>
+      <% end %>
+      <div class="press-book-grid">
+        <% books.each do |book| %>
+          <%= render "books/card", book: book, series: series %>
+        <% end %>
+      </div>
+    </section>
+  <% end %>
+
+  <% if @standalone.any? %>
+    <section class="press-series">
+      <h2 class="press-series__title">Standalone</h2>
+      <div class="press-book-grid">
+        <% @standalone.each do |book| %>
+          <%= render "books/card", book: book %>
+        <% end %>
+      </div>
+    </section>
+  <% end %>
+
+  <% if @series.empty? && @standalone.empty? %>
+    <p class="press-books__empty">No books published yet — check back soon.</p>
+  <% end %>
+</div>
