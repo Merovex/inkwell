@@ -2,6 +2,21 @@
 
 Append-only. Newest first. Format defined in [[CLAUDE]] (`CLAUDE.md`).
 
+## [2026-07-04] note | CSS architecture page — the CUBE/BEM hybrid, written down
+- New concept page describing the styling methodology: CUBE decides the rule's kind and cascade home (compositions + utilities in `u-*` files, standard BEM blocks one-per-file, exceptions as modifiers/data-attributes), BEM names the block internals. Covers the Propshaft one-link-per-file + `@layer base, components, utilities` delivery, the two token sources (Open Props for non-color, our OKLCH semantic colors), the "standard components, never bespoke" rule, and a decision ladder for adding styles.
+- pages touched: [[css-architecture]] (new), index.md
+- refs: ../app/assets/stylesheets/application.css, ../app/assets/stylesheets/00-layers.css
+
+## [2026-07-04] note | Playbook now carries the actual color settings
+- Added the shipped OKLCH values and the derivation rule to the theme playbook: tints are Tailwind v4 `-200` shades desaturated by 15% (keep L/H, chroma ×0.85), and the teal brand ramp follows the same −15% chroma rule (teal-950/-800/-700/-500/-100 by role). The add-a-tint procedure now shows the recipe applied (slate-200 → `oklch(92.9% 0.011 255.508)`).
+- pages touched: [[theme-model-playbook]]
+- refs: ../app/assets/stylesheets/01-tokens.css:74, [[theme-background-colors]]
+
+## [2026-07-04] note | Theme model playbook — mode / tint / accent axes + how-to
+- Interrogated the runtime appearance system and wrote a task-oriented playbook: three orthogonal axes (mode `data-theme` light/dark/auto, rotating `data-tint` background, fixed teal accent/brand), all resolved in 01-tokens.css and steered by two `<html>` attributes rendered from sanitized cookies. Documents the cookie→helper→attribute→token→component flow and step-by-step procedures (add/remove/reorder tints, change defaults, change accent, add tokens, wire toggles) plus gotchas (accent doesn't rotate; duplicated dark blocks; cascade order; doc-only `--accent-pale`).
+- pages touched: [[theme-model-playbook]] (new), index.md
+- refs: ../app/assets/stylesheets/01-tokens.css, ../app/javascript/controllers/{theme,tint}_controller.js, ../app/controllers/application_controller.rb:29, ../app/views/layouts/_header.html.erb
+
 ## [2026-07-03] tweak | Context menu flush to the canvas corner; X mirrors the trigger
 - `.menu--context` now compensates on both axes (negative end margin + negative quarter-pad top margin) so the panel hugs the canvas's top-right corner exactly, and its top-end radius matches the canvas corner. The X close is inset quarter-pad down / half-pad in — the exact spot the ⋯ trigger occupies on the page, so opening the menu reads as the trigger flipping to an X.
 - refs: menu.css

@@ -36,7 +36,9 @@ for canonical naming.
 
 - [domain-vocabulary](concepts/domain-vocabulary.md) — canonical names: Person / User / Account
 - [theme-background-colors](concepts/theme-background-colors.md) — site/canvas backgrounds + rotating light-mode tints → Tailwind classes
+- [theme-model-playbook](concepts/theme-model-playbook.md) — the three appearance axes (mode / tint / accent) + how-to steps to change each
 - [app-shell](concepts/app-shell.md) — top-bar shell; responsive nav; the responsive-web vs Hotwire Native mobile fork
+- [css-architecture](concepts/css-architecture.md) — CUBE/BEM hybrid: layers, u- compositions/utilities, standard BEM blocks, exceptions via modifiers/data-attrs
 
 ## Entities
 
