@@ -98,10 +98,10 @@ class Subscriber < ApplicationRecord
   # The sunset job only acts once open/click tracking is live (Mailgun) — before
   # then everyone looks cold, and we must not drop a whole list on absent data.
   def self.sunset_enabled?
-    ENV["NEWSLETTER_SUNSET"].to_s == "true"
+    Rails.configuration.x.newsletter.sunset_enabled
   end
 
-  # An open or click reset the engagement clock; a pending nudge is cleared, so
+  # An open or click resets the engagement clock; a pending nudge is cleared, so
   # they're fully back in the fold.
   def mark_engaged!
     update!(last_engaged_at: Time.current, re_engagement_sent_at: nil)
@@ -126,9 +126,12 @@ class Subscriber < ApplicationRecord
   end
 
   # Days since the last open/click, anchored to first contact if never engaged.
+  # Memoized — the sweep asks several times per subscriber.
   def days_since_engagement
+    return @days_since_engagement if defined?(@days_since_engagement)
+
     anchor = last_engaged_at || broadcast_deliveries.minimum(:sent_at)
-    anchor && ((Time.current - anchor) / 1.day).floor
+    @days_since_engagement = anchor && ((Time.current - anchor) / 1.day).floor
   end
 
   # Emails sent since the last engagement (all of them if never engaged).

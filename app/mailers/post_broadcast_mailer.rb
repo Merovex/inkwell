@@ -9,9 +9,9 @@ class PostBroadcastMailer < ApplicationMailer
     setting = Setting.current
     @site_name = setting.site_name
     @web_url = blog_post_url(broadcast.record.to_slug)
-    # Carry the broadcast (b) so an unsubscribe from *this* issue attributes to
-    # it on the dashboard (metrics only — see SubscriptionsController#unsubscribe).
-    @unsubscribe_url = unsubscribe_newsletter_url(token: subscriber.generate_token_for(:unsubscribe), b: broadcast.id)
+    # Carry the broadcast so an unsubscribe from *this* issue attributes to it on
+    # the dashboard (metrics only — see SubscriptionsController#unsubscribe).
+    @unsubscribe_url = unsubscribe_newsletter_url(token: subscriber.generate_token_for(:unsubscribe), broadcast: broadcast.id)
 
     headers["List-Unsubscribe"] = "<#{@unsubscribe_url}>"
     headers["List-Unsubscribe-Post"] = "List-Unsubscribe=One-Click"

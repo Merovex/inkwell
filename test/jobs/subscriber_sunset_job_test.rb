@@ -3,11 +3,11 @@ require "test_helper"
 class SubscriberSunsetJobTest < ActiveSupport::TestCase
   include ActionMailer::TestHelper
 
-  setup { ENV["NEWSLETTER_SUNSET"] = "true" }
-  teardown { ENV.delete("NEWSLETTER_SUNSET") }
+  setup { Rails.configuration.x.newsletter.sunset_enabled = true }
+  teardown { Rails.configuration.x.newsletter.sunset_enabled = false }
 
   test "does nothing while the sunset gate is off" do
-    ENV.delete("NEWSLETTER_SUNSET")
+    Rails.configuration.x.newsletter.sunset_enabled = false
     subscriber = needs_nudge
 
     assert_no_enqueued_emails { SubscriberSunsetJob.perform_now }

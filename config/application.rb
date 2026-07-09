@@ -31,6 +31,10 @@ module Inkwell
     #   :open        — anyone may self-register via the Signup flow.
     config.x.authentication.registration_policy = :invite_only
 
+    # Turn the weekly newsletter sunset sweep on only once Mailgun open/click
+    # tracking is live — otherwise everyone looks cold (ADR 0014).
+    config.x.newsletter.sunset_enabled = ENV["NEWSLETTER_SUNSET"] == "true"
+
     # ImageMagick is what's installed here; the Rails default (:vips) needs libvips.
     config.active_storage.variant_processor = :mini_magick
   end

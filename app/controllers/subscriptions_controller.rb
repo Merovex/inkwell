@@ -55,9 +55,9 @@ class SubscriptionsController < PublicController
     # record the opt-out against that issue's delivery so it shows on the
     # broadcasts dashboard. Metrics only; a missing/mismatched delivery is a no-op.
     def attribute_to_broadcast(subscriber)
-      return if params[:b].blank?
+      return if params[:broadcast].blank?
 
-      BroadcastDelivery.find_by(broadcast_id: params[:b], subscriber_id: subscriber.id)
+      BroadcastDelivery.find_by(broadcast_id: params[:broadcast], subscriber_id: subscriber.id)
         &.record_event!("unsubscribed")
     end
 

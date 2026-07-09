@@ -58,7 +58,7 @@ class SubscriptionsControllerTest < ActionDispatch::IntegrationTest
     broadcast = records(:kickoff).create_broadcast!(recipients_count: 1)
     delivery = broadcast.deliveries.create!(subscriber: subscriber, sent_at: Time.current)
 
-    get unsubscribe_newsletter_path(token: subscriber.generate_token_for(:unsubscribe), b: broadcast.id)
+    get unsubscribe_newsletter_path(token: subscriber.generate_token_for(:unsubscribe), broadcast: broadcast.id)
     assert_response :success
 
     assert subscriber.reload.unsubscribed?
