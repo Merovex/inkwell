@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.2].define(version: 2026_07_09_164533) do
+ActiveRecord::Schema[8.2].define(version: 2026_07_09_170000) do
   create_table "action_text_rich_texts", force: :cascade do |t|
     t.string "name", null: false
     t.text "body"
@@ -245,6 +245,7 @@ ActiveRecord::Schema[8.2].define(version: 2026_07_09_164533) do
     t.integer "creator_id", null: false
     t.integer "body_id", null: false
     t.string "event", default: "created", null: false
+    t.text "excerpt"
     t.index ["body_id"], name: "index_posts_on_body_id"
     t.index ["creator_id"], name: "index_posts_on_creator_id"
     t.index ["record_id", "id"], name: "index_posts_on_record_id_and_id"

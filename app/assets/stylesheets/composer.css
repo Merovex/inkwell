@@ -27,6 +27,20 @@
 
   .composer__title::placeholder { color: var(--ink-muted); }
 
+  /* Excerpt: a quiet, optional summary below the body — bordered so it reads as
+     a distinct metadata field, not part of the prose. */
+  .composer__excerpt {
+    inline-size: 100%;
+    padding: calc(var(--u-pad) / 1.5);
+    border: var(--border-size-1) solid var(--line);
+    border-radius: var(--radius-ui);
+    background: var(--canvas);
+    color: var(--ink);
+    font: inherit;
+    resize: vertical;
+  }
+  .composer__excerpt::placeholder { color: var(--ink-muted); }
+
   /* Category picker (messages): a quarter of the composer, not a full-width
      bar; the floor keeps the prompt readable on narrow screens. */
   .composer__category { inline-size: clamp(13rem, 25%, 100%); }

@@ -21,7 +21,7 @@
               <%= link_to post.title, blog_post_path(post.record.to_slug), class: "press-article-card__link" %>
             </h2>
             <p class="press-article-card__desc">
-              <%= post.content.to_plain_text.to_s.truncate(300) %>
+              <%= post.summary %>
             </p>
             <span class="press-article-card__cta" aria-hidden="true">
               Read article <%= inline_svg_tag "lucide/chevron-right.svg", class: "lucide", size: "16px" %>

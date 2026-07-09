@@ -26,6 +26,14 @@ class BlogTest < ActionDispatch::IntegrationTest
     assert_response :not_found
   end
 
+  test "the blog list shows the author's excerpt when set" do
+    posts(:kickoff).update!(excerpt: "A crisp, SEO-friendly summary.")
+
+    get blog_path
+    assert_response :success
+    assert_select ".press-article-card__desc", text: /crisp, SEO-friendly summary/
+  end
+
   test "a published article sends a public etag and 304s on revalidation" do
     get "/blog/#{records(:kickoff).to_slug}"
     assert_response :success

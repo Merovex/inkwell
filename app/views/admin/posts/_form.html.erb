@@ -13,4 +13,10 @@
         "aria-label": "Title", required: true, autofocus: true %>
 
   <%= f.rich_textarea :content, placeholder: "Write away…", "aria-label": "Body" %>
+
+  <%# Optional plain-text summary for the blog list + search results; falls back %>
+  <%# to a truncation of the body when blank (Post#summary). %>
+  <%= f.text_area :excerpt, class: "composer__excerpt", rows: 2,
+        placeholder: "Optional summary for the blog list and search results…",
+        "aria-label": "Excerpt" %>
 <% end %>

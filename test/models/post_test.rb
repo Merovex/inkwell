@@ -46,4 +46,19 @@ class PostTest < ActiveSupport::TestCase
 
     assert_equal [ pinned, posts(:kickoff) ], Post.feed_ordered.to_a
   end
+
+  test "summary uses the author's excerpt when present" do
+    post = posts(:kickoff)
+    post.update!(excerpt: "A hand-written, SEO-friendly summary.")
+
+    assert_equal "A hand-written, SEO-friendly summary.", post.summary
+  end
+
+  test "summary falls back to a truncation of the body when the excerpt is blank" do
+    post = posts(:kickoff)
+    assert post.excerpt.blank?
+
+    assert_equal post.content.to_plain_text.to_s.truncate(300), post.summary
+    assert_operator post.summary(length: 20).length, :<=, 20
+  end
 end
