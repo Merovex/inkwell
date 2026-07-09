@@ -1,0 +1,26 @@
+<% content_for :title, "Newsletter — #{site_settings.site_name}" %>
+
+<section class="press-article">
+  <header class="press-article__head">
+    <h1 class="press-article__title">Join the newsletter</h1>
+    <p class="press-article__byline">New releases and dispatches from <%= site_settings.site_name %>. No spam; unsubscribe anytime.</p>
+  </header>
+
+  <% if flash[:notice] %>
+    <p class="press-form__flash press-form__flash--notice"><%= flash[:notice] %></p>
+  <% elsif flash[:alert] %>
+    <p class="press-form__flash press-form__flash--alert"><%= flash[:alert] %></p>
+  <% end %>
+
+  <%= form_with url: newsletter_path, method: :post, class: "press-form" do %>
+    <%# Honeypot + time-to-submit trap; invisible to humans, catches bots. %>
+    <%= invisible_captcha %>
+    <%= hidden_field_tag :source, params[:source] || "newsletter_page" %>
+    <label class="press-form__label" for="email_address">Email address</label>
+    <div class="press-form__row">
+      <%= email_field_tag :email_address, params[:email_address], required: true,
+            placeholder: "you@example.com", class: "press-form__input", autocomplete: "email" %>
+      <%= submit_tag "Subscribe", class: "press-btn press-btn--primary" %>
+    </div>
+  <% end %>
+</section>

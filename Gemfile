@@ -74,3 +74,10 @@ gem "inline_svg", "~> 1.10"
 gem "lexxy", "~> 0.9.22"
 
 gem "diff-lcs", "~> 2.0"
+
+# CSV — a bundled gem since Ruby 3.4; used for the subscriber export.
+gem "csv"
+
+# Spam protection for public forms: a honeypot field plus a time-to-submit trap
+# [https://github.com/markets/invisible_captcha]
+gem "invisible_captcha"

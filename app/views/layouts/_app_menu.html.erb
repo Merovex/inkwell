@@ -23,6 +23,7 @@
         <%= app_menu_link "Forum", admin_messages_path %>
         <%= app_menu_link "Chatroom", admin_chatroom_path %>
         <% if Current.user&.domain_admin? %>
+          <%= app_menu_link "Subscribers", admin_subscribers_path %>
           <%= app_menu_link "System settings", admin_settings_path %>
         <% end %>
       </section>

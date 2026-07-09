@@ -1,0 +1,45 @@
+# Public newsletter opt-in — anonymous, double opt-in. create records a pending
+# subscriber, logs the consent event, and emails the tokened confirmation link
+# (Subscriber.opt_in → SubscriberMailer#confirmation); confirm and unsubscribe
+# are token-based. Spam is filtered two ways: a honeypot/timing trap
+# (invisible_captcha) and a create rate limit, mirroring the auth controllers.
+class SubscriptionsController < PublicController
+  invisible_captcha only: :create, on_spam: :discard_spam, on_timestamp_spam: :discard_spam
+
+  rate_limit to: 10, within: 3.minutes, only: :create,
+    with: -> { redirect_to newsletter_path, alert: "Too many attempts. Try again later." }
+
+  def new
+  end
+
+  def create
+    Subscriber.opt_in(email_address: params[:email_address], source: params[:source], ip: request.remote_ip)
+    redirect_to newsletter_path, notice: "Almost there — check your inbox to confirm your subscription."
+  end
+
+  def confirm
+    subscriber = Subscriber.find_by_token_for(:confirmation, params[:token])
+    if subscriber
+      subscriber.confirm!(ip: request.remote_ip)
+      render :confirmed
+    else
+      render :invalid_token, status: :not_found
+    end
+  end
+
+  def unsubscribe
+    subscriber = Subscriber.find_by_token_for(:unsubscribe, params[:token])
+    if subscriber
+      subscriber.unsubscribe!(ip: request.remote_ip)
+      render :unsubscribed
+    else
+      render :invalid_token, status: :not_found
+    end
+  end
+
+  private
+    # A bot tripped the honeypot: pretend it worked, persist nothing.
+    def discard_spam
+      redirect_to newsletter_path, notice: "Almost there — check your inbox to confirm your subscription."
+    end
+end

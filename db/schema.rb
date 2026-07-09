@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.2].define(version: 2026_07_09_120006) do
+ActiveRecord::Schema[8.2].define(version: 2026_07_09_120008) do
   create_table "action_text_rich_texts", force: :cascade do |t|
     t.string "name", null: false
     t.text "body"
@@ -240,6 +240,27 @@ ActiveRecord::Schema[8.2].define(version: 2026_07_09_120006) do
     t.index ["user_id"], name: "index_sign_in_codes_on_user_id"
   end
 
+  create_table "subscribers", force: :cascade do |t|
+    t.string "email_address", null: false
+    t.string "status", default: "pending", null: false
+    t.datetime "confirmed_at"
+    t.datetime "unsubscribed_at"
+    t.string "source"
+    t.string "consent_ip"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["email_address"], name: "index_subscribers_on_email_address", unique: true
+  end
+
+  create_table "subscription_events", force: :cascade do |t|
+    t.integer "subscriber_id", null: false
+    t.string "action", null: false
+    t.string "ip_address"
+    t.string "source"
+    t.datetime "created_at", null: false
+    t.index ["subscriber_id"], name: "index_subscription_events_on_subscriber_id"
+  end
+
   create_table "users", force: :cascade do |t|
     t.string "email_address", null: false
     t.string "name"
@@ -264,4 +285,5 @@ ActiveRecord::Schema[8.2].define(version: 2026_07_09_120006) do
   add_foreign_key "records", "users", column: "creator_id"
   add_foreign_key "sessions", "users"
   add_foreign_key "sign_in_codes", "users"
+  add_foreign_key "subscription_events", "subscribers"
 end

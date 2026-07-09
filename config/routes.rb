@@ -127,6 +127,12 @@ Rails.application.routes.draw do
     # install (the public Merovex Press identity).
     resource :settings, only: %i[show update]
 
+    # Newsletter roster — domain-admin only. Read + CSV export + manual
+    # unsubscribe; subscribers themselves opt in from the public site.
+    resources :subscribers, only: :index do
+      patch :unsubscribe, on: :member
+    end
+
     # Personal settings — always Current.user, no id in the URL. The avatar is
     # its own resource so picking/dropping a picture can auto-submit.
     namespace :user do
@@ -157,5 +163,13 @@ Rails.application.routes.draw do
   # The public Merovex Press site. The About page renders the site's About blurb
   # from Setting.current; the admin backend lives at /admin.
   get "about" => "pages#about", as: :about
+
+  # Newsletter opt-in (anonymous, double opt-in) at /newsletter. create records a
+  # pending subscriber; the token links confirm and unsubscribe. See ADR 0011.
+  get  "newsletter" => "subscriptions#new", as: :newsletter
+  post "newsletter" => "subscriptions#create"
+  get  "newsletter/confirm/:token" => "subscriptions#confirm", as: :confirm_newsletter
+  get  "newsletter/unsubscribe/:token" => "subscriptions#unsubscribe", as: :unsubscribe_newsletter
+
   root "pages#home"
 end

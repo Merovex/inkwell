@@ -9,8 +9,8 @@
       Ben Wilson and Troy Buzby.
     </p>
     <div class="press-hero__actions">
-      <a href="#" class="press-btn press-btn--primary">Join the Newsletter</a>
-      <a href="#" class="press-btn press-btn--outline">Browse books</a>
+      <%= link_to "Join the Newsletter", newsletter_path(source: "hero"), class: "press-btn press-btn--primary" %>
+      <%= link_to "Browse books", books_path, class: "press-btn press-btn--outline" %>
     </div>
   </div>
 

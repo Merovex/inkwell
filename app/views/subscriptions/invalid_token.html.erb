@@ -1,0 +1,8 @@
+<% content_for :title, "Link expired — #{site_settings.site_name}" %>
+
+<section class="press-article">
+  <header class="press-article__head">
+    <h1 class="press-article__title">This link is invalid or has expired</h1>
+    <p class="press-article__byline">The link may have already been used. You can <%= link_to "start over", newsletter_path, class: "press-link" %>.</p>
+  </header>
+</section>
