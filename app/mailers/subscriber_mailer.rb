@@ -13,4 +13,19 @@ class SubscriberMailer < ApplicationMailer
     options[:from] = setting.contact_email if setting.contact_email.present?
     mail(options)
   end
+
+  # The one-time "still want these?" nudge sent to a cold subscriber before we
+  # sunset them (ADR 0014). "Keep me subscribed" re-engages reliably (doesn't
+  # depend on Mailgun's open pixel); ignoring it leads to an automatic
+  # unsubscribe after the grace window.
+  def re_engagement(subscriber, token)
+    setting = Setting.current
+    @site_name = setting.site_name
+    @keep_url = keep_newsletter_url(token: token)
+    @unsubscribe_url = unsubscribe_newsletter_url(token: token)
+
+    options = { to: subscriber.email_address, subject: "Still want emails from #{@site_name}?" }
+    options[:from] = setting.contact_email if setting.contact_email.present?
+    mail(options)
+  end
 end

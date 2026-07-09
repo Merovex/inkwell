@@ -66,6 +66,18 @@ class SubscriptionsControllerTest < ActionDispatch::IntegrationTest
     assert_equal 1, broadcast.reload.unsubscribed_count, "and the broadcast counter bumps"
   end
 
+  test "keep re-engages a subscriber and clears a pending nudge" do
+    subscriber = Subscriber.opt_in(email_address: "reader@example.com")
+    subscriber.confirm!
+    subscriber.update!(re_engagement_sent_at: 10.days.ago)
+
+    get keep_newsletter_path(token: subscriber.generate_token_for(:unsubscribe))
+    assert_response :success
+
+    assert subscriber.reload.last_engaged_at, "engagement clock reset"
+    assert_nil subscriber.re_engagement_sent_at, "pending nudge cleared"
+  end
+
   test "a bogus token renders not found" do
     get confirm_newsletter_path(token: "nonsense")
     assert_response :not_found

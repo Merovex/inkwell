@@ -38,6 +38,18 @@ class SubscriptionsController < PublicController
     end
   end
 
+  # "Keep me subscribed" from a re-engagement nudge: reset the engagement clock
+  # so the sunset sweep leaves them alone.
+  def keep
+    subscriber = Subscriber.find_by_token_for(:unsubscribe, params[:token])
+    if subscriber&.confirmed?
+      subscriber.mark_engaged!
+      render :kept
+    else
+      render :invalid_token, status: :not_found
+    end
+  end
+
   private
     # When the link came from a broadcast email (carries b=<broadcast_id>),
     # record the opt-out against that issue's delivery so it shows on the

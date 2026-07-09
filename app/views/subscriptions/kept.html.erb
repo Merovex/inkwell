@@ -1,0 +1,11 @@
+<% content_for :title, "You're still subscribed — #{site_settings.site_name}" %>
+
+<section class="press-article">
+  <header class="press-article__head">
+    <h1 class="press-article__title">Glad you're staying</h1>
+    <p class="press-article__byline">Thanks — you'll keep getting <%= site_settings.site_name %> emails.</p>
+  </header>
+  <div class="press-article__body">
+    <p><%= link_to "Back to home", root_path, class: "press-link" %></p>
+  </div>
+</section>

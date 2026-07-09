@@ -19,3 +19,9 @@ production:
   purge_trash:
     class: Record::PurgeTrashJob
     schedule: at 4am every day
+
+  # Weekly newsletter list hygiene: nudge cold subscribers, then sunset the
+  # unresponsive. Inert until Subscriber.sunset_enabled? (ADR 0014).
+  sunset_subscribers:
+    class: SubscriberSunsetJob
+    schedule: at 8am every Monday

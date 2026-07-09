@@ -5,16 +5,20 @@ require "csv"
 # from the public site. The CSV export is the bridge to an external sender until
 # one is wired (ADR 0011).
 class Admin::SubscribersController < ApplicationController
+  # The roster is one state at a time; the header links between them.
+  STATES = %w[ confirmed pending unsubscribed ].freeze
+
   before_action -> { authorize! Subscriber, to: :manage }
   before_action :set_subscriber, only: :unsubscribe
 
   def index
-    @subscribers = Subscriber.order(created_at: :desc)
+    @state = STATES.include?(params[:state]) ? params[:state] : "confirmed"
+    @subscribers = Subscriber.where(status: @state).order(created_at: :desc)
     @counts = Subscriber.group(:status).count
 
     respond_to do |format|
       format.html
-      format.csv { send_data subscribers_csv, filename: "subscribers-#{Date.current.iso8601}.csv" }
+      format.csv { send_data subscribers_csv, filename: "subscribers-#{@state}-#{Date.current.iso8601}.csv" }
     end
   end
 

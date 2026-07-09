@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.2].define(version: 2026_07_09_120013) do
+ActiveRecord::Schema[8.2].define(version: 2026_07_09_120014) do
   create_table "action_text_rich_texts", force: :cascade do |t|
     t.string "name", null: false
     t.text "body"
@@ -281,7 +281,10 @@ ActiveRecord::Schema[8.2].define(version: 2026_07_09_120013) do
     t.string "consent_ip"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.datetime "last_engaged_at"
+    t.datetime "re_engagement_sent_at"
     t.index ["email_address"], name: "index_subscribers_on_email_address", unique: true
+    t.index ["status", "last_engaged_at"], name: "index_subscribers_on_status_and_last_engaged_at"
   end
 
   create_table "subscription_events", force: :cascade do |t|

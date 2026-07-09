@@ -6,8 +6,20 @@
 # flips it (SubscriberMailer#confirmation). See ADR 0011.
 class Subscriber < ApplicationRecord
   has_many :events, -> { order(:created_at) }, class_name: "SubscriptionEvent", dependent: :destroy
+  has_many :broadcast_deliveries, dependent: :destroy
 
   enum :status, %w[ pending confirmed unsubscribed ].index_by(&:itself), default: "pending"
+
+  # Engagement-based sunset thresholds (ADR 0014). "Engagement" is any open or
+  # click; any of them resets the clock. Ask ("still want these?") at the later
+  # of DAYS/EMAILS since last engagement, but no later than the ask cap; then, if
+  # still silent through the grace window, drop — never past the hard cap.
+  RE_ENGAGE_DAYS    = 90
+  RE_ENGAGE_EMAILS  = 6
+  RE_ENGAGE_CAP_DAYS = 275
+  GRACE_DAYS   = 90
+  GRACE_EMAILS = 3
+  HARD_CAP_DAYS = 365
 
   normalizes :email_address, with: -> { it.strip.downcase }
 
@@ -80,4 +92,61 @@ class Subscriber < ApplicationRecord
   def log_event!(action, ip: nil, source: nil)
     events.create!(action: action, ip_address: ip, source: source)
   end
+
+  # ── Engagement-based sunset ────────────────────────────────────────────────
+
+  # The sunset job only acts once open/click tracking is live (Mailgun) — before
+  # then everyone looks cold, and we must not drop a whole list on absent data.
+  def self.sunset_enabled?
+    ENV["NEWSLETTER_SUNSET"].to_s == "true"
+  end
+
+  # An open or click reset the engagement clock; a pending nudge is cleared, so
+  # they're fully back in the fold.
+  def mark_engaged!
+    update!(last_engaged_at: Time.current, re_engagement_sent_at: nil)
+  end
+
+  # What the weekly job should do with this subscriber right now (or nil).
+  def sunset_action
+    return unless confirmed?
+    return unless days_since_engagement  # never emailed → nothing to judge
+
+    if re_engagement_sent_at
+      :drop if dropworthy?
+    elsif nudgeworthy?
+      :re_engage
+    end
+  end
+
+  # Send the one-time "still want these?" nudge and start the grace clock.
+  def send_re_engagement
+    update!(re_engagement_sent_at: Time.current)
+    SubscriberMailer.re_engagement(self, generate_token_for(:unsubscribe)).deliver_later
+  end
+
+  # Days since the last open/click, anchored to first contact if never engaged.
+  def days_since_engagement
+    anchor = last_engaged_at || broadcast_deliveries.minimum(:sent_at)
+    anchor && ((Time.current - anchor) / 1.day).floor
+  end
+
+  # Emails sent since the last engagement (all of them if never engaged).
+  def emails_since_engagement
+    scope = last_engaged_at ? broadcast_deliveries.where("sent_at > ?", last_engaged_at) : broadcast_deliveries
+    scope.count
+  end
+
+  private
+    def nudgeworthy?
+      (days_since_engagement >= RE_ENGAGE_DAYS && emails_since_engagement >= RE_ENGAGE_EMAILS) ||
+        days_since_engagement >= RE_ENGAGE_CAP_DAYS
+    end
+
+    def dropworthy?
+      grace_days = ((Time.current - re_engagement_sent_at) / 1.day).floor
+      grace_emails = broadcast_deliveries.where("sent_at > ?", re_engagement_sent_at).count
+
+      days_since_engagement >= HARD_CAP_DAYS || (grace_days >= GRACE_DAYS && grace_emails >= GRACE_EMAILS)
+    end
 end

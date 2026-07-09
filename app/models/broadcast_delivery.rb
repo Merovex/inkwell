@@ -7,6 +7,9 @@ class BroadcastDelivery < ApplicationRecord
   belongs_to :broadcast
   belongs_to :subscriber
 
+  # Opens and clicks count as engagement — they reset the subscriber's sunset clock.
+  ENGAGEMENT = %w[ opened clicked ].freeze
+
   # Mailgun event name → [ this delivery's milestone column, broadcast counter ].
   EVENTS = {
     "delivered"    => [ :delivered_at,    :delivered_count ],
@@ -29,6 +32,7 @@ class BroadcastDelivery < ApplicationRecord
     transaction do
       update!(column => Time.current)
       broadcast.increment!(counter)
+      subscriber.mark_engaged! if ENGAGEMENT.include?(mailgun_event)
     end
     true
   end

@@ -16,6 +16,20 @@ class SubscriberMailerTest < ActionMailer::TestCase
     end
   end
 
+  test "re_engagement carries the keep and unsubscribe links" do
+    subscriber = Subscriber.create!(email_address: "reader@example.com", status: :confirmed)
+    token = subscriber.generate_token_for(:unsubscribe)
+
+    email = SubscriberMailer.re_engagement(subscriber, token)
+
+    assert_equal ["reader@example.com"], email.to
+    assert_match Setting.current.site_name, email.subject
+    [email.text_part, email.html_part].each do |part|
+      assert_match "/newsletter/keep/#{token}", part.decoded
+      assert_match "/newsletter/unsubscribe/#{token}", part.decoded
+    end
+  end
+
   test "confirmation is sent from the configured contact email" do
     Setting.current.update!(contact_email: "press@example.com")
     subscriber = Subscriber.create!(email_address: "reader@example.com")

@@ -10,22 +10,30 @@ class AdminSubscribersTest < ActionDispatch::IntegrationTest
     assert_response :not_found
   end
 
-  test "the admin sees the roster with status counts" do
+  test "the roster shows one state at a time, defaulting to confirmed, with tabs to the others" do
     Subscriber.opt_in(email_address: "pending@example.com")
     Subscriber.opt_in(email_address: "done@example.com").confirm!
     sign_in_as users(:admin)
 
+    # Default view is confirmed only.
     get admin_subscribers_path
     assert_response :success
-    assert_select ".list__title", text: "pending@example.com"
     assert_select ".list__title", text: "done@example.com"
+    assert_select ".list__title", text: "pending@example.com", count: 0
+    assert_select "a[href=?]", admin_subscribers_path(state: "pending")
+    assert_select "a[href=?]", admin_subscribers_path(state: "unsubscribed")
+
+    # The pending tab shows only pending.
+    get admin_subscribers_path(state: "pending")
+    assert_select ".list__title", text: "pending@example.com"
+    assert_select ".list__title", text: "done@example.com", count: 0
   end
 
-  test "the roster exports as CSV" do
-    Subscriber.opt_in(email_address: "reader@example.com", source: "hero")
+  test "export gives the current state as CSV" do
+    Subscriber.opt_in(email_address: "reader@example.com", source: "hero").confirm!
     sign_in_as users(:admin)
 
-    get admin_subscribers_path(format: :csv)
+    get admin_subscribers_path(format: :csv)  # defaults to confirmed
     assert_response :success
     assert_equal "text/csv", response.media_type
     assert_includes response.body, "reader@example.com"

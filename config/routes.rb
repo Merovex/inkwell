@@ -181,6 +181,9 @@ Rails.application.routes.draw do
   post "newsletter" => "subscriptions#create"
   get  "newsletter/confirm/:token" => "subscriptions#confirm", as: :confirm_newsletter
   get  "newsletter/unsubscribe/:token" => "subscriptions#unsubscribe", as: :unsubscribe_newsletter
+  # "Keep me subscribed" from a re-engagement nudge — a reliable re-engagement
+  # signal that doesn't depend on Mailgun open tracking (ADR 0014).
+  get  "newsletter/keep/:token" => "subscriptions#keep", as: :keep_newsletter
 
   root "pages#home"
 end

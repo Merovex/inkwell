@@ -5,20 +5,21 @@
 <header class="perma-header">
   <h1 class="perma-header__title">Subscribers</h1>
   <div class="perma-header__content">
-    <p class="u-text-muted">
-      <%= @counts["confirmed"].to_i %> confirmed ·
-      <%= @counts["pending"].to_i %> pending ·
-      <%= @counts["unsubscribed"].to_i %> unsubscribed
-    </p>
-    <nav class="perma-header__toolbar" aria-label="Actions">
-      <%= link_to admin_subscribers_path(format: :csv), class: "button button--small" do %>
-        <%= inline_svg_tag "lucide/file-text.svg", class: "lucide", size: "16px" %> Export CSV
+    <%# One state at a time; each tab links to that state's view. %>
+    <nav class="perma-header__toolbar" aria-label="Subscriber states">
+      <% Admin::SubscribersController::STATES.each do |state| %>
+        <%= link_to admin_subscribers_path(state: state),
+              class: "button button--small#{' button--primary' if state == @state}",
+              aria: { current: ("page" if state == @state) } do %>
+          <%= state.capitalize %> <span class="u-text-muted">(<%= @counts[state].to_i %>)</span>
+        <% end %>
+      <% end %>
+      <%= link_to admin_subscribers_path(state: @state, format: :csv), class: "button button--small" do %>
+        <%= inline_svg_tag "lucide/file-text.svg", class: "lucide", size: "16px" %> Export
       <% end %>
     </nav>
   </div>
 </header>
-
-<% badges = { "confirmed" => "badge--success", "pending" => "badge--warning", "unsubscribed" => "badge--danger" } %>
 
 <% if @subscribers.any? %>
   <ul class="list">
@@ -27,11 +28,13 @@
         <span class="list__body">
           <span class="list__titlerow">
             <span class="list__title"><%= subscriber.email_address %></span>
-            <span class="badge <%= badges[subscriber.status] %>"><%= subscriber.status %></span>
+            <% if subscriber.confirmed? && subscriber.re_engagement_sent_at %>
+              <span class="badge badge--warning">Nudged</span>
+            <% end %>
           </span>
           <span class="list__meta">
             <span class="list__byline">
-              <%= "via #{subscriber.source} · " if subscriber.source.present? %>joined <%= subscriber.created_at.strftime("%b %-d, %Y") %>
+              <%= "via #{subscriber.source} · " if subscriber.source.present? %>joined <%= subscriber.created_at.strftime("%b %-d, %Y") %><%= " · last opened #{subscriber.last_engaged_at.strftime('%b %-d, %Y')}" if subscriber.last_engaged_at %>
             </span>
           </span>
         </span>
@@ -49,7 +52,15 @@
 <% else %>
   <div class="empty">
     <span class="empty__icon"><%= inline_svg_tag "lucide/inbox.svg", class: "lucide", size: "40px" %></span>
-    <p class="empty__title">No subscribers yet</p>
-    <p class="empty__text">When readers join the newsletter from the public site, they'll appear here.</p>
+    <p class="empty__title">No <%= @state %> subscribers</p>
+    <p class="empty__text">
+      <% if @state == "confirmed" %>
+        Confirmed subscribers — those who completed double opt-in — appear here.
+      <% elsif @state == "pending" %>
+        People who signed up but haven't confirmed their email yet appear here.
+      <% else %>
+        People who've unsubscribed (or were sunset for inactivity) appear here.
+      <% end %>
+    </p>
   </div>
 <% end %>
