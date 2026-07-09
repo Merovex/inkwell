@@ -60,7 +60,7 @@ class Admin::BooksController < ApplicationController
 
   private
     def book_params
-      params.expect(book: [ :title, :content, :publication_date ])
+      params.expect(book: [ :title, :content, :publication_date, :author_record_id ])
     end
 
     # Current books matching ?q=, minus any already linked to ?series_record_id.

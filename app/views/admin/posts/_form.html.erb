@@ -15,8 +15,18 @@
   <%= f.rich_textarea :content, placeholder: "Write away…", "aria-label": "Body" %>
 
   <%# Optional plain-text summary for the blog list + search results; falls back %>
-  <%# to a truncation of the body when blank (Post#summary). %>
-  <%= f.text_area :excerpt, class: "composer__excerpt", rows: 2,
-        placeholder: "Optional summary for the blog list and search results…",
-        "aria-label": "Excerpt" %>
+  <%# to a truncation of the body when blank (Post#summary). The counter nudges %>
+  <%# toward the 50–160 search-snippet sweet spot. %>
+  <div class="composer__field" data-controller="char-count"
+       data-char-count-min-value="50" data-char-count-max-value="160">
+    <%= f.text_area :excerpt, class: "composer__excerpt", rows: 2, maxlength: 160,
+          placeholder: "Optional summary for the blog list and search results…",
+          "aria-label": "Excerpt",
+          data: { char_count_target: "field", action: "input->char-count#update" } %>
+    <p class="composer__hint u-text-muted">
+      <span data-char-count-target="count">0</span>/160 — aim for 50–160 characters, with your keywords in the first 120.
+    </p>
+  </div>
+
+  <%= render "admin/shared/author_select", f: f, resource: post %>
 <% end %>

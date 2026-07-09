@@ -1,0 +1,56 @@
+<% content_for :title, "#{@author.name} — #{site_settings.site_name}" %>
+<% content_for :meta_description, @author.bio.to_plain_text.to_s.truncate(200) %>
+<% content_for :og_image, url_for(@author.avatar.variant(:thumb)) if @author.avatar.attached? %>
+<% content_for :json_ld do %>
+  <%= json_ld_tag({
+    "@context": "https://schema.org",
+    "@type": "Person",
+    "name": @author.name,
+    "description": @author.bio.to_plain_text.to_s.truncate(300).presence,
+    "image": (url_for(@author.avatar.variant(:thumb)) if @author.avatar.attached?),
+    "url": author_page_url(@author)
+  }) %>
+<% end %>
+
+<article class="press-article">
+  <header class="press-author__head">
+    <% if @author.avatar.attached? %>
+      <%= image_tag @author.avatar.variant(:thumb), class: "press-author__avatar", alt: @author.name %>
+    <% end %>
+    <h1 class="press-article__title"><%= @author.name %></h1>
+  </header>
+
+  <% if @author.bio.present? %>
+    <div class="press-article__body"><%= @author.bio %></div>
+  <% end %>
+</article>
+
+<% if @books.any? %>
+  <section class="press-books">
+    <h2 class="press-series__title">Books</h2>
+    <div class="press-book-grid">
+      <% @books.each do |book| %>
+        <%= render "books/card", book: book %>
+      <% end %>
+    </div>
+  </section>
+<% end %>
+
+<% if @posts.any? %>
+  <section class="press-page">
+    <h2 class="press-series__title">Writing</h2>
+    <div class="press-articles">
+      <% @posts.each do |post| %>
+        <article class="press-article-card">
+          <time class="press-article-card__date" datetime="<%= post.published_at.iso8601 %>">
+            <%= post.published_at.strftime("%B %-d, %Y") %>
+          </time>
+          <h3 class="press-article-card__title">
+            <%= link_to post.title, blog_post_path(post.record.to_slug), class: "press-article-card__link" %>
+          </h3>
+          <p class="press-article-card__desc"><%= post.summary %></p>
+        </article>
+      <% end %>
+    </div>
+  </section>
+<% end %>

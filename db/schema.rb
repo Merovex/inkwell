@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.2].define(version: 2026_07_09_170000) do
+ActiveRecord::Schema[8.2].define(version: 2026_07_09_171000) do
   create_table "action_text_rich_texts", force: :cascade do |t|
     t.string "name", null: false
     t.text "body"
@@ -91,6 +91,19 @@ ActiveRecord::Schema[8.2].define(version: 2026_07_09_170000) do
     t.index ["visitor_token", "started_at"], name: "index_ahoy_visits_on_visitor_token_and_started_at"
   end
 
+  create_table "authors", force: :cascade do |t|
+    t.string "name", null: false
+    t.boolean "default", default: false, null: false
+    t.integer "record_id", null: false
+    t.integer "creator_id", null: false
+    t.string "event", default: "created", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["creator_id"], name: "index_authors_on_creator_id"
+    t.index ["record_id", "id"], name: "index_authors_on_record_id_and_id"
+    t.index ["record_id"], name: "index_authors_on_record_id"
+  end
+
   create_table "bodies", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
@@ -109,6 +122,8 @@ ActiveRecord::Schema[8.2].define(version: 2026_07_09_170000) do
     t.string "event", default: "created", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "author_record_id"
+    t.index ["author_record_id"], name: "index_books_on_author_record_id"
     t.index ["body_id"], name: "index_books_on_body_id"
     t.index ["creator_id"], name: "index_books_on_creator_id"
     t.index ["depiction_id"], name: "index_books_on_depiction_id"
@@ -246,6 +261,8 @@ ActiveRecord::Schema[8.2].define(version: 2026_07_09_170000) do
     t.integer "body_id", null: false
     t.string "event", default: "created", null: false
     t.text "excerpt"
+    t.integer "author_record_id"
+    t.index ["author_record_id"], name: "index_posts_on_author_record_id"
     t.index ["body_id"], name: "index_posts_on_body_id"
     t.index ["creator_id"], name: "index_posts_on_creator_id"
     t.index ["record_id", "id"], name: "index_posts_on_record_id_and_id"
@@ -280,6 +297,8 @@ ActiveRecord::Schema[8.2].define(version: 2026_07_09_170000) do
     t.string "event", default: "created", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "author_record_id"
+    t.index ["author_record_id"], name: "index_series_on_author_record_id"
     t.index ["body_id"], name: "index_series_on_body_id"
     t.index ["creator_id"], name: "index_series_on_creator_id"
     t.index ["record_id", "id"], name: "index_series_on_record_id_and_id"

@@ -143,6 +143,16 @@ Rails.application.routes.draw do
     # Public-site traffic dashboard (Ahoy) — domain-admin only.
     resource :analytics, only: :show
 
+    # Pen names / author personas — domain-admin managed; content creators select
+    # one on the composer. Public bio pages live at /authors/:id.
+    resources :authors, except: :show do
+      # The avatar is its own resource so picking/dropping a picture auto-submits
+      # — the same well as the user's own avatar.
+      scope module: :authors do
+        resource :avatar, only: %i[update destroy]
+      end
+    end
+
     # Personal settings — always Current.user, no id in the URL. The avatar is
     # its own resource so picking/dropping a picture can auto-submit.
     namespace :user do
@@ -168,6 +178,9 @@ Rails.application.routes.draw do
   get "blog/feed" => "blog#feed", as: :blog_feed, defaults: { format: "rss" }
   get "blog/:id" => "blog#show", as: :blog_post
 
+  # Author persona pages: bio + their published posts and books.
+  get "authors/:id" => "authors#show", as: :author_page
+
   # Public book catalog: published books, grouped by series.
   get "books" => "books#index", as: :books
   get "books/:id" => "books#show", as: :book
@@ -184,8 +197,10 @@ Rails.application.routes.draw do
   get "privacy" => "pages#privacy", as: :privacy
   get "terms" => "pages#terms", as: :terms
 
-  # SEO: XML sitemap of the public surface.
+  # SEO: XML sitemap of the public surface, and a robots.txt that points at it
+  # (dynamic so the Sitemap URL carries the real host).
   get "sitemap" => "pages#sitemap", as: :sitemap, defaults: { format: "xml" }
+  get "robots.txt" => "pages#robots", as: :robots, format: false
 
   # Buy-link click-through: counts the click, then redirects to the store.
   get "buy/:id" => "distributors#show", as: :buy

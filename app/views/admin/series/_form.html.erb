@@ -6,4 +6,6 @@
         "aria-label": "Title", required: true, autofocus: true %>
 
   <%= f.rich_textarea :content, placeholder: "About this series…", "aria-label": "Body" %>
+
+  <%= render "admin/shared/author_select", f: f, resource: series %>
 <% end %>

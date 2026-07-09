@@ -27,6 +27,12 @@ class PagesController < PublicController
     fresh_when etag: [ @posts, @books, site_settings ], public: true
   end
 
+  # robots.txt — allow everything, point crawlers at the sitemap.
+  def robots
+    render plain: "User-agent: *\nAllow: /\n\nSitemap: #{root_url}sitemap.xml\n",
+      content_type: "text/plain"
+  end
+
   private
     def render_legal(title, body)
       @title, @body = title, body

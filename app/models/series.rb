@@ -4,6 +4,7 @@
 # keyed by Record id so memberships survive versioning.
 class Series < ApplicationRecord
   include Publishable
+  include Authored
 
   has_many :installments, primary_key: :record_id, foreign_key: :series_record_id,
     dependent: :destroy

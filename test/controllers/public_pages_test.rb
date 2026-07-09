@@ -19,6 +19,18 @@ class PublicPagesTest < ActionDispatch::IntegrationTest
     assert_select "link[rel=?][type=?]", "alternate", "application/rss+xml"
   end
 
+  test "robots.txt points crawlers at the sitemap" do
+    get "/robots.txt"
+    assert_response :success
+    assert_equal "text/plain", response.media_type
+    assert_match %r{Sitemap: https?://[^/]+/sitemap\.xml}, response.body
+  end
+
+  test "the home page carries WebSite structured data" do
+    get root_path
+    assert_match '"@type":"WebSite"', response.body
+  end
+
   test "the sitemap lists published post urls" do
     get "/sitemap.xml"
     assert_response :success

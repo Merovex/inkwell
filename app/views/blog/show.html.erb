@@ -1,5 +1,17 @@
 <% content_for :title, "#{@post.title} — #{site_settings.site_name}" %>
 <% content_for :meta_description, @post.summary(length: 200) %>
+<% content_for :json_ld do %>
+  <%= json_ld_tag({
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": @post.title,
+    "datePublished": @post.published_at.iso8601,
+    "dateModified": @record.updated_at.iso8601,
+    "author": { "@type": "Person", "name": @post.byline },
+    "description": @post.summary(length: 200),
+    "publisher": { "@type": "Organization", "name": site_settings.site_name }
+  }) %>
+<% end %>
 
 <article class="press-article">
   <a href="<%= blog_path %>" class="press-article__back">
@@ -12,7 +24,7 @@
       <%= @post.published_at.strftime("%B %-d, %Y") %>
     </time>
     <h1 class="press-article__title"><%= @post.title %></h1>
-    <p class="press-article__byline">by <%= @post.record.creator.display_name %></p>
+    <p class="press-article__byline">by <%= byline_link(@post) %></p>
   </header>
 
   <div class="press-article__body">

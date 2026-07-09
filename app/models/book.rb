@@ -6,6 +6,7 @@
 class Book < ApplicationRecord
   include Publishable
   include Depictionable
+  include Authored
 
   has_many :installments, primary_key: :record_id, foreign_key: :book_record_id,
     dependent: :destroy

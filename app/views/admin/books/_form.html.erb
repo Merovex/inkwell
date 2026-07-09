@@ -28,4 +28,6 @@
       value="<%= book.publication_date&.iso8601 %>"></duet-date-picker>
     <p class="field__hint u-text-muted">When the book was released to the world (not when this record goes live).</p>
   </div>
+
+  <%= render "admin/shared/author_select", f: f, resource: book %>
 <% end %>

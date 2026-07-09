@@ -4,6 +4,12 @@
 # regime lives in Publishable, shared with Message.
 class Post < ApplicationRecord
   include Publishable
+  include Authored
+
+  # Keep the excerpt within the search-snippet sweet spot — Google clips a meta
+  # description around 160 chars. (The 50-char floor is a composer nudge, not a
+  # hard rule: a shorter one still beats none.)
+  validates :excerpt, length: { maximum: 160 }, allow_blank: true
 
   # The blurb for the public blog list and the meta description: the author's
   # excerpt when given (an SEO-friendly summary), otherwise a truncation of the

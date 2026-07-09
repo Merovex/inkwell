@@ -41,6 +41,11 @@
   }
   .composer__excerpt::placeholder { color: var(--ink-muted); }
 
+  .composer__field { display: grid; gap: calc(var(--u-pad) / 3); }
+  .composer__hint { font-size: var(--font-size-0); padding-inline: var(--u-pad); }
+  /* Below the 50-char floor: nudge, don't block. */
+  .char-count--short .composer__hint { color: var(--warning-ink, var(--accent)); }
+
   /* Category picker (messages): a quarter of the composer, not a full-width
      bar; the floor keeps the prompt readable on narrow screens. */
   .composer__category { inline-size: clamp(13rem, 25%, 100%); }

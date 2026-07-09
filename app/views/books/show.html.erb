@@ -1,6 +1,17 @@
 <% content_for :title, "#{@book.title} — #{site_settings.site_name}" %>
 <% content_for :meta_description, @book.content.to_plain_text.to_s.truncate(200) %>
 <% content_for :og_image, url_for(@book.cover) if @book.cover? %>
+<% content_for :json_ld do %>
+  <%= json_ld_tag({
+    "@context": "https://schema.org",
+    "@type": "Book",
+    "name": @book.title,
+    "author": { "@type": "Person", "name": @book.byline },
+    "datePublished": @book.publication_date&.iso8601,
+    "image": (url_for(@book.cover) if @book.cover?),
+    "publisher": { "@type": "Organization", "name": site_settings.site_name }
+  }) %>
+<% end %>
 
 <article class="press-book">
   <a href="<%= books_path %>" class="press-article__back">
@@ -18,6 +29,7 @@
         <p class="press-book__series"><%= series.map(&:title).to_sentence %></p>
       <% end %>
       <h1 class="press-book__title"><%= @book.title %></h1>
+      <p class="press-book__byline">by <%= byline_link(@book) %></p>
       <% if @book.publication_date %>
         <p class="press-book__date"><%= @book.publication_date.strftime("%B %Y") %></p>
       <% end %>

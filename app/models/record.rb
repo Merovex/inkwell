@@ -7,7 +7,7 @@ class Record < ApplicationRecord
   include Boostable
 
   # Content types that may live in the envelope; grows as recordables are added.
-  RECORDABLE_TYPES = %w[ Post Comment ChatLine Message Book Series ]
+  RECORDABLE_TYPES = %w[ Post Comment ChatLine Message Book Series Author ]
 
   delegated_type :recordable, types: RECORDABLE_TYPES, optional: true
   belongs_to :creator, class_name: "User", default: -> { Current.user }
@@ -35,6 +35,7 @@ class Record < ApplicationRecord
   scope :messages, -> { where(recordable_type: "Message") }
   scope :books, -> { where(recordable_type: "Book") }
   scope :series, -> { where(recordable_type: "Series") }
+  scope :authors, -> { where(recordable_type: "Author") }
   # Most-recently-touched live records, recordable preloaded — the app menu's
   # "Recent" list composes this with a type filter (see AppMenuHelper).
   scope :recently_active, -> { active.includes(:recordable).order(updated_at: :desc) }

@@ -1,0 +1,42 @@
+<% content_for :title, "Authors — Inkwell" %>
+
+<%= render "admin/shared/canvas_head", crumbs: [["Authors", nil]] %>
+
+<header class="perma-header">
+  <h1 class="perma-header__title">Authors</h1>
+  <div class="perma-header__content">
+    <nav class="perma-header__toolbar" aria-label="Actions">
+      <%= link_to new_admin_author_path, class: "button button--primary button--small" do %>
+        <%= inline_svg_tag "lucide/plus.svg", class: "lucide", size: "16px" %> New author
+      <% end %>
+    </nav>
+  </div>
+</header>
+
+<% if @authors.any? %>
+  <ul class="list">
+    <% @authors.each do |author| %>
+      <li class="list__item">
+        <%= link_to edit_admin_author_path(author), class: "list__body" do %>
+          <span class="list__titlerow">
+            <span class="list__title"><%= author.name %></span>
+            <% if author.default? %><span class="badge badge--accent">Default</span><% end %>
+          </span>
+        <% end %>
+        <%= button_to admin_author_path(author), method: :delete, form_class: "list__action",
+              class: "button button--icon button--ghost", title: "Remove",
+              "aria-label": "Remove #{author.name}",
+              form: { data: { turbo_confirm: "Remove #{author.name}?" } } do %>
+          <%= inline_svg_tag "lucide/trash-2.svg", class: "lucide", size: "16px" %>
+        <% end %>
+      </li>
+    <% end %>
+  </ul>
+<% else %>
+  <div class="empty">
+    <span class="empty__icon"><%= inline_svg_tag "lucide/smile-plus.svg", class: "lucide", size: "40px" %></span>
+    <p class="empty__title">No authors yet</p>
+    <p class="empty__text">Add a pen name to use as a byline on posts, books, and series.</p>
+    <div class="empty__actions"><%= link_to "New author", new_admin_author_path, class: "button button--primary" %></div>
+  </div>
+<% end %>

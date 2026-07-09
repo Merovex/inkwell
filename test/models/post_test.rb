@@ -47,6 +47,14 @@ class PostTest < ActiveSupport::TestCase
     assert_equal [ pinned, posts(:kickoff) ], Post.feed_ordered.to_a
   end
 
+  test "an excerpt over 160 characters is rejected" do
+    post = posts(:kickoff)
+
+    assert post.update(excerpt: "x" * 160)
+    assert_not post.update(excerpt: "x" * 161)
+    assert_includes post.errors[:excerpt], "is too long (maximum is 160 characters)"
+  end
+
   test "summary uses the author's excerpt when present" do
     post = posts(:kickoff)
     post.update!(excerpt: "A hand-written, SEO-friendly summary.")

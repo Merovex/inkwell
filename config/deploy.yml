@@ -3,6 +3,11 @@ service: alcovo
 
 # Name of the container image (use your-user/app-name on external registries).
 image: alcovo
+ssh:
+    user: root
+    keys:
+      - "~/.ssh/hetzner"
+    keys_only: true
 
 # Deploy to these servers.
 servers:

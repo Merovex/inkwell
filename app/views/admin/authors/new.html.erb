@@ -1,0 +1,11 @@
+<% content_for :title, "New author — Inkwell" %>
+
+<%= render "admin/shared/canvas_head", crumbs: [["Authors", admin_authors_path], ["New", nil]] %>
+
+<header class="perma-header">
+  <h1 class="perma-header__title">New author</h1>
+</header>
+
+<div class="u-center u-center-narrow">
+  <%= render "form", author: @author, url: admin_authors_path %>
+</div>

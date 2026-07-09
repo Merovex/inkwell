@@ -1,0 +1,30 @@
+<% content_for :title, "Edit #{@author.name} — Inkwell" %>
+
+<%= render "admin/shared/canvas_head", crumbs: [["Authors", admin_authors_path], [@author.name, nil]] %>
+
+<header class="perma-header">
+  <h1 class="perma-header__title">Edit author</h1>
+</header>
+
+<div class="settings u-center u-center-narrow">
+  <section class="settings__section settings__section--picture" aria-label="Picture">
+    <%= form_with url: admin_author_avatar_path(@author), method: :patch, multipart: true, class: "settings__avatar-well",
+          data: { controller: "avatar-upload",
+                  "avatar-upload-dragover-class": "settings__avatar-well--dragover",
+                  action: "dragover->avatar-upload#dragover dragleave->avatar-upload#dragleave drop->avatar-upload#drop" } do %>
+      <label class="avatar avatar--large settings__avatar" title="Change picture">
+        <%= avatar_content(@author) %>
+        <%= file_field_tag "author[avatar]", accept: Author::AVATAR_CONTENT_TYPES.join(","), hidden: true,
+              "aria-label": "Upload picture",
+              data: { avatar_upload_target: "input", action: "change->avatar-upload#submit" } %>
+      </label>
+      <p class="u-text-muted">Click the avatar or drop an image on it.<br>JPG, PNG, AVIF, or WebP, up to <%= Author::AVATAR_MAX_SIZE / 1.megabyte %> MB.</p>
+    <% end %>
+
+    <% if @author.avatar.attached? %>
+      <%= button_to "Remove picture and use initials", admin_author_avatar_path(@author), method: :delete, class: "button" %>
+    <% end %>
+  </section>
+
+  <%= render "form", author: @author, url: admin_author_path(@author) %>
+</div>

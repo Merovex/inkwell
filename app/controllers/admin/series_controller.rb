@@ -87,7 +87,7 @@ class Admin::SeriesController < ApplicationController
     end
 
     def series_params
-      params.expect(series: [ :title, :content ])
+      params.expect(series: [ :title, :content, :author_record_id ])
     end
 
     def create_notice

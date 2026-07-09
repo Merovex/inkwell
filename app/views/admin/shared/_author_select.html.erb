@@ -1,0 +1,15 @@
+<%# locals: (f:, resource:) — the byline picker for a composer. Values are the %>
+<%# author's Record id (stable), defaulting to the marked default on new content. %>
+<%# Hidden until at least one author exists. %>
+<% authors = Author.current.ordered %>
+<% if authors.any? %>
+  <div class="field">
+    <%= f.label :author_record_id, "Author", class: "field__label" %>
+    <span class="field__select">
+      <%= f.collection_select :author_record_id, authors, :record_id, :name,
+            { selected: resource.author_record_id || Author.default&.record_id, include_blank: "No byline" },
+            class: "field__control" %>
+      <%= inline_svg_tag "lucide/chevron-down.svg", class: "lucide", size: "16px" %>
+    </span>
+  </div>
+<% end %>
