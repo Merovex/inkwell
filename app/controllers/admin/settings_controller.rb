@@ -22,6 +22,6 @@ class Admin::SettingsController < ApplicationController
     end
 
     def setting_params
-      params.expect(setting: [ :site_name, :tagline, :description, :contact_email, :logo ])
+      params.expect(setting: [ :site_name, :tagline, :description, :contact_email, :logo, :privacy_policy, :terms ])
     end
 end

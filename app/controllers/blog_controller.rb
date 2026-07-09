@@ -10,6 +10,14 @@ class BlogController < PublicController
       .feed_ordered
   end
 
+  # RSS 2.0 of the latest published posts (footer + feed readers).
+  def feed
+    @posts = Post.current.published
+      .includes(record: :creator, body: :rich_text_content)
+      .feed_ordered.limit(20)
+    fresh_when etag: [ @posts, site_settings ], public: true
+  end
+
   # :id is the id-first slug ("3-my-title"). Record.find keys on the leading
   # integer (String#to_i drops the tail), so a stale or bare-id slug still
   # resolves — we 301 it to the canonical slug to keep one URL per article.

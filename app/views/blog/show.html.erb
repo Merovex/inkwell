@@ -1,4 +1,5 @@
-<% content_for :title, "#{@post.title} — Merovex Press" %>
+<% content_for :title, "#{@post.title} — #{site_settings.site_name}" %>
+<% content_for :meta_description, @post.content.to_plain_text.to_s.truncate(200) %>
 
 <article class="press-article">
   <a href="<%= blog_path %>" class="press-article__back">

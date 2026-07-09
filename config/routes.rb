@@ -140,6 +140,9 @@ Rails.application.routes.draw do
     # sending happens from the post page.
     resources :broadcasts, only: :index
 
+    # Public-site traffic dashboard (Ahoy) — domain-admin only.
+    resource :analytics, only: :show
+
     # Personal settings — always Current.user, no id in the URL. The avatar is
     # its own resource so picking/dropping a picture can auto-submit.
     namespace :user do
@@ -161,6 +164,8 @@ Rails.application.routes.draw do
   # Public blog. The index lists published posts only; :id on the article page
   # is the Record id (the stable public identity), matching the admin side.
   get "blog" => "blog#index", as: :blog
+  # RSS feed — declared before blog/:id so "feed" isn't swallowed as an id.
+  get "blog/feed" => "blog#feed", as: :blog_feed, defaults: { format: "rss" }
   get "blog/:id" => "blog#show", as: :blog_post
 
   # Public book catalog: published books, grouped by series.
@@ -174,6 +179,16 @@ Rails.application.routes.draw do
   # The public Merovex Press site. The About page renders the site's About blurb
   # from Setting.current; the admin backend lives at /admin.
   get "about" => "pages#about", as: :about
+
+  # Legal pages, authored in System settings (privacy carries the cookie notice).
+  get "privacy" => "pages#privacy", as: :privacy
+  get "terms" => "pages#terms", as: :terms
+
+  # SEO: XML sitemap of the public surface.
+  get "sitemap" => "pages#sitemap", as: :sitemap, defaults: { format: "xml" }
+
+  # Buy-link click-through: counts the click, then redirects to the store.
+  get "buy/:id" => "distributors#show", as: :buy
 
   # Newsletter opt-in (anonymous, double opt-in) at /newsletter. create records a
   # pending subscriber; the token links confirm and unsubscribe. See ADR 0011.

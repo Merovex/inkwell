@@ -47,6 +47,18 @@
         <p class="field__hint u-text-muted">Where the public footer's contact link points.</p>
       </div>
 
+      <div class="field">
+        <%= f.label :privacy_policy, "Privacy policy", class: "field__label" %>
+        <%= f.rich_textarea :privacy_policy, placeholder: "Your privacy policy (include your cookie notice here)…", "aria-label": "Privacy policy" %>
+        <p class="field__hint u-text-muted">Published at /privacy; leave blank to hide the footer link. Include your cookie notice here.</p>
+      </div>
+
+      <div class="field">
+        <%= f.label :terms, "Terms of service", class: "field__label" %>
+        <%= f.rich_textarea :terms, placeholder: "Your terms of service…", "aria-label": "Terms of service" %>
+        <p class="field__hint u-text-muted">Published at /terms; leave blank to hide the footer link.</p>
+      </div>
+
       <%= f.submit "Save", class: "button button--primary" %>
     <% end %>
   </section>

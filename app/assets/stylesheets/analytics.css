@@ -1,0 +1,27 @@
+/*
+ * .analytics-* — the public-traffic dashboard: a couple of big stat tiles over
+ * simple ranked lists (landing pages, referrers).
+ */
+@layer components {
+  .analytics-totals {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--u-pad);
+    margin-block-end: calc(var(--u-pad) * 2);
+  }
+
+  .analytics-stat {
+    flex: 1 1 10rem;
+    display: grid;
+    gap: calc(var(--u-pad) / 4);
+    padding: var(--u-pad);
+    background: var(--accent-soft);
+    border-radius: var(--radius-card);
+    text-align: center;
+  }
+  .analytics-stat__value { font-size: var(--font-size-6); font-weight: var(--font-weight-8); color: var(--ink); }
+  .analytics-stat__label { font-size: var(--font-size-0); text-transform: uppercase; letter-spacing: 0.04em; color: var(--ink-on-soft); }
+
+  .analytics-section { margin-block-end: calc(var(--u-pad) * 2); }
+  .analytics-section__title { font-size: var(--font-size-3); font-weight: var(--font-weight-7); margin-block-end: var(--u-pad); }
+}

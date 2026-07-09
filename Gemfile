@@ -81,3 +81,6 @@ gem "csv"
 # Spam protection for public forms: a honeypot field plus a time-to-submit trap
 # [https://github.com/markets/invisible_captcha]
 gem "invisible_captcha"
+
+# First-party analytics (visits + events), DB-backed [https://github.com/ankane/ahoy]
+gem "ahoy_matey"

@@ -1,0 +1,53 @@
+<% content_for :title, "Analytics — Inkwell" %>
+
+<%= render "admin/shared/canvas_head", crumbs: [["Analytics", nil]] %>
+
+<header class="perma-header">
+  <h1 class="perma-header__title">Analytics</h1>
+  <div class="perma-header__content">
+    <p class="u-text-muted">Public-site traffic over the last 30 days.</p>
+  </div>
+</header>
+
+<div class="analytics-totals">
+  <div class="analytics-stat">
+    <span class="analytics-stat__value"><%= number_with_delimiter @visits %></span>
+    <span class="analytics-stat__label">Visits</span>
+  </div>
+  <div class="analytics-stat">
+    <span class="analytics-stat__value"><%= number_with_delimiter @views %></span>
+    <span class="analytics-stat__label">Page views</span>
+  </div>
+</div>
+
+<section class="analytics-section">
+  <h2 class="analytics-section__title">Top landing pages</h2>
+  <% if @landing_pages.any? %>
+    <ul class="list">
+      <% @landing_pages.each do |page, count| %>
+        <li class="list__item">
+          <span class="list__body"><span class="list__title"><%= URI(page).path.presence || page rescue page %></span></span>
+          <span class="badge"><%= count %></span>
+        </li>
+      <% end %>
+    </ul>
+  <% else %>
+    <p class="u-text-muted">No visits yet.</p>
+  <% end %>
+</section>
+
+<section class="analytics-section">
+  <h2 class="analytics-section__title">Top referrers</h2>
+  <% if @referrers.any? %>
+    <ul class="list">
+      <% @referrers.each do |domain, count| %>
+        <li class="list__item">
+          <span class="list__body"><span class="list__title"><%= domain %></span></span>
+          <span class="badge"><%= count %></span>
+        </li>
+      <% end %>
+    </ul>
+  <% else %>
+    <p class="u-text-muted">No referrers yet — mostly direct traffic.</p>
+  <% end %>
+</section>

@@ -1,0 +1,15 @@
+<% content_for :title, "#{@title} — #{site_settings.site_name}" %>
+
+<article class="press-article">
+  <header class="press-article__head">
+    <h1 class="press-article__title"><%= @title %></h1>
+  </header>
+
+  <div class="press-article__body">
+    <% if @body.present? %>
+      <%= @body %>
+    <% else %>
+      <p>This page isn't available yet.</p>
+    <% end %>
+  </div>
+</article>

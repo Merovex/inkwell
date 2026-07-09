@@ -11,6 +11,10 @@ class Setting < ApplicationRecord
   # page; its plain-text form feeds the public <meta description>.
   has_rich_text :description
 
+  # Legal pages, admin-authored rich text (cookies live inside the privacy copy).
+  has_rich_text :privacy_policy
+  has_rich_text :terms
+
   # The public logo; absent means the built-in Merovex wordmark (see the
   # public layout's brand).
   has_one_attached :logo

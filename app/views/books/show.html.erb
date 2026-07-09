@@ -1,4 +1,6 @@
-<% content_for :title, "#{@book.title} — Merovex Press" %>
+<% content_for :title, "#{@book.title} — #{site_settings.site_name}" %>
+<% content_for :meta_description, @book.content.to_plain_text.to_s.truncate(200) %>
+<% content_for :og_image, url_for(@book.cover) if @book.cover? %>
 
 <article class="press-book">
   <a href="<%= books_path %>" class="press-article__back">
@@ -22,7 +24,7 @@
       <% if @record.distributors.any? %>
         <div class="press-book__buy">
           <% @record.distributors.order(:platform).each do |distributor| %>
-            <a href="<%= distributor.url %>" class="press-btn press-btn--primary" target="_blank" rel="noopener">
+            <a href="<%= buy_path(distributor) %>" class="press-btn press-btn--primary" target="_blank" rel="noopener">
               <%= distributor.display_name %>
             </a>
           <% end %>

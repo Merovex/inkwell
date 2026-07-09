@@ -4,7 +4,7 @@
     <title><%= content_for(:title) || [site_settings.site_name, site_settings.tagline.presence].compact.join(" — ") %></title>
     <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
     <meta name="application-name" content="<%= site_settings.site_name %>">
-    <meta name="description" content="<%= site_settings.description.to_plain_text.presence || site_settings.tagline %>">
+    <%= render "layouts/seo" %>
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
 
@@ -15,6 +15,9 @@
     <%# Public-site styles. Everything is scoped under .press, so even though the
         :app glob also loads this file on admin pages, none of it applies there. %>
     <%= stylesheet_link_tag "press", "data-turbo-track": "reload" %>
+
+    <%# Analytics only — the lightweight public entry (ahoy), not the admin bundle. %>
+    <%= javascript_importmap_tags "public" %>
   </head>
 
   <body class="press">
@@ -52,7 +55,13 @@
           <% if site_settings.contact_email.present? %>
             <%= mail_to site_settings.contact_email, "Contact", class: "press-link" %>
           <% end %>
-          <a href="#" class="press-link">RSS Feed</a>
+          <% if site_settings.privacy_policy.present? %>
+            <%= link_to "Privacy", privacy_path, class: "press-link" %>
+          <% end %>
+          <% if site_settings.terms.present? %>
+            <%= link_to "Terms", terms_path, class: "press-link" %>
+          <% end %>
+          <%= link_to "RSS", blog_feed_path(format: :rss), class: "press-link" %>
         </p>
       </div>
     </footer>

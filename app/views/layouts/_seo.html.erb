@@ -1,0 +1,24 @@
+<%# Open Graph / Twitter card + canonical + feed autodiscovery for the public
+    site. Pages set content_for(:title / :meta_description / :og_image) to
+    override; everything falls back to the site identity. %>
+<% title = content_for(:title).presence || [ site_settings.site_name, site_settings.tagline.presence ].compact.join(" — ") %>
+<% description = content_for(:meta_description).presence || site_settings.description.to_plain_text.presence || site_settings.tagline.to_s %>
+<% image = content_for(:og_image).presence %>
+<% image ||= url_for(site_settings.logo) if site_settings.logo.attached? %>
+
+<meta name="description" content="<%= description %>">
+<link rel="canonical" href="<%= request.original_url %>">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="<%= site_settings.site_name %>">
+<meta property="og:title" content="<%= title %>">
+<meta property="og:description" content="<%= description %>">
+<meta property="og:url" content="<%= request.original_url %>">
+<% if image %><meta property="og:image" content="<%= image %>"><% end %>
+
+<meta name="twitter:card" content="<%= image ? "summary_large_image" : "summary" %>">
+<meta name="twitter:title" content="<%= title %>">
+<meta name="twitter:description" content="<%= description %>">
+<% if image %><meta name="twitter:image" content="<%= image %>"><% end %>
+
+<link rel="alternate" type="application/rss+xml" title="<%= site_settings.site_name %>" href="<%= blog_feed_url(format: :rss) %>">
