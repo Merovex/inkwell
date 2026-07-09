@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.2].define(version: 2026_07_09_120011) do
+ActiveRecord::Schema[8.2].define(version: 2026_07_09_120013) do
   create_table "action_text_rich_texts", force: :cascade do |t|
     t.string "name", null: false
     t.text "body"
@@ -90,6 +90,12 @@ ActiveRecord::Schema[8.2].define(version: 2026_07_09_120011) do
     t.integer "subscriber_id", null: false
     t.datetime "sent_at"
     t.datetime "created_at", null: false
+    t.datetime "delivered_at"
+    t.datetime "opened_at"
+    t.datetime "clicked_at"
+    t.datetime "bounced_at"
+    t.datetime "complained_at"
+    t.datetime "unsubscribed_at"
     t.index ["broadcast_id", "subscriber_id"], name: "index_broadcast_deliveries_on_broadcast_id_and_subscriber_id", unique: true
     t.index ["broadcast_id"], name: "index_broadcast_deliveries_on_broadcast_id"
     t.index ["subscriber_id"], name: "index_broadcast_deliveries_on_subscriber_id"
@@ -102,6 +108,12 @@ ActiveRecord::Schema[8.2].define(version: 2026_07_09_120011) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.datetime "scheduled_at"
+    t.integer "delivered_count", default: 0, null: false
+    t.integer "opened_count", default: 0, null: false
+    t.integer "clicked_count", default: 0, null: false
+    t.integer "bounced_count", default: 0, null: false
+    t.integer "complained_count", default: 0, null: false
+    t.integer "unsubscribed_count", default: 0, null: false
     t.index ["record_id"], name: "index_broadcasts_on_record_id", unique: true
   end
 

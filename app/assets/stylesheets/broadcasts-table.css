@@ -1,0 +1,37 @@
+/*
+ * .broadcasts-table — the send-analytics dashboard: one row per broadcast, with
+ * recipient counts and open/click/bounce/unsub metrics. Scrolls horizontally on
+ * narrow screens rather than crushing the columns.
+ */
+@layer components {
+  .broadcasts-table__scroll { overflow-x: auto; }
+
+  .broadcasts-table {
+    inline-size: 100%;
+    border-collapse: collapse;
+    font-size: var(--font-size-1);
+  }
+
+  .broadcasts-table th,
+  .broadcasts-table td {
+    padding: calc(var(--u-pad) / 1.5) var(--u-pad);
+    text-align: start;
+    border-block-end: var(--border-size-1) solid var(--line);
+    white-space: nowrap;
+  }
+
+  .broadcasts-table thead th {
+    font-size: var(--font-size-0);
+    font-weight: var(--font-weight-6);
+    color: var(--ink-muted, inherit);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .broadcasts-table__num { text-align: end; font-variant-numeric: tabular-nums; }
+
+  .broadcasts-table__title { font-weight: var(--font-weight-6); }
+
+  /* The percentage next to a raw count — quieter, so the number leads. */
+  .broadcasts-table__rate { color: var(--ink-muted, inherit); font-size: var(--font-size-0); }
+}

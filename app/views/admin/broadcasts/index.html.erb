@@ -1,0 +1,64 @@
+<% content_for :title, "Broadcasts — Inkwell" %>
+
+<%= render "admin/shared/canvas_head", crumbs: [["Broadcasts", nil]] %>
+
+<header class="perma-header">
+  <h1 class="perma-header__title">Broadcasts</h1>
+  <div class="perma-header__content">
+    <p class="u-text-muted">Posts emailed to subscribers, and how each one landed.</p>
+  </div>
+</header>
+
+<% pct = ->(rate) { rate ? number_to_percentage(rate * 100, precision: 0) : "—" } %>
+
+<% if @broadcasts.any? %>
+  <div class="broadcasts-table__scroll">
+    <table class="broadcasts-table">
+      <thead>
+        <tr>
+          <th scope="col">Post</th>
+          <th scope="col">Sent</th>
+          <th scope="col" class="broadcasts-table__num">Recipients</th>
+          <th scope="col" class="broadcasts-table__num">Delivered</th>
+          <th scope="col" class="broadcasts-table__num">Opens</th>
+          <th scope="col" class="broadcasts-table__num">Clicks</th>
+          <th scope="col" class="broadcasts-table__num">Bounces</th>
+          <th scope="col" class="broadcasts-table__num">Unsubs</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @broadcasts.each do |broadcast| %>
+          <tr>
+            <td>
+              <%= link_to broadcast.post&.title.presence || "Untitled", admin_post_path(broadcast.record), class: "broadcasts-table__title" %>
+            </td>
+            <td>
+              <% case broadcast.state %>
+              <% when :sent %>
+                <%= l broadcast.sent_at.to_date, format: :long %>
+              <% when :scheduled %>
+                <span class="badge badge--accent">Scheduled ·
+                  <time datetime="<%= broadcast.scheduled_at.iso8601 %>" data-controller="local-time"
+                        data-local-time-datetime-value="<%= broadcast.scheduled_at.iso8601 %>"><%= broadcast.scheduled_at.strftime("%b %-d at %H:%M") %></time></span>
+              <% else %>
+                <span class="badge">Sending…</span>
+              <% end %>
+            </td>
+            <td class="broadcasts-table__num"><%= broadcast.recipients_count %></td>
+            <td class="broadcasts-table__num"><%= broadcast.delivered_count %> <span class="broadcasts-table__rate"><%= pct.(broadcast.delivery_rate) %></span></td>
+            <td class="broadcasts-table__num"><%= broadcast.opened_count %> <span class="broadcasts-table__rate"><%= pct.(broadcast.open_rate) %></span></td>
+            <td class="broadcasts-table__num"><%= broadcast.clicked_count %> <span class="broadcasts-table__rate"><%= pct.(broadcast.click_rate) %></span></td>
+            <td class="broadcasts-table__num"><%= broadcast.bounced_count %></td>
+            <td class="broadcasts-table__num"><%= broadcast.unsubscribed_count %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+<% else %>
+  <div class="empty">
+    <span class="empty__icon"><%= inline_svg_tag "lucide/inbox.svg", class: "lucide", size: "40px" %></span>
+    <p class="empty__title">No broadcasts yet</p>
+    <p class="empty__text">Email a published post to your subscribers from its page and it'll show up here.</p>
+  </div>
+<% end %>

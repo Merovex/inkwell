@@ -52,6 +52,20 @@ class SubscriptionsControllerTest < ActionDispatch::IntegrationTest
     assert subscriber.reload.unsubscribed?
   end
 
+  test "unsubscribing from a broadcast attributes the opt-out to that issue" do
+    subscriber = Subscriber.opt_in(email_address: "reader@example.com")
+    subscriber.confirm!
+    broadcast = records(:kickoff).create_broadcast!(recipients_count: 1)
+    delivery = broadcast.deliveries.create!(subscriber: subscriber, sent_at: Time.current)
+
+    get unsubscribe_newsletter_path(token: subscriber.generate_token_for(:unsubscribe), b: broadcast.id)
+    assert_response :success
+
+    assert subscriber.reload.unsubscribed?
+    assert delivery.reload.unsubscribed_at, "the delivery is stamped"
+    assert_equal 1, broadcast.reload.unsubscribed_count, "and the broadcast counter bumps"
+  end
+
   test "a bogus token renders not found" do
     get confirm_newsletter_path(token: "nonsense")
     assert_response :not_found

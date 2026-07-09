@@ -136,6 +136,10 @@ Rails.application.routes.draw do
       patch :unsubscribe, on: :member
     end
 
+    # Broadcasts dashboard — domain-admin only. Read-only send analytics;
+    # sending happens from the post page.
+    resources :broadcasts, only: :index
+
     # Personal settings — always Current.user, no id in the URL. The avatar is
     # its own resource so picking/dropping a picture can auto-submit.
     namespace :user do
@@ -162,6 +166,10 @@ Rails.application.routes.draw do
   # Public book catalog: published books, grouped by series.
   get "books" => "books#index", as: :books
   get "books/:id" => "books#show", as: :book
+
+  # Mailgun event webhooks (delivered/opened/clicked/…) → broadcast metrics.
+  # Authenticity is the Mailgun HMAC signature, verified in the controller.
+  post "webhooks/mailgun" => "webhooks/mailgun#create"
 
   # The public Merovex Press site. The About page renders the site's About blurb
   # from Setting.current; the admin backend lives at /admin.
