@@ -22,6 +22,10 @@ class Record < ApplicationRecord
   # the versioned recordable. See Distributor.
   has_many :distributors, dependent: :destroy
 
+  # The one-time newsletter send of this record (posts only in practice). On the
+  # stable identity so it survives edits; present ⇒ already broadcast. See Broadcast.
+  has_one :broadcast, dependent: :destroy
+
   scope :active,  -> { where(trashed_at: nil) }
   scope :trashed, -> { where.not(trashed_at: nil) }
   scope :purgeable, -> { trashed.where(purge_after: ..Time.current) }
@@ -95,8 +99,25 @@ class Record < ApplicationRecord
   # a lookup needs — String#to_i drops the tail, so Record.find works with the
   # whole slug — which keeps links stable when a title is later edited. Records
   # with no title (comments, chat lines) slug to just the id.
+  #
+  # A not-yet-published recordable gets an extra #preview_key segment, so an
+  # early (e.g. broadcast-before-publish) link resolves while the bare id 404s —
+  # a timing gate, not security (see BlogController#show). Once published the key
+  # drops and the clean slug takes over.
   def to_slug
-    [ id, recordable&.try(:title).presence&.parameterize ].compact.join("-")
+    base = [ id, recordable&.try(:title).presence&.parameterize ].compact.join("-")
+    recordable.try(:published?) == false ? "#{base}-#{preview_key}" : base
+  end
+
+  # Crockford Base32, lowercased (no i/l/o/u) — legible in a URL.
+  PREVIEW_ALPHABET = "0123456789abcdefghjkmnpqrstvwxyz"
+
+  # A short, unguessable-without-the-secret slug segment for pre-publish links,
+  # derived from the id via HMAC so there's nothing to store. Five chars (~33M)
+  # is plenty to keep fishers off a post that's going public shortly anyway.
+  def preview_key
+    mac = OpenSSL::HMAC.digest("SHA256", Rails.application.secret_key_base, "blog-preview:#{id}")
+    mac.bytes.first(5).map { |byte| PREVIEW_ALPHABET[byte % 32] }.join
   end
 
   def trashed? = trashed_at.present?

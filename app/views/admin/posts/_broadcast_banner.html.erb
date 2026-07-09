@@ -1,0 +1,56 @@
+<%# HEY World-style banner above a post: its public link (copy to share) and the %>
+<%# one-time "email it to subscribers" action — send now or schedule for later. %>
+<%# Creator/admin only; the caller guards on can_manage. Shows once the post is %>
+<%# published or scheduled; after a send it becomes a "sent" stamp. %>
+<% broadcast = @record.broadcast %>
+<% if @post.published? || @post.scheduled? %>
+  <aside class="broadcast-banner<%= " broadcast-banner--sent" if broadcast&.sent? %>">
+    <%# The public URL. While scheduled, to_slug carries the HMAC preview key, so %>
+    <%# this link (and the one in the email) resolves early; the bare id 404s. %>
+    <% url = blog_post_url(@record.to_slug) %>
+    <% if @post.published? %>
+      <p class="broadcast-banner__lead">
+        <strong>This post is
+          <a class="broadcast-banner__permalink" href="<%= url %>" target="_blank" rel="noopener">live on the web</a></strong>
+        for anyone to read. Copy this link to share it:
+      </p>
+    <% else %>
+      <p class="broadcast-banner__lead">
+        Not public yet — this is the
+        <a class="broadcast-banner__permalink" href="<%= url %>" target="_blank" rel="noopener">preview link</a>
+        subscribers get. It works until the post publishes:
+      </p>
+    <% end %>
+    <div class="broadcast-banner__field" data-controller="clipboard" data-clipboard-text-value="<%= url %>">
+      <input class="broadcast-banner__url" type="text" value="<%= url %>" readonly tabindex="-1" aria-label="Post link">
+      <button type="button" class="broadcast-banner__copy" data-action="clipboard#copy">Copy</button>
+      <span class="broadcast-banner__copied" data-clipboard-target="flash" role="status" aria-hidden="true">Copied to clipboard</span>
+    </div>
+
+    <% if broadcast&.sent? %>
+      <p class="broadcast-banner__stamp">✓ Sent to <%= pluralize(broadcast.recipients_count, "subscriber") %> on <%= l broadcast.sent_at.to_date, format: :long %></p>
+    <% elsif broadcast&.scheduled? %>
+      <p class="broadcast-banner__stamp">Scheduled to email subscribers on
+        <time datetime="<%= broadcast.scheduled_at.iso8601 %>" data-controller="local-time"
+              data-local-time-datetime-value="<%= broadcast.scheduled_at.iso8601 %>"><%= broadcast.scheduled_at.strftime("%b %-d at %H:%M") %></time>.</p>
+      <%= button_to "Cancel scheduled email", admin_post_broadcast_path(@record), method: :delete,
+            class: "button button--small" %>
+    <% elsif broadcast %>
+      <p class="broadcast-banner__stamp">Emailing this post to your subscribers…</p>
+    <% else %>
+      <%# Send now, or open the clock to schedule via the shared day/hour picker %>
+      <%# (same control + backend params as a post's scheduled publish). The %>
+      <%# scheduler's inputs stay disabled until its popover opens, so a plain %>
+      <%# "Email it" submit sends immediately. %>
+      <%= form_with url: admin_post_broadcast_path(@record), method: :post,
+            id: "broadcast-form", class: "broadcast-banner__actions" do %>
+        <%= submit_tag "Email it to my subscribers", class: "button button--primary" %>
+        <%= render "admin/shared/scheduler", form: "broadcast-form", noun: "email",
+              panel_id: "broadcast-scheduler",
+              heading: "When should we email this to subscribers?",
+              schedule_label: "Schedule email",
+              note: "The post stays live on the web — only the email send is scheduled." %>
+      <% end %>
+    <% end %>
+  </aside>
+<% end %>

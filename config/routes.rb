@@ -37,6 +37,9 @@ Rails.application.routes.draw do
         # State transitions as resources (Fizzy style): POST does, DELETE undoes.
         resource :publish, only: %i[create destroy]
         resource :pin, only: %i[create destroy]
+        # Email the post to subscribers. create sends (now or scheduled);
+        # destroy cancels a scheduled send before it goes out.
+        resource :broadcast, only: %i[create destroy]
         # Version history: the feed, a specific tracked change, a frozen version.
         resources :events, only: :index
         resources :changes, only: :show

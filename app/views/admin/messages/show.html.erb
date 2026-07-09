@@ -48,7 +48,9 @@
       <% if @message.published? %>
         · <%= l @message.published_at.to_date, format: :long %>
       <% elsif @message.scheduled? %>
-        · <span class="badge badge--accent">Scheduled · <%= @message.published_at.strftime("%b %-d at %H:%M") %></span>
+        · <span class="badge badge--accent">Scheduled ·
+          <time datetime="<%= @message.published_at.iso8601 %>" data-controller="local-time"
+                data-local-time-datetime-value="<%= @message.published_at.iso8601 %>"><%= @message.published_at.strftime("%b %-d at %H:%M") %></time></span>
       <% else %>
         · <span class="badge">Draft</span>
       <% end %>

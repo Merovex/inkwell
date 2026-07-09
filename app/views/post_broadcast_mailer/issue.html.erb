@@ -1,0 +1,12 @@
+<h1><%= @post.title %></h1>
+
+<%= @post.content %>
+
+<hr>
+
+<p><a href="<%= @web_url %>">View this on the web</a> · from <%= @site_name %></p>
+
+<p style="color: #888; font-size: 12px;">
+  You're receiving this because you subscribed to <%= @site_name %>.
+  <%= link_to "Unsubscribe", @unsubscribe_url %>.
+</p>

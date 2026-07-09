@@ -45,7 +45,9 @@
       <% if @post.published? %>
         · <%= l @post.published_at.to_date, format: :long %>
       <% elsif @post.scheduled? %>
-        · <span class="badge badge--accent">Scheduled · <%= @post.published_at.strftime("%b %-d at %H:%M") %></span>
+        · <span class="badge badge--accent">Scheduled ·
+          <time datetime="<%= @post.published_at.iso8601 %>" data-controller="local-time"
+                data-local-time-datetime-value="<%= @post.published_at.iso8601 %>"><%= @post.published_at.strftime("%b %-d at %H:%M") %></time></span>
       <% else %>
         · <span class="badge">Draft</span>
       <% end %>
@@ -53,7 +55,11 @@
   </header>
 </div>
 
-<article class="u-flow">
+<% if can_manage %>
+  <%= render "admin/posts/broadcast_banner" %>
+<% end %>
+
+<article class="u-flow post-body">
   <%= @post.content %>
 </article>
 

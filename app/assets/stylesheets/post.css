@@ -1,0 +1,11 @@
+/*
+ * Post reading view. The body sits inside .canvas (2.5rem / ~1cm gutters); the
+ * post page wants a roomier, book-like measure — about a 1-inch inset — so the
+ * added padding brings the text ~3.5rem in on top of the canvas, ~96px total.
+ * Collapses on narrow screens so mobile isn't crushed.
+ */
+@layer components {
+  .post-body {
+    padding-inline: clamp(0rem, 6vw, 3.5rem);
+  }
+}

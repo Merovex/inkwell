@@ -96,4 +96,23 @@ class RecordTest < ActiveSupport::TestCase
       Record.create!(recordable: records(:kickoff).recordable, creator: users(:alice))
     end
   end
+
+  test "preview_key is a deterministic 5-char Crockford string" do
+    record = records(:kickoff)
+
+    key = record.preview_key
+    assert_equal 5, key.length
+    assert_equal key, record.preview_key, "derived from the id, so stable"
+    assert key.chars.all? { |c| Record::PREVIEW_ALPHABET.include?(c) }
+  end
+
+  test "to_slug carries the preview key only while unpublished" do
+    published = records(:kickoff)
+    assert_not published.to_slug.end_with?("-#{published.preview_key}")
+
+    scheduled = records(:typography)
+    scheduled.revise(event: :scheduled, status: :scheduled, creator: users(:alice), published_at: 1.week.from_now)
+    assert scheduled.reload.recordable.scheduled?
+    assert scheduled.to_slug.end_with?("-#{scheduled.preview_key}")
+  end
 end

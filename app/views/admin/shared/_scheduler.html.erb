@@ -1,4 +1,4 @@
-<%# locals: (form:, schedulable: nil, panel_id: "scheduler-panel", drafts_href: nil, drafts_label: "Post Drafts", noun: "post") %>
+<%# locals: (form:, schedulable: nil, panel_id: "scheduler-panel", drafts_href: nil, drafts_label: "Post Drafts", noun: "post", heading: nil, schedule_label: "Schedule and save", note: nil) %>
 <%# "When would you like to post this?" — native-popover panel anchored to a %>
 <%# clock trigger, shared by every publishable composer (posts, messages); %>
 <%# drafts_href/drafts_label/noun word the note for the host type. Two modes: %>
@@ -23,7 +23,7 @@
      data-anchored-popover-placement-value="below"
      data-schedule-defaults-at-value="<%= schedulable.published_at.iso8601 if scheduled %>"
      data-action="toggle->controls-disabler#sync">
-  <p class="scheduler__heading">When would you like to post this?</p>
+  <p class="scheduler__heading"><%= heading || "When would you like to post this?" %></p>
 
   <div class="scheduler__selects">
     <span class="field__select">
@@ -61,7 +61,7 @@
   <% else %>
     <button type="submit" form="<%= form %>" class="button button--primary u-full-width"
             data-action="set-input#set" data-set-input-value-param="true"
-            data-controls-disabler-target="control" disabled>Schedule and save</button>
+            data-controls-disabler-target="control" disabled><%= schedule_label %></button>
   <% end %>
 
   <input type="hidden" name="scheduled_posting" id="scheduled_posting" value="<%= scheduled ? "true" : "false" %>"
@@ -74,7 +74,11 @@
          data-controls-disabler-target="control" disabled>
 
   <p class="scheduler__note u-text-muted">
-    Note: scheduled <%= noun.pluralize %> stay in <%= link_to drafts_label, drafts_href %> until they publish.
+    <% if note %>
+      <%= note %>
+    <% else %>
+      Note: scheduled <%= noun.pluralize %> stay in <%= link_to drafts_label, drafts_href %> until they publish.
+    <% end %>
     <% if scheduled %>
       If you change your mind you can
       <button type="submit" form="<%= form %>" class="scheduler__link"

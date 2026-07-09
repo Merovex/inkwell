@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.2].define(version: 2026_07_09_120008) do
+ActiveRecord::Schema[8.2].define(version: 2026_07_09_120011) do
   create_table "action_text_rich_texts", force: :cascade do |t|
     t.string "name", null: false
     t.text "body"
@@ -83,6 +83,26 @@ ActiveRecord::Schema[8.2].define(version: 2026_07_09_120008) do
     t.datetime "updated_at", null: false
     t.index ["creator_id"], name: "index_boosts_on_creator_id"
     t.index ["record_id", "id"], name: "index_boosts_on_record_id_and_id"
+  end
+
+  create_table "broadcast_deliveries", force: :cascade do |t|
+    t.integer "broadcast_id", null: false
+    t.integer "subscriber_id", null: false
+    t.datetime "sent_at"
+    t.datetime "created_at", null: false
+    t.index ["broadcast_id", "subscriber_id"], name: "index_broadcast_deliveries_on_broadcast_id_and_subscriber_id", unique: true
+    t.index ["broadcast_id"], name: "index_broadcast_deliveries_on_broadcast_id"
+    t.index ["subscriber_id"], name: "index_broadcast_deliveries_on_subscriber_id"
+  end
+
+  create_table "broadcasts", force: :cascade do |t|
+    t.integer "record_id", null: false
+    t.datetime "sent_at"
+    t.integer "recipients_count", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.datetime "scheduled_at"
+    t.index ["record_id"], name: "index_broadcasts_on_record_id", unique: true
   end
 
   create_table "categories", force: :cascade do |t|
@@ -274,6 +294,8 @@ ActiveRecord::Schema[8.2].define(version: 2026_07_09_120008) do
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "boosts", "records"
   add_foreign_key "boosts", "users", column: "creator_id"
+  add_foreign_key "broadcast_deliveries", "broadcasts"
+  add_foreign_key "broadcast_deliveries", "subscribers"
   add_foreign_key "messages", "bodies"
   add_foreign_key "messages", "categories"
   add_foreign_key "messages", "records"
