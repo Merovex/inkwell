@@ -18,14 +18,21 @@ class Setting < ApplicationRecord
   validates :site_name, presence: true
   validate :acceptable_logo
 
+  # Read on every public request (layout identity + the show-page etag), so it's
+  # cached and self-busts on any change (the admin form is the only writer).
+  CACHE_KEY = "setting".freeze
+  after_commit -> { Rails.cache.delete(CACHE_KEY) }
+
   # The one and only settings row, created with the shipped defaults on first
   # read so the public site reads identically until an admin edits it.
   def self.current
-    first || create!(
-      site_name: "Merovex Press",
-      tagline: "Stories where humans meet the impossible",
-      contact_email: "hello@merovex.press"
-    )
+    Rails.cache.fetch(CACHE_KEY) do
+      first || create!(
+        site_name: "Merovex Press",
+        tagline: "Stories where humans meet the impossible",
+        contact_email: "hello@merovex.press"
+      )
+    end
   end
 
   private

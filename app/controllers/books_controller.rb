@@ -5,7 +5,7 @@
 class BooksController < PublicController
   def index
     @series = Series.current.published.includes(:record).feed_ordered.filter_map do |series|
-      books = series.books.select(&:published?)
+      books = series.books.published
       [ series, books ] if books.any?
     end
 
@@ -15,12 +15,11 @@ class BooksController < PublicController
   end
 
   def show
-    @record = Record.active.find(params[:id])
+    @record = find_public_record(Book)
     @book = @record.recordable
-    raise ActiveRecord::RecordNotFound unless @book.is_a?(Book) && @book.published?
+    raise ActiveRecord::RecordNotFound unless @book.published?
 
-    if params[:id] != @record.to_slug
-      redirect_to book_path(@record.to_slug), status: :moved_permanently
-    end
+    return redirect_to book_path(@record.to_slug), status: :moved_permanently unless canonical_slug?
+    fresh_when etag: [ @record, site_settings ], public: true
   end
 end

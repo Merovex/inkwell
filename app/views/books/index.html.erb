@@ -9,29 +9,33 @@
   </header>
 
   <% @series.each do |series, books| %>
-    <section class="press-series">
-      <h2 class="press-series__title"><%= series.title %></h2>
-      <% blurb = series.content.to_plain_text.to_s %>
-      <% if blurb.present? %>
-        <p class="press-series__blurb"><%= truncate(blurb, length: 260) %></p>
-      <% end %>
-      <div class="press-book-grid">
-        <% books.each do |book| %>
-          <%= render "books/card", book: book, series: series %>
+    <% cache [ series, books ] do %>
+      <section class="press-series">
+        <h2 class="press-series__title"><%= series.title %></h2>
+        <% blurb = series.content.to_plain_text.to_s %>
+        <% if blurb.present? %>
+          <p class="press-series__blurb"><%= truncate(blurb, length: 260) %></p>
         <% end %>
-      </div>
-    </section>
+        <div class="press-book-grid">
+          <% books.each do |book| %>
+            <%= render "books/card", book: book, series: series %>
+          <% end %>
+        </div>
+      </section>
+    <% end %>
   <% end %>
 
   <% if @standalone.any? %>
-    <section class="press-series">
-      <h2 class="press-series__title">Standalone</h2>
-      <div class="press-book-grid">
-        <% @standalone.each do |book| %>
-          <%= render "books/card", book: book %>
-        <% end %>
-      </div>
-    </section>
+    <% cache @standalone do %>
+      <section class="press-series">
+        <h2 class="press-series__title">Standalone</h2>
+        <div class="press-book-grid">
+          <% @standalone.each do |book| %>
+            <%= render "books/card", book: book %>
+          <% end %>
+        </div>
+      </section>
+    <% end %>
   <% end %>
 
   <% if @series.empty? && @standalone.empty? %>

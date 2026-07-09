@@ -5,8 +5,7 @@ module AppMenuHelper
 
   # The most recently touched records the user can jump back to.
   def app_menu_recents(limit: 6)
-    Record.active.where(recordable_type: MENU_RECORDABLES)
-      .includes(:recordable).order(updated_at: :desc).limit(limit)
+    Record.recently_active.where(recordable_type: MENU_RECORDABLES).limit(limit)
   end
 
   # The lucide glyph that represents a recordable type.

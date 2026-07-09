@@ -12,20 +12,22 @@
   <% if @posts.any? %>
     <div class="press-articles">
       <% @posts.each do |post| %>
-        <article class="press-article-card">
-          <time class="press-article-card__date" datetime="<%= post.published_at.iso8601 %>">
-            <%= post.published_at.strftime("%B %-d, %Y") %>
-          </time>
-          <h2 class="press-article-card__title">
-            <%= link_to post.title, blog_post_path(post.record.to_slug), class: "press-article-card__link" %>
-          </h2>
-          <p class="press-article-card__desc">
-            <%= post.content.to_plain_text.to_s.truncate(300) %>
-          </p>
-          <span class="press-article-card__cta" aria-hidden="true">
-            Read article <%= inline_svg_tag "lucide/chevron-right.svg", class: "lucide", size: "16px" %>
-          </span>
-        </article>
+        <% cache post do %>
+          <article class="press-article-card">
+            <time class="press-article-card__date" datetime="<%= post.published_at.iso8601 %>">
+              <%= post.published_at.strftime("%B %-d, %Y") %>
+            </time>
+            <h2 class="press-article-card__title">
+              <%= link_to post.title, blog_post_path(post.record.to_slug), class: "press-article-card__link" %>
+            </h2>
+            <p class="press-article-card__desc">
+              <%= post.content.to_plain_text.to_s.truncate(300) %>
+            </p>
+            <span class="press-article-card__cta" aria-hidden="true">
+              Read article <%= inline_svg_tag "lucide/chevron-right.svg", class: "lucide", size: "16px" %>
+            </span>
+          </article>
+        <% end %>
       <% end %>
     </div>
   <% else %>

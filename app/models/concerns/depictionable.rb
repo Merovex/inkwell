@@ -13,7 +13,7 @@ module Depictionable
 
   # True when this version actually carries a cover image.
   def cover?
-    depiction&.image&.attached? || false
+    depiction&.image&.attached?
   end
 
   # The 600×900 cover variant (book detail / cards) and the 256×256 thumb

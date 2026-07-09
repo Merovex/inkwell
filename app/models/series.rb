@@ -9,11 +9,10 @@ class Series < ApplicationRecord
     dependent: :destroy
 
   # The series' books as current versions, in series order (Installment
-  # position). Missing/unpublished books simply drop out.
+  # position). A relation, so callers can chain (e.g. .published on the catalog).
   def books
-    ids = installments.order(:position).pluck(:book_record_id)
-    by_record = Book.current.where(record_id: ids)
-      .includes(:record, :depiction).index_by(&:record_id)
-    ids.filter_map { |record_id| by_record[record_id] }
+    Book.current.joins(:installments)
+      .where(installments: { series_record_id: record_id })
+      .order("installments.position").includes(:record, :depiction)
   end
 end

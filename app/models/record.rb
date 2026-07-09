@@ -35,6 +35,9 @@ class Record < ApplicationRecord
   scope :messages, -> { where(recordable_type: "Message") }
   scope :books, -> { where(recordable_type: "Book") }
   scope :series, -> { where(recordable_type: "Series") }
+  # Most-recently-touched live records, recordable preloaded — the app menu's
+  # "Recent" list composes this with a type filter (see AppMenuHelper).
+  scope :recently_active, -> { active.includes(:recordable).order(updated_at: :desc) }
 
   before_destroy :destroy_versions
 

@@ -20,14 +20,18 @@ class BlogController < PublicController
   # This lets a broadcast go out before publish without a dead "view on the web"
   # link.
   def show
-    @record = Record.active.find(params[:id])
+    @record = find_public_record(Post)
     @post = @record.recordable
-    raise ActiveRecord::RecordNotFound unless @post.is_a?(Post)
 
     if @post.published?
-      redirect_to blog_post_path(@record.to_slug), status: :moved_permanently if params[:id] != @record.to_slug
-    elsif @post.scheduled? && params[:id] == @record.to_slug
+      return redirect_to blog_post_path(@record.to_slug), status: :moved_permanently unless canonical_slug?
+      # Anonymous + only changes on a new version → cache at the edge; the etag
+      # also folds in site identity so a Setting change busts it.
+      fresh_when etag: [ @record, site_settings ], public: true
+    elsif @post.scheduled? && canonical_slug?
+      # Early-access preview: keep it out of search and out of any shared cache.
       response.set_header("X-Robots-Tag", "noindex")
+      response.headers["Cache-Control"] = "no-store"
     else
       raise ActiveRecord::RecordNotFound
     end

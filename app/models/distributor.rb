@@ -23,7 +23,10 @@ class Distributor < ApplicationRecord
 
   # The store a URL points at (an enum key), or "other" when nothing matches.
   def self.detect_platform(url)
-    PLATFORM_PATTERNS.find(-> { [ "other" ] }) { |_platform, hosts| hosts.any? { |host| url.to_s.include?(host) } }.first
+    PLATFORM_PATTERNS.each do |platform, hosts|
+      return platform if hosts.any? { |host| url.to_s.include?(host) }
+    end
+    "other"
   end
 
   # Drop the query string — buy links don't need tracking params, and it keeps
@@ -38,7 +41,7 @@ class Distributor < ApplicationRecord
       "google_play" => "Google Play Books" }.fetch(platform, platform.to_s.humanize)
   end
 
-  def click!
+  def click
     increment!(:clicks)
   end
 
