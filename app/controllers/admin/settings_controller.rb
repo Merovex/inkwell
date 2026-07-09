@@ -2,8 +2,9 @@
 # identity. Always the singleton Setting.current, so no id in the URL (like the
 # personal Admin::User::SettingsController, but install-scoped and admin-only).
 class Admin::SettingsController < ApplicationController
+  include AdminOnly
+
   before_action :set_setting
-  before_action -> { authorize! @setting, to: :manage }
 
   def show
   end

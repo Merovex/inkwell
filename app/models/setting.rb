@@ -2,7 +2,7 @@
 # install, always reached through Setting.current. Today it carries the public
 # Merovex Press identity (name, tagline, about blurb, contact, logo); more
 # sections slot in as columns/attachments later. Managed only by a domain_admin
-# (see SettingPolicy) from /admin/settings.
+# (see AdminOnly) from /admin/settings.
 class Setting < ApplicationRecord
   LOGO_CONTENT_TYPES = %w[ image/jpeg image/png image/avif image/webp image/svg+xml ]
   LOGO_MAX_SIZE = 5.megabytes

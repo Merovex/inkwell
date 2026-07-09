@@ -1,14 +1,14 @@
 require "csv"
 
-# The subscriber roster — domain-admin only (SubscriberPolicy). Read + export +
-# honor-an-unsubscribe; there's no create/edit here, since subscribers opt in
-# from the public site. The CSV export is the bridge to an external sender until
-# one is wired (ADR 0011).
+# The subscriber roster — domain-admin only. Read + export + honor-an-unsubscribe;
+# there's no create/edit here, since subscribers opt in from the public site. The
+# CSV export is the bridge to an external sender until one is wired (ADR 0011).
 class Admin::SubscribersController < ApplicationController
+  include AdminOnly
+
   # The roster is one state at a time; the header links between them.
   STATES = %w[ confirmed pending unsubscribed ].freeze
 
-  before_action -> { authorize! Subscriber, to: :manage }
   before_action :set_subscriber, only: :unsubscribe
 
   def index

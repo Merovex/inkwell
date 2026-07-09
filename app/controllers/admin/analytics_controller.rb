@@ -3,7 +3,7 @@
 # edge-cached loads too. Per-page detail lives in the visits' landing pages;
 # richer drill-down can come later.
 class Admin::AnalyticsController < ApplicationController
-  before_action :require_domain_admin
+  include AdminOnly
 
   WINDOW = 30.days
 
@@ -18,9 +18,5 @@ class Admin::AnalyticsController < ApplicationController
   private
     def top(scope, column, limit: 10)
       scope.group(column).order(Arel.sql("COUNT(*) DESC")).limit(limit).count
-    end
-
-    def require_domain_admin
-      render_not_found unless Current.user&.domain_admin?
     end
 end
