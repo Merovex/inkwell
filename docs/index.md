@@ -31,11 +31,16 @@ for canonical naming.
 | [0005](decisions/0005-mobile-hotwire-native-pwa-dev.md) | Mobile — Hotwire Native target, PWA in development | accepted | 2026-07-02 |
 | [0006](decisions/0006-record-recordable-generic-spine.md) | Record/Recordable — generic, tenant-agnostic content spine | accepted | 2026-07-03 |
 | [0007](decisions/0007-versioned-recordables.md) | Versioned recordables — event-tagged immutable versions | accepted | 2026-07-03 |
+| [0008](decisions/0008-books-series-recordables.md) | Books & Series — versioned recordables, shared-owner cover, Record-keyed join | accepted | 2026-07-08 |
+| [0009](decisions/0009-distributors-and-changelog-events.md) | Distributors on the Record; cover & link change-log events | accepted | 2026-07-08 |
+| [0010](decisions/0010-id-first-public-slugs.md) | Public URLs — id-first slugs | accepted | 2026-07-08 |
 
 ## Concepts
 
 - [domain-vocabulary](concepts/domain-vocabulary.md) — canonical names: Person / User / Account
-- [theme-background-colors](concepts/theme-background-colors.md) — site/canvas backgrounds + rotating light-mode tints → Tailwind classes
+- [merovex-press-public-site](concepts/merovex-press-public-site.md) — the public front-of-house (public layout, `press.css`, `PublicController`)
+- [app-menu](concepts/app-menu.md) — the Basecamp-style jump menu (native popover + type-to-filter)
+- [theme-background-colors](concepts/theme-background-colors.md) — site/canvas backgrounds + tints; **rethemed 2026-07-08 to the Merovex palette**
 - [theme-model-playbook](concepts/theme-model-playbook.md) — the three appearance axes (mode / tint / accent) + how-to steps to change each
 - [app-shell](concepts/app-shell.md) — top-bar shell; responsive nav; the responsive-web vs Hotwire Native mobile fork
 - [css-architecture](concepts/css-architecture.md) — CUBE/BEM hybrid: layers, u- compositions/utilities, standard BEM blocks, exceptions via modifiers/data-attrs

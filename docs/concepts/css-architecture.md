@@ -10,7 +10,7 @@ sources: [../app/assets/stylesheets/application.css]
 
 # CSS architecture — CUBE/BEM hybrid
 
-Alcovo's CSS is a **CUBE methodology skeleton with BEM naming inside the
+Inkwell's CSS is a **CUBE methodology skeleton with BEM naming inside the
 blocks**: CUBE decides *what kind of rule something is* (composition, utility,
 block, exception) and where it lives in the cascade; BEM decides *what a
 block's internals are called*. No build step, no Tailwind, no Sass — plain

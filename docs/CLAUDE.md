@@ -1,6 +1,6 @@
-# docs/ — Alcovo Documentation (Schema & Maintainer Contract)
+# docs/ — Inkwell Documentation (Schema & Maintainer Contract)
 
-This is Alcovo's **single documentation folder**, run as a **Karpathy-style LLM
+This is Inkwell's **single documentation folder**, run as a **Karpathy-style LLM
 wiki**: a compounding, human-readable, LLM-maintained knowledge base. It holds
 **both** the durable reference/design docs **and** the work-tracking machinery
 (log, decisions, index) in one place.

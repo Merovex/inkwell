@@ -11,7 +11,7 @@ sources: [decisions/0004-top-bar-app-shell.md]
 # App shell & responsive navigation
 
 ## Summary
-Alcovo uses a **top-bar app shell** (decided in [[0004-top-bar-app-shell]]):
+Inkwell uses a **top-bar app shell** (decided in [[0004-top-bar-app-shell]]):
 brand top-left, **user menu + notification bell top-right**, content in a
 centered canvas panel. This page is the living spec for how that chrome adapts
 across desktop and mobile — and the still-open question of whether mobile
@@ -63,7 +63,7 @@ Rules of thumb:
   mobile bottom-nav Home slot).
 - On a mobile tab bar the **far-left slot is Home/Dashboard**; Profile/Menu goes
   **far-right**.
-- Notifications are not Alcovo's engagement loop, so the bell stays in the header
+- Notifications are not Inkwell's engagement loop, so the bell stays in the header
   rather than taking a scarce bottom-tab slot.
 - Toasts are an `aria-live` region so they're announced to assistive tech.
 

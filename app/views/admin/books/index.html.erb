@@ -20,6 +20,7 @@
             href: admin_book_path(book.record),
             title: book.title,
             author: book.record.creator.display_name,
+            chips: book.series.map(&:title),
             avatar_src: (book.cover_thumb if book.cover?),
             avatar_alt: book.title,
             avatar_initials: book.title,

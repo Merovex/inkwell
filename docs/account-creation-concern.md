@@ -1,4 +1,4 @@
-# Alcovo — Account Creation, as a Separate Concern
+# Inkwell — Account Creation, as a Separate Concern
 
 *Notional design. Keeps the "a person creates an account" flow **out of the core
 `Account` model** and isolated in its own concern + a form object — mirroring how
@@ -6,7 +6,7 @@ Fizzy separates `Signup` (form object) from `Account.create_with_owner`.
 Companion to [`fizzy-user-account-model.md`](./fizzy-user-account-model.md) and
 [`data-model.md`](./data-model.md).*
 
-Naming (Alcovo): `Person` (Fizzy's `Identity`) / `User` / `Account` — see the
+Naming (Inkwell): `Person` (Fizzy's `Identity`) / `User` / `Account` — see the
 vocabulary decision in [ADR 0002](decisions/0002-domain-vocabulary-person-user-account.md).
 
 ---
@@ -199,7 +199,7 @@ test, or replace in isolation.
 ---
 
 *Grounded in Fizzy's `Signup` form object + `Account.create_with_owner`
-(`basecamp/fizzy@main`); the Alcovo code above is notional design, not copied
+(`basecamp/fizzy@main`); the Inkwell code above is notional design, not copied
 source.*
 
 ## Sources

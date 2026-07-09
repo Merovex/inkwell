@@ -10,7 +10,7 @@ sources: [decisions/0002-domain-vocabulary-person-user-account.md]
 
 # Domain vocabulary
 
-Canonical names for Alcovo's core concepts. Decided in
+Canonical names for Inkwell's core concepts. Decided in
 [[0002-domain-vocabulary-person-user-account]]. Use **these** words in code,
 docs, and UI — not the older `Identity` / `Membership` / `Group` / `bucket`.
 
@@ -37,7 +37,7 @@ Person ──< User >── Account
 
 ## Translation table (when reading source/research)
 
-| Alcovo | Fizzy source | Old notional docs |
+| Inkwell | Fizzy source | Old notional docs |
 |--------|--------------|-------------------|
 | `Person` | `Identity` | `Person` |
 | `User` | `User` | `Membership` |

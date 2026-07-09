@@ -14,7 +14,13 @@ class ApplicationController < ActionController::Base
   # Changes to the importmap will invalidate the etag for HTML responses
   stale_when_importmap_changes
 
-  helper_method :hotwire_native?, :current_theme, :current_tint
+  helper_method :hotwire_native?, :current_theme, :current_tint, :site_settings
+
+  # The install's public identity (name, tagline, logo…), memoized per request.
+  # Drives the public Merovex Press chrome; see the "public" layout.
+  def site_settings
+    @site_settings ||= Setting.current
+  end
 
   # True when the request comes from the Hotwire Native wrapper (vs. web/PWA), so
   # views can suppress web nav chrome and let native nav take over. See

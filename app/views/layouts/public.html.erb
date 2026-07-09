@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title><%= content_for(:title) || "Merovex Press — Stories where humans meet the impossible" %></title>
+    <title><%= content_for(:title) || [site_settings.site_name, site_settings.tagline.presence].compact.join(" — ") %></title>
     <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-    <meta name="application-name" content="Merovex Press">
-    <meta name="description" content="Science fiction, fantasy, and alternate history from pen names Ben Wilson and Troy Buzby.">
+    <meta name="application-name" content="<%= site_settings.site_name %>">
+    <meta name="description" content="<%= site_settings.description.to_plain_text.presence || site_settings.tagline %>">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
 
@@ -20,16 +20,22 @@
   <body class="press">
     <nav class="press-nav" aria-label="Main navigation">
       <div class="press-nav__inner">
-        <%= link_to root_path, class: "press-brand", aria: { label: "Merovex Press home" } do %>
-          <span class="press-brand__mark"><%= inline_svg_tag "merovex-mark.svg" %></span>
-          <span class="press-brand__word">Merovex Press</span>
+        <%= link_to root_path, class: "press-brand", aria: { label: "#{site_settings.site_name} home" } do %>
+          <span class="press-brand__mark">
+            <% if site_settings.logo.attached? %>
+              <%= image_tag site_settings.logo, alt: site_settings.site_name %>
+            <% else %>
+              <%= inline_svg_tag "merovex-mark.svg" %>
+            <% end %>
+          </span>
+          <span class="press-brand__word"><%= site_settings.site_name %></span>
         <% end %>
 
         <div class="press-nav__links">
           <%= link_to "Home", root_path, class: "press-nav__link#{' is-active' if current_page?(root_path)}" %>
           <%= link_to "Books", books_path, class: "press-nav__link#{' is-active' if controller_name == 'books'}" %>
           <%= link_to "Blog", blog_path, class: "press-nav__link#{' is-active' if controller_name == 'blog'}" %>
-          <a href="#" class="press-nav__link">About</a>
+          <%= link_to "About", about_path, class: "press-nav__link#{' is-active' if current_page?(about_path)}" %>
         </div>
 
         <a href="#" class="press-btn press-btn--primary press-nav__cta">Join the Newsletter</a>
@@ -42,7 +48,10 @@
       <div class="press-footer__inner">
         <span class="press-footer__mark"><%= inline_svg_tag "merovex-mark.svg" %></span>
         <p class="press-footer__legal">
-          &copy; 2026 Merovex Press.
+          &copy; <%= Date.current.year %> <%= site_settings.site_name %>.
+          <% if site_settings.contact_email.present? %>
+            <%= mail_to site_settings.contact_email, "Contact", class: "press-link" %>
+          <% end %>
           <a href="#" class="press-link">RSS Feed</a>
         </p>
       </div>

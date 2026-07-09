@@ -122,6 +122,11 @@ Rails.application.routes.draw do
     # the target Record, so one controller serves both.
     resources :distributors, only: %i[create destroy]
 
+    # System settings — the singleton Setting.current (no id), domain-admin only.
+    # Distinct from the personal user settings below; this shapes the whole
+    # install (the public Merovex Press identity).
+    resource :settings, only: %i[show update]
+
     # Personal settings — always Current.user, no id in the URL. The avatar is
     # its own resource so picking/dropping a picture can auto-submit.
     namespace :user do
@@ -149,7 +154,8 @@ Rails.application.routes.draw do
   get "books" => "books#index", as: :books
   get "books/:id" => "books#show", as: :book
 
-  # The public Merovex Press site. Static for now; the admin backend lives at
-  # /admin.
+  # The public Merovex Press site. The About page renders the site's About blurb
+  # from Setting.current; the admin backend lives at /admin.
+  get "about" => "pages#about", as: :about
   root "pages#home"
 end

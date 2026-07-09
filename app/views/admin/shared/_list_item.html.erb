@@ -1,4 +1,5 @@
-<%# locals: (href:, title:, author:, date:, excerpt:, avatar_user: nil, avatar_src: nil, avatar_alt: "", avatar_initials: nil, client_visible: false, comment_count: 0, scheduled_at: nil, pinned: false, discard_path: nil, discard_confirm: nil) %>
+<%# locals: (href:, title:, author:, date:, excerpt:, avatar_user: nil, avatar_src: nil, avatar_alt: "", avatar_initials: nil, chips: [], client_visible: false, comment_count: 0, scheduled_at: nil, pinned: false, discard_path: nil, discard_confirm: nil) %>
+<%# chips replace the author in the byline (e.g. a book's series). %>
 <%# Generic list row — avatar + linked (title + meta) + optional trailing count. %>
 <%# avatar_src takes a raw image (e.g. a book cover); avatar_user renders that %>
 <%# user's picture-or-monogram; otherwise initials derive from avatar_initials %>
@@ -23,7 +24,7 @@
         <span class="badge badge--warning"><%= inline_svg_tag "lucide/eye.svg", class: "lucide", size: "14px" %> Client visible</span>
       <% end %>
     </span>
-    <span class="list__meta"><span class="list__byline"><%= author %> · <%= date %></span> <%= excerpt %></span>
+    <span class="list__meta"><span class="list__byline"><% if chips.any? %><%= safe_join(chips.map { |chip| tag.span(chip, class: "list__chip") }) %><% else %><%= author %><% end %> · <%= date %></span> <%= excerpt %></span>
     <% if scheduled_at %>
       <span class="list__flag">
         <%= inline_svg_tag "lucide/clock.svg", class: "lucide", size: "14px" %>

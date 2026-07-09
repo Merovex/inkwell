@@ -22,7 +22,9 @@
         <h3 class="app-menu__header">Go to</h3>
         <%= app_menu_link "Forum", admin_messages_path %>
         <%= app_menu_link "Chatroom", admin_chatroom_path %>
-        <%= app_menu_link "Settings", admin_user_settings_path %>
+        <% if Current.user&.domain_admin? %>
+          <%= app_menu_link "System settings", admin_settings_path %>
+        <% end %>
       </section>
 
       <% recents = app_menu_recents %>

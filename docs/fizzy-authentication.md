@@ -1,7 +1,7 @@
 # Fizzy's Authentication Protocol
 
 *Captured from the actual source of [`basecamp/fizzy`](https://github.com/basecamp/fizzy)
-(`main`), for reference while designing Alcovo's auth. Fizzy is
+(`main`), for reference while designing Inkwell's auth. Fizzy is
 37signals' open-source Kanban app; its auth is **passwordless, identity-centric,
 and multi-tenant**. Code blocks below are verbatim from the repo.*
 
@@ -333,16 +333,16 @@ mixed into the concern).
 
 ---
 
-## 6. Summary — what to carry into Alcovo
+## 6. Summary — what to carry into Inkwell
 
 - **Drop passwords.** Identity + magic link (email) is the minimum viable human
   path; passkeys and API tokens layer on without changing the session core.
 - **Split `Identity` (global login) from `User` (per-account membership).** Even
-  if Alcovo starts single-tenant, this split is what makes multi-account
-  ("boardroom of author communities") clean later. Maps onto Alcovo's
+  if Inkwell starts single-tenant, this split is what makes multi-account
+  ("boardroom of author communities") clean later. Maps onto Inkwell's
   `Person`/`User`/`Account` model in [`data-model.md`](./data-model.md):
-  Fizzy `Identity` → Alcovo `Person`; Fizzy `User` → Alcovo `User`;
-  Fizzy `Account` → Alcovo `Account`.
+  Fizzy `Identity` → Inkwell `Person`; Fizzy `User` → Inkwell `User`;
+  Fizzy `Account` → Inkwell `Account`.
 - **Resolve tenant before identity.** `require_account` runs before
   `require_authentication`; `Current` cascades session → identity → account-scoped
   user.

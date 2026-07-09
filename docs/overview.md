@@ -1,32 +1,47 @@
-# Overview — Alcovo
+# Overview — Inkwell / Merovex Press
 
 > Living synthesis of the current state of the project. Update this whenever the
 > shape of the work changes. Keep it short — details live in linked pages.
 
 ## What this is
 
-Alcovo — a Rails 8.1 application (Ruby 4.0.5, app module `Alcovo`). This `docs/`
-folder is the single home for both design/reference docs and the work log; see
-[[CLAUDE]] for how it's maintained.
+A Rails 8.2 app (Ruby 4.0.5) that wears **two faces on one codebase**:
 
-## Current state (2026-07-03)
+- **Inkwell** — the authenticated **admin backend** at `/admin/*` (app module
+  `Inkwell`). Where the author writes, publishes, and moderates.
+- **Merovex Press** — the anonymous **public site** at `/`. See
+  [[merovex-press-public-site]].
 
-- Project scaffolded (`Rails init.` — commit `d68544e`).
-- Documentation consolidated into `docs/` (see [0003](decisions/0003-collapse-wiki-into-docs.md)); Karpathy-style, LLM-maintained.
-- Passwordless auth (magic links), first-run Setup, basic UI/design system shipped.
-- **Record/Recordable spine implemented** ([0006](decisions/0006-record-recordable-generic-spine.md)):
-  tenant-agnostic `Record` envelope + `Recordable` concern, first recordable
-  `Post` (drafted/published, pinning, trash) with full CRUD UI, Action Text +
-  Active Storage, **Lexxy** editor. Alcovo's real tools (Chat, Discussions,
-  Questions, Wordcounts) still to come on these bones.
-- **Version history shipped** ([0007](decisions/0007-versioned-recordables.md)):
-  recordables are immutable event-tagged versions behind a record-keyed
-  identity (`/posts/:id` = Record id); drafts mutate, published content
-  versions on every save; Basecamp-style change feed ("Change Log") +
-  tracked-changes diffs at `/posts/:id/events` and
-  `/posts/:id/changes/:version_id`. Scheduled publishing added: a `scheduled`
-  status/event keeps the post mutable until `Post::PublishLaterJob` publishes
-  it at the appointed time (native-popover scheduler panel in the composer).
+(Formerly "Alcovo"; renamed 2026-07-08. Accepted ADRs 0001–0006 predate the
+rename and keep the old name as history.)
+
+This `docs/` folder is the single home for design/reference docs and the work
+log; see [[CLAUDE]] for how it's maintained.
+
+## Current state (2026-07-08)
+
+- **Auth & shell** — passwordless magic-link auth, first-run Setup, top-bar app
+  shell. A Basecamp-style **app menu** (jump-to sheet) is the admin's global
+  nav — see [[app-menu]].
+- **Content spine** ([0006](decisions/0006-record-recordable-generic-spine.md),
+  [0007](decisions/0007-versioned-recordables.md)) — a tenant-agnostic `Record`
+  envelope + `Recordable` versioning; recordables are immutable event-tagged
+  versions behind a record-keyed identity, with drafts-mutate / published-versions
+  semantics, a change log, tracked-changes diffs, and scheduled publishing.
+- **Recordables shipped** — `Post` (blog), `Message` (forum), `ChatLine`,
+  `Comment`, and now **`Book` & `Series`**
+  ([0008](decisions/0008-books-series-recordables.md)): versioned catalog entries
+  with a versioned cover (`Depiction`, mirroring `Body`) and a many-to-many
+  series↔book join (`Installment`, keyed by Record). Managed live on the show
+  page (typeahead + drag-sort).
+- **Distributors** ([0009](decisions/0009-distributors-and-changelog-events.md))
+  — store buy-links on the `Record` (unversioned, click counter); cover and link
+  changes surface in the change log via event tags.
+- **Public site** — home, blog (index + articles), and the **books catalog**
+  (3-card grid grouped by series) + book detail, on id-first slugs
+  ([0010](decisions/0010-id-first-public-slugs.md)); branded error pages.
+- **Theme** — rethemed to the **Merovex palette** (syō-ro teal accent +
+  mountain-mist neutrals), shared by both sites; see [[theme-background-colors]].
 
 ## Core vocabulary
 
@@ -34,17 +49,12 @@ Canonical names (see [[domain-vocabulary]] / [0002](decisions/0002-domain-vocabu
 **`Person`** (global login) ──< **`User`** (membership) ──< **`Account`** (tenant).
 Retired: `Identity`, `Membership`, `Group`, `bucket`.
 
-## Key references
-
-- [Reference & design docs](index.md#reference--design-docs) — data model, authentication, multi-tenancy, database & scaling, Lexxy/ActiveRecord.
-- Schema snapshot: [schema.rb](schema.rb).
-
 ## Open threads
 
-- Reconcile [data-model.md](data-model.md) / [schema.rb](schema.rb) with ADRs
-  0006/0007 (naming `Record`, versioned recordables, no envelope status or
-  account_id, Vault dropped) when Alcovo's real tools land.
-- Trash purge job (30-day incineration of `records.trashed_at`, cascading
-  versions + bodies).
-- Alcovo tenancy: add `Account` + `records.account_id` as a host-app extension
-  of the spine; then the ADR 0002 Person/User split (deferred 2026-07-02).
+- Public **author** and **series** pages, newsletter, and About are still stubbed.
+- A public **distributor click** redirect (increment `clicks`) is not wired yet.
+- App-menu polish: focus-trap, lazy `turbo-permanent` frame, open hotkey.
+- Trash purge job (records + versions + bodies + orphan depictions).
+- Reconcile [data-model.md](data-model.md) / [schema.rb](schema.rb) with the
+  shipped spine; `Account` + `records.account_id` tenancy still deferred.
+- Nothing committed yet — a large working-tree body awaits a commit.

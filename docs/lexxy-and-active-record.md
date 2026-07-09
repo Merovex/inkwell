@@ -1,6 +1,6 @@
 # Can Lexxy Be Decoupled From Active Record? — Research Summary
 
-*Research summary for Alcovo. Short version: **Lexxy itself isn't coupled to
+*Research summary for Inkwell. Short version: **Lexxy itself isn't coupled to
 Active Record** — Action Text + Active Storage are. Lexxy is a Lexical-based JS
 editor that speaks the Action Text protocol. The tenancy pain you remember is an
 Action Text/Active Storage limitation, which Lexxy neither fixes nor worsens.*
@@ -74,7 +74,7 @@ modes apply.
 
 ---
 
-## Recommendation for Alcovo
+## Recommendation for Inkwell
 
 - **Don't try to decouple Lexxy from Active Record.** Use Action Text + Active
   Storage; Lexxy drops in as the editor.

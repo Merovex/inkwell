@@ -44,4 +44,12 @@
     cursor: pointer;
     flex-shrink: 0;
   }
+
+  /* System-settings logo preview: bounded so a large upload doesn't blow out
+     the form; the field below it swaps the file. */
+  .settings__logo-preview {
+    max-block-size: 4rem;
+    max-inline-size: 12rem;
+    object-fit: contain;
+  }
 }

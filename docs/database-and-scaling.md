@@ -1,6 +1,6 @@
 # Database Choice & Scaling — SQLite vs. MariaDB, and When to Split App Servers
 
-*Research/decision summary for Alcovo. Two linked questions: (1) how far does
+*Research/decision summary for Inkwell. Two linked questions: (1) how far does
 SQLite go for an app like this, and (2) when do you add a second app server?
 Both hinge less on "number of users" than on **write concurrency, single-machine
 limits, and HA**.*
@@ -15,7 +15,7 @@ SQLite is a **single-writer** database — one write transaction at a time
 (serialized), unlimited concurrent readers in WAL mode. The ceiling is set by
 **write concurrency** and by the fact that the DB file lives on **one machine**.
 
-Alcovo's workload (boards, docs, weekly check-ins, chat, rich text) is
+Inkwell's workload (boards, docs, weekly check-ins, chat, rich text) is
 **read-heavy, low-write** — about the friendliest possible profile for SQLite.
 
 **Performance ceiling** (WAL mode, NVMe SSD, Rails 8 tuned defaults):
@@ -99,9 +99,9 @@ So the HA/scale decision *is* the DB decision.
 
 ---
 
-## 5. Recommendation for Alcovo
+## 5. Recommendation for Inkwell
 
-Given Alcovo is heading toward a **multi-tenant, Fizzy-shaped SaaS**:
+Given Inkwell is heading toward a **multi-tenant, Fizzy-shaped SaaS**:
 
 - **Use DO Managed MariaDB from day one.** The performance question is a red
   herring at this scale; the deciding factors are HA, managed backups, and
@@ -110,7 +110,7 @@ Given Alcovo is heading toward a **multi-tenant, Fizzy-shaped SaaS**:
 - **Run ≥2 app servers for HA** once it's a real paying product — for uptime, not
   load. Add the 3rd+ only when Puma queue latency > ~50–100ms at peak or CPU is
   pegged >70–80% sustained. **Scale up first, out second.**
-- **SQLite remains the right choice** only if Alcovo ships as **self-hosted,
+- **SQLite remains the right choice** only if Inkwell ships as **self-hosted,
   single-tenant, per-customer deployments** — then it's genuinely great (Rails 8
   first-class + Litestream for backups) and no capacity wall applies.
 

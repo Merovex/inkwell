@@ -1,7 +1,7 @@
 # Fizzy's User / Account Model
 
 *Captured from the actual source of [`basecamp/fizzy`](https://github.com/basecamp/fizzy)
-(`main`), as reference for Alcovo. This documents the
+(`main`), as reference for Inkwell. This documents the
 **membership + tenancy + access** layer that sits under the auth protocol in
 [`fizzy-authentication.md`](./fizzy-authentication.md).*
 
@@ -316,11 +316,11 @@ How access works:
 
 ---
 
-## 7. Mapping to Alcovo
+## 7. Mapping to Inkwell
 
 Lines up directly with the sketch in [`data-model.md`](./data-model.md):
 
-| Fizzy | Alcovo equivalent | Notes |
+| Fizzy | Inkwell equivalent | Notes |
 |-------|-------------------|-------|
 | `Identity` | `Person` | Global login, one email. |
 | `User` | `User` | Per-account membership; carries role + name. |

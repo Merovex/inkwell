@@ -10,7 +10,7 @@ sources: [concepts/theme-background-colors.md]
 
 # Theme model playbook
 
-Operating manual for Alcovo's runtime appearance system: how the pieces fit,
+Operating manual for Inkwell's runtime appearance system: how the pieces fit,
 and the exact steps to change each one. For the *why* behind the color values
 (OKLCH derivations, Tailwind mapping, tint history) see
 [[theme-background-colors]]; this page is the *how-to*.

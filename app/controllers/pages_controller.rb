@@ -5,4 +5,8 @@
 class PagesController < PublicController
   def home
   end
+
+  # Renders the About blurb an admin sets in System settings (Setting#description).
+  def about
+  end
 end

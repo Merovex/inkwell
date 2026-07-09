@@ -1,6 +1,6 @@
-# Alcovo — Notional Data Model
+# Inkwell — Notional Data Model
 
-*A first-pass data model for Alcovo, a writing-community site, modeled on the
+*A first-pass data model for Inkwell, a writing-community site, modeled on the
 Basecamp **delegated-type** (`Record`/`Recordable`) pattern. This is
 **notional** — a thinking document, not a migration. Column names are idiomatic
 Rails guesses; anything I'm inferring rather than certain of is flagged.*

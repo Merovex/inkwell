@@ -2,6 +2,34 @@
 
 Append-only. Newest first. Format defined in [[CLAUDE]] (`CLAUDE.md`).
 
+## [2026-07-08] note | Wiki catch-up after a long build session
+- Brought the wiki current after shipping Books/Series, Distributors, the public site, and the app menu without recording any of it. Wrote ADRs 0008–0010, two concept pages, refreshed the theme page, renamed Alcovo→Inkwell in living pages (accepted ADRs left as history), and synced index/overview.
+- pages touched: [[overview]], index.md, [[theme-background-colors]], all living pages (name), [[merovex-press-public-site]], [[app-menu]]
+
+## [2026-07-08] build | App menu — Basecamp-style jump-to sheet
+- Admin global nav: a centered "Inkwell ▾" trigger opens a native-Popover sheet (Esc/outside dismiss + `::backdrop` scrim) with a Posts/Books/Series card grid, a type-to-filter jump search (Stimulus `app-menu`), Go-to links, and Recent records with type icons. Home moved to a house icon in the header-left.
+- pages touched: [[app-menu]] (new), [[app-shell]]
+- refs: ../app/views/layouts/_app_menu.html.erb, ../app/javascript/controllers/app_menu_controller.js, ../app/helpers/app_menu_helper.rb
+
+## [2026-07-08] build | Public Merovex Press site — home, blog, books catalog
+- Front-of-house at `/`: `PublicController` + `public` layout + `.press`-scoped `press.css`. Home (split hero), blog index/article, books catalog (3-card grid grouped by series) + book detail with distributor buy buttons. Id-first slugs (0010). Branded self-contained static error pages. Self-hosted Source Serif 4 / Source Sans 3.
+- pages touched: [[merovex-press-public-site]] (new)
+- refs: ../app/controllers/{public,pages,blog,books}_controller.rb, ../app/assets/stylesheets/press.css, ../public/*.html
+
+## [2026-07-08] build | Books & Series on the spine + Distributors
+- Books & Series as `Publishable` recordables; versioned cover via `Depiction` (mirrors `Body`); many-to-many series↔book via `Installment` (Record-keyed), managed live on the show page (typeahead + drag-sort). `Distributor` buy-links on the Record (auto-detected platform, click counter); cover and link changes recorded in the change log via `link_added`/`link_removed` events + `depiction_id`-delta narration. Books admin list shows series as chips (no author).
+- pages touched: decisions/0008, decisions/0009
+- refs: ../app/models/{book,series,depiction,installment,distributor}.rb, ../app/controllers/admin/{books,series,distributors,installments}_controller.rb
+
+## [2026-07-08] decision | ADRs 0008–0010 — books/series, distributors, public slugs
+- 0008: Books & Series versioned recordables, `Depiction` shared-owner cover, `Installment` Record-keyed join. 0009: Distributors on the Record (unversioned) + change-log event tags. 0010: id-first public slugs via `Record#to_slug`.
+- pages touched: decisions/0008 (new), decisions/0009 (new), decisions/0010 (new), index.md
+
+## [2026-07-08] refactor | Rename Alcovo → Inkwell / Merovex Press; retheme
+- App module and admin brand → **Inkwell**; public site → **Merovex Press**. Rethemed both to the Merovex palette (syō-ro teal accent + mountain-mist neutrals; tints to the custom olive/taupe/mauve/mist/zinc `-100` scales).
+- pages touched: [[overview]], [[theme-background-colors]]
+- refs: ../config/application.rb, ../app/assets/stylesheets/01-tokens.css
+
 ## [2026-07-04] note | CSS architecture page — the CUBE/BEM hybrid, written down
 - New concept page describing the styling methodology: CUBE decides the rule's kind and cascade home (compositions + utilities in `u-*` files, standard BEM blocks one-per-file, exceptions as modifiers/data-attributes), BEM names the block internals. Covers the Propshaft one-link-per-file + `@layer base, components, utilities` delivery, the two token sources (Open Props for non-color, our OKLCH semantic colors), the "standard components, never bespoke" rule, and a decision ladder for adding styles.
 - pages touched: [[css-architecture]] (new), index.md

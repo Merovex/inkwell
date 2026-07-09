@@ -1,6 +1,6 @@
 # 37signals / Fizzy Multi-Tenancy — How It Works
 
-*Research summary for Alcovo's tenancy design, drawn from Fizzy's source and the
+*Research summary for Inkwell's tenancy design, drawn from Fizzy's source and the
 37signals engineering write-ups. Bottom line: **shared single database,
 row-level tenancy scoped by `account_id`** — not database-per-tenant.*
 
@@ -57,7 +57,7 @@ They kept a few spoils: Kamal proxy load-balancing tricks, transaction-aware
 replication-lag handling (ported to MySQL), and multi-DB routing for **geo**
 distribution (not per-tenant).
 
-**Lesson for Alcovo:** the operational cost of per-tenant DBs (HA, failover,
+**Lesson for Inkwell:** the operational cost of per-tenant DBs (HA, failover,
 cross-tenant features) tends to outweigh the locality win. Start shared-DB
 row-level.
 
@@ -87,7 +87,7 @@ which Fizzy uses. See [`lexxy-and-active-record.md`](./lexxy-and-active-record.m
 
 ---
 
-## Recommendation for Alcovo
+## Recommendation for Inkwell
 
 Adopt the Fizzy pattern directly:
 - Single shared database, `belongs_to :account` on every tenant-owned model.

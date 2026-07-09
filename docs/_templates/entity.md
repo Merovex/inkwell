@@ -12,7 +12,7 @@ sources: []
 
 **What it is:** one line.
 
-## Role in Alcovo
+## Role in Inkwell
 How it fits. Owned by / depends on / used by. Link related [[entities]] and
 [[concepts]], and code (`../../app/...`).
 

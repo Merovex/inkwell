@@ -14,7 +14,7 @@ sources: []
 One-paragraph answer to "what is this and why does it matter here."
 
 ## Details
-How it works in Alcovo. Link to code (`../../app/...:line`) and design docs
+How it works in Inkwell. Link to code (`../../app/...:line`) and design docs
 (`../data-model.md`). Use [[wiki-links]] for related pages.
 
 ## Gotchas / open questions

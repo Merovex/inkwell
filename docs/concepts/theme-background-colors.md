@@ -4,14 +4,30 @@ title: Theme background colors
 status: active
 tags: [ui, theming, tailwind, colors, dark-mode]
 created: 2026-07-02
-updated: 2026-07-02
+updated: 2026-07-08
 sources: []
 ---
 
 # Theme background colors
 
+## Update (2026-07-08) — retheme to the Merovex palette
+The palette below (teal brand + Tailwind-derived tints) was **replaced** by the
+Merovex Press palette to converge admin (Inkwell) and public sites. Current state
+in `../../app/assets/stylesheets/01-tokens.css`:
+- **Accent/brand** → the **syō-ro** teal family (not the old teal ramp): `--brand`
+  = syō-ro-500, `--brand-strong` = syō-ro-800 (AAA button fill), `--link` /
+  `--brand-text` = syō-ro-700, dark-mode accent lifts to syō-ro-300.
+- **Structural neutrals** → the **mountain-mist** family: light `--site-bg`
+  = mountain-mist-200, `--canvas` = white, `--ink` = mountain-mist-900; dark
+  `--site-bg` = mountain-mist-950, `--canvas` = mountain-mist-800.
+- **Rotating tints** → the custom **olive / taupe / mauve / mist / zinc** scales
+  at the `-100` level (subtle) — see the `[data-tint]` block.
+Both scales are ported from `~/Work/merovex.press`. The public site reuses them
+via [[merovex-press-public-site]]. The mechanism (two `<html>` attributes, cookie
+→ helper → token → component) is unchanged; only the values below are stale.
+
 ## Summary
-Alcovo's chrome uses two background layers — the **site background** (the outer
+Inkwell's chrome uses two background layers — the **site background** (the outer
 page) and the **article/canvas** (the content surface) — each with a light and
 dark variant. In light mode the site background **rotates** through a set of pale
 tints (mirrored on Basecamp's account tints). This page pins the chosen Tailwind
@@ -35,7 +51,7 @@ distance "looks off," the corrected pick preserves the *hue intent* instead:
 ### Tints as OKLCH tokens
 
 The Tailwind class names above are the *nearest-name* shorthand. The precise
-values Alcovo ships are OKLCH, with chroma scaled down to match Basecamp's actual
+values Inkwell ships are OKLCH, with chroma scaled down to match Basecamp's actual
 (low) saturation. Two equivalent forms:
 
 **Relative color syntax against Tailwind v4 `--color-*`** (preferred *if on
@@ -51,7 +67,7 @@ update):
 --tint-neutral: var(--color-zinc-50);
 ```
 
-**Raw OKLCH** (use when *not* on Tailwind v4 — this is Alcovo's case: Propshaft +
+**Raw OKLCH** (use when *not* on Tailwind v4 — this is Inkwell's case: Propshaft +
 Open Props, no Tailwind, so `--color-*` don't exist and we ship these literals):
 
 ```css
@@ -101,7 +117,7 @@ editorial reading rather than the Basecamp account tints above.
 These are much lower chroma than the Basecamp-derived tints (0.002–0.003 vs.
 0.012–0.021) — nearly-white papers rather than perceptible color washes.
 
-**Decision (2026-07-02):** Alcovo ships **this editorial set** as the wired
+**Decision (2026-07-02):** Inkwell ships **this editorial set** as the wired
 tints — `olive`, `taupe`, `mauve`, `mist`, `zinc` — defined as
 `[data-tint="…"]` in `app/assets/stylesheets/01-tokens.css`. The Basecamp-derived
 set above is kept as reference/history, not wired. Default theme is **light**

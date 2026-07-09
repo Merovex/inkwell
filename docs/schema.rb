@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 #
-# NOTIONAL schema for Alcovo — a thinking artifact, NOT a real migration.
+# NOTIONAL schema for Inkwell — a thinking artifact, NOT a real migration.
 # Modeled on Basecamp's delegated-type (Record/Recordable) pattern.
 # See data-model.md for the narrative. Column names/types are idiomatic guesses;
 # anything inferred rather than observed is noted inline.

@@ -15,5 +15,5 @@ sources: [raw/<file>]   # the immutable raw source this summarizes
 ## Key takeaways
 - ...
 
-## Relevance to Alcovo
+## Relevance to Inkwell
 Why we captured this; which [[concepts]]/[[decisions]] it informs.

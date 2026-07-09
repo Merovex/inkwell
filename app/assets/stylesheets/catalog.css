@@ -89,6 +89,17 @@
   }
   .mrow__remove:hover { color: var(--danger-ink); background: var(--danger-surface); }
 
+  /* --- series chips in the books list byline --- */
+  .list__chip {
+    display: inline-block;
+    padding: 0.05rem 0.45rem;
+    margin-inline-end: 0.3rem;
+    font-size: 0.75rem;
+    border-radius: 999px;
+    background: var(--accent-soft);
+    color: var(--ink-on-soft);
+  }
+
   /* --- buy links (distributors) --- */
   .distributors { margin-block-start: 2rem; }
   .distributors__title { font-size: 1.05rem; margin: 0 0 var(--u-pad); }
