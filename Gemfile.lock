@@ -1,6 +1,6 @@
 GIT
   remote: https://github.com/rails/rails.git
-  revision: 2db1126cf881eb05fd99727c3b7e11cee3e8b4c3
+  revision: f52de80857f130f5a6820e5cb2050ba7d16d0153
   branch: main
   specs:
     actioncable (8.2.0.alpha)
@@ -49,7 +49,7 @@ GIT
       rails-html-sanitizer (~> 1.7)
     activejob (8.2.0.alpha)
       activesupport (= 8.2.0.alpha)
-      globalid (>= 0.3.6)
+      globalid (>= 1.4.0)
     activemodel (8.2.0.alpha)
       activesupport (= 8.2.0.alpha)
     activerecord (8.2.0.alpha)
