@@ -1,8 +1,9 @@
 # Emails one published post to one subscriber — the newsletter issue. The post's
 # public blog page doubles as the "view in browser" archive (HEY World). Carries
 # the subscriber's stable unsubscribe token both in the body and as a
-# List-Unsubscribe header (RFC 8058 one-click) for deliverability. From/site
-# name come from Setting.current.
+# List-Unsubscribe header (RFC 8058 one-click) for deliverability. Sends from the
+# news.merovex.press identity (aligned DKIM); the press's name + contact address
+# ride along as the display label and Reply-To.
 class PostBroadcastMailer < ApplicationMailer
   def issue(broadcast, subscriber)
     @post = broadcast.post
@@ -16,16 +17,23 @@ class PostBroadcastMailer < ApplicationMailer
     headers["List-Unsubscribe"] = "<#{@unsubscribe_url}>"
     headers["List-Unsubscribe-Post"] = "List-Unsubscribe=One-Click"
 
-    # Mailgun echoes these custom variables back on every event webhook, so we
-    # can map a delivered/opened/clicked/bounced event to this exact recipient's
-    # BroadcastDelivery. Tracking flags turn on open/click pixels. Harmless with
-    # other delivery methods (letter_opener in dev just ignores them).
-    headers["X-Mailgun-Variables"] = { broadcast_id: broadcast.id, subscriber_id: subscriber.id }.to_json
-    headers["X-Mailgun-Track-Opens"] = "yes"
-    headers["X-Mailgun-Track-Clicks"] = "yes"
-
-    options = { to: subscriber.email_address, subject: @post.title }
-    options[:from] = setting.contact_email if setting.contact_email.present?
+    options = {
+      to: subscriber.email_address,
+      subject: @post.title,
+      from: marketing_from(setting),
+      # SES echoes these message tags on every event, so Webhooks::SesController
+      # maps a delivered/opened/clicked/bounced event back to this recipient's
+      # BroadcastDelivery. The marketing config set turns on open/click tracking.
+      # Tag values are alphanumeric-only, so the integer ids go as strings.
+      delivery_method_options: {
+        configuration_set_name: Rails.application.credentials.dig(:ses, :marketing_config_set),
+        email_tags: [
+          { name: "broadcast_id", value: broadcast.id.to_s },
+          { name: "subscriber_id", value: subscriber.id.to_s }
+        ]
+      }
+    }
+    options[:reply_to] = setting.contact_email if setting.contact_email.present?
     mail(options)
   end
 end

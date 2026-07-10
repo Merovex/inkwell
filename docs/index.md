@@ -19,6 +19,7 @@ for canonical naming.
 - [multi-tenancy.md](multi-tenancy.md) — shared-DB, row-level tenancy (`Current.account`)
 - [database-and-scaling.md](database-and-scaling.md) — SQLite vs MariaDB; when to split app servers
 - [lexxy-and-active-record.md](lexxy-and-active-record.md) — Lexxy editor + Action Text coupling
+- [ses-migration-runbook.md](ses-migration-runbook.md) — Phase 0 (AWS + DNS) checklist for the Mailgun → SES/SNS migration (ADR 0015)
 
 ## Decisions (ADRs)
 

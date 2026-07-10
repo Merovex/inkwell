@@ -1,4 +1,10 @@
 class SessionMailer < ApplicationMailer
+  # Route through the transactional configuration set — bounce/complaint events
+  # only, no open/click tracking (SES leaves magic-link mail unmodified).
+  default delivery_method_options: {
+    configuration_set_name: Rails.application.credentials.dig(:ses, :transactional_config_set)
+  }
+
   SUBJECTS = {
     sign_in: "Your Inkwell sign-in link",
     sign_up: "Welcome to Inkwell — confirm your email"

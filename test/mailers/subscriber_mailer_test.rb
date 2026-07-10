@@ -30,12 +30,16 @@ class SubscriberMailerTest < ActionMailer::TestCase
     end
   end
 
-  test "confirmation is sent from the configured contact email" do
+  test "confirmation sends from the aligned marketing identity and replies to the contact email" do
     Setting.current.update!(contact_email: "press@example.com")
     subscriber = Subscriber.create!(email_address: "reader@example.com")
 
     email = SubscriberMailer.confirmation(subscriber, subscriber.generate_token_for(:confirmation))
 
-    assert_equal ["press@example.com"], email.from
+    # From must be the verified news.merovex.press identity (aligned DKIM), not
+    # the raw contact address; replies still route to the press.
+    assert_equal ["press@example.com"], email.reply_to
+    assert_not_equal ["press@example.com"], email.from
+    assert_equal [Rails.application.credentials.dig(:ses, :marketing_from)], email.from
   end
 end

@@ -14,14 +14,16 @@ class PostBroadcastMailerTest < ActionMailer::TestCase
     assert_match "List-Unsubscribe=One-Click", email["List-Unsubscribe-Post"].to_s
   end
 
-  test "issue tags the message with Mailgun variables for event mapping" do
+  test "issue tags the message with the SES config set and message tags for event mapping" do
     subscriber = Subscriber.create!(email_address: "reader@example.com", status: :confirmed)
     broadcast = records(:kickoff).create_broadcast!
 
     email = PostBroadcastMailer.issue(broadcast, subscriber)
+    settings = email.delivery_method.settings
 
-    vars = JSON.parse(email["X-Mailgun-Variables"].to_s)
-    assert_equal broadcast.id, vars["broadcast_id"]
-    assert_equal subscriber.id, vars["subscriber_id"]
+    assert_equal Rails.application.credentials.dig(:ses, :marketing_config_set), settings[:configuration_set_name]
+    tags = settings[:email_tags].index_by { |t| t[:name] }
+    assert_equal broadcast.id.to_s, tags["broadcast_id"][:value]
+    assert_equal subscriber.id.to_s, tags["subscriber_id"][:value]
   end
 end
