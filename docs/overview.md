@@ -7,8 +7,11 @@
 
 A Rails 8.2 app (Ruby 4.0.5) that wears **two faces on one codebase**:
 
-- **Inkwell** — the authenticated **admin backend** at `/admin/*` (app module
-  `Inkwell`). Where the author writes, publishes, and moderates.
+- **Inkwell** — the **domain-admin-only backend** at `/admin/*` (app module
+  `Inkwell`). Where the author writes, publishes, and moderates. Gated by
+  `Admin::BaseController` ([0016](decisions/0016-admin-backend-domain-admin-only.md));
+  sign-in and the user's own account live at the top level (`/session`, `/user/*`),
+  and Comments/Boosts stay session-only (not admin) as a future member surface.
 - **Merovex Press** — the anonymous **public site** at `/`. See
   [[merovex-press-public-site]].
 
@@ -18,7 +21,7 @@ rename and keep the old name as history.)
 This `docs/` folder is the single home for design/reference docs and the work
 log; see [[CLAUDE]] for how it's maintained.
 
-## Current state (2026-07-08)
+## Current state (2026-07-10)
 
 - **Auth & shell** — passwordless magic-link auth, first-run Setup, top-bar app
   shell. A Basecamp-style **app menu** (jump-to sheet) is the admin's global

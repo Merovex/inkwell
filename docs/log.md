@@ -2,6 +2,15 @@
 
 Append-only. Newest first. Format defined in [[CLAUDE]] (`CLAUDE.md`).
 
+## [2026-07-10] build | SES sending (ADR 0015 Phase 1), Jekyll importers, image/cover fixes
+- Implemented ADR 0015 Phase 1: Action Mailer `:ses_v2` (aws-actionmailer-ses), region/creds + link host (inkwell.merovex.press) from `credentials[:ses]`; two-identity reputation split (auth. transactional / news. marketing) via per-mailer `configuration_set_name` + message tags; newsletter confirmations routed through the **transactional** set so confirm links aren't click-rewritten. Fixed Active Storage `variant_processor` `:mini_magick` → `:vips` — the Docker image ships libvips, not ImageMagick (dev needs libvips too, opposite of what was assumed). Book cover upload/remove now redirect to `show` and swap a `turbo_frame_tag "book_cover"` in place. One-off Jekyll importers (`lib/tasks/blog_import.rake`): `blog:import` (posts) and `blog:import_books` (books + Series + covers→Active Storage + Distributors + Installments), idempotent with a `DRY_RUN` preview; `bin/import-books-prod.sh` drives the prod run.
+- refs: ../config/environments/production.rb, ../app/mailers/{application,session,subscriber,post_broadcast}_mailer.rb, ../config/application.rb, ../app/controllers/admin/books/depictions_controller.rb, ../lib/tasks/blog_import.rake
+
+## [2026-07-10] decision | ADR 0016 — admin backend is domain-admin-only
+- Locked the whole `/admin` namespace to `domain_admin` via a new `Admin::BaseController` (authenticated + `AdminOnly`); moved authentication (sessions/setups/signups → `/session`, `/setup`, `/signup`) and the user's own account (`user/settings`, `user/avatar` → `/user/*`) out of `/admin`; exempted the Comments + Boosts controllers (session-only, admin **not**) as the forward-looking member surface. First user stays `domain_admin` via Setup. Retires the member content-authoring model for now. Tests reworked: fixture author `alice` → `domain_admin`, `bob` = the member proving denial.
+- pages touched: [[0016-admin-backend-domain-admin-only]] (new), index.md, [[overview]]
+- refs: ../app/controllers/admin/base_controller.rb, ../app/controllers/{sessions,setups,signups}_controller.rb, ../app/controllers/user/, ../config/routes.rb
+
 ## [2026-07-10] decision | ADR 0015 — migrate email relay Mailgun → Amazon SES/SNS
 - Decided a hard cutover from Mailgun to SES (send, `:ses_v2` via `aws-sdk-rails`) + SNS (events, HTTPS webhook), driven by cost + data ownership. Keeps the 0013 metrics data model; swaps relay + ingest. Open/click preserved via SES Configuration Sets (must-have for the 0014 sunset). Suppression app-side-primary (0011 consent trail) with SES account suppression as a net. Phased: Phase 0 AWS/DNS prereqs (DKIM/SPF/DMARC, tracking domain, config sets, sandbox-exit) gate the cutover; Phases 1–3 = sending swap, SNS ingest controller, cutover+cleanup. Target: before the next Mailgun invoice. Marked 0013 superseded → 0015.
 - pages touched: [[0015-email-relay-mailgun-to-ses]] (new), [[0013-broadcast-metrics-via-mailgun]] (superseded), index.md

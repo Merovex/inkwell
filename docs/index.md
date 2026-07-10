@@ -39,6 +39,7 @@ for canonical naming.
 | [0012](decisions/0012-broadcast-posts-as-newsletters.md) | Newsletters — broadcast a post (HEY World model) | accepted | 2026-07-09 |
 | [0013](decisions/0013-broadcast-metrics-via-mailgun.md) | Broadcast metrics via Mailgun event webhooks | superseded → 0015 | 2026-07-09 |
 | [0015](decisions/0015-email-relay-mailgun-to-ses.md) | Email relay — migrate Mailgun → Amazon SES/SNS | accepted | 2026-07-10 |
+| [0016](decisions/0016-admin-backend-domain-admin-only.md) | Admin backend is domain-admin-only; auth + account move out of /admin | accepted | 2026-07-10 |
 
 ## Concepts
 

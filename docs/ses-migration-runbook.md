@@ -144,14 +144,26 @@ dig +short TXT merovex.press._report._dmarc.merovex.com
 ```
 Both should return their `v=DMARC1...` values.
 
-## Step 5 — Custom open/click tracking domain (marketing only)  ☐
-**Goal:** branded redirect links (`click.news.merovex.press`) instead of `*.awstrack.me` — better trust/deliverability. **Newsletter stream only** — the auth stream is never tracked, so it needs no tracking domain.
+## Step 5 — Open/click tracking domain (marketing only)  ☐
+**Goal:** working HTTPS click/open tracking on the newsletter stream. **Default
+to SES's own tracking domain** — a **custom branded domain is deferred** because
+it needs CloudFront (see below).
 
-1. SES → **Configuration → Configuration sets** → on `inkwell-marketing` (Step 6a), open **Tracking options → Use a custom redirect domain**.
-2. Enter `click.news.merovex.press`; SES gives a **CNAME target** (region-specific). Add that CNAME at your DNS host.
-3. HTTPS: provide an ACM cert for the subdomain when prompted to serve `https://` tracking links; plain HTTP works without but prefer HTTPS.
+**Decision (2026-07-10): use the default SES tracking domain.** SES does **not**
+auto-provision a TLS cert for a custom redirect domain, so a bare
+`click.news.merovex.press` CNAME → `*.awstrack.me` serves an `awstrack.me` cert
+and browsers reject it (`ERR_CERT_COMMON_NAME_INVALID`). The default domain
+(`https://<region>.awstrack.me/…`) has a valid cert and full open/click
+tracking — just unbranded. On `inkwell-marketing`, leave **Tracking options** on
+the **default Amazon SES domain** (no custom redirect domain).
 
-**Verify:** the tracking domain shows **Verified/Active** on `inkwell-marketing`.
+**Branded HTTPS (optional, later):** request an ACM cert for
+`click.news.merovex.press` in the region, put a CloudFront distribution in front
+(origin = the awstrack endpoint) with that cert, point the CNAME at CloudFront,
+then set it as the config set's custom redirect domain.
+
+**Verify:** a sent marketing email's links resolve over HTTPS with no cert
+warning.
 
 ## Step 6 — Configuration sets (the marketing/transactional split)  ☐
 **Goal:** two sets so marketing is tracked and transactional is not.
@@ -162,11 +174,12 @@ message** (Phase 1). The mapping we'll wire:
 | Stream | Identity / From | Config set |
 |---|---|---|
 | Transactional (`SessionMailer`) | `noreply@auth.merovex.press` | `inkwell-transactional` |
-| Marketing (`SubscriberMailer`, `PostBroadcastMailer`) | `news@news.merovex.press` | `inkwell-marketing` |
+| Newsletter confirm/re-engage (`SubscriberMailer`) | `news@news.merovex.press` | `inkwell-transactional` — *critical links must not be click-rewritten* |
+| Broadcast issues (`PostBroadcastMailer`) | `news@news.merovex.press` | `inkwell-marketing` |
 
 **6a. `inkwell-marketing`**
 1. Create configuration set `inkwell-marketing`.
-2. **Tracking options** → custom redirect domain `click.<YOURDOMAIN>` (Step 5).
+2. **Tracking options** → leave on the **default Amazon SES domain** (Step 5 — custom branded domain deferred).
 3. **Event destination** → publish to **SNS** (topic from Step 7). Subscribe to:
    **Send, Delivery, Bounce, Complaint, Open, Click, Reject, Rendering Failure**.
 
