@@ -49,12 +49,15 @@
 </div>
 
 <div class="book-detail">
-  <% if can_manage %>
-    <%= render "cover", book: @book, record: @record %>
-  <% elsif @book.cover? %>
-    <%= image_tag @book.cover, class: "book-detail__cover", alt: "#{@book.title} cover" %>
-  <% else %>
-    <span class="book-detail__cover book-detail__cover--empty" aria-hidden="true">No cover</span>
+  <%# Cover upload/remove swap this frame in place (see Books::DepictionsController). %>
+  <%= turbo_frame_tag "book_cover" do %>
+    <% if can_manage %>
+      <%= render "cover", book: @book, record: @record %>
+    <% elsif @book.cover? %>
+      <%= image_tag @book.cover, class: "book-detail__cover", alt: "#{@book.title} cover" %>
+    <% else %>
+      <span class="book-detail__cover book-detail__cover--empty" aria-hidden="true">No cover</span>
+    <% end %>
   <% end %>
   <article class="u-flow"><%= @book.content %></article>
 </div>

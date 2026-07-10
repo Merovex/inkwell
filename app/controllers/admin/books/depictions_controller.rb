@@ -12,14 +12,14 @@ class Admin::Books::DepictionsController < Admin::BaseController
 
     if depiction.image.attached? && depiction.save
       @record.save_edit(depiction: depiction)
-      redirect_to edit_admin_book_path(@record), notice: "Cover uploaded."
+      redirect_to admin_book_path(@record), notice: "Cover uploaded."
     else
-      redirect_to edit_admin_book_path(@record), alert: "Please choose an image file."
+      redirect_to admin_book_path(@record), alert: "Please choose an image file."
     end
   end
 
   def destroy
     @record.save_edit(depiction: nil)
-    redirect_to edit_admin_book_path(@record), notice: "Cover removed."
+    redirect_to admin_book_path(@record), notice: "Cover removed."
   end
 end
