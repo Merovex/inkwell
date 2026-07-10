@@ -1,10 +1,10 @@
 ---
 type: decision
 title: Broadcast metrics via Mailgun event webhooks
-status: accepted
+status: superseded
 tags: [rails, newsletter, email, metrics, mailgun]
 created: 2026-07-09
-updated: 2026-07-09
+updated: 2026-07-10
 sources: [./0012-broadcast-posts-as-newsletters.md]
 ---
 
@@ -61,4 +61,4 @@ Capture metrics **per recipient**, aggregate for the dashboard:
   reconciliation backstop.
 
 ## Links
-Related: [[0012-broadcast-posts-as-newsletters]]
+Related: [[0012-broadcast-posts-as-newsletters]] · Superseded by: [[0015-email-relay-mailgun-to-ses]] (metrics data model carries forward; only the Mailgun relay + webhook are replaced)

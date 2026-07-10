@@ -36,7 +36,8 @@ for canonical naming.
 | [0010](decisions/0010-id-first-public-slugs.md) | Public URLs — id-first slugs | accepted | 2026-07-08 |
 | [0011](decisions/0011-subscribers-and-consent-log.md) | Subscribers — current-state row + append-only consent log | accepted | 2026-07-08 |
 | [0012](decisions/0012-broadcast-posts-as-newsletters.md) | Newsletters — broadcast a post (HEY World model) | accepted | 2026-07-09 |
-| [0013](decisions/0013-broadcast-metrics-via-mailgun.md) | Broadcast metrics via Mailgun event webhooks | accepted | 2026-07-09 |
+| [0013](decisions/0013-broadcast-metrics-via-mailgun.md) | Broadcast metrics via Mailgun event webhooks | superseded → 0015 | 2026-07-09 |
+| [0015](decisions/0015-email-relay-mailgun-to-ses.md) | Email relay — migrate Mailgun → Amazon SES/SNS | accepted | 2026-07-10 |
 
 ## Concepts
 

@@ -2,6 +2,11 @@
 
 Append-only. Newest first. Format defined in [[CLAUDE]] (`CLAUDE.md`).
 
+## [2026-07-10] decision | ADR 0015 — migrate email relay Mailgun → Amazon SES/SNS
+- Decided a hard cutover from Mailgun to SES (send, `:ses_v2` via `aws-sdk-rails`) + SNS (events, HTTPS webhook), driven by cost + data ownership. Keeps the 0013 metrics data model; swaps relay + ingest. Open/click preserved via SES Configuration Sets (must-have for the 0014 sunset). Suppression app-side-primary (0011 consent trail) with SES account suppression as a net. Phased: Phase 0 AWS/DNS prereqs (DKIM/SPF/DMARC, tracking domain, config sets, sandbox-exit) gate the cutover; Phases 1–3 = sending swap, SNS ingest controller, cutover+cleanup. Target: before the next Mailgun invoice. Marked 0013 superseded → 0015.
+- pages touched: [[0015-email-relay-mailgun-to-ses]] (new), [[0013-broadcast-metrics-via-mailgun]] (superseded), index.md
+- refs: ../config/environments/production.rb, ../app/mailers/post_broadcast_mailer.rb, ../app/controllers/webhooks/mailgun_controller.rb, ../app/models/broadcast_delivery.rb
+
 ## [2026-07-09] build | Newsletter — subscribers, broadcast-a-post, Mailgun metrics
 - Subscribers with double opt-in + append-only consent log (ADR 0011); public `/newsletter` opt-in (honeypot + rate limit) + confirmation mailer. Broadcast a published post to subscribers HEY-World style — one-time send or scheduled via the shared day/hour picker, HEY-style banner with copy-link + send/scheduled/sent states (ADR 0012). Scheduled-post preview link resolves early via an HMAC-derived keyed slug (`Record#preview_key`, no column), noindexed until publish. Per-recipient metrics on `broadcast_deliveries` + cached counters on `broadcasts`, ingested from a signature-verified Mailgun webhook; domain-admin dashboards for Subscribers and Broadcasts (ADR 0013). System settings (singleton `Setting`) + public About page from its blurb.
 - decisions: [[0011-subscribers-and-consent-log]], [[0012-broadcast-posts-as-newsletters]], [[0013-broadcast-metrics-via-mailgun]]
