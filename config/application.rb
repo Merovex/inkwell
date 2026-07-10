@@ -35,7 +35,9 @@ module Inkwell
     # tracking is live — otherwise everyone looks cold (ADR 0014).
     config.x.newsletter.sunset_enabled = ENV["NEWSLETTER_SUNSET"] == "true"
 
-    # ImageMagick is what's installed here; the Rails default (:vips) needs libvips.
-    config.active_storage.variant_processor = :mini_magick
+    # Use libvips — it's what the Dockerfile installs (and the Rails 8 default).
+    # ImageMagick is NOT in the image, so :mini_magick fails to generate any
+    # variant in production, which breaks every image (all render via variants).
+    config.active_storage.variant_processor = :vips
   end
 end
