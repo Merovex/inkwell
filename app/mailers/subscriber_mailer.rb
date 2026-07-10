@@ -3,9 +3,13 @@
 # subscriber to confirmed, plus a stable one-click unsubscribe link. From/site
 # name come from Setting.current so the press's identity drives the mail.
 class SubscriberMailer < ApplicationMailer
-  # Newsletter stream → marketing configuration set (open/click tracking on).
+  # These are transactional in nature — the confirm and "keep subscribed" links
+  # are critical actions, so they must NOT be click-rewritten. Route through the
+  # transactional config set (no open/click tracking). The From still comes from
+  # the news.merovex.press identity, so newsletter reputation stays isolated;
+  # only the broadcast issues (PostBroadcastMailer) use the tracked marketing set.
   default delivery_method_options: {
-    configuration_set_name: Rails.application.credentials.dig(:ses, :marketing_config_set)
+    configuration_set_name: Rails.application.credentials.dig(:ses, :transactional_config_set)
   }
 
   def confirmation(subscriber, token)
