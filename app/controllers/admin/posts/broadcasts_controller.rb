@@ -4,7 +4,7 @@
 # One-time per post (the Broadcast's unique record_id is the guard) and only for
 # a post that's live or scheduled — you don't email a draft. The send itself
 # fans out in PostBroadcastJob.
-class Admin::Posts::BroadcastsController < ApplicationController
+class Admin::Posts::BroadcastsController < Admin::BaseController
   include PostScoped
   include Publishing  # reuses scheduling? + scheduled_at (the day/hour scheduler)
   before_action -> { authorize! @record, to: :manage }

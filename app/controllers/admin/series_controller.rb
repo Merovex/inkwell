@@ -1,4 +1,4 @@
-class Admin::SeriesController < ApplicationController
+class Admin::SeriesController < Admin::BaseController
   include SeriesScoped, Publishing
   skip_before_action :set_record, only: %i[index new create search]
   before_action -> { authorize! @record, to: :view }, only: :show

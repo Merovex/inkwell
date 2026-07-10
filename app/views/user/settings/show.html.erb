@@ -12,7 +12,7 @@
     <%# either way the form auto-submits (avatar-upload controller). Explicit %>
     <%# multipart: form_with only infers it from builder-rendered file fields, %>
     <%# and without it Turbo serializes urlencoded and drops the file. %>
-    <%= form_with url: admin_user_avatar_path, method: :patch, multipart: true, class: "settings__avatar-well",
+    <%= form_with url: user_avatar_path, method: :patch, multipart: true, class: "settings__avatar-well",
           data: { controller: "avatar-upload",
                   "avatar-upload-dragover-class": "settings__avatar-well--dragover",
                   action: "dragover->avatar-upload#dragover dragleave->avatar-upload#dragleave drop->avatar-upload#drop" } do %>
@@ -26,14 +26,14 @@
     <% end %>
 
     <% if Current.user.avatar.attached? %>
-      <%= button_to "Remove picture and use initials", admin_user_avatar_path, method: :delete, class: "button" %>
+      <%= button_to "Remove picture and use initials", user_avatar_path, method: :delete, class: "button" %>
     <% end %>
   </section>
 
   <section class="settings__section" aria-label="Display name">
     <%= render "admin/shared/error_summary", model: Current.user %>
 
-    <%= form_with model: Current.user, url: admin_user_settings_path, method: :patch do |f| %>
+    <%= form_with model: Current.user, url: user_settings_path, method: :patch do |f| %>
       <div class="field">
         <%= f.text_field :name, class: "field__control", placeholder: "Display name",
               "aria-label": "Display name" %>

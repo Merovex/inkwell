@@ -156,9 +156,9 @@ class PostsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "requires authentication" do
-    delete admin_session_path
+    delete session_path
 
     get admin_posts_path
-    assert_redirected_to new_admin_session_path
+    assert_redirected_to new_session_path
   end
 end

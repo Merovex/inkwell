@@ -21,7 +21,7 @@
 
   <div class="menu menu--user" popover id="user-menu" role="menu">
     <button type="button" class="menu__item" role="menuitem">My Profile</button>
-    <%= link_to "Settings", admin_user_settings_path, class: "menu__item", role: "menuitem" %>
+    <%= link_to "Settings", user_settings_path, class: "menu__item", role: "menuitem" %>
     <hr class="menu__separator">
     <div class="menu__row">
       <button type="button" class="menu__item theme-toggle" role="menuitem" data-mode="light"
@@ -38,9 +38,9 @@
         <span data-tint-target="label">Zinc</span>
       </button>
     </div>
-    <%= button_to "Sign out", admin_session_path, method: :delete, class: "menu__item", role: "menuitem" %>
+    <%= button_to "Sign out", session_path, method: :delete, class: "menu__item", role: "menuitem" %>
   </div>
   <% else %>
-  <%= link_to "Sign in", new_admin_session_path, class: "button button--ghost" %>
+  <%= link_to "Sign in", new_session_path, class: "button button--ghost" %>
   <% end %>
 </header>

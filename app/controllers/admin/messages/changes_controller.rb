@@ -1,7 +1,7 @@
 # The changes between a past version and the CURRENT one: GET
 # /forum/:message_id/changes/:id where :id is the past version. Renders what
 # has changed since that version, tracked-changes style.
-class Admin::Messages::ChangesController < ApplicationController
+class Admin::Messages::ChangesController < Admin::BaseController
   include MessageScoped
   before_action -> { authorize! @record, to: :view }
 

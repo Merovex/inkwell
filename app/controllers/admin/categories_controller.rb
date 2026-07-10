@@ -1,6 +1,6 @@
 # Managing the board's categories: a plain lookup-table CRUD, no spine
 # ceremony. Admin only — categories are install-wide vocabulary.
-class Admin::CategoriesController < ApplicationController
+class Admin::CategoriesController < Admin::BaseController
   before_action -> { authorize! Category, to: :manage }
   before_action :set_category, only: %i[edit update destroy]
 

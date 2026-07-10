@@ -2,7 +2,7 @@
 # as feed lines derived from adjacent-version deltas (see ApplicationHelper).
 # Rich text is never loaded here — the whole page is a column read over the
 # versions.
-class Admin::Messages::EventsController < ApplicationController
+class Admin::Messages::EventsController < Admin::BaseController
   include MessageScoped
   before_action -> { authorize! @record, to: :view }
 

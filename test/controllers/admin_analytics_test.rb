@@ -3,7 +3,7 @@ require "test_helper"
 # The public-traffic dashboard (Ahoy): domain-admin only, read-only.
 class AdminAnalyticsTest < ActionDispatch::IntegrationTest
   test "the dashboard is admin-only: a member gets a 404" do
-    sign_in_as users(:alice)
+    sign_in_as users(:bob)
 
     get admin_analytics_path
     assert_response :not_found

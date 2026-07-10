@@ -1,19 +1,15 @@
 require "test_helper"
 
-# The policy layer (app/policies): posts and messages are managed by their
-# creator or the domain admin; unpublished work is invisible to everyone
-# else. Denials render the same 404 as a missing record.
+# /admin is domain-admin-only (Admin::BaseController): a signed-in member is
+# denied the whole backend with the same 404 as a missing record. Comments and
+# boosts are the exception — they require sign-in but not admin, and still follow
+# the target's visibility; the policy layer also scopes their ownership.
 class AuthorizationTest < ActionDispatch::IntegrationTest
-  test "someone else's published post can be read but not managed" do
+  test "a member is locked out of the post backend — every action 404s" do
     sign_in_as users(:bob)
 
     get admin_post_path(records(:kickoff))
-    assert_response :success
-    # No edit affordances: no Edit link, no rename form, menu offers history only.
-    assert_select ".canvas__head a", text: "Edit", count: 0
-    assert_select ".editable__input", count: 0
-    assert_select ".menu__item", text: "Move to trash", count: 0
-    assert_select ".menu__item", text: "View History"
+    assert_response :not_found
 
     get edit_admin_post_path(records(:kickoff))
     assert_response :not_found

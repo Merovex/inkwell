@@ -3,7 +3,7 @@ require "test_helper"
 # Managing pen names — recordables on the spine, edited in place. Domain-admin only.
 class AdminAuthorsTest < ActionDispatch::IntegrationTest
   test "author management is admin-only: a member gets a 404" do
-    sign_in_as users(:alice)
+    sign_in_as users(:bob)
 
     get admin_authors_path
     assert_response :not_found

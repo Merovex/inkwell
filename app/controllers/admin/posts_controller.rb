@@ -1,4 +1,4 @@
-class Admin::PostsController < ApplicationController
+class Admin::PostsController < Admin::BaseController
   include PostScoped, Publishing
   skip_before_action :set_record, only: %i[index new create]
   before_action -> { authorize! @record, to: :view }, only: :show

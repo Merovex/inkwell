@@ -1,7 +1,7 @@
 # The changes between a past version and the CURRENT one: GET
 # /books/:book_id/changes/:id where :id is the past version. Renders what has
 # changed since that version, tracked-changes style.
-class Admin::Books::ChangesController < ApplicationController
+class Admin::Books::ChangesController < Admin::BaseController
   include BookScoped
   before_action -> { authorize! @record, to: :view }
 

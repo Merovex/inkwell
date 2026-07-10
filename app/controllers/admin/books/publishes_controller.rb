@@ -1,5 +1,5 @@
 # Publishing a book as a resource: POST publishes, DELETE reverts to draft.
-class Admin::Books::PublishesController < ApplicationController
+class Admin::Books::PublishesController < Admin::BaseController
   include BookScoped
   before_action -> { authorize! @record, to: :manage }
 

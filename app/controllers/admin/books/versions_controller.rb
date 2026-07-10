@@ -1,5 +1,5 @@
 # A frozen book version rendered read-only ("View this version" on the history).
-class Admin::Books::VersionsController < ApplicationController
+class Admin::Books::VersionsController < Admin::BaseController
   include BookScoped
   before_action -> { authorize! @record, to: :view }
 

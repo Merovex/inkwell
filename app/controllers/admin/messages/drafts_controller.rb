@@ -1,7 +1,7 @@
 # Unpublished forum work: drafts and scheduled messages, most recently
 # touched first. Yours only — unpublished work stays between its creator
 # and the admin, who sees everyone's.
-class Admin::Messages::DraftsController < ApplicationController
+class Admin::Messages::DraftsController < Admin::BaseController
   include MessageScoped
   skip_before_action :set_record, only: :index
   before_action -> { authorize! @record, to: :manage }, only: :destroy

@@ -6,7 +6,7 @@ class CategoriesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "category management is admin-only: members get the 404, and no toolbar link" do
-    sign_in_as users(:alice)
+    sign_in_as users(:bob)
 
     get admin_categories_path
     assert_response :not_found

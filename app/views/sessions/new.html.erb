@@ -6,7 +6,7 @@
     <div class="card__body u-stack">
       <p class="u-text-muted">If that address has an account, we've sent a sign-in link. Open it on this device, or enter the code from the email below.</p>
 
-      <%= form_with url: admin_verify_session_path, method: :get do |f| %>
+      <%= form_with url: verify_session_path, method: :get do |f| %>
         <div class="field">
           <span class="field__label" id="code-label">Sign-in code</span>
           <div class="code-input" role="group" aria-labelledby="code-label" data-controller="code-field">
@@ -25,14 +25,14 @@
         <%= f.submit "Sign in", class: "button button--primary u-full-width", style: "margin-block-start: var(--u-pad);" %>
       <% end %>
 
-      <%= link_to "Use a different email", new_admin_session_path, class: "u-text-muted" %>
+      <%= link_to "Use a different email", new_session_path, class: "u-text-muted" %>
     </div>
   <% else %>
     <header class="card__header"><span class="card__title">Sign in to Inkwell</span></header>
     <div class="card__body u-stack">
       <p class="u-text-muted">Enter your email and we'll send you a magic link — no password needed.</p>
 
-      <%= form_with url: admin_session_path, method: :post, class: "field" do |f| %>
+      <%= form_with url: session_path, method: :post, class: "field" do |f| %>
         <%= f.label :email_address, "Email", class: "field__label" %>
         <%= f.email_field :email_address, class: "field__control", placeholder: "you@example.com", required: true, autofocus: true, autocomplete: "email" %>
         <%= f.submit "Send magic link", class: "button button--primary", style: "margin-block-start: var(--u-pad);" %>

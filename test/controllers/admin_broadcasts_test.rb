@@ -3,7 +3,7 @@ require "test_helper"
 # The broadcasts dashboard: domain-admin only, read-only send analytics.
 class AdminBroadcastsTest < ActionDispatch::IntegrationTest
   test "the dashboard is admin-only: a member gets a 404" do
-    sign_in_as users(:alice)
+    sign_in_as users(:bob)
 
     get admin_broadcasts_path
     assert_response :not_found

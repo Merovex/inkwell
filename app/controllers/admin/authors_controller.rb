@@ -1,8 +1,7 @@
 # Managing the public pen names — recordables on the spine, but always-live and
 # edited in place (no draft/publish). Domain-admin only. Content creators just
 # *select* an author on the composer; curating the personas is the admin's job.
-class Admin::AuthorsController < ApplicationController
-  include AdminOnly
+class Admin::AuthorsController < Admin::BaseController
 
   before_action :set_author, only: %i[edit update destroy]
 

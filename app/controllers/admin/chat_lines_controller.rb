@@ -2,7 +2,7 @@
 # mutable, so every edit lands as a tracked version), or takes one back
 # (destroy — the same trash ceremony as everything on the spine).
 # A chat line's record has no parent: the install has a single room.
-class Admin::ChatLinesController < ApplicationController
+class Admin::ChatLinesController < Admin::BaseController
   before_action :set_record, only: %i[edit update destroy]
 
   def create

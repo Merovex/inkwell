@@ -1,5 +1,5 @@
 # Publishing a series as a resource: POST publishes, DELETE reverts to draft.
-class Admin::Series::PublishesController < ApplicationController
+class Admin::Series::PublishesController < Admin::BaseController
   include SeriesScoped
   before_action -> { authorize! @record, to: :manage }
 

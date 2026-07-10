@@ -7,7 +7,7 @@
 
     <%= render "admin/shared/error_summary", model: @setup %>
 
-    <%= form_with model: @setup, url: admin_setup_path, class: "field" do |f| %>
+    <%= form_with model: @setup, url: setup_path, class: "field" do |f| %>
       <%= f.label :email_address, "Email", class: "field__label" %>
       <%= f.email_field :email_address, class: "field__control", placeholder: "you@example.com", required: true, autofocus: true, autocomplete: "email" %>
       <%= f.submit "Create owner account", class: "button button--primary u-full-width", style: "margin-block-start: var(--u-pad);" %>

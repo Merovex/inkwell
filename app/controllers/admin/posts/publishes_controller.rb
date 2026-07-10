@@ -1,6 +1,6 @@
 # Publishing modeled as a resource: POST /posts/:id/publish publishes,
 # DELETE unpublishes. Both are event versions on the history.
-class Admin::Posts::PublishesController < ApplicationController
+class Admin::Posts::PublishesController < Admin::BaseController
   include PostScoped
   before_action -> { authorize! @record, to: :manage }
 

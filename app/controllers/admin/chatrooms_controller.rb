@@ -1,6 +1,6 @@
 # The single chatroom. Show is the transcript plus the composer; there is
 # nothing else to it — lines have their own controller.
-class Admin::ChatroomsController < ApplicationController
+class Admin::ChatroomsController < Admin::BaseController
   def show
     @chat_lines = ChatLine.transcript
 

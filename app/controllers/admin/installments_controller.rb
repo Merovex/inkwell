@@ -2,7 +2,7 @@
 # on either page. create links a book to a series (appending it to that series'
 # order) and streams back the appropriate chip (book page) or row (series page);
 # destroy unlinks. You may link/unlink if you can manage either side.
-class Admin::InstallmentsController < ApplicationController
+class Admin::InstallmentsController < Admin::BaseController
   def create
     @series_record = Record.active.series.find(params[:series_record_id])
     @book_record   = Record.active.books.find(params[:book_record_id])

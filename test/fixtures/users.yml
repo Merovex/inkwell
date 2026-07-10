@@ -1,7 +1,7 @@
 alice:
   email_address: alice@example.com
   name: Alice Example
-  role: member
+  role: domain_admin
 
 bob:
   email_address: bob@example.com

@@ -1,4 +1,4 @@
-class Admin::BooksController < ApplicationController
+class Admin::BooksController < Admin::BaseController
   include BookScoped, Publishing
   skip_before_action :set_record, only: %i[index new create search]
   before_action -> { authorize! @record, to: :view }, only: :show

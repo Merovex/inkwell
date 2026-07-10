@@ -9,20 +9,28 @@ Rails.application.routes.draw do
   get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
   get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
 
+  # Authentication + the signed-in user's own account live at the top level, not
+  # under /admin: signing in and managing yourself aren't domain-admin actions.
+  # Passwordless (magic-link) authentication.
+  resource :session, only: %i[new create destroy]
+  # Redeems the emailed code — hit by the magic link and the manual entry form.
+  get "session/verify" => "sessions#verify", as: :verify_session
+  # First-run install setup (first user → domain admin); only when no users exist.
+  resource :setup, only: %i[new create]
+  # Open self-registration; only when the registration policy is :open.
+  resource :signup, only: %i[new create]
+  # Personal settings — always Current.user, no id in the URL. The avatar is its
+  # own resource so picking/dropping a picture can auto-submit.
+  namespace :user do
+    resource :settings, only: %i[show update]
+    resource :avatar, only: %i[update destroy]
+  end
+
   # Inkwell — the admin backend. Everything the author uses to write, publish,
-  # and moderate lives under /admin as Admin::*. The public Merovex Press site
-  # will own the root URL space in a later pass.
+  # and moderate lives under /admin as Admin::*, gated to domain admins
+  # (Admin::BaseController). The public Merovex Press site will own the root URL
+  # space in a later pass.
   namespace :admin do
-    # Passwordless (magic-link) authentication.
-    resource :session, only: %i[new create destroy]
-    # Redeems the emailed code — hit by the magic link and the manual entry form.
-    get "session/verify" => "sessions#verify", as: :verify_session
-
-    # First-run install setup (first user → domain admin); only when no users exist.
-    resource :setup, only: %i[new create]
-    # Open self-registration; only when the registration policy is :open.
-    resource :signup, only: %i[new create]
-
     # Unpublished work: drafts + scheduled posts. Declared before resources :posts
     # so /admin/posts/drafts isn't swallowed by /admin/posts/:id. DELETE destroys
     # outright — unpublished work is discardable, no trash ceremony.
@@ -151,13 +159,6 @@ Rails.application.routes.draw do
       scope module: :authors do
         resource :avatar, only: %i[update destroy]
       end
-    end
-
-    # Personal settings — always Current.user, no id in the URL. The avatar is
-    # its own resource so picking/dropping a picture can auto-submit.
-    namespace :user do
-      resource :settings, only: %i[show update]
-      resource :avatar, only: %i[update destroy]
     end
 
     # Living styleguide for building/eyeballing standard elements + components.

@@ -33,7 +33,7 @@ class SettingsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "a non-admin cannot see or change settings" do
-    sign_in_as users(:alice)
+    sign_in_as users(:bob)
 
     get admin_settings_path
     assert_response :not_found

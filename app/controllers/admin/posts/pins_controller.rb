@@ -1,6 +1,6 @@
 # Pinning as a resource: POST pins, DELETE unpins. Event versions, offered on
 # published posts (the menu only shows the control there).
-class Admin::Posts::PinsController < ApplicationController
+class Admin::Posts::PinsController < Admin::BaseController
   include PostScoped
   before_action -> { authorize! @record, to: :manage }
 

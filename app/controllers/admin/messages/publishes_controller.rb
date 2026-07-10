@@ -1,6 +1,6 @@
 # Publishing modeled as a resource: POST /forum/:id/publish posts the
 # message, DELETE reverts it. Both are event versions on the history.
-class Admin::Messages::PublishesController < ApplicationController
+class Admin::Messages::PublishesController < Admin::BaseController
   include MessageScoped
   before_action -> { authorize! @record, to: :manage }
 

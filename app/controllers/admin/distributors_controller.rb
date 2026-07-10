@@ -1,7 +1,7 @@
 # Store buy-links on a book or series, added/removed live from its page. Keyed
 # by the target Record (books and series both live on the spine), so the same
 # controller serves both. You may manage links if you can manage the record.
-class Admin::DistributorsController < ApplicationController
+class Admin::DistributorsController < Admin::BaseController
   before_action :set_record
 
   def create

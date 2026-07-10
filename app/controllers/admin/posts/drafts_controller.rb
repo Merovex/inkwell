@@ -1,7 +1,7 @@
 # Unpublished work: drafts and scheduled posts, most recently touched first.
 # Yours only — unpublished work stays between its creator and the admin,
 # who sees everyone's.
-class Admin::Posts::DraftsController < ApplicationController
+class Admin::Posts::DraftsController < Admin::BaseController
   include PostScoped
   skip_before_action :set_record, only: :index
   before_action -> { authorize! @record, to: :manage }, only: :destroy

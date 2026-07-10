@@ -2,7 +2,7 @@
 # through the record's save regime (save_edit): a new version for a published
 # book — so the cover joins its history — or an in-place amend for a draft.
 # Removing points the current version at no cover the same way.
-class Admin::Books::DepictionsController < ApplicationController
+class Admin::Books::DepictionsController < Admin::BaseController
   include BookScoped
   before_action -> { authorize! @record, to: :manage }
 

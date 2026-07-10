@@ -1,8 +1,7 @@
 # Install-wide system settings — the domain admin editing the Merovex Press
 # identity. Always the singleton Setting.current, so no id in the URL (like the
 # personal Admin::User::SettingsController, but install-scoped and admin-only).
-class Admin::SettingsController < ApplicationController
-  include AdminOnly
+class Admin::SettingsController < Admin::BaseController
 
   before_action :set_setting
 

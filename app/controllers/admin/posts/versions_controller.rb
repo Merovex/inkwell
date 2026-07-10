@@ -1,5 +1,5 @@
 # A frozen version rendered read-only ("View this version" on the history).
-class Admin::Posts::VersionsController < ApplicationController
+class Admin::Posts::VersionsController < Admin::BaseController
   include PostScoped
   before_action -> { authorize! @record, to: :view }
 

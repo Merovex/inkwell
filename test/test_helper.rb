@@ -6,7 +6,7 @@ module ActionDispatch
   class IntegrationTest
     # Sign in by minting and redeeming a magic-link code (the real flow).
     def sign_in_as(user)
-      get admin_verify_session_path(code: user.sign_in_codes.create!.plaintext)
+      get verify_session_path(code: user.sign_in_codes.create!.plaintext)
     end
   end
 end

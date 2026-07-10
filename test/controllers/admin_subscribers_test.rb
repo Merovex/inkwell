@@ -4,7 +4,7 @@ require "test_helper"
 # unsubscribe. Subscribers opt in from the public site, so there's no create here.
 class AdminSubscribersTest < ActionDispatch::IntegrationTest
   test "the roster is admin-only: a member gets a 404" do
-    sign_in_as users(:alice)
+    sign_in_as users(:bob)
 
     get admin_subscribers_path
     assert_response :not_found

@@ -1,7 +1,7 @@
 # The message board lives at /forum: index is the board itself (the one tool
 # page for the install, like the chatroom), and everything else mirrors
 # PostsController — messages share the whole publishable regime.
-class Admin::MessagesController < ApplicationController
+class Admin::MessagesController < Admin::BaseController
   include MessageScoped, Publishing
   skip_before_action :set_record, only: %i[index new create]
   before_action -> { authorize! @record, to: :view }, only: :show

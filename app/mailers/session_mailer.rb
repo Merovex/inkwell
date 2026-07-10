@@ -17,7 +17,7 @@ class SessionMailer < ApplicationMailer
     @user = user
     @code = plaintext
     @formatted_code = SignInCode.format(plaintext)
-    @verify_url = admin_verify_session_url(code: plaintext)
+    @verify_url = verify_session_url(code: plaintext)
 
     mail to: user.email_address, subject: SUBJECTS.fetch(purpose, SUBJECTS[:sign_in])
   end
