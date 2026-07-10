@@ -3,16 +3,16 @@ service: alcovo
 
 # Name of the container image (use your-user/app-name on external registries).
 image: alcovo
-ssh:
-    user: root
-    keys:
-      - "~/.ssh/hetzner"
-    keys_only: true
+#ssh:
+    #user: root
+    #keys:
+      #- "~/.ssh/hetzner"
+    #keys_only: true
 
 # Deploy to these servers.
 servers:
   web:
-    - 192.168.0.1
+    - 5.161.252.146
   # job:
   #   hosts:
   #     - 192.168.0.1
@@ -25,9 +25,9 @@ servers:
 #
 # Don't use this when deploying to multiple web servers (then you have to terminate SSL at your load balancer).
 #
-# proxy:
-#   ssl: true
-#   host: app.example.com
+proxy:
+  ssl: true
+  host: inkwell.merovex.press
 
 # Where you keep your container images.
 registry:
@@ -74,7 +74,8 @@ aliases:
 # Use a persistent storage volume for sqlite database files and local Active Storage files.
 # Recommended to change this to a mounted volume path that is backed up off server.
 volumes:
-  - "alcovo_storage:/rails/storage"
+  - "/var/lib/inkwell:/rails/storage"
+  - "/var/lib/inkwell/logs:/rails/log"
 
 # Bridge fingerprinted assets, like JS and CSS, between versions to avoid
 # hitting 404 on in-flight requests. Combines all files from new and old
