@@ -215,11 +215,14 @@ Rails.application.routes.draw do
   # pending subscriber; the token links confirm and unsubscribe. See ADR 0011.
   get  "newsletter" => "subscriptions#new", as: :newsletter
   post "newsletter" => "subscriptions#create"
-  get  "newsletter/confirm/:token" => "subscriptions#confirm", as: :confirm_newsletter
-  get  "newsletter/unsubscribe/:token" => "subscriptions#unsubscribe", as: :unsubscribe_newsletter
+  # Token is optional so a missing/blank/truncated token (bare URL, an email
+  # gateway that strips the path) lands on the branded "invalid link" page from
+  # the controller, not a raw 404.
+  get  "newsletter/confirm(/:token)" => "subscriptions#confirm", as: :confirm_newsletter
+  get  "newsletter/unsubscribe(/:token)" => "subscriptions#unsubscribe", as: :unsubscribe_newsletter
   # "Keep me subscribed" from a re-engagement nudge — a reliable re-engagement
   # signal that doesn't depend on Mailgun open tracking (ADR 0014).
-  get  "newsletter/keep/:token" => "subscriptions#keep", as: :keep_newsletter
+  get  "newsletter/keep(/:token)" => "subscriptions#keep", as: :keep_newsletter
   # Post-signup "check your inbox" page (minimal layout). Both a real opt-in and a
   # honeypot-tripped one redirect here, so the two are indistinguishable.
   get  "newsletter/sent" => "subscriptions#sent", as: :newsletter_sent
@@ -231,7 +234,8 @@ Rails.application.routes.draw do
   post "contact" => "contacts#create"
   # Post-submit "check your inbox" page (minimal layout); real + honeypot land here.
   get  "contact/sent" => "contacts#sent", as: :contact_sent
-  get  "contact/confirm/:token" => "contacts#confirm", as: :confirm_contact
+  # Optional token → a bare/blank token renders the branded invalid-link page.
+  get  "contact/confirm(/:token)" => "contacts#confirm", as: :confirm_contact
 
   root "pages#home"
 end
