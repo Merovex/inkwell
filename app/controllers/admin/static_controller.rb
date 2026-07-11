@@ -1,6 +1,6 @@
-class Admin::StaticController < ApplicationController
-  # Styleguide/demo pages are public dev references — no sign in required.
-  allow_unauthenticated_access
+# Styleguide/demo pages. Admin-gated like the rest of the backend — nothing
+# under /admin renders without an authenticated domain admin.
+class Admin::StaticController < Admin::BaseController
 
   # Living styleguide. Renders every standard element/component so we can build
   # and eyeball HTML + CSS in isolation. See app/views/static/theme.html.erb.

@@ -12,7 +12,6 @@
   }
   .breadcrumb__item { color: var(--ink-muted); text-decoration: none; }
   .breadcrumb__item:hover { color: var(--ink); }
-  .breadcrumb__item--home { display: inline-flex; align-items: center; }
   .breadcrumb__item--current { color: var(--ink); font-weight: var(--font-weight-6); }
   .breadcrumb__sep { color: var(--ink-muted); user-select: none; }
 }

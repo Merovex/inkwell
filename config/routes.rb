@@ -172,9 +172,8 @@ Rails.application.routes.draw do
     get "list-view" => "static#list_view", as: :list_view
     get "item-view" => "static#item_view", as: :item_view
 
-    # Admin landing. Temporary: point the dashboard at the styleguide until
-    # there's a real home for the backend.
-    root "static#theme"
+    # Admin landing: the traffic dashboard.
+    root "analytics#show"
   end
 
   # Public blog. The index lists published posts only; :id on the article page

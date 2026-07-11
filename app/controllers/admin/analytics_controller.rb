@@ -9,6 +9,8 @@ class Admin::AnalyticsController < Admin::BaseController
   def show
     since = WINDOW.ago
     @visits = Ahoy::Visit.where(started_at: since..).count
+    # Unique people (well, browsers): ahoy's long-lived visitor token, not visits.
+    @visitors = Ahoy::Visit.where(started_at: since..).distinct.count(:visitor_token)
     @views  = Ahoy::Event.where(name: "$view", time: since..).count
     @landing_pages = top(Ahoy::Visit.where(started_at: since..).where.not(landing_page: nil), :landing_page)
     @referrers = top(Ahoy::Visit.where(started_at: since..).where.not(referring_domain: [ nil, "" ]), :referring_domain)
