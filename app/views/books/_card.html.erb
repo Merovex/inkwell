@@ -1,14 +1,9 @@
 <%# locals: (book:, series: nil) %>
-<%= link_to book_path(book.record.to_slug), class: "press-book-card" do %>
+<%= link_to book_path(book.record.to_slug), class: "press-book-card", aria: { label: book.title } do %>
   <% if book.cover? %>
     <%= image_tag book.cover, class: "press-book-card__cover", alt: "#{book.title} cover", loading: "lazy" %>
   <% else %>
     <span class="press-book-card__placeholder" aria-hidden="true"></span>
-  <% end %>
-  <div class="press-book-card__body">
-    <% if series %><p class="press-book-card__label"><%= series.title %></p><% end %>
     <h3 class="press-book-card__title"><%= book.title %></h3>
-    <p class="press-book-card__blurb"><%= book.content.to_plain_text.to_s.truncate(180) %></p>
-    <span class="press-book-card__more">Read on &rarr;</span>
-  </div>
+  <% end %>
 <% end %>
