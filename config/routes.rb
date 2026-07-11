@@ -148,6 +148,11 @@ Rails.application.routes.draw do
     # sending happens from the post page.
     resources :broadcasts, only: :index
 
+    # Contact-form submissions (Missives) — domain-admin only. Read the feed +
+    # its Trash tab; destroy purges one outright. There's no create/edit — they
+    # arrive from the public /contact form and are confirmed by double opt-in.
+    resources :missives, only: %i[index destroy]
+
     # Public-site traffic dashboard (Ahoy) — domain-admin only.
     resource :analytics, only: :show
 
@@ -215,6 +220,18 @@ Rails.application.routes.draw do
   # "Keep me subscribed" from a re-engagement nudge — a reliable re-engagement
   # signal that doesn't depend on Mailgun open tracking (ADR 0014).
   get  "newsletter/keep/:token" => "subscriptions#keep", as: :keep_newsletter
+  # Post-signup "check your inbox" page (minimal layout). Both a real opt-in and a
+  # honeypot-tripped one redirect here, so the two are indistinguishable.
+  get  "newsletter/sent" => "subscriptions#sent", as: :newsletter_sent
+
+  # Contact form (anonymous, double opt-in) at /contact. create records an
+  # unconfirmed Missive and emails a fixed-template confirmation; the token link
+  # confirms it. Content is only ever read in /admin/missives, never emailed out.
+  get  "contact" => "contacts#new", as: :contact
+  post "contact" => "contacts#create"
+  # Post-submit "check your inbox" page (minimal layout); real + honeypot land here.
+  get  "contact/sent" => "contacts#sent", as: :contact_sent
+  get  "contact/confirm/:token" => "contacts#confirm", as: :confirm_contact
 
   root "pages#home"
 end

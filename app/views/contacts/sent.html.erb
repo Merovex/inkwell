@@ -1,0 +1,4 @@
+<% content_for :title, "Check your inbox — #{site_settings.site_name}" %>
+<%= render "shared/await_confirmation",
+      heading: "Almost there",
+      message: "We've emailed you a link to confirm your address. Click it and your message reaches #{site_settings.site_name}." %>

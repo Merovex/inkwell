@@ -1,0 +1,8 @@
+<%# A single centered card (rendered in the public_minimal layout) telling the
+    visitor to check their inbox. locals: (heading:, message:) %>
+<section class="press-notice">
+  <span class="press-notice__mark"><%= inline_svg_tag "merovex-mark.svg" %></span>
+  <h1 class="press-notice__title"><%= heading %></h1>
+  <p class="press-notice__text"><%= message %></p>
+  <%= link_to "Back to #{site_settings.site_name}", root_path, class: "press-link press-notice__home" %>
+</section>

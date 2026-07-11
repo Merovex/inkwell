@@ -14,7 +14,12 @@ class SubscriptionsController < PublicController
 
   def create
     Subscriber.opt_in(email_address: params[:email_address], source: params[:source], ip: request.remote_ip)
-    redirect_to newsletter_path, notice: "Almost there — check your inbox to confirm your subscription."
+    redirect_to newsletter_sent_path
+  end
+
+  # The "check your inbox" page — a single centered card, no site chrome.
+  def sent
+    render layout: "public_minimal"
   end
 
   def confirm
@@ -61,8 +66,9 @@ class SubscriptionsController < PublicController
         &.record_event!("unsubscribed")
     end
 
-    # A bot tripped the honeypot: pretend it worked, persist nothing.
+    # A bot tripped the honeypot: pretend it worked, persist nothing. Same
+    # destination as a real opt-in, so the two are indistinguishable.
     def discard_spam
-      redirect_to newsletter_path, notice: "Almost there — check your inbox to confirm your subscription."
+      redirect_to newsletter_sent_path
     end
 end

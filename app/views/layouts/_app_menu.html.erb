@@ -25,6 +25,7 @@
         <% if Current.user&.domain_admin? %>
           <%= app_menu_link "Authors", admin_authors_path %>
           <%= app_menu_link "Subscribers", admin_subscribers_path %>
+          <%= app_menu_link "Contact messages", admin_missives_path %>
           <%= app_menu_link "Broadcasts", admin_broadcasts_path %>
           <%= app_menu_link "Analytics", admin_analytics_path %>
           <%= app_menu_link "System settings", admin_settings_path %>

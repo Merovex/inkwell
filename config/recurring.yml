@@ -25,3 +25,15 @@ production:
   sunset_subscribers:
     class: SubscriberSunsetJob
     schedule: at 8am every Monday
+
+  # Daily contact-form digest to the domain admins ("X new messages"), counting
+  # missives confirmed in the last 24h. Skips the send when there's nothing new.
+  missive_digest:
+    class: MissiveDigestJob
+    schedule: at 8am every day
+
+  # Daily contact-form purge: drop confirmed missives past 60 days and
+  # never-confirmed submissions past their 7-day TTL.
+  missive_purge:
+    class: MissivePurgeJob
+    schedule: at 4am every day

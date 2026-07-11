@@ -509,6 +509,7 @@ html { background: var(--color-mountain-mist-50); }
 .press-form__row { display: flex; gap: 0.75rem; flex-wrap: wrap; }
 .press-form__input {
   flex: 1 1 16rem;
+  box-sizing: border-box;
   padding: 0.75rem 1rem;
   font: inherit;
   color: var(--text-1);
@@ -517,6 +518,11 @@ html { background: var(--color-mountain-mist-50); }
   border-radius: 0.5rem;
 }
 .press-form__input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+/* Stacked fields (contact form) fill the form's prose width and space out; the
+   row layout (input + inline submit) keeps flexing on its own. */
+.press-form > .press-form__input { width: 100%; margin-block-end: 1.25rem; }
+textarea.press-form__input { resize: vertical; min-height: 9rem; line-height: 1.5; }
 .press-form__flash {
   max-width: 42rem;
   margin: 0 auto 1.5rem;
@@ -526,6 +532,33 @@ html { background: var(--color-mountain-mist-50); }
 }
 .press-form__flash--notice { background: var(--surface-2); color: var(--text-1); }
 .press-form__flash--alert { background: var(--surface-2); color: var(--accent); }
+
+/* --- await-confirmation notice ---
+   The "check your inbox" page (public_minimal layout): a single card centered on
+   the page background, nothing else. */
+.press-notice-wrap {
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+}
+.press-notice {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 30rem;
+  padding: 3rem 2.5rem;
+  text-align: center;
+  background: var(--surface-1);
+  border: 1px solid var(--border-1);
+  border-radius: 0.75rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+}
+.press-notice__mark { display: block; width: 44px; margin: 0 auto 1.5rem; color: var(--text-3); }
+.press-notice__mark svg { width: 100%; height: 100%; }
+.press-notice__title { margin: 0 0 0.75rem; font-family: var(--press-serif); font-size: 1.8rem; color: var(--text-1); }
+.press-notice__text { margin: 0; color: var(--text-2); line-height: 1.6; }
+.press-notice__home { display: inline-block; margin-top: 1.75rem; font-size: 0.9rem; }
 
 /* --- page transitions ---
    The public site has no Turbo, so every navigation is a full page load. Rather

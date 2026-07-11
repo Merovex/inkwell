@@ -14,3 +14,9 @@
 # ActiveSupport::Inflector.inflections(:en) do |inflect|
 #   inflect.acronym "RESTful"
 # end
+
+# "missives".singularize would otherwise hit the wife→wives rule and yield
+# "missife", breaking the singular route helper (admin_missive_path). Pin it.
+ActiveSupport::Inflector.inflections(:en) do |inflect|
+  inflect.irregular "missive", "missives"
+end

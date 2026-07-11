@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.2].define(version: 2026_07_09_171000) do
+ActiveRecord::Schema[8.2].define(version: 2026_07_11_180000) do
   create_table "action_text_rich_texts", force: :cascade do |t|
     t.string "name", null: false
     t.text "body"
@@ -247,6 +247,19 @@ ActiveRecord::Schema[8.2].define(version: 2026_07_09_171000) do
     t.index ["record_id", "id"], name: "index_messages_on_record_id_and_id"
     t.index ["record_id"], name: "index_messages_on_record_id"
     t.index ["status", "published_at"], name: "index_messages_on_status_and_published_at"
+  end
+
+  create_table "missives", force: :cascade do |t|
+    t.string "name", null: false
+    t.string "email_address", null: false
+    t.string "subject", null: false
+    t.text "body", null: false
+    t.datetime "confirmed_at"
+    t.string "consent_ip"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["confirmed_at"], name: "index_missives_on_confirmed_at"
+    t.index ["created_at"], name: "index_missives_on_created_at"
   end
 
   create_table "posts", force: :cascade do |t|

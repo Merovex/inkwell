@@ -1,0 +1,65 @@
+<% content_for :title, "Contact messages — Inkwell" %>
+
+<%= render "admin/shared/canvas_head", crumbs: [["Contact messages", nil]] %>
+
+<header class="perma-header">
+  <h1 class="perma-header__title">Contact messages</h1>
+  <div class="perma-header__content">
+    <%# One state at a time; each tab links to that state's view. %>
+    <nav class="perma-header__toolbar" aria-label="Message states">
+      <% Admin::MissivesController::STATES.each do |state| %>
+        <%= link_to admin_missives_path(state: state),
+              class: "button button--small#{' button--primary' if state == @state}",
+              aria: { current: ("page" if state == @state) } do %>
+          <%= state == "trashed" ? "Trash" : "Recent" %>
+          <span class="u-text-muted">(<%= @counts[state].to_i %>)</span>
+        <% end %>
+      <% end %>
+    </nav>
+  </div>
+</header>
+
+<% if @missives.any? %>
+  <ul class="list">
+    <% @missives.each do |missive| %>
+      <li class="list__item">
+        <span class="list__body">
+          <span class="list__titlerow">
+            <span class="list__title"><%= missive.subject %></span>
+          </span>
+          <span class="list__meta">
+            <span class="list__byline">
+              <%= missive.name %> &lt;<%= missive.email_address %>&gt; ·
+              <%= missive.created_at.strftime("%b %-d, %Y") %>
+            </span>
+          </span>
+          <span class="list__meta"><%= truncate(missive.body, length: 240) %></span>
+        </span>
+        <span class="list__action" style="display: flex; gap: 0.25rem; align-items: center;">
+          <%# Reply opens the admin's own mail client, pre-composed as a reply. %>
+          <%= link_to missive_reply_mailto(missive), class: "button button--small" do %>
+            <%= inline_svg_tag "lucide/message-square.svg", class: "lucide", size: "16px" %> Reply
+          <% end %>
+          <%= button_to admin_missive_path(missive, state: @state), method: :delete, form_class: "list__action",
+                class: "button button--icon button--ghost", title: "Delete",
+                "aria-label": "Delete message from #{missive.name}",
+                form: { data: { turbo_confirm: "Permanently delete this message?" } } do %>
+            <%= inline_svg_tag "lucide/trash-2.svg", class: "lucide", size: "16px" %>
+          <% end %>
+        </span>
+      </li>
+    <% end %>
+  </ul>
+<% else %>
+  <div class="empty">
+    <span class="empty__icon"><%= inline_svg_tag "lucide/inbox.svg", class: "lucide", size: "40px" %></span>
+    <p class="empty__title">No <%= @state == "trashed" ? "trashed" : "recent" %> messages</p>
+    <p class="empty__text">
+      <% if @state == "trashed" %>
+        Messages older than 30 days rest here until they're purged at 60 days.
+      <% else %>
+        Confirmed messages from the last 30 days appear here, newest first.
+      <% end %>
+    </p>
+  </div>
+<% end %>

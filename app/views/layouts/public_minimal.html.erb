@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= content_for(:title) || site_settings.site_name %></title>
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+    <meta name="robots" content="noindex">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+
+    <link rel="icon" href="/favicon.ico" sizes="any">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+
+    <%= stylesheet_link_tag "01-tokens", "data-turbo-track": "reload" %>
+    <%= stylesheet_link_tag "press", "data-turbo-track": "reload" %>
+  </head>
+
+  <%# A single centered card on the page background — no nav, no footer. %>
+  <body class="press press-notice-page">
+    <main class="press-notice-wrap"><%= yield %></main>
+  </body>
+</html>
