@@ -575,6 +575,10 @@ main#main-content {
   to   { opacity: 1; }
 }
 
+/* Don't run the entry fade on Turbo's instant cached preview — only on the real
+   render — so a revisit (back/forward, or a prefetched page) doesn't double-fade. */
+html[data-turbo-preview] main#main-content { animation: none; }
+
 /* Respect users who ask for less motion — skip the fade entirely. */
 @media (prefers-reduced-motion: reduce) {
   main#main-content { animation: none; }

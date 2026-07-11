@@ -12,6 +12,14 @@
 #
 # Both route through the transactional identity (ApplicationMailer's default from).
 class MissiveMailer < ApplicationMailer
+  # Route through the transactional configuration set (bounce/complaint events
+  # only, no click rewriting) — the confirm link is a critical action, and the
+  # admin digest is operational mail. Mirrors SessionMailer/SubscriberMailer
+  # (ADR 0015); without it, SES sends outside the transactional stream.
+  default delivery_method_options: {
+    configuration_set_name: Rails.application.credentials.dig(:ses, :transactional_config_set)
+  }
+
   def confirmation(missive, token)
     setting = Setting.current
     @site_name = setting.site_name

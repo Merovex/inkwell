@@ -20,6 +20,9 @@
 
     <%# Analytics only — the lightweight public entry (ahoy), not the admin bundle. %>
     <%= javascript_importmap_tags "public" %>
+
+    <%# Per-page <head> additions (e.g. the home hero preload for LCP). %>
+    <%= yield :head %>
   </head>
 
   <body class="press">

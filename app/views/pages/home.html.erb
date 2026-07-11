@@ -16,8 +16,13 @@
 
   <div class="press-hero__photo">
     <div class="press-hero__ring">
+      <%# The hero is the LCP element — preload it and mark it high priority so the
+          browser fetches it before lazy/below-the-fold work. %>
+      <% content_for :head do %>
+        <link rel="preload" as="image" href="<%= image_path("authors/ben-headshot-2026_1.avif") %>" fetchpriority="high">
+      <% end %>
       <%= image_tag "authors/ben-headshot-2026_1.avif",
-            alt: "Merovex Press", width: 400, height: 400, loading: "eager" %>
+            alt: "Merovex Press", width: 400, height: 400, loading: "eager", fetchpriority: "high" %>
     </div>
   </div>
 </section>
