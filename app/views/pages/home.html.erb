@@ -16,13 +16,18 @@
 
   <div class="press-hero__photo">
     <div class="press-hero__ring">
-      <%# The hero is the LCP element — preload it and mark it high priority so the
-          browser fetches it before lazy/below-the-fold work. %>
+      <%# The ring displays at ≤340px wide (4:5), so ship 500w/1000w for 1×/2×
+          instead of the 2000×2500 original — much smaller for the LCP element.
+          Preload matches the srcset/sizes so the browser fetches the right one
+          first, before lazy/below-the-fold work. %>
+      <% hero_srcset = "#{image_path('authors/ben-headshot-2026_1-500.avif')} 500w, #{image_path('authors/ben-headshot-2026_1-1000.avif')} 1000w" %>
+      <% hero_sizes = "(min-width: 900px) 340px, min(280px, 70vw)" %>
       <% content_for :head do %>
-        <link rel="preload" as="image" href="<%= image_path("authors/ben-headshot-2026_1.avif") %>" fetchpriority="high">
+        <link rel="preload" as="image" imagesrcset="<%= hero_srcset %>" imagesizes="<%= hero_sizes %>" fetchpriority="high">
       <% end %>
-      <%= image_tag "authors/ben-headshot-2026_1.avif",
-            alt: "Merovex Press", width: 400, height: 400, loading: "eager", fetchpriority: "high" %>
+      <%= image_tag "authors/ben-headshot-2026_1-1000.avif",
+            alt: "Merovex Press", width: 400, height: 500, loading: "eager", fetchpriority: "high",
+            srcset: hero_srcset, sizes: hero_sizes %>
     </div>
   </div>
 </section>
