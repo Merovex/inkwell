@@ -2,10 +2,17 @@
 
 <section class="press-article">
   <header class="press-article__head">
-    <h1 class="press-article__title">Message confirmed</h1>
-    <p class="press-article__byline">
-      Thanks — your message has reached <%= site_settings.site_name %>. We'll be in touch.
-    </p>
+    <% if @already_confirmed %>
+      <h1 class="press-article__title">Already confirmed</h1>
+      <p class="press-article__byline">
+        This link was already used — your message reached <%= site_settings.site_name %>. We'll be in touch.
+      </p>
+    <% else %>
+      <h1 class="press-article__title">Message confirmed</h1>
+      <p class="press-article__byline">
+        Thanks — your message has reached <%= site_settings.site_name %>. We'll be in touch.
+      </p>
+    <% end %>
   </header>
   <div class="press-article__body">
     <p><%= link_to "Back to home", root_path, class: "press-link" %></p>

@@ -23,12 +23,13 @@ class Missive < ApplicationRecord
   validates :body, presence: true, length: { maximum: 5_000 }
   validates :email_address, presence: true, format: { with: URI::MailTo::EMAIL_REGEXP }
 
-  # Stateless signed confirmation token; folding in confirmed_at means a link
-  # can't reconfirm once used. Valid for 3 days (unconfirmed rows outlive the
-  # token by a few days before the purge sweep clears them).
-  generates_token_for :confirmation, expires_in: 3.days do
-    confirmed_at
-  end
+  # Stateless signed confirmation token, valid for 3 days. It is NOT folded on
+  # confirmed_at: email clients/scanners often GET the link once before the human
+  # clicks, and invalidating on first use would leave the human's click on a dead
+  # 404. Keeping it resolvable lets the confirm action recognize an already-confirmed
+  # missive and say so (confirm! is idempotent). (Unconfirmed rows outlive the
+  # token by a few days before the purge sweep clears them.)
+  generates_token_for :confirmation, expires_in: 3.days
 
   scope :confirmed,   -> { where.not(confirmed_at: nil) }
   scope :unconfirmed, -> { where(confirmed_at: nil) }

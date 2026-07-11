@@ -31,11 +31,14 @@ class ContactsController < PublicController
 
   def confirm
     missive = Missive.find_by_token_for(:confirmation, params[:token])
-    if missive
+    if missive.nil?
+      render :invalid_token, status: :not_found
+    else
+      # Already confirmed (a re-click or an email-scanner prefetch got here first)
+      # → acknowledge rather than error. confirm! is a no-op when confirmed.
+      @already_confirmed = missive.confirmed?
       missive.confirm!
       render :confirmed
-    else
-      render :invalid_token, status: :not_found
     end
   end
 

@@ -2,8 +2,13 @@
 
 <section class="press-article">
   <header class="press-article__head">
-    <h1 class="press-article__title">You're subscribed</h1>
-    <p class="press-article__byline">Thanks for confirming — you'll hear from <%= site_settings.site_name %> soon.</p>
+    <% if @already_confirmed %>
+      <h1 class="press-article__title">You're already subscribed</h1>
+      <p class="press-article__byline">This link was already used — you're all set for <%= site_settings.site_name %>.</p>
+    <% else %>
+      <h1 class="press-article__title">You're subscribed</h1>
+      <p class="press-article__byline">Thanks for confirming — you'll hear from <%= site_settings.site_name %> soon.</p>
+    <% end %>
   </header>
   <div class="press-article__body">
     <p><%= link_to "Back to home", root_path, class: "press-link" %></p>

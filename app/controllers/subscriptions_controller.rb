@@ -24,11 +24,15 @@ class SubscriptionsController < PublicController
 
   def confirm
     subscriber = Subscriber.find_by_token_for(:confirmation, params[:token])
-    if subscriber
+    if subscriber.nil?
+      render :invalid_token, status: :not_found
+    else
+      # Already confirmed (a re-click or an email-scanner prefetch got here
+      # first) → show the "already done" message, not an error. confirm! is a
+      # no-op when confirmed, so this is safe to call either way.
+      @already_confirmed = subscriber.confirmed?
       subscriber.confirm!(ip: request.remote_ip)
       render :confirmed
-    else
-      render :invalid_token, status: :not_found
     end
   end
 

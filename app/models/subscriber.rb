@@ -27,12 +27,14 @@ class Subscriber < ApplicationRecord
     format: { with: URI::MailTo::EMAIL_REGEXP },
     uniqueness: true
 
-  # The confirmation-link token expires and folds in confirmed_at, so a link
-  # can't reconfirm once used. The unsubscribe token is stable and never
-  # expires — it rides in every email for one-click opt-out.
-  generates_token_for :confirmation, expires_in: 7.days do
-    confirmed_at
-  end
+  # The confirmation-link token expires but is otherwise stable — it does NOT
+  # fold in confirmed_at. Email clients and security scanners routinely GET a
+  # link once before the human clicks; if the token were invalidated on first
+  # use, that prefetch would confirm the subscriber and leave the human's click
+  # with a dead 404. Keeping it resolvable lets the confirm action recognize an
+  # already-confirmed subscriber and say so (confirm! is idempotent). The
+  # unsubscribe token is stable and never expires — one-click opt-out in every email.
+  generates_token_for :confirmation, expires_in: 7.days
   generates_token_for :unsubscribe
 
   # A public opt-in: create or revive the row (deduped by email) and append the
