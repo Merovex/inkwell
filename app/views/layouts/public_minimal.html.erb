@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
     <title><%= content_for(:title) || site_settings.site_name %></title>
     <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -10,8 +10,9 @@
     <link rel="icon" href="/favicon.ico" sizes="any">
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 
-    <%= stylesheet_link_tag "01-tokens", "data-turbo-track": "reload" %>
-    <%= stylesheet_link_tag "press", "data-turbo-track": "reload" %>
+    <%# The notice page only needs the base tokens, a link, and the card. %>
+    <%= stylesheet_link_tag "01-tokens", "press-fonts", "press-base",
+          "press-controls", "press-notice", "data-turbo-track": "reload" %>
   </head>
 
   <%# A single centered card on the page background — no nav, no footer. %>

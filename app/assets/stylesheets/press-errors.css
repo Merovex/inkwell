@@ -1,0 +1,30 @@
+/* Merovex Press — public 404 / error page (public `.press` styles). */
+.press-notfound {
+  max-width: 34rem;
+  margin-inline: auto;
+  padding: 6rem 1.5rem;
+  text-align: center;
+}
+.press-notfound__code {
+  margin: 0;
+  font-family: var(--press-serif);
+  font-weight: 700;
+  font-size: clamp(3.5rem, 12vw, 6rem);
+  line-height: 1;
+  color: var(--accent);
+}
+.press-notfound__title {
+  margin: 0.75rem 0 0;
+  font-family: var(--press-serif);
+  font-weight: 700;
+  font-size: clamp(1.4rem, 4vw, 2rem);
+  color: var(--text-1);
+}
+.press-notfound__text { margin: 0.75rem 0 0; color: var(--text-2); }
+.press-notfound__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1rem;
+  margin-block-start: 2rem;
+}

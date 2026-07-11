@@ -1,0 +1,48 @@
+/* Merovex Press — home genre cards (public `.press` styles). */
+.press-genres {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+  max-width: 1100px;
+  margin: 0 auto 5rem;
+  padding-inline: 1.5rem;
+}
+@media (min-width: 640px) {
+  .press-genres { grid-template-columns: 1fr 1fr; }
+}
+.press-genre-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  background: var(--surface-1);
+  border: 1px solid var(--border-1);
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  transition: border-color 200ms ease;
+}
+.press-genre-card:hover { border-color: var(--border-2); }
+.press-genre-card__label {
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.press-genre-card__title {
+  margin: 0;
+  font-family: var(--press-serif);
+  font-size: 1.6rem;
+  line-height: 1.2;
+  color: var(--text-1);
+}
+.press-genre-card__blurb { margin: 0; color: var(--text-2); }
+.press-genre-card__more {
+  margin-top: 0.25rem;
+  align-self: flex-start;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--link-color);
+  text-decoration: none;
+}
+.press-genre-card__more:hover { text-decoration: underline; text-underline-offset: 0.15em; }

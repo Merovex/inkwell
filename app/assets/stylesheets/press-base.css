@@ -1,0 +1,90 @@
+/* Merovex Press — foundational public styles.
+ *
+ * All public styles are scoped under `.press` (set on the public <body>), so
+ * even though `stylesheet_link_tag :app` also loads these files on Inkwell admin
+ * pages, none of it applies there (no `.press` ancestor). Semantic tokens map
+ * onto the shared syō-ro / mountain-mist scales from 01-tokens.css.
+ *
+ * This file owns the `.press` root, its tokens (incl. dark mode), and the
+ * page-load fade. Component files (press-nav, press-hero, …) build on top.
+ */
+.press {
+  --press-serif: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --press-sans:  "Source Sans 3", system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  /* semantic tokens — light */
+  --surface-0: var(--color-mountain-mist-50);
+  --surface-1: var(--color-mountain-mist-100);
+  --surface-2: var(--color-mountain-mist-200);
+  --border-1:  var(--color-mountain-mist-300);
+  --border-2:  var(--color-mountain-mist-400);
+  --text-1:    var(--color-mountain-mist-900);
+  --text-2:    var(--color-mountain-mist-700);
+  --text-3:    var(--color-mountain-mist-500);
+  --accent:      var(--color-syo-ro-600);
+  --link-color:  var(--color-syo-ro-600);
+  --link-hover:  var(--color-syo-ro-700);
+  --button-bg:   var(--color-syo-ro-500);
+  --button-text: var(--color-mountain-mist-50);
+
+  min-height: 100dvh;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--surface-0);
+  color: var(--text-1);
+  font-family: var(--press-sans);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Fill the space between nav and footer so the footer's top border always
+   sits at the bottom of the viewport, separating main from footer. */
+.press > #main-content { flex: 1; }
+
+@media (prefers-color-scheme: dark) {
+  .press {
+    --surface-0: var(--color-mountain-mist-950);
+    --surface-1: var(--color-syo-ro-950);
+    --surface-2: var(--color-syo-ro-900);
+    --border-1:  var(--color-mountain-mist-700);
+    --border-2:  var(--color-mountain-mist-600);
+    --text-1:    var(--color-mountain-mist-100);
+    --text-2:    var(--color-mountain-mist-200);
+    --text-3:    var(--color-mountain-mist-500);
+    --accent:      var(--color-syo-ro-300);
+    --link-color:  var(--color-syo-ro-300);
+    --link-hover:  var(--color-syo-ro-200);
+    --button-bg:   var(--color-syo-ro-300);
+    --button-text: var(--color-mountain-mist-800);
+  }
+}
+
+/* Mirror the .press body background onto html so the document canvas matches in
+   dark mode (avoids a white flash at overscroll / behind the page). --surface-0
+   is scoped to .press, so use the same underlying tokens here. */
+html { background: var(--color-mountain-mist-50); }
+@media (prefers-color-scheme: dark) {
+  html { background: var(--color-mountain-mist-950); }
+}
+
+/* --- page transitions ---
+   The public site uses Turbo Drive; on each render the incoming content fades up
+   from the background. Nav/footer stay steady; only <main> fades. */
+main#main-content {
+  animation: press-page-in 300ms var(--ease-3, ease) both;
+}
+
+@keyframes press-page-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* Don't run the entry fade on Turbo's instant cached preview — only on the real
+   render — so a revisit (back/forward, or a prefetched page) doesn't double-fade. */
+html[data-turbo-preview] main#main-content { animation: none; }
+
+/* Respect users who ask for less motion — skip the fade entirely. */
+@media (prefers-reduced-motion: reduce) {
+  main#main-content { animation: none; }
+}

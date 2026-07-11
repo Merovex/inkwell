@@ -1,0 +1,29 @@
+/* Merovex Press — shared controls: links and buttons (public `.press` styles). */
+.press-link {
+  color: var(--link-color);
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+  transition: color 200ms ease;
+}
+.press-link:hover { color: var(--link-hover); }
+
+.press-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.6em 1.4em;
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  text-decoration: none;
+  border: 1px solid transparent;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  transition: background-color 200ms ease, color 200ms ease, border-color 200ms ease;
+}
+.press-btn--primary { background: var(--button-bg); color: var(--button-text); }
+.press-btn--primary:hover { background: var(--link-hover); }
+.press-btn--outline { background: transparent; border-color: var(--link-color); color: var(--link-color); }
+.press-btn--outline:hover { background: var(--link-color); color: var(--button-text); }

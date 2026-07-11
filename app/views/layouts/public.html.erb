@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
     <title><%= content_for(:title) || [site_settings.site_name, site_settings.tagline.presence].compact.join(" — ") %></title>
     <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -14,9 +14,12 @@
 
     <%# Shared color scales + dark mode (the syō-ro / mountain-mist palette). %>
     <%= stylesheet_link_tag "01-tokens", "data-turbo-track": "reload" %>
-    <%# Public-site styles. Everything is scoped under .press, so even though the
-        :app glob also loads this file on admin pages, none of it applies there. %>
-    <%= stylesheet_link_tag "press", "data-turbo-track": "reload" %>
+    <%# Public-site styles — one small file per component (all scoped under .press).
+        Order is load order: fonts + base tokens first, then components on top. %>
+    <%= stylesheet_link_tag "press-fonts", "press-base", "press-controls",
+          "press-nav", "press-hero", "press-genres", "press-blog", "press-books",
+          "press-forms", "press-notice", "press-footer", "press-errors",
+          "data-turbo-track": "reload" %>
 
     <%# Analytics only — the lightweight public entry (ahoy), not the admin bundle. %>
     <%= javascript_importmap_tags "public" %>

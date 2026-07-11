@@ -1,0 +1,46 @@
+/* Merovex Press — home split hero (public `.press` styles). */
+.press-hero {
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: center;
+  gap: 3rem;
+  max-width: 1100px;
+  margin-inline: auto;
+  padding: 5rem 1.5rem 3.5rem;
+  text-align: center;
+}
+.press-hero__text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+}
+.press-hero__headline {
+  margin: 0;
+  font-family: var(--press-serif);
+  font-weight: 700;
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  line-height: 1.12;
+  color: var(--text-1);
+}
+.press-hero__lede {
+  margin: 0;
+  max-width: 34ch;
+  font-size: 1.3rem;
+  line-height: 1.6;
+  color: var(--text-2);
+}
+.press-hero__actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 1rem; }
+.press-hero__photo { flex-shrink: 0; }
+.press-hero__ring {
+  width: min(280px, 70vw);
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+}
+.press-hero__ring img { width: 100%; height: 100%; object-fit: cover; object-position: center top; display: block; }
+
+@media (min-width: 900px) {
+  .press-hero { flex-direction: row; justify-content: space-between; text-align: left; gap: 4rem; }
+  .press-hero__text { align-items: flex-start; }
+  .press-hero__ring { width: 340px; }
+}
