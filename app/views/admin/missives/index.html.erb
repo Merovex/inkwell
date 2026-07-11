@@ -1,9 +1,9 @@
-<% content_for :title, "Contact messages — Inkwell" %>
+<% content_for :title, "Missives — Inkwell" %>
 
-<%= render "admin/shared/canvas_head", crumbs: [["Contact messages", nil]] %>
+<%= render "admin/shared/canvas_head", crumbs: [["Missives", nil]] %>
 
 <header class="perma-header">
-  <h1 class="perma-header__title">Contact messages</h1>
+  <h1 class="perma-header__title">Missives</h1>
   <div class="perma-header__content">
     <%# One state at a time; each tab links to that state's view. %>
     <nav class="perma-header__toolbar" aria-label="Message states">
@@ -53,12 +53,12 @@
 <% else %>
   <div class="empty">
     <span class="empty__icon"><%= inline_svg_tag "lucide/inbox.svg", class: "lucide", size: "40px" %></span>
-    <p class="empty__title">No <%= @state == "trashed" ? "trashed" : "recent" %> messages</p>
+    <p class="empty__title">No <%= @state == "trashed" ? "trashed" : "recent" %> missives</p>
     <p class="empty__text">
       <% if @state == "trashed" %>
-        Messages older than 30 days rest here until they're purged at 60 days.
+        Missives older than 30 days rest here until they're purged at 60 days.
       <% else %>
-        Confirmed messages from the last 30 days appear here, newest first.
+        Confirmed contact messages from the last 30 days appear here, newest first.
       <% end %>
     </p>
   </div>
