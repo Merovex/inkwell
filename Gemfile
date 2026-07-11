@@ -93,3 +93,5 @@ gem "ahoy_matey"
 
 gem "aws-sdk-rails", "~> 5.1"
 gem "aws-actionmailer-ses", "~> 1.2"
+
+gem "ruby-vips", "~> 2.3"

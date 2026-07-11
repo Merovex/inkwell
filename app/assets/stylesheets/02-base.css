@@ -6,7 +6,10 @@
 
   * { margin: 0; }
 
-  html { -webkit-text-size-adjust: 100%; }
+  /* Background lives on html too (not just body) so the document canvas behind a
+     view transition matches — otherwise the browser default (white) flashes
+     through during the cross-fade in dark mode. */
+  html { -webkit-text-size-adjust: 100%; background: var(--site-bg); }
 
   body {
     display: flex;

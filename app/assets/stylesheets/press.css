@@ -77,6 +77,15 @@
   }
 }
 
+/* Mirror the .press body background onto html so the document canvas behind a
+   view transition matches — otherwise the browser default (white) flashes
+   through the cross-fade in dark mode. --surface-0 is scoped to .press, so use
+   the same underlying tokens here, following press's OS-preference dark mode. */
+html { background: var(--color-mountain-mist-50); }
+@media (prefers-color-scheme: dark) {
+  html { background: var(--color-mountain-mist-950); }
+}
+
 /* --- shared bits --- */
 .press-link {
   color: var(--link-color);
@@ -517,3 +526,23 @@
 }
 .press-form__flash--notice { background: var(--surface-2); color: var(--text-1); }
 .press-form__flash--alert { background: var(--surface-2); color: var(--accent); }
+
+/* --- page transitions ---
+   The public site has no Turbo, so every navigation is a full page load. Rather
+   than the View Transitions API (which cross-faded the whole page and ghosted /
+   aborted between structurally different pages), we simply fade the incoming
+   content up from the background on load. Nav/footer render instantly (steady
+   chrome); only <main> fades in. Pure CSS, no ghosting, works everywhere. */
+main#main-content {
+  animation: press-page-in 300ms var(--ease-3, ease) both;
+}
+
+@keyframes press-page-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* Respect users who ask for less motion — skip the fade entirely. */
+@media (prefers-reduced-motion: reduce) {
+  main#main-content { animation: none; }
+}
