@@ -12,3 +12,22 @@ import "@hotwired/turbo-rails"
 import "ahoy"
 
 document.addEventListener("turbo:load", () => window.ahoy.trackView())
+
+// Mobile nav hamburger. Delegated so it survives Turbo body swaps; each
+// navigation renders a fresh (closed) menu, so there's no state to clean up.
+document.addEventListener("click", (event) => {
+  const toggle = event.target.closest(".press-nav__toggle")
+  if (!toggle) return
+  const menu = document.getElementById(toggle.getAttribute("aria-controls"))
+  const open = toggle.getAttribute("aria-expanded") === "true"
+  toggle.setAttribute("aria-expanded", String(!open))
+  menu.hidden = open
+})
+
+document.addEventListener("keydown", (event) => {
+  if (event.key !== "Escape") return
+  const toggle = document.querySelector('.press-nav__toggle[aria-expanded="true"]')
+  if (!toggle) return
+  toggle.setAttribute("aria-expanded", "false")
+  document.getElementById(toggle.getAttribute("aria-controls")).hidden = true
+})

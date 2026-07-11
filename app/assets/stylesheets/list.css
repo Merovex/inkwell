@@ -25,7 +25,7 @@
     border-block-start: var(--border-size-1) solid var(--line);
   }
 
-  .list__avatar { --avatar-size: 3.5rem; flex-shrink: 0; } /* 56px, on the .avatar */
+  .list__avatar { --avatar-size: 2.8125rem; flex-shrink: 0; } /* 45px, on the .avatar */
 
   .list__body {
     display: flex;

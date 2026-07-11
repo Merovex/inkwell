@@ -79,4 +79,23 @@
      label padding above would crush their content box and shrink the icon */
   .canvas__head .u-cluster .button--icon { padding-inline: 0; }
 
+  /* Mobile: the desktop treatment (24px gutters + 40px inline padding) eats a
+     third of a phone screen. Go full-bleed with a single pad unit; the head's
+     negative margins mirror the reduced padding so it still reaches the edges. */
+  @media (max-width: 640px) {
+    .canvas {
+      width: 100%;
+      margin-block: 0;
+      border-radius: 0;
+      padding-block: var(--u-pad);
+      padding-inline: var(--u-pad);
+    }
+    .canvas__head {
+      margin-block-start: calc(var(--u-pad) * -1);
+      margin-inline: calc(var(--u-pad) * -1);
+      margin-block-end: var(--u-pad);
+      padding-inline: var(--u-pad) 0;
+      border-radius: 0;
+    }
+  }
 }

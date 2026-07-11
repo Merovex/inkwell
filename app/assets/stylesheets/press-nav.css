@@ -42,6 +42,54 @@
 .press-nav__link:hover { color: var(--text-1); }
 .press-nav__link.is-active { color: var(--accent); }
 
+/* Mobile hamburger — hidden on desktop; the flyout only ever renders ≤640px. */
+.press-nav__toggle { display: none; }
+.press-nav__menu { display: none; }
+
 @media (max-width: 640px) {
   .press-nav__links, .press-nav__cta { display: none; }
+
+  .press-nav__toggle {
+    display: inline-flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 5px;
+    width: 44px;
+    height: 44px;
+    padding: 10px;
+    background: none;
+    border: 0;
+    cursor: pointer;
+  }
+  .press-nav__toggle-bar {
+    display: block;
+    width: 100%;
+    height: 2px;
+    background: var(--text-1);
+    transition: transform 200ms ease, opacity 200ms ease;
+  }
+  .press-nav__toggle[aria-expanded="true"] .press-nav__toggle-bar:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+  .press-nav__toggle[aria-expanded="true"] .press-nav__toggle-bar:nth-child(2) { opacity: 0; }
+  .press-nav__toggle[aria-expanded="true"] .press-nav__toggle-bar:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+  .press-nav__menu {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 0.5rem 1.5rem 1.25rem;
+    background: var(--surface-1);
+    border-block-end: 1px solid var(--border-1);
+  }
+  .press-nav__menu[hidden] { display: none; }
+  .press-nav__menu-link {
+    padding: 0.75rem 0;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    letter-spacing: 0.12em;
+    color: var(--text-2);
+    text-decoration: none;
+    border-block-end: 1px solid var(--border-1);
+  }
+  .press-nav__menu-link.is-active { color: var(--accent); }
+  .press-nav__menu-cta { margin-block-start: 0.75rem; text-align: center; }
 }

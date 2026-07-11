@@ -33,6 +33,15 @@
   h3 { font-size: var(--font-size-3); }
   h4 { font-size: var(--font-size-2); }
 
+  /* Mobile: step headings down one notch on the type scale. Body stays 1rem —
+     inputs inherit it, and anything under 16px triggers iOS zoom-on-focus. */
+  @media (max-width: 640px) {
+    h1 { font-size: var(--font-size-5); }
+    h2 { font-size: var(--font-size-3); }
+    h3 { font-size: var(--font-size-2); }
+    h4 { font-size: var(--font-size-1); }
+  }
+
   a { color: var(--link); text-decoration: underline; text-underline-offset: 2px; } /* AAA link; underlined since it's dark */
 
   img, svg, video { display: block; max-inline-size: 100%; height: auto; }
