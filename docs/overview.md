@@ -21,7 +21,7 @@ rename and keep the old name as history.)
 This `docs/` folder is the single home for design/reference docs and the work
 log; see [[CLAUDE]] for how it's maintained.
 
-## Current state (2026-07-10)
+## Current state (2026-07-12)
 
 - **Auth & shell** — passwordless magic-link auth, first-run Setup, top-bar app
   shell. A Basecamp-style **app menu** (jump-to sheet) is the admin's global
@@ -41,10 +41,20 @@ log; see [[CLAUDE]] for how it's maintained.
   — store buy-links on the `Record` (unversioned, click counter); cover and link
   changes surface in the change log via event tags.
 - **Public site** — home, blog (index + articles), and the **books catalog**
-  (3-card grid grouped by series) + book detail, on id-first slugs
+  (3-card grid grouped by series) + book detail with a "More in <series>"
+  cross-sell section, on id-first slugs
   ([0010](decisions/0010-id-first-public-slugs.md)); branded error pages.
+  Typography: self-hosted Source pair + **Federo** (wordmark) + **Archivo
+  Narrow** (headings/nav); its own light/dark/auto toggle (`press_theme`
+  cookie, default dark — independent of the admin theme). Repeated looks live
+  in `press-utilities.css` (compose utilities, not per-page BEM).
 - **Theme** — rethemed to the **Merovex palette** (syō-ro teal accent +
   mountain-mist neutrals), shared by both sites; see [[theme-background-colors]].
+- **Analytics & ops** — first-party Ahoy analytics (visits + events) with
+  **visitor geography**: offline GeoIP (MMDB in `storage/geoip/`, no IP leaves
+  the server; country/region kept, IP discarded after geocoding) feeding a
+  jsVectorMap choropleth + unique-visitor country/region lists on the admin
+  dashboard. Production error reporting via **Honeybadger**.
 
 ## Core vocabulary
 
@@ -54,10 +64,10 @@ Retired: `Identity`, `Membership`, `Group`, `bucket`.
 
 ## Open threads
 
-- Public **author** and **series** pages, newsletter, and About are still stubbed.
+- Public **author** and **series** pages are still stubbed.
 - A public **distributor click** redirect (increment `clicks`) is not wired yet.
 - App-menu polish: focus-trap, lazy `turbo-permanent` frame, open hotkey.
-- Trash purge job (records + versions + bodies + orphan depictions).
+- Geo database refresh is manual (`bin/update-geoip.sh`, monthly-ish) and the
+  first deploy needs `geoip:backfill`; no automation yet.
 - Reconcile [data-model.md](data-model.md) / [schema.rb](schema.rb) with the
   shipped spine; `Account` + `records.account_id` tenancy still deferred.
-- Nothing committed yet — a large working-tree body awaits a commit.

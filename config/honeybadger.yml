@@ -1,7 +1,7 @@
 ---
 # For more options, see https://docs.honeybadger.io/lib/ruby/gem-reference/configuration
 
-api_key: 'hbp_G96AY6GX5QSZpkAeTYIl2t9mp15WHE465J2N'
+api_key: "<%= Rails.application.credentials.honeybadger_api_key %>"
 
 # The environment your app is running in.
 env: "<%= Rails.env %>"
