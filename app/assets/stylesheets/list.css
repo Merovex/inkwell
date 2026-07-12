@@ -27,6 +27,10 @@
 
   .list__avatar { --avatar-size: 2.8125rem; flex-shrink: 0; } /* 45px, on the .avatar */
 
+  /* stat/ranking rows (analytics): tighter rhythm, body-size type */
+  .list--compact .list__item { padding-block: calc(var(--u-pad) / 2); align-items: center; }
+  .list--compact .list__title { font-size: var(--font-size-1); font-weight: var(--font-weight-6); }
+
   .list__body {
     display: flex;
     flex-direction: column;

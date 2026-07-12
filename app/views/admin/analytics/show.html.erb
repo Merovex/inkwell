@@ -28,11 +28,14 @@
   <h2 class="analytics-section__title">Geography</h2>
   <% if @geo_map.any? %>
     <div class="analytics-geo u-surface">
+      <%# US state heat map while the audience is US-heavy; world otherwise. %>
+      <% us_focused = @us_states.any? %>
       <div id="geo-map" class="analytics-geo__map" data-controller="geo-map"
-           data-geo-map-data-value="<%= @geo_map.to_json %>"></div>
+           data-geo-map-map-value="<%= us_focused ? "us_aea_en" : "world" %>"
+           data-geo-map-data-value="<%= (us_focused ? @us_states : @geo_map).to_json %>"></div>
       <div class="analytics-geo__lists">
         <h3 class="analytics-geo__heading u-microcaps u-text-muted">Countries</h3>
-        <ul class="list">
+        <ul class="list list--compact">
           <% @countries.each do |country, count| %>
             <li class="list__item">
               <span class="list__body"><span class="list__title"><%= country %></span></span>
@@ -42,7 +45,7 @@
         </ul>
         <% if @regions.any? %>
           <h3 class="analytics-geo__heading u-microcaps u-text-muted">Regions</h3>
-          <ul class="list">
+          <ul class="list list--compact">
             <% @regions.each do |(region, country), count| %>
               <li class="list__item">
                 <span class="list__body"><span class="list__title"><%= region %> <span class="u-text-muted">· <%= country %></span></span></span>
@@ -61,7 +64,7 @@
 <section class="analytics-section">
   <h2 class="analytics-section__title">Top landing pages</h2>
   <% if @landing_pages.any? %>
-    <ul class="list">
+    <ul class="list list--compact">
       <% @landing_pages.each do |page, count| %>
         <li class="list__item">
           <span class="list__body"><span class="list__title"><%= url_path(page) %></span></span>
@@ -77,7 +80,7 @@
 <section class="analytics-section">
   <h2 class="analytics-section__title">Top referrers</h2>
   <% if @referrers.any? %>
-    <ul class="list">
+    <ul class="list list--compact">
       <% @referrers.each do |domain, count| %>
         <li class="list__item">
           <span class="list__body"><span class="list__title"><%= domain %></span></span>

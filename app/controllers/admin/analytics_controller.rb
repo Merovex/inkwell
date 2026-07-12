@@ -20,10 +20,13 @@ class Admin::AnalyticsController < Admin::BaseController
     # its country so "Texas" and, say, "Bavaria" don't collide.
     geographed = Ahoy::Visit.where(started_at: since..).where.not(country: [ nil, "" ])
     @countries = top(geographed, :country, distinct: :visitor_token)
-    @regions = top(geographed.where.not(region: [ nil, "" ]), [ :region, :country ], distinct: :visitor_token)
-    # Choropleth data: ISO code → unique visitors, all countries (no top-N).
+    @regions = top(geographed.where.not(region: [ nil, "" ]), [ :region, :country_code ], distinct: :visitor_token)
+    # Choropleth data (all rows, no top-N): world by ISO country code, and US
+    # by state name — the map view shows states while the audience is US-heavy.
     @geo_map = geographed.where.not(country_code: [ nil, "" ])
       .group(:country_code).distinct.count(:visitor_token)
+    @us_states = geographed.where(country_code: "US").where.not(region: [ nil, "" ])
+      .group(:region).distinct.count(:visitor_token)
   end
 
   private

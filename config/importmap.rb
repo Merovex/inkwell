@@ -16,3 +16,4 @@ pin "public"
 # imported for side effect; use window.jsVectorMap).
 pin "jsvectormap"
 pin "jsvectormap-world"
+pin "jsvectormap-us"
