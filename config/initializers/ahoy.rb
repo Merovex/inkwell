@@ -5,7 +5,7 @@ class Ahoy::Store < Ahoy::DatabaseStore
   # geocoding, plus a location no finer than "state". (Geocoding itself is
   # enabled in the geocoder initializer, which loads after this one.)
   def geocode(data)
-    super(data.slice(:visit_token, :country, :region))
+    super(data.slice(:visit_token, :country, :country_code, :region))
     visit&.update_columns(ip: nil)
   end
 end

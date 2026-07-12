@@ -13,6 +13,7 @@ namespace :geoip do
       updates = { ip: nil } # spent — discard either way, matching the live flow
       if location&.country.present?
         updates[:country] = location.country
+        updates[:country_code] = location.try(:country_code).presence
         updates[:region] = location.try(:state).presence
       end
       visit.update_columns(updates)

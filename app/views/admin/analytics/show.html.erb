@@ -40,6 +40,14 @@
   <% end %>
 </section>
 
+<% if @geo_map.any? %>
+  <section class="analytics-section">
+    <h2 class="analytics-section__title">Visitors by country</h2>
+    <div id="geo-map" class="analytics-map" data-controller="geo-map"
+         data-geo-map-data-value="<%= @geo_map.to_json %>"></div>
+  </section>
+<% end %>
+
 <section class="analytics-section">
   <h2 class="analytics-section__title">Top countries</h2>
   <% if @countries.any? %>

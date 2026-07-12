@@ -21,6 +21,9 @@ class Admin::AnalyticsController < Admin::BaseController
     geographed = Ahoy::Visit.where(started_at: since..).where.not(country: [ nil, "" ])
     @countries = top(geographed, :country, distinct: :visitor_token)
     @regions = top(geographed.where.not(region: [ nil, "" ]), [ :region, :country ], distinct: :visitor_token)
+    # Choropleth data: ISO code → unique visitors, all countries (no top-N).
+    @geo_map = geographed.where.not(country_code: [ nil, "" ])
+      .group(:country_code).distinct.count(:visitor_token)
   end
 
   private

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.2].define(version: 2026_07_11_220131) do
+ActiveRecord::Schema[8.2].define(version: 2026_07_12_170826) do
   create_table "action_text_rich_texts", force: :cascade do |t|
     t.string "name", null: false
     t.text "body"
@@ -86,6 +86,7 @@ ActiveRecord::Schema[8.2].define(version: 2026_07_11_220131) do
     t.string "os_version"
     t.string "platform"
     t.datetime "started_at"
+    t.string "country_code"
     t.index ["user_id"], name: "index_ahoy_visits_on_user_id"
     t.index ["visit_token"], name: "index_ahoy_visits_on_visit_token", unique: true
     t.index ["visitor_token", "started_at"], name: "index_ahoy_visits_on_visitor_token_and_started_at"

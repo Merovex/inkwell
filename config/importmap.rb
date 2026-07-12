@@ -12,3 +12,7 @@ pin "@rails/activestorage", to: "activestorage.esm.js"
 # caching). Loaded via the lightweight "public" entry point, not the admin bundle.
 pin "ahoy", to: "ahoy.js"
 pin "public"
+# Visitor-geography choropleth on the admin analytics page (UMD globals —
+# imported for side effect; use window.jsVectorMap).
+pin "jsvectormap"
+pin "jsvectormap-world"
