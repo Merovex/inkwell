@@ -10,6 +10,12 @@ require "net/http"
 # signature (cert-based, Aws::SNS::MessageVerifier) over the raw body. SNS posts
 # text/plain, so we parse request.raw_post ourselves rather than through params.
 class Webhooks::SesController < ActionController::Base
+  # A machine endpoint with no session/cookies: SNS posts a raw JSON body with no
+  # CSRF token, so the app-wide forgery protection (on by default via
+  # load_defaults) would 422 every SNS delivery — including the subscription
+  # handshake. Authenticity is the SNS signature instead (verified? below).
+  skip_forgery_protection
+
   # Seam for tests to inject a fake verifier (SNS signatures are RSA/cert-based
   # and can't be reproduced offline). Nil in every real environment → the actual
   # Aws::SNS::MessageVerifier is used.

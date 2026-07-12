@@ -63,6 +63,22 @@ class SesWebhookTest < ActionDispatch::IntegrationTest
     assert_equal 0, @broadcast.reload.opened_count
   end
 
+  test "processes SNS posts even with forgery protection on (no CSRF token)" do
+    # Test env disables forgery protection globally, which masks whether the
+    # machine endpoint would 422 in production. Force it on for this request to
+    # prove skip_forgery_protection holds.
+    original = ActionController::Base.allow_forgery_protection
+    ActionController::Base.allow_forgery_protection = true
+    begin
+      post_event("Delivery")
+    ensure
+      ActionController::Base.allow_forgery_protection = original
+    end
+
+    assert_response :ok
+    assert @delivery.reload.delivered_at
+  end
+
   test "a subscription confirmation is auto-confirmed by fetching the url" do
     fetched = nil
     url = "https://sns.us-east-1.amazonaws.com/confirm?x=1"
