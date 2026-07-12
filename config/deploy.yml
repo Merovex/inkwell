@@ -22,7 +22,13 @@ servers:
 #
 proxy:
   ssl: true
-  host: inkwell.merovex.press
+  # Let's Encrypt provisions a cert covering every host listed. The apex + www are
+  # the new primary home; inkwell.* stays during the transition so the currently
+  # deployed app and any already-sent email links keep resolving.
+  hosts:
+    - merovex.press
+    - www.merovex.press
+    - inkwell.merovex.press
 
 # Where you keep your container images.
 registry:

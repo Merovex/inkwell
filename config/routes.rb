@@ -194,6 +194,11 @@ Rails.application.routes.draw do
   # Authenticity is the Mailgun HMAC signature, verified in the controller.
   post "webhooks/mailgun" => "webhooks/mailgun#create"
 
+  # SES event notifications relayed via SNS (delivered/opened/clicked/bounced/
+  # complained) → broadcast metrics. Authenticity is the SNS message signature,
+  # verified in the controller (ADR 0015 Phase 2).
+  post "webhooks/ses" => "webhooks/ses#create"
+
   # The public Merovex Press site. The About page renders the site's About blurb
   # from Setting.current; the admin backend lives at /admin.
   get "about" => "pages#about", as: :about
