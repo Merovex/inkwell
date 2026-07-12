@@ -22,9 +22,8 @@ class Webhooks::SesController < ActionController::Base
   cattr_accessor :message_verifier
 
   # SES event type → the internal event name BroadcastDelivery#record_event!
-  # already understands (shared with the Mailgun path, dropped in Phase 3).
-  # Bounce is handled separately (permanent vs transient); Send/Delivery-Delay
-  # carry no signal for us and fall through to a no-op.
+  # understands. Bounce is handled separately (permanent vs transient);
+  # Send/Delivery-Delay carry no signal for us and fall through to a no-op.
   EVENT_MAP = {
     "Delivery"         => "delivered",
     "Open"             => "opened",

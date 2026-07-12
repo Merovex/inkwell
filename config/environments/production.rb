@@ -58,8 +58,8 @@ Rails.application.configure do
   # config.action_mailer.raise_delivery_errors = false
 
   # Set host to be used by links generated in mailer templates. This is the Rails
-  # app's host (inkwell.merovex.press) — where confirm/unsubscribe/view-on-web
-  # routes resolve — not the sending subdomains.
+  # app's host (merovex.press) — where confirm/unsubscribe/view-on-web routes
+  # resolve — not the sending subdomains.
   config.action_mailer.default_url_options = { host: Rails.application.credentials.dig(:ses, :host) || "example.com" }
 
   # Deliver mail through Amazon SES (API v2). Region + IAM credentials come from
@@ -71,15 +71,6 @@ Rails.application.configure do
     access_key_id: Rails.application.credentials.dig(:ses, :access_key_id),
     secret_access_key: Rails.application.credentials.dig(:ses, :secret_access_key)
   }
-
-  # Rollback during the SES migration = restore this Mailgun block and revert the
-  # delivery_method above (the mailgun-ruby gem is kept until cutover is verified):
-  # config.action_mailer.delivery_method = :mailgun
-  # config.action_mailer.mailgun_settings = {
-  #   api_key: Rails.application.credentials.dig(:mailgun, :api_key),
-  #   domain: Rails.application.credentials.dig(:mailgun, :domain),
-  #   api_host: "api.mailgun.net"
-  # }
 
   # Enable locale fallbacks for I18n (makes lookups for any locale fall back to
   # the I18n.default_locale when a translation cannot be found).

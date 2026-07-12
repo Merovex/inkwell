@@ -97,7 +97,7 @@ class Subscriber < ApplicationRecord
 
   # ── Engagement-based sunset ────────────────────────────────────────────────
 
-  # The sunset job only acts once open/click tracking is live (Mailgun) — before
+  # The sunset job only acts once open/click tracking is live (SES) — before
   # then everyone looks cold, and we must not drop a whole list on absent data.
   def self.sunset_enabled?
     Rails.configuration.x.newsletter.sunset_enabled

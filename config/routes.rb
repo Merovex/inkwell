@@ -190,10 +190,6 @@ Rails.application.routes.draw do
   get "books" => "books#index", as: :books
   get "books/:id" => "books#show", as: :book
 
-  # Mailgun event webhooks (delivered/opened/clicked/…) → broadcast metrics.
-  # Authenticity is the Mailgun HMAC signature, verified in the controller.
-  post "webhooks/mailgun" => "webhooks/mailgun#create"
-
   # SES event notifications relayed via SNS (delivered/opened/clicked/bounced/
   # complained) → broadcast metrics. Authenticity is the SNS message signature,
   # verified in the controller (ADR 0015 Phase 2).
