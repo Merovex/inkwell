@@ -20,6 +20,12 @@ class BooksController < PublicController
     raise ActiveRecord::RecordNotFound unless @book.published?
 
     return redirect_to book_path(@record.to_slug), status: :moved_permanently unless canonical_slug?
-    fresh_when etag: [ @record, site_settings ], public: true
+
+    @series = @book.series.published.feed_ordered.filter_map do |series|
+      others = series.books.published.where.not(record_id: @record.id)
+      [ series, others ] if others.any?
+    end
+
+    fresh_when etag: [ @record, site_settings, @series ], public: true
   end
 end

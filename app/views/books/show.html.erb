@@ -46,4 +46,21 @@
   </div>
 
   <div class="press-book__body prose"><%= @book.content %></div>
+
+  <% @series.each do |series, books| %>
+    <% cache [ series, books, @record ] do %>
+      <section class="press-series">
+        <h2 class="press-series__title">More in <%= series.title %></h2>
+        <% blurb = series.content.to_plain_text.to_s %>
+        <% if blurb.present? %>
+          <p class="press-series__blurb"><%= truncate(blurb, length: 260) %></p>
+        <% end %>
+        <div class="press-book-grid">
+          <% books.each do |book| %>
+            <%= render "books/card", book: book, series: series %>
+          <% end %>
+        </div>
+      </section>
+    <% end %>
+  <% end %>
 </article>
