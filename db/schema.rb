@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.2].define(version: 2026_07_12_170826) do
+ActiveRecord::Schema[8.2].define(version: 2026_07_12_180003) do
   create_table "action_text_rich_texts", force: :cascade do |t|
     t.string "name", null: false
     t.text "body"
@@ -219,6 +219,52 @@ ActiveRecord::Schema[8.2].define(version: 2026_07_12_170826) do
     t.index ["record_id"], name: "index_distributors_on_record_id"
   end
 
+  create_table "drips", force: :cascade do |t|
+    t.integer "record_id", null: false
+    t.integer "creator_id", null: false
+    t.string "event", default: "created", null: false
+    t.string "title", null: false
+    t.boolean "active", default: false, null: false
+    t.string "trigger", default: "confirmed", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["creator_id"], name: "index_drips_on_creator_id"
+    t.index ["record_id", "id"], name: "index_drips_on_record_id_and_id"
+  end
+
+  create_table "drop_deliveries", force: :cascade do |t|
+    t.integer "stream_id", null: false
+    t.integer "drop_record_id", null: false
+    t.integer "subscriber_id", null: false
+    t.string "status", default: "pending", null: false
+    t.string "skip_reason"
+    t.datetime "sent_at"
+    t.datetime "delivered_at"
+    t.datetime "opened_at"
+    t.datetime "clicked_at"
+    t.datetime "bounced_at"
+    t.datetime "complained_at"
+    t.datetime "unsubscribed_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["drop_record_id"], name: "index_drop_deliveries_on_drop_record_id"
+    t.index ["stream_id", "drop_record_id"], name: "index_drop_deliveries_on_stream_id_and_drop_record_id", unique: true
+    t.index ["stream_id"], name: "index_drop_deliveries_on_stream_id"
+    t.index ["subscriber_id"], name: "index_drop_deliveries_on_subscriber_id"
+  end
+
+  create_table "drops", force: :cascade do |t|
+    t.integer "record_id", null: false
+    t.integer "creator_id", null: false
+    t.string "event", default: "created", null: false
+    t.string "subject", null: false
+    t.integer "delay_days", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["creator_id"], name: "index_drops_on_creator_id"
+    t.index ["record_id", "id"], name: "index_drops_on_record_id_and_id"
+  end
+
   create_table "installments", force: :cascade do |t|
     t.integer "series_record_id", null: false
     t.integer "book_record_id", null: false
@@ -349,6 +395,19 @@ ActiveRecord::Schema[8.2].define(version: 2026_07_12_170826) do
     t.index ["user_id"], name: "index_sign_in_codes_on_user_id"
   end
 
+  create_table "streams", force: :cascade do |t|
+    t.integer "subscriber_id", null: false
+    t.integer "drip_record_id", null: false
+    t.datetime "enrolled_at", null: false
+    t.datetime "ended_at"
+    t.string "ended_reason"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["drip_record_id"], name: "index_streams_on_drip_record_id"
+    t.index ["subscriber_id", "drip_record_id"], name: "index_streams_on_subscriber_id_and_drip_record_id", unique: true
+    t.index ["subscriber_id"], name: "index_streams_on_subscriber_id"
+  end
+
   create_table "subscribers", force: :cascade do |t|
     t.string "email_address", null: false
     t.string "status", default: "pending", null: false
@@ -388,6 +447,9 @@ ActiveRecord::Schema[8.2].define(version: 2026_07_12_170826) do
   add_foreign_key "boosts", "users", column: "creator_id"
   add_foreign_key "broadcast_deliveries", "broadcasts"
   add_foreign_key "broadcast_deliveries", "subscribers"
+  add_foreign_key "drop_deliveries", "records", column: "drop_record_id"
+  add_foreign_key "drop_deliveries", "streams"
+  add_foreign_key "drop_deliveries", "subscribers"
   add_foreign_key "messages", "bodies"
   add_foreign_key "messages", "categories"
   add_foreign_key "messages", "records"
@@ -399,5 +461,7 @@ ActiveRecord::Schema[8.2].define(version: 2026_07_12_170826) do
   add_foreign_key "records", "users", column: "creator_id"
   add_foreign_key "sessions", "users"
   add_foreign_key "sign_in_codes", "users"
+  add_foreign_key "streams", "records", column: "drip_record_id"
+  add_foreign_key "streams", "subscribers"
   add_foreign_key "subscription_events", "subscribers"
 end
