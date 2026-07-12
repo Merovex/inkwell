@@ -11,7 +11,7 @@ class ApplicationMailer < ActionMailer::Base
     # name rides along as the friendly display label; the contact address becomes
     # Reply-To on the caller so replies still reach the press.
     def marketing_from(setting)
-      address = Rails.application.credentials.dig(:ses, :marketing_from) || "news@example.com"
+      address = Rails.application.credentials.dig(:ses, :marketing_from) || "noreply@example.com"
       setting.site_name.present? ? "#{setting.site_name} <#{address}>" : address
     end
 end

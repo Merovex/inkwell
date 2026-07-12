@@ -31,7 +31,7 @@ next. Check boxes as you go; this is a living doc.
 | Root domain | `merovex.press` | org domain; DMARC published here covers all subdomains |
 | AWS region | `us-east-1` | **confirm** — MAIL FROM MX + tracking CNAME targets are region-specific |
 | **Transactional** identity | `auth.merovex.press` | magic-links; send `from: noreply@auth.merovex.press` |
-| **Marketing** identity | `news.merovex.press` | newsletter; send `from: news@news.merovex.press` |
+| **Marketing** identity | `news.merovex.press` | newsletter; send `from: noreply@news.merovex.press` |
 | Transactional MAIL FROM | `bounce.auth.merovex.press` | SPF alignment for the auth stream |
 | Marketing MAIL FROM | `bounce.news.merovex.press` | SPF alignment for the news stream |
 | Tracking (redirect) domain | `click.news.merovex.press` | branded open/click links — **marketing only** |
@@ -174,8 +174,8 @@ message** (Phase 1). The mapping we'll wire:
 | Stream | Identity / From | Config set |
 |---|---|---|
 | Transactional (`SessionMailer`) | `noreply@auth.merovex.press` | `inkwell-transactional` |
-| Newsletter confirm/re-engage (`SubscriberMailer`) | `news@news.merovex.press` | `inkwell-transactional` — *critical links must not be click-rewritten* |
-| Broadcast issues (`PostBroadcastMailer`) | `news@news.merovex.press` | `inkwell-marketing` |
+| Newsletter confirm/re-engage (`SubscriberMailer`) | `noreply@news.merovex.press` | `inkwell-transactional` — *critical links must not be click-rewritten* |
+| Broadcast issues (`PostBroadcastMailer`) | `noreply@news.merovex.press` | `inkwell-marketing` |
 
 **6a. `inkwell-marketing`**
 1. Create configuration set `inkwell-marketing`.
