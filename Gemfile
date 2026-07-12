@@ -91,9 +91,16 @@ gem "invisible_captcha"
 # First-party analytics (visits + events), DB-backed [https://github.com/ankane/ahoy]
 gem "ahoy_matey"
 
+# Visit geography: offline GeoLite2 lookups (no IPs leave the server) — the
+# .mmdb file lives in storage/geoip/, refreshed manually. See ahoy initializer.
+gem "geocoder"
+gem "maxminddb"
+
 gem "aws-sdk-rails", "~> 5.1"
 gem "aws-actionmailer-ses", "~> 1.2"
 
 gem "ruby-vips", "~> 2.3"
 
 gem "honeybadger", "~> 6.9"
+
+gem "geocode", "~> 0.2.1"

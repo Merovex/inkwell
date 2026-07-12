@@ -41,6 +41,38 @@
 </section>
 
 <section class="analytics-section">
+  <h2 class="analytics-section__title">Top countries</h2>
+  <% if @countries.any? %>
+    <ul class="list">
+      <% @countries.each do |country, count| %>
+        <li class="list__item">
+          <span class="list__body"><span class="list__title"><%= country %></span></span>
+          <span class="badge"><%= count %></span>
+        </li>
+      <% end %>
+    </ul>
+  <% else %>
+    <p class="u-text-muted">No geography yet — visits are geocoded once the GeoLite2 database is in <code>storage/geoip/</code>.</p>
+  <% end %>
+</section>
+
+<section class="analytics-section">
+  <h2 class="analytics-section__title">Top regions</h2>
+  <% if @regions.any? %>
+    <ul class="list">
+      <% @regions.each do |(region, country), count| %>
+        <li class="list__item">
+          <span class="list__body"><span class="list__title"><%= region %> <span class="u-text-muted">· <%= country %></span></span></span>
+          <span class="badge"><%= count %></span>
+        </li>
+      <% end %>
+    </ul>
+  <% else %>
+    <p class="u-text-muted">No region data yet.</p>
+  <% end %>
+</section>
+
+<section class="analytics-section">
   <h2 class="analytics-section__title">Top referrers</h2>
   <% if @referrers.any? %>
     <ul class="list">

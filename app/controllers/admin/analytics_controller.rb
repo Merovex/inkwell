@@ -14,10 +14,22 @@ class Admin::AnalyticsController < Admin::BaseController
     @views  = Ahoy::Event.where(name: "$view", time: since..).count
     @landing_pages = top(Ahoy::Visit.where(started_at: since..).where.not(landing_page: nil), :landing_page)
     @referrers = top(Ahoy::Visit.where(started_at: since..).where.not(referring_domain: [ nil, "" ]), :referring_domain)
+
+    # Geography (unique visitors, not visits) — filled by the GeoLite2 geocode
+    # job; empty until storage/geoip/ has the database. Region is grouped with
+    # its country so "Texas" and, say, "Bavaria" don't collide.
+    geographed = Ahoy::Visit.where(started_at: since..).where.not(country: [ nil, "" ])
+    @countries = top(geographed, :country, distinct: :visitor_token)
+    @regions = top(geographed.where.not(region: [ nil, "" ]), [ :region, :country ], distinct: :visitor_token)
   end
 
   private
-    def top(scope, column, limit: 10)
-      scope.group(column).order(Arel.sql("COUNT(*) DESC")).limit(limit).count
+    def top(scope, column, limit: 10, distinct: nil)
+      if distinct
+        scope.group(column).order(Arel.sql("COUNT(DISTINCT #{distinct}) DESC"))
+          .limit(limit).distinct.count(distinct)
+      else
+        scope.group(column).order(Arel.sql("COUNT(*) DESC")).limit(limit).count
+      end
     end
 end
