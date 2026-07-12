@@ -16,8 +16,23 @@ export default class extends Controller {
   static values = { data: Object, map: { type: String, default: "world" } }
 
   connect() {
-    const values = this.regionValues()
-    const counts = Object.values(values)
+    // jsVectorMap's series is categorical — scale[value] is a straight lookup,
+    // no numeric interpolation. So: quantize counts into STEPS buckets and
+    // hand it a bucket→color ramp we interpolate ourselves.
+    const STEPS = 5
+    const counts = this.regionValues()
+    const max = Math.max(...Object.values(counts), 1)
+    const low = this.themeColor("--geo-low", "#bfe3dc")
+    const high = this.themeColor("--geo-high", "#0d5c53")
+
+    const scale = {}
+    for (let step = 1; step <= STEPS; step++) {
+      scale[step] = this.mixHex(low, high, STEPS === 1 ? 1 : (step - 1) / (STEPS - 1))
+    }
+    const buckets = {}
+    for (const [ code, count ] of Object.entries(counts)) {
+      buckets[code] = Math.max(1, Math.ceil((count / max) * STEPS))
+    }
 
     this.map = new window.jsVectorMap({
       selector: `#${this.element.id}`,
@@ -32,22 +47,21 @@ export default class extends Controller {
         },
         hover: { fillOpacity: 0.8 }
       },
-      series: {
-        regions: [ {
-          attribute: "fill",
-          values,
-          scale: [ this.themeColor("--geo-low", "#bfe3dc"), this.themeColor("--geo-high", "#0d5c53") ],
-          // Anchor at zero: with min == max (single region) the normalization
-          // divides by zero and fills come out black.
-          min: 0,
-          max: Math.max(...counts, 1)
-        } ]
-      },
+      series: { regions: [ { attribute: "fill", values: buckets, scale } ] },
       onRegionTooltipShow: (_event, tooltip, code) => {
-        const count = values[code]
+        const count = counts[code]
         if (count) tooltip.text(`${tooltip.text()} — ${count} visitor${count === 1 ? "" : "s"}`)
       }
     })
+  }
+
+  // Linear blend of two #rrggbb colors, t in 0..1.
+  mixHex(from, to, t) {
+    const parse = (hex) => [ 1, 3, 5 ].map((i) => parseInt(hex.slice(i, i + 2), 16))
+    const [ r1, g1, b1 ] = parse(from)
+    const [ r2, g2, b2 ] = parse(to)
+    return "#" + [ r1 + (r2 - r1) * t, g1 + (g2 - g1) * t, b1 + (b2 - b1) * t ]
+      .map((channel) => Math.round(channel).toString(16).padStart(2, "0")).join("")
   }
 
   disconnect() {
