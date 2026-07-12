@@ -22,8 +22,28 @@
   .analytics-stat__value { font-size: var(--font-size-6); font-weight: var(--font-weight-8); color: var(--ink); }
   .analytics-stat__label { color: var(--ink-on-soft); } /* type via u-microcaps in the markup */
 
-  /* jsVectorMap fills its container; give it a stage. */
-  .analytics-map { height: 340px; }
+  /* Geography card: choropleth beside the country/region rankings. The
+     --geo-* tokens are read by geo_map_controller (computed, so they follow
+     light/dark) — jsVectorMap needs literal colors, not var() strings. */
+  .analytics-geo {
+    /* one step off the card surface in either mode (--fill-subtle == --canvas
+       in dark, which would make no-data countries vanish) */
+    --geo-nodata: color-mix(in oklab, var(--canvas), var(--ink) 10%);
+    --geo-low:    var(--accent-soft);
+    --geo-high:   var(--accent);
+    --geo-stroke: var(--line);
+
+    display: grid;
+    gap: calc(var(--u-pad) * 1.5);
+    padding: calc(var(--u-pad) * 1.5);
+  }
+  @media (min-width: 900px) {
+    .analytics-geo { grid-template-columns: 2fr 1fr; align-items: start; }
+  }
+  .analytics-geo__map { height: clamp(300px, 45vh, 480px); min-width: 0; }
+  .analytics-geo__lists { min-width: 0; }
+  .analytics-geo__heading { margin: 0 0 calc(var(--u-pad) / 2); }
+  .analytics-geo__heading + .list { margin-block-end: var(--u-pad); }
 
   .analytics-section { margin-block-end: calc(var(--u-pad) * 2); }
   .analytics-section__title { font-size: var(--font-size-3); font-weight: var(--font-weight-8); margin-block-end: var(--u-pad); }

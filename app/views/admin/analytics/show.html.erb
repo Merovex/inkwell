@@ -25,6 +25,40 @@
 </div>
 
 <section class="analytics-section">
+  <h2 class="analytics-section__title">Geography</h2>
+  <% if @geo_map.any? %>
+    <div class="analytics-geo u-surface">
+      <div id="geo-map" class="analytics-geo__map" data-controller="geo-map"
+           data-geo-map-data-value="<%= @geo_map.to_json %>"></div>
+      <div class="analytics-geo__lists">
+        <h3 class="analytics-geo__heading u-microcaps u-text-muted">Countries</h3>
+        <ul class="list">
+          <% @countries.each do |country, count| %>
+            <li class="list__item">
+              <span class="list__body"><span class="list__title"><%= country %></span></span>
+              <span class="badge"><%= count %></span>
+            </li>
+          <% end %>
+        </ul>
+        <% if @regions.any? %>
+          <h3 class="analytics-geo__heading u-microcaps u-text-muted">Regions</h3>
+          <ul class="list">
+            <% @regions.each do |(region, country), count| %>
+              <li class="list__item">
+                <span class="list__body"><span class="list__title"><%= region %> <span class="u-text-muted">· <%= country %></span></span></span>
+                <span class="badge"><%= count %></span>
+              </li>
+            <% end %>
+          </ul>
+        <% end %>
+      </div>
+    </div>
+  <% else %>
+    <p class="u-text-muted">No geography yet — visits are geocoded once the GeoLite2 database is in <code>storage/geoip/</code>.</p>
+  <% end %>
+</section>
+
+<section class="analytics-section">
   <h2 class="analytics-section__title">Top landing pages</h2>
   <% if @landing_pages.any? %>
     <ul class="list">
@@ -37,46 +71,6 @@
     </ul>
   <% else %>
     <p class="u-text-muted">No visits yet.</p>
-  <% end %>
-</section>
-
-<% if @geo_map.any? %>
-  <section class="analytics-section">
-    <h2 class="analytics-section__title">Visitors by country</h2>
-    <div id="geo-map" class="analytics-map" data-controller="geo-map"
-         data-geo-map-data-value="<%= @geo_map.to_json %>"></div>
-  </section>
-<% end %>
-
-<section class="analytics-section">
-  <h2 class="analytics-section__title">Top countries</h2>
-  <% if @countries.any? %>
-    <ul class="list">
-      <% @countries.each do |country, count| %>
-        <li class="list__item">
-          <span class="list__body"><span class="list__title"><%= country %></span></span>
-          <span class="badge"><%= count %></span>
-        </li>
-      <% end %>
-    </ul>
-  <% else %>
-    <p class="u-text-muted">No geography yet — visits are geocoded once the GeoLite2 database is in <code>storage/geoip/</code>.</p>
-  <% end %>
-</section>
-
-<section class="analytics-section">
-  <h2 class="analytics-section__title">Top regions</h2>
-  <% if @regions.any? %>
-    <ul class="list">
-      <% @regions.each do |(region, country), count| %>
-        <li class="list__item">
-          <span class="list__body"><span class="list__title"><%= region %> <span class="u-text-muted">· <%= country %></span></span></span>
-          <span class="badge"><%= count %></span>
-        </li>
-      <% end %>
-    </ul>
-  <% else %>
-    <p class="u-text-muted">No region data yet.</p>
   <% end %>
 </section>
 
