@@ -31,16 +31,18 @@
   font-size: 0.9rem;
 }
 .press-nav__links { display: flex; align-items: center; gap: 1.5rem; }
-.press-nav__link {
+/* Shared link treatment for the desktop row and the mobile flyout. */
+.press-nav__link,
+.press-nav__menu-link {
   text-transform: uppercase;
-  font-size: 0.75rem;
   letter-spacing: 0.12em;
   color: var(--text-2);
   text-decoration: none;
-  transition: color 200ms ease;
 }
+.press-nav__link { font-size: 0.75rem; transition: color 200ms ease; }
 .press-nav__link:hover { color: var(--text-1); }
-.press-nav__link.is-active { color: var(--accent); }
+.press-nav__link.is-active,
+.press-nav__menu-link.is-active { color: var(--accent); }
 
 /* Mobile hamburger — hidden on desktop; the flyout only ever renders ≤640px. */
 .press-nav__toggle { display: none; }
@@ -49,6 +51,7 @@
 @media (max-width: 640px) {
   .press-nav__links, .press-nav__cta { display: none; }
 
+  /* composes u-unbutton in the markup */
   .press-nav__toggle {
     display: inline-flex;
     flex-direction: column;
@@ -57,9 +60,6 @@
     width: 44px;
     height: 44px;
     padding: 10px;
-    background: none;
-    border: 0;
-    cursor: pointer;
   }
   .press-nav__toggle-bar {
     display: block;
@@ -83,13 +83,8 @@
   .press-nav__menu[hidden] { display: none; }
   .press-nav__menu-link {
     padding: 0.75rem 0;
-    text-transform: uppercase;
-    font-size: 0.8rem;
-    letter-spacing: 0.12em;
-    color: var(--text-2);
-    text-decoration: none;
+    font-size: 0.8rem; /* a touch larger than the desktop row for touch */
     border-block-end: 1px solid var(--border-1);
   }
-  .press-nav__menu-link.is-active { color: var(--accent); }
   .press-nav__menu-cta { margin-block-start: 0.75rem; text-align: center; }
 }

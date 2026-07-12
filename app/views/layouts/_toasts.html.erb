@@ -4,7 +4,7 @@
   <% flash.each do |type, message| %>
     <div class="toast toast--<%= type %>" role="status" data-controller="toast">
       <span class="toast__body"><%= message %></span>
-      <button type="button" class="toast__close" aria-label="Dismiss" data-action="toast#dismiss">&times;</button>
+      <button type="button" class="toast__close u-unbutton" aria-label="Dismiss" data-action="toast#dismiss">&times;</button>
     </div>
   <% end %>
 </div>

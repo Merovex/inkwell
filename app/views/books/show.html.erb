@@ -13,9 +13,9 @@
   }) %>
 <% end %>
 
-<article class="press-book">
-  <a href="<%= books_path %>" class="press-article__back">
-    <%= inline_svg_tag "lucide/chevron-right.svg", class: "lucide press-article__back-icon", size: "16px" %>
+<article class="press-shell">
+  <a href="<%= books_path %>" class="press-back">
+    <%= inline_svg_tag "lucide/chevron-right.svg", class: "lucide press-back__icon", size: "16px" %>
     All books
   </a>
 
@@ -23,18 +23,18 @@
     <% if @book.cover? %>
       <%= image_tag @book.cover, class: "press-book__cover", alt: "#{@book.title} cover" %>
     <% end %>
-    <div class="press-book__meta">
+    <div class="press-book__meta u-flow u-flow-half">
       <% series = @book.series %>
       <% if series.any? %>
-        <p class="press-book__series"><%= series.map(&:title).to_sentence %></p>
+        <p class="press-kicker"><%= series.map(&:title).to_sentence %></p>
       <% end %>
-      <h1 class="press-book__title"><%= @book.title %></h1>
-      <p class="press-book__byline">by <%= byline_link(@book) %></p>
+      <h1 class="press-display-lg"><%= @book.title %></h1>
+      <p class="press-muted">by <%= byline_link(@book) %></p>
       <% if @book.publication_date %>
-        <p class="press-book__date"><%= @book.publication_date.strftime("%B %Y") %></p>
+        <p class="press-faint"><%= @book.publication_date.strftime("%B %Y") %></p>
       <% end %>
       <% if @record.distributors.any? %>
-        <div class="press-book__buy">
+        <div class="u-cluster u-gap">
           <% @record.distributors.order(:platform).each do |distributor| %>
             <a href="<%= buy_path(distributor) %>" class="press-btn press-btn--primary" target="_blank" rel="noopener">
               <%= distributor.display_name %>
@@ -45,15 +45,15 @@
     </div>
   </div>
 
-  <div class="press-book__body prose"><%= @book.content %></div>
+  <div class="press-body prose"><%= @book.content %></div>
 
   <% @series.each do |series, books| %>
     <% cache [ series, books, @record ] do %>
-      <section class="press-series">
-        <h2 class="press-series__title">More in <%= series.title %></h2>
+      <section class="press-series u-flow">
+        <h2 class="press-display-md u-text-center">More in <%= series.title %></h2>
         <% blurb = series.content.to_plain_text.to_s %>
         <% if blurb.present? %>
-          <p class="press-series__blurb"><%= truncate(blurb, length: 260) %></p>
+          <p class="press-muted press-measure u-text-center"><%= truncate(blurb, length: 260) %></p>
         <% end %>
         <div class="press-book-grid">
           <% books.each do |book| %>

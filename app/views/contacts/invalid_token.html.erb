@@ -1,13 +1,13 @@
 <% content_for :title, "Link expired — #{site_settings.site_name}" %>
 
-<section class="press-article">
-  <header class="press-article__head">
-    <h1 class="press-article__title">This link has expired</h1>
-    <p class="press-article__byline">
+<section class="press-shell">
+  <header class="press-header u-flow u-flow-half">
+    <h1 class="press-display-lg">This link has expired</h1>
+    <p class="press-muted">
       Confirmation links are valid for a few days. Please send your message again.
     </p>
   </header>
-  <div class="press-article__body">
+  <div>
     <p><%= link_to "Back to the contact form", contact_path, class: "press-link" %></p>
   </div>
 </section>

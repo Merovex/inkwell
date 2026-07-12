@@ -1,0 +1,12 @@
+/*
+ * u-microcaps — tiny uppercase label type (group headings, kind tags, stat
+ * labels). Shape only: compose color (u-text-muted) and weight (u-text-strong)
+ * separately, since they vary by context.
+ */
+@layer utilities {
+  .u-microcaps {
+    font-size: var(--font-size-0);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+}

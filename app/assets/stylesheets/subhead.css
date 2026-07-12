@@ -1,0 +1,8 @@
+/*
+ * .subhead — an h2/h3-level heading for a subsection within a page (a series'
+ * book list, distributors, series memberships). Sections space their children
+ * with u-flow; the heading itself carries no margin.
+ */
+@layer components {
+  .subhead { margin: 0; font-size: 1.05rem; }
+}

@@ -21,7 +21,7 @@
         subscribers get. It works until the post publishes:
       </p>
     <% end %>
-    <div class="broadcast-banner__field" data-controller="clipboard" data-clipboard-text-value="<%= url %>">
+    <div class="broadcast-banner__field u-surface" data-controller="clipboard" data-clipboard-text-value="<%= url %>">
       <input class="broadcast-banner__url" type="text" value="<%= url %>" readonly tabindex="-1" aria-label="Post link">
       <button type="button" class="broadcast-banner__copy" data-action="clipboard#copy">Copy</button>
       <span class="broadcast-banner__copied" data-clipboard-target="flash" role="status" aria-hidden="true">Copied to clipboard</span>

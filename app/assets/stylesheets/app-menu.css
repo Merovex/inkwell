@@ -83,12 +83,10 @@
 
   .app-menu__results { overflow-y: auto; padding: var(--size-2); }
   .app-menu__group { padding-block: var(--size-2); }
+  /* label type comes from u-microcaps (composed in the markup) */
   .app-menu__header {
     margin: 0 0 var(--size-1);
     padding-inline: var(--u-pad);
-    font-size: 0.72rem;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
     color: var(--ink-muted);
   }
   .app-menu__item {
@@ -107,9 +105,6 @@
   .app-menu__item:hover .app-menu__icon { color: inherit; }
   .app-menu__kind {
     margin-inline-start: auto;
-    font-size: 0.72rem;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
     color: var(--ink-muted);
   }
   .app-menu__empty { padding: var(--u-pad); text-align: center; color: var(--ink-muted); }

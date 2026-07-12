@@ -7,6 +7,19 @@
 }
 .press-link:hover { color: var(--link-hover); }
 
+/* Back link at the top of detail pages (blog article, book). The icon is the
+   shared chevron-right rotated to point back. */
+.press-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.875rem;
+  color: var(--text-2);
+  text-decoration: none;
+}
+.press-back:hover { color: var(--text-1); }
+.press-back__icon { transform: rotate(180deg); }
+
 .press-btn {
   display: inline-flex;
   align-items: center;

@@ -1,20 +1,20 @@
 <% content_for :title, "Books — Merovex Press" %>
 
-<div class="press-books">
-  <header class="press-books__head">
-    <h1 class="press-books__title">The Library</h1>
-    <p class="press-books__intro">
+<div class="press-shell press-shell--wide">
+  <header class="press-measure u-flow u-text-center">
+    <h1 class="press-display-xl">The Library</h1>
+    <p class="press-lede">
       Alternate history, science fiction, and fantasy — organized by series.
     </p>
   </header>
 
   <% @series.each do |series, books| %>
     <% cache [ series, books ] do %>
-      <section class="press-series">
-        <h2 class="press-series__title"><%= series.title %></h2>
+      <section class="press-series u-flow">
+        <h2 class="press-display-md u-text-center"><%= series.title %></h2>
         <% blurb = series.content.to_plain_text.to_s %>
         <% if blurb.present? %>
-          <p class="press-series__blurb"><%= truncate(blurb, length: 260) %></p>
+          <p class="press-muted press-measure u-text-center"><%= truncate(blurb, length: 260) %></p>
         <% end %>
         <div class="press-book-grid">
           <% books.each do |book| %>
@@ -27,8 +27,8 @@
 
   <% if @standalone.any? %>
     <% cache @standalone do %>
-      <section class="press-series">
-        <h2 class="press-series__title">Standalone</h2>
+      <section class="press-series u-flow">
+        <h2 class="press-display-md u-text-center">Standalone</h2>
         <div class="press-book-grid">
           <% @standalone.each do |book| %>
             <%= render "books/card", book: book %>
@@ -39,6 +39,6 @@
   <% end %>
 
   <% if @series.empty? && @standalone.empty? %>
-    <p class="press-books__empty">No books published yet — check back soon.</p>
+    <p class="press-muted u-text-center">No books published yet — check back soon.</p>
   <% end %>
 </div>

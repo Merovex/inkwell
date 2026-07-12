@@ -1,0 +1,17 @@
+/*
+ * u-unbutton — strip the UA button chrome so a <button> can look like whatever
+ * its component wants (icon buttons, emoji triggers, menu rows).
+ *
+ * Lives in @layer base, NOT utilities, on purpose: it's a reset, so component
+ * rules (color, font-size, padding) must still win over it.
+ */
+@layer base {
+  .u-unbutton {
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+  }
+}

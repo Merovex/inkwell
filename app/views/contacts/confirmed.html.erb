@@ -1,20 +1,20 @@
 <% content_for :title, "Message confirmed — #{site_settings.site_name}" %>
 
-<section class="press-article">
-  <header class="press-article__head">
+<section class="press-shell">
+  <header class="press-header u-flow u-flow-half">
     <% if @already_confirmed %>
-      <h1 class="press-article__title">Already confirmed</h1>
-      <p class="press-article__byline">
+      <h1 class="press-display-lg">Already confirmed</h1>
+      <p class="press-muted">
         This link was already used — your message reached <%= site_settings.site_name %>. We'll be in touch.
       </p>
     <% else %>
-      <h1 class="press-article__title">Message confirmed</h1>
-      <p class="press-article__byline">
+      <h1 class="press-display-lg">Message confirmed</h1>
+      <p class="press-muted">
         Thanks — your message has reached <%= site_settings.site_name %>. We'll be in touch.
       </p>
     <% end %>
   </header>
-  <div class="press-article__body">
+  <div>
     <p><%= link_to "Back to home", root_path, class: "press-link" %></p>
   </div>
 </section>

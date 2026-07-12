@@ -35,7 +35,7 @@ module AppMenuHelper
       safe_join [
         (inline_svg_tag("lucide/#{icon}.svg", class: "lucide app-menu__icon", size: "18px") if icon),
         tag.span(label, class: "app-menu__label"),
-        (tag.span(kind, class: "app-menu__kind") if kind)
+        (tag.span(kind, class: "app-menu__kind u-microcaps") if kind)
       ].compact
     end
   end

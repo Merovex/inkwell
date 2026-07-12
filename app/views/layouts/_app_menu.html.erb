@@ -21,7 +21,7 @@
       <% recents = app_menu_recents %>
       <% if recents.any? %>
         <section class="app-menu__group" data-app-menu-target="group">
-          <h3 class="app-menu__header">Recent</h3>
+          <h3 class="app-menu__header u-microcaps">Recent</h3>
           <% recents.each do |record| %>
             <%= app_menu_link app_menu_record_label(record), app_menu_record_path(record),
                   kind: record.recordable_type, icon: app_menu_icon(record.recordable_type) %>
@@ -30,7 +30,7 @@
       <% end %>
 
       <section class="app-menu__group" data-app-menu-target="group">
-        <h3 class="app-menu__header">Go to</h3>
+        <h3 class="app-menu__header u-microcaps">Go to</h3>
         <%= app_menu_link "Public site", root_path %>
         <% if Current.user&.domain_admin? %>
           <%= app_menu_link "Authors", admin_authors_path %>

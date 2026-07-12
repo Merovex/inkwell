@@ -1,11 +1,11 @@
 <% content_for :title, "#{@title} — #{site_settings.site_name}" %>
 
-<article class="press-article">
-  <header class="press-article__head">
-    <h1 class="press-article__title"><%= @title %></h1>
+<article class="press-shell">
+  <header class="press-header u-flow u-flow-half">
+    <h1 class="press-display-lg"><%= @title %></h1>
   </header>
 
-  <div class="press-article__body">
+  <div class="press-body prose">
     <% if @body.present? %>
       <%= @body %>
     <% else %>

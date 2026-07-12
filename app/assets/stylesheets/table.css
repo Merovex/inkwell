@@ -33,8 +33,11 @@
   .table tbody tr:hover { background: color-mix(in oklab, var(--canvas), var(--ink) 3%); }
   .table tbody tr:last-child td { border-block-end: none; }
 
-  .table [data-align="end"]    { text-align: end; }
+  .table [data-align="end"]    { text-align: end; font-variant-numeric: tabular-nums; }
   .table [data-align="center"] { text-align: center; }
+
+  /* metric tables: scroll horizontally rather than crushing the columns */
+  .table--nowrap :is(th, td) { white-space: nowrap; }
 
   /* striped rows */
   .table--zebra tbody tr:nth-child(even) {

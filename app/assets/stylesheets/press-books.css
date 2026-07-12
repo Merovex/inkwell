@@ -1,29 +1,11 @@
-/* Merovex Press — book catalog + book detail (public `.press` styles). */
+/* Merovex Press — book catalog + book detail (public `.press` styles).
+ *
+ * Page shells, headings, and text roles come from press-utilities; this file
+ * keeps only the pieces with real behavior: series rhythm, the capped cover
+ * grid, the cover-card hover/overlay, and the detail-page top layout. */
 
-/* --- book catalog (cover grid, grouped by series) --- */
-.press-books { max-width: 1100px; margin-inline: auto; padding: 4rem 1.5rem 5rem; }
-.press-books__head { max-width: 40rem; margin: 0 auto 3rem; text-align: center; }
-.press-books__title {
-  margin: 0;
-  font-family: var(--press-serif);
-  font-weight: 700;
-  font-size: clamp(2rem, 5vw, 3rem);
-  line-height: 1.1;
-  color: var(--text-1);
-}
-.press-books__intro { margin: 1rem 0 0; color: var(--text-2); font-size: 1.1rem; }
-.press-books__empty { text-align: center; color: var(--text-2); }
-
-.press-series { margin-block-end: 3.5rem; }
-.press-series__title {
-  margin: 0 0 0.5rem;
-  font-family: var(--press-serif);
-  font-weight: 700;
-  font-size: 1.6rem;
-  color: var(--text-1);
-  text-align: center;
-}
-.press-series__blurb { margin: 0 auto 1.5rem; max-width: 60ch; color: var(--text-2); line-height: 1.6; text-align: center; }
+/* A series section on the catalog / book page; internal spacing via u-flow. */
+.press-series { margin-block: 3.5rem; }
 
 /* Cap the columns so covers stay a reasonable height (~330px, matching the
    book detail cover) rather than filling the full container width. */
@@ -32,12 +14,10 @@
 @media (max-width: 760px) { .press-book-grid { max-width: calc(2 * 220px + 1.5rem); } }
 @media (max-width: 520px) { .press-book-grid > .press-book-card { flex-basis: 260px; max-width: 260px; } }
 
+/* Cover card — surface comes from .press-card (composed in the view). */
 .press-book-card {
   display: block;
   position: relative;
-  background: var(--surface-1);
-  border: 1px solid var(--border-1);
-  border-radius: 0.75rem;
   overflow: hidden;
   text-decoration: none;
   color: inherit;
@@ -55,19 +35,12 @@
 }
 .press-book-card__placeholder { background: var(--surface-2); }
 .press-book-card__title {
-  position: absolute; inset: 0; margin: 0;
+  position: absolute; inset: 0;
   display: flex; align-items: center; justify-content: center; text-align: center;
-  padding: 1rem; font-family: var(--press-serif); font-size: 1.3rem; line-height: 1.2; color: var(--text-1);
+  padding: 1rem; font-size: 1.3rem;
 }
 
-/* --- book detail --- */
-.press-book { max-width: 46rem; margin-inline: auto; padding: 3rem 1.5rem 5rem; }
+/* --- book detail: cover + meta side by side --- */
 .press-book__top { display: flex; gap: 2rem; align-items: flex-start; flex-wrap: wrap; margin-block: 2rem; }
 .press-book__cover { width: 220px; flex: none; border-radius: 0.5rem; }
 .press-book__meta { flex: 1; min-width: 15rem; }
-.press-book__series { margin: 0 0 0.25rem; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600; color: var(--accent); }
-.press-book__title { margin: 0; font-family: var(--press-serif); font-weight: 700; font-size: clamp(1.8rem, 4vw, 2.6rem); line-height: 1.12; color: var(--text-1); }
-.press-book__date { margin: 0.5rem 0 0; color: var(--text-3); }
-.press-book__buy { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-block-start: 1.5rem; }
-/* flow spacing + line-height come from .prose (composed in the views) */
-.press-book__body { color: var(--text-1); }

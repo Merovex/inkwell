@@ -1,16 +1,16 @@
 <% content_for :title, "Subscription confirmed — #{site_settings.site_name}" %>
 
-<section class="press-article">
-  <header class="press-article__head">
+<section class="press-shell">
+  <header class="press-header u-flow u-flow-half">
     <% if @already_confirmed %>
-      <h1 class="press-article__title">You're already subscribed</h1>
-      <p class="press-article__byline">This link was already used — you're all set for <%= site_settings.site_name %>.</p>
+      <h1 class="press-display-lg">You're already subscribed</h1>
+      <p class="press-muted">This link was already used — you're all set for <%= site_settings.site_name %>.</p>
     <% else %>
-      <h1 class="press-article__title">You're subscribed</h1>
-      <p class="press-article__byline">Thanks for confirming — you'll hear from <%= site_settings.site_name %> soon.</p>
+      <h1 class="press-display-lg">You're subscribed</h1>
+      <p class="press-muted">Thanks for confirming — you'll hear from <%= site_settings.site_name %> soon.</p>
     <% end %>
   </header>
-  <div class="press-article__body">
+  <div>
     <p><%= link_to "Back to home", root_path, class: "press-link" %></p>
   </div>
 </section>

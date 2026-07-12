@@ -13,21 +13,21 @@
   }) %>
 <% end %>
 
-<article class="press-article">
-  <a href="<%= blog_path %>" class="press-article__back">
-    <%= inline_svg_tag "lucide/chevron-right.svg", class: "lucide press-article__back-icon", size: "16px" %>
+<article class="press-shell">
+  <a href="<%= blog_path %>" class="press-back">
+    <%= inline_svg_tag "lucide/chevron-right.svg", class: "lucide press-back__icon", size: "16px" %>
     Back to the blog
   </a>
 
-  <header class="press-article__head">
-    <time class="press-article__date" datetime="<%= @post.published_at.iso8601 %>">
+  <header class="press-header u-flow u-flow-half">
+    <time class="press-meta" datetime="<%= @post.published_at.iso8601 %>">
       <%= @post.published_at.strftime("%B %-d, %Y") %>
     </time>
-    <h1 class="press-article__title"><%= @post.title %></h1>
-    <p class="press-article__byline">by <%= byline_link(@post) %></p>
+    <h1 class="press-display-lg"><%= @post.title %></h1>
+    <p class="press-muted">by <%= byline_link(@post) %></p>
   </header>
 
-  <div class="press-article__body prose">
+  <div class="press-body prose">
     <%= @post.content %>
   </div>
 </article>

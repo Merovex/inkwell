@@ -12,25 +12,25 @@
 <% pct = ->(rate) { rate ? number_to_percentage(rate * 100, precision: 0) : "—" } %>
 
 <% if @broadcasts.any? %>
-  <div class="broadcasts-table__scroll">
-    <table class="broadcasts-table">
+  <div class="table-scroll">
+    <table class="table table--nowrap">
       <thead>
         <tr>
           <th scope="col">Post</th>
           <th scope="col">Sent</th>
-          <th scope="col" class="broadcasts-table__num">Recipients</th>
-          <th scope="col" class="broadcasts-table__num">Delivered</th>
-          <th scope="col" class="broadcasts-table__num">Opens</th>
-          <th scope="col" class="broadcasts-table__num">Clicks</th>
-          <th scope="col" class="broadcasts-table__num">Bounces</th>
-          <th scope="col" class="broadcasts-table__num">Unsubs</th>
+          <th scope="col" data-align="end">Recipients</th>
+          <th scope="col" data-align="end">Delivered</th>
+          <th scope="col" data-align="end">Opens</th>
+          <th scope="col" data-align="end">Clicks</th>
+          <th scope="col" data-align="end">Bounces</th>
+          <th scope="col" data-align="end">Unsubs</th>
         </tr>
       </thead>
       <tbody>
         <% @broadcasts.each do |broadcast| %>
           <tr>
             <td>
-              <%= link_to broadcast.post&.title.presence || "Untitled", admin_post_path(broadcast.record), class: "broadcasts-table__title" %>
+              <%= link_to broadcast.post&.title.presence || "Untitled", admin_post_path(broadcast.record), class: "u-text-strong" %>
             </td>
             <td>
               <% case broadcast.state %>
@@ -44,12 +44,12 @@
                 <span class="badge">Sending…</span>
               <% end %>
             </td>
-            <td class="broadcasts-table__num"><%= broadcast.recipients_count %></td>
-            <td class="broadcasts-table__num"><%= broadcast.delivered_count %> <span class="broadcasts-table__rate"><%= pct.(broadcast.delivery_rate) %></span></td>
-            <td class="broadcasts-table__num"><%= broadcast.opened_count %> <span class="broadcasts-table__rate"><%= pct.(broadcast.open_rate) %></span></td>
-            <td class="broadcasts-table__num"><%= broadcast.clicked_count %> <span class="broadcasts-table__rate"><%= pct.(broadcast.click_rate) %></span></td>
-            <td class="broadcasts-table__num"><%= broadcast.bounced_count %></td>
-            <td class="broadcasts-table__num"><%= broadcast.unsubscribed_count %></td>
+            <td data-align="end"><%= broadcast.recipients_count %></td>
+            <td data-align="end"><%= broadcast.delivered_count %> <span class="u-text-muted u-text-small"><%= pct.(broadcast.delivery_rate) %></span></td>
+            <td data-align="end"><%= broadcast.opened_count %> <span class="u-text-muted u-text-small"><%= pct.(broadcast.open_rate) %></span></td>
+            <td data-align="end"><%= broadcast.clicked_count %> <span class="u-text-muted u-text-small"><%= pct.(broadcast.click_rate) %></span></td>
+            <td data-align="end"><%= broadcast.bounced_count %></td>
+            <td data-align="end"><%= broadcast.unsubscribed_count %></td>
           </tr>
         <% end %>
       </tbody>

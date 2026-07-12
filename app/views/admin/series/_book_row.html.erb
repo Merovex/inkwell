@@ -1,5 +1,5 @@
 <%# locals: (installment:, book:) %>
-<li class="sortable__item" id="<%= dom_id(installment) %>"
+<li class="mrow u-surface sortable__item" id="<%= dom_id(installment) %>"
     data-sortable-target="item" data-record-id="<%= book.record_id %>"
     draggable="true"
     data-action="dragstart->sortable#start dragover->sortable#over dragend->sortable#end">
@@ -13,7 +13,7 @@
   <% end %>
   <span class="sortable__label"><%= link_to book.title, admin_book_path(book.record) %></span>
   <% unless book.published? %><span class="badge">Draft</span><% end %>
-  <%= button_to admin_installment_path(installment), method: :delete, class: "mrow__remove",
+  <%= button_to admin_installment_path(installment), method: :delete, class: "mrow__remove u-unbutton",
         aria: { label: "Remove #{book.title} from this series" } do %>
     <%= inline_svg_tag "lucide/trash-2.svg", class: "lucide", size: "16px" %>
   <% end %>

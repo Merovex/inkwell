@@ -1,7 +1,7 @@
 <%# locals: (record:, book:) %>
 <%# A book's series, with a typeahead to add more. %>
-<section class="book-series">
-  <h2 class="book-series__title">Series</h2>
+<section class="book-series u-flow">
+  <h2 class="subhead">Series</h2>
   <%= render "admin/installments/combobox",
         context: "book", url: search_admin_series_index_path,
         anchor_param: "book_record_id", selected_param: "series_record_id",

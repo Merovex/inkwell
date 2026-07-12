@@ -12,22 +12,22 @@
   }) %>
 <% end %>
 
-<article class="press-article">
+<article class="press-shell">
   <header class="press-author__head">
     <% if @author.avatar.attached? %>
       <%= image_tag @author.avatar.variant(:thumb), class: "press-author__avatar", alt: @author.name %>
     <% end %>
-    <h1 class="press-article__title"><%= @author.name %></h1>
+    <h1 class="press-display-lg"><%= @author.name %></h1>
   </header>
 
   <% if @author.bio.present? %>
-    <div class="press-article__body prose"><%= @author.bio %></div>
+    <div class="press-body prose"><%= @author.bio %></div>
   <% end %>
 </article>
 
 <% if @books.any? %>
-  <section class="press-books">
-    <h2 class="press-series__title">Books</h2>
+  <section class="press-shell press-shell--wide u-flow">
+    <h2 class="press-display-md u-text-center">Books</h2>
     <div class="press-book-grid">
       <% @books.each do |book| %>
         <%= render "books/card", book: book %>
@@ -37,8 +37,8 @@
 <% end %>
 
 <% if @posts.any? %>
-  <section class="press-page">
-    <h2 class="press-series__title">Writing</h2>
+  <section class="press-shell">
+    <h2 class="press-display-md u-text-center">Writing</h2>
     <div class="press-articles">
       <% @posts.each do |post| %>
         <article class="press-article-card">

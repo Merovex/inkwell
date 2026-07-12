@@ -1,29 +1,10 @@
-/* Merovex Press — blog: page shell, article-card stack, single article
-   (public `.press` styles). */
+/* Merovex Press — blog article-card stack (public `.press` styles).
+ *
+ * Page shells, headings, and text roles come from press-utilities; this file
+ * keeps only the article cards: the full-card click overlay, the hover-fill
+ * CTA, and the card's internal type. */
 
-/* --- simple page shell (blog index / article) --- */
-.press-page {
-  max-width: 44rem;
-  margin-inline: auto;
-  padding: 4rem 1.5rem 5rem;
-}
-.press-page__head { max-width: 36rem; }
-.press-page__title {
-  margin: 0;
-  font-family: var(--press-serif);
-  font-weight: 700;
-  font-size: clamp(1.9rem, 4vw, 2.6rem);
-  line-height: 1.15;
-  color: var(--text-1);
-}
-.press-page__intro {
-  margin: 1rem 0 0;
-  font-size: 1.1rem;
-  line-height: 1.7;
-  color: var(--text-2);
-}
-
-/* --- article cards (single-column chronological stack) --- */
+/* Single-column chronological stack. */
 .press-articles {
   display: flex;
   flex-direction: column;
@@ -51,11 +32,10 @@
   text-align: center;
 }
 .press-article-card__title {
-  margin: 0;
-  font-size: 1.6rem;          /* HEY-style: title dominates the body text (~1.6×) */
+  font-family: var(--press-sans); /* HEY-style: sans title, unlike the serif page headings */
+  font-size: 1.6rem;              /* title dominates the body text (~1.6×) */
   font-weight: 600;
   line-height: 1.25;
-  color: var(--text-1);
   text-align: center;
 }
 .press-article-card__link { color: inherit; text-decoration: none; }
@@ -88,32 +68,3 @@
   color: var(--surface-0);
 }
 .press-article-card__cta .lucide { display: inline-block; vertical-align: middle; }
-
-/* --- single article page --- */
-.press-article { max-width: 42rem; margin-inline: auto; padding: 3rem 1.5rem 5rem; }
-.press-article__back {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-  font-size: 0.875rem;
-  color: var(--text-2);
-  text-decoration: none;
-}
-.press-article__back:hover { color: var(--text-1); }
-.press-article__back-icon { transform: rotate(180deg); }
-.press-article__head { margin: 2rem 0 2.5rem; }
-.press-article__date { display: block; font-size: 0.875rem; color: var(--text-3); }
-.press-article__title {
-  margin: 0.5rem 0 0;
-  font-family: var(--press-serif);
-  font-weight: 700;
-  font-size: clamp(1.8rem, 4vw, 2.6rem);
-  line-height: 1.15;
-  color: var(--text-1);
-}
-.press-article__byline { margin: 0.75rem 0 0; font-size: 0.95rem; color: var(--text-2); }
-/* flow spacing + line-height come from .prose (composed in the views) */
-.press-article__body { color: var(--text-1); }
-.press-article__body h2, .press-article__body h3 { font-family: var(--press-serif); line-height: 1.25; }
-.press-article__body a { color: var(--link-color); text-decoration: underline; text-underline-offset: 0.15em; }
-.press-article__body img { max-width: 100%; height: auto; border-radius: 0.5rem; }

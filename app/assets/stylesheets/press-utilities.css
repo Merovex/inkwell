@@ -1,0 +1,62 @@
+/* Merovex Press — public utility classes.
+ *
+ * The repeated looks of the public site (page shells, display type, text
+ * roles, card surfaces) live here, so views compose these instead of minting
+ * per-page `__` classes. Component files keep only real behavior: states,
+ * media queries, child-selector tricks.
+ *
+ * Heading font/weight/color come from the `.press :where(h1,h2,h3)` defaults
+ * in press-base.css — the display utilities only set scale. Intentionally
+ * unlayered like the other press files; "press-utilities" sorts after every
+ * other press-* file, so these win same-specificity ties on source order.
+ * Layout utilities (u-flow, u-cluster, u-gap, u-text-center, …) are shared
+ * with the admin side and compose with these.
+ */
+
+/* Centered page column — the shell every public page sits in.
+   Default is a prose measure; --wide is the catalog/hero width. */
+.press-shell {
+  max-width: var(--shell-max, 44rem);
+  margin-inline: auto;
+  padding: 4rem 1.5rem 5rem;
+}
+.press-shell--wide { --shell-max: 1100px; }
+
+/* Display type scale. */
+.press-display-xl { font-size: clamp(2rem, 5vw, 3.25rem); line-height: 1.1; }
+.press-display-lg { font-size: clamp(1.8rem, 4vw, 2.6rem); line-height: 1.15; }
+.press-display-md { font-size: 1.6rem; }
+
+/* Text roles. */
+.press-lede   { font-size: 1.1rem; line-height: 1.7; color: var(--text-2); }
+.press-muted  { color: var(--text-2); }
+.press-faint  { color: var(--text-3); }
+.press-meta   { font-size: 0.875rem; color: var(--text-3); }
+.press-kicker {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+/* Reading measure for intros/blurbs inside wide shells. */
+.press-measure { max-width: 60ch; margin-inline: auto; }
+
+/* Header block (kicker/date + title + byline) at the top of a shell. */
+.press-header { margin-block: 2rem 2.5rem; }
+
+/* Card surface — components add their own padding, hover, and layout. */
+.press-card {
+  background: var(--surface-1);
+  border: 1px solid var(--border-1);
+  border-radius: 0.75rem;
+}
+
+/* Rich-text body — compose with .prose (spacing) on authored content. */
+.press-body a {
+  color: var(--link-color);
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+.press-body img { max-width: 100%; height: auto; border-radius: 0.5rem; }

@@ -32,9 +32,6 @@
   .composer__excerpt {
     inline-size: 100%;
     padding: calc(var(--u-pad) / 1.5);
-    border: var(--border-size-1) solid var(--line);
-    border-radius: var(--radius-ui);
-    background: var(--canvas);
     color: var(--ink);
     font: inherit;
     resize: vertical;

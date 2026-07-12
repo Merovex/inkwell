@@ -24,7 +24,7 @@
         <span class="badge badge--warning"><%= inline_svg_tag "lucide/eye.svg", class: "lucide", size: "14px" %> Client visible</span>
       <% end %>
     </span>
-    <span class="list__meta"><span class="list__byline"><% if chips.any? %><%= safe_join(chips.map { |chip| tag.span(chip, class: "list__chip") }) %><% else %><%= author %><% end %> · <%= date %></span> <%= excerpt %></span>
+    <span class="list__meta"><span class="list__byline"><% if chips.any? %><%= safe_join(chips.map { |chip| tag.span(chip, class: "badge badge--accent") }, " ") %><% else %><%= author %><% end %> · <%= date %></span> <%= excerpt %></span>
     <% if scheduled_at %>
       <span class="list__flag">
         <%= inline_svg_tag "lucide/clock.svg", class: "lucide", size: "14px" %>

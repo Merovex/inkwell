@@ -19,7 +19,7 @@
   <%# toward the 50–160 search-snippet sweet spot. %>
   <div class="composer__field" data-controller="char-count"
        data-char-count-min-value="50" data-char-count-max-value="160">
-    <%= f.text_area :excerpt, class: "composer__excerpt", rows: 2, maxlength: 160,
+    <%= f.text_area :excerpt, class: "composer__excerpt u-surface", rows: 2, maxlength: 160,
           placeholder: "Optional summary for the blog list and search results…",
           "aria-label": "Excerpt",
           data: { char_count_target: "field", action: "input->char-count#update" } %>

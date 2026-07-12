@@ -1,0 +1,13 @@
+/*
+ * u-surface — the standard raised panel: canvas background, hairline border,
+ * UI radius. For rows, lists, and popover panels. Controls (.button,
+ * .field__control, inputs) keep their own surface — it's part of their
+ * identity, and their variants override pieces of it.
+ */
+@layer utilities {
+  .u-surface {
+    background: var(--canvas);
+    border: var(--border-size-1) solid var(--line);
+    border-radius: var(--radius-ui);
+  }
+}

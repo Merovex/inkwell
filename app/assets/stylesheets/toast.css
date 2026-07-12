@@ -34,14 +34,11 @@
   .toast--notice, .toast--success { border-inline-start-color: var(--success-ink); }
 
   .toast__body { flex: 1; }
+  /* composes u-unbutton in the markup */
   .toast__close {
-    border: none;
-    background: transparent;
     color: var(--ink-muted);
     font-size: var(--font-size-3);
     line-height: 1;
-    padding: 0;
-    cursor: pointer;
   }
   .toast__close:hover { color: var(--ink); }
 

@@ -24,14 +24,11 @@
 
   .boost__avatar { --avatar-size: var(--size-4); }
 
+  /* icon buttons compose u-unbutton in the markup */
   .boost__remove {
     display: inline-grid;
     place-items: center;
-    padding: 0;
-    border: none;
-    background: transparent;
     color: var(--ink-muted);
-    cursor: pointer;
   }
   .boost__remove:hover { color: var(--danger-ink); }
 
@@ -76,11 +73,7 @@
   .boosts__icon {
     display: inline-grid;
     place-items: center;
-    padding: 0;
-    border: none;
-    background: transparent;
     color: var(--ink-muted);
-    cursor: pointer;
   }
   .boosts__icon:hover { color: var(--ink); }
 
@@ -97,12 +90,9 @@
 
   .boosts__emoji {
     padding: calc(var(--u-pad) / 4);
-    border: none;
     border-radius: var(--radius-1);
-    background: transparent;
     font-size: var(--font-size-2);
     line-height: 1;
-    cursor: pointer;
   }
   .boosts__emoji:hover { background: color-mix(in oklab, var(--ink) 8%, transparent); }
 }

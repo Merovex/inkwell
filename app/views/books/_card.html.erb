@@ -1,5 +1,5 @@
 <%# locals: (book:, series: nil) %>
-<%= link_to book_path(book.record.to_slug), class: "press-book-card", aria: { label: book.title } do %>
+<%= link_to book_path(book.record.to_slug), class: "press-card press-book-card", aria: { label: book.title } do %>
   <% if book.cover? %>
     <%= image_tag book.cover, class: "press-book-card__cover", alt: "#{book.title} cover", loading: "lazy" %>
   <% else %>

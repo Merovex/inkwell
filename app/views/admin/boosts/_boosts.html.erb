@@ -14,13 +14,13 @@
     <%= form_with url: admin_record_boosts_path(record), scope: :boost, class: "boosts__field" do |f| %>
       <%= f.text_field :content, maxlength: Boost::MAX_LENGTH, id: nil, class: "boosts__input",
             placeholder: "🙌 or a few words", autocomplete: "off", aria: { label: "Boost" } %>
-      <button type="button" class="boosts__icon" popovertarget="boost-menu-<%= record.id %>" aria-label="Pick an emoji">
+      <button type="button" class="boosts__icon u-unbutton" popovertarget="boost-menu-<%= record.id %>" aria-label="Pick an emoji">
         <%= inline_svg_tag "lucide/smile-plus.svg", class: "lucide", size: "16px" %>
       </button>
-      <button type="submit" class="boosts__icon" title="Add boost" aria-label="Add boost">
+      <button type="submit" class="boosts__icon u-unbutton" title="Add boost" aria-label="Add boost">
         <%= inline_svg_tag "lucide/circle-check.svg", class: "lucide", size: "16px" %>
       </button>
-      <button type="reset" class="boosts__icon" data-action="disclosure#close" title="Cancel" aria-label="Cancel">
+      <button type="reset" class="boosts__icon u-unbutton" data-action="disclosure#close" title="Cancel" aria-label="Cancel">
         <%= inline_svg_tag "lucide/circle-x.svg", class: "lucide", size: "16px" %>
       </button>
     <% end %>
@@ -32,7 +32,7 @@
         html: { popover: "auto", id: "boost-menu-#{record.id}",
                 data: { controller: "anchored-popover", anchored_popover_placement_value: "above" } } do %>
     <% Boost::COMMON_EMOJIS.each do |emoji| %>
-      <button name="boost[content]" value="<%= emoji %>" class="boosts__emoji"
+      <button name="boost[content]" value="<%= emoji %>" class="boosts__emoji u-unbutton"
               aria-label="Boost with <%= emoji %>"><%= emoji %></button>
     <% end %>
   <% end %>

@@ -42,6 +42,18 @@
    sits at the bottom of the viewport, separating main from footer. */
 .press > #main-content { flex: 1; }
 
+/* Headings are serif display type by default on the public site — pages size
+   them with .press-display-* (press-utilities.css) instead of minting per-page
+   title classes. :where() keeps specificity at a single class so any one-class
+   rule that loads later can override a piece of this. */
+.press :where(h1, h2, h3) {
+  margin: 0;
+  font-family: var(--press-serif);
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--text-1);
+}
+
 @media (prefers-color-scheme: dark) {
   .press {
     --surface-0: var(--color-mountain-mist-950);

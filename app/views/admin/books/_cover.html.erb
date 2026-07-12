@@ -5,7 +5,7 @@
         class: "cover-drop__form", data: { controller: "avatar-upload",
           "avatar-upload-dragover-class": "cover-drop--dragover",
           action: "dragover->avatar-upload#dragover dragleave->avatar-upload#dragleave drop->avatar-upload#drop" } do %>
-    <label class="cover-drop__label" title="<%= book.cover? ? "Click or drop to replace the cover" : "Click or drop to upload a cover" %>">
+    <label class="cover-drop__label u-center-content" title="<%= book.cover? ? "Click or drop to replace the cover" : "Click or drop to upload a cover" %>">
       <% if book.cover? %>
         <%= image_tag book.cover, class: "cover-drop__image", alt: "#{book.title} cover" %>
       <% else %>

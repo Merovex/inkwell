@@ -1,4 +1,6 @@
-/* Merovex Press — home genre cards (public `.press` styles). */
+/* Merovex Press — home genre cards (public `.press` styles).
+ * Surface comes from .press-card, type from press-utilities (composed in the
+ * view); this file keeps the responsive grid and the card's layout/hover. */
 .press-genres {
   display: grid;
   grid-template-columns: 1fr;
@@ -14,26 +16,7 @@
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  background: var(--surface-1);
-  border: 1px solid var(--border-1);
-  border-radius: 0.75rem;
   padding: 1.5rem;
   transition: border-color 200ms ease;
 }
 .press-genre-card:hover { border-color: var(--border-2); }
-.press-genre-card__label {
-  margin: 0;
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--accent);
-}
-.press-genre-card__title {
-  margin: 0;
-  font-family: var(--press-serif);
-  font-size: 1.6rem;
-  line-height: 1.2;
-  color: var(--text-1);
-}
-.press-genre-card__blurb { margin: 0; color: var(--text-2); }

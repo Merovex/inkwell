@@ -1,0 +1,10 @@
+/*
+ * u-center-content — center a box's content both ways (icon wells, empty
+ * cover placeholders, count bubbles).
+ */
+@layer utilities {
+  .u-center-content {
+    display: grid;
+    place-items: center;
+  }
+}

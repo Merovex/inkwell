@@ -5,7 +5,7 @@
   <span class="avatar boost__avatar" aria-hidden="true"><%= avatar_content(boost.creator) %></span>
   <%= boost.content %>
   <% if boost.creator == Current.user %>
-    <%= button_to admin_boost_path(boost), method: :delete, class: "boost__remove",
+    <%= button_to admin_boost_path(boost), method: :delete, class: "boost__remove u-unbutton",
           form: { class: "boost__form" }, title: "Remove your boost", aria: { label: "Remove your boost" } do %>
       <%= inline_svg_tag "lucide/circle-x.svg", class: "lucide", size: "14px" %>
     <% end %>
