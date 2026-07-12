@@ -82,14 +82,23 @@ export default class extends Controller {
     return values
   }
 
-  // Resolve a --geo-* token to plain hex (canvas normalizes any CSS color).
+  // Resolve a --geo-* token to plain #rrggbb by painting a pixel and reading
+  // it back — the only reliable way to normalize oklch()/color-mix() values
+  // (the fillStyle getter isn't guaranteed to serialize them as hex).
   themeColor(property, fallback) {
     const raw = getComputedStyle(this.element).getPropertyValue(property).trim()
     if (!raw) return fallback
-    const context = (this.constructor._colorContext ??= document.createElement("canvas").getContext("2d"))
+    if (!this.constructor._colorContext) {
+      const canvas = document.createElement("canvas")
+      canvas.width = canvas.height = 1
+      this.constructor._colorContext = canvas.getContext("2d", { willReadFrequently: true })
+    }
+    const context = this.constructor._colorContext
     context.fillStyle = fallback
     context.fillStyle = raw
-    return context.fillStyle
+    context.fillRect(0, 0, 1, 1)
+    const [ r, g, b ] = context.getImageData(0, 0, 1, 1).data
+    return "#" + [ r, g, b ].map((channel) => channel.toString(16).padStart(2, "0")).join("")
   }
 }
 
