@@ -24,7 +24,7 @@
     border-block-start: var(--border-size-1) solid var(--line);
     background: color-mix(in oklab, var(--canvas), var(--ink) 3%);
   }
-  .card__title { font-size: var(--font-size-3); font-weight: var(--font-weight-7); }
+  .card__title { font-size: var(--font-size-3); font-weight: var(--font-weight-8); }
 
   /* modifiers */
   .card--flat { box-shadow: none; }

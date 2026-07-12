@@ -26,7 +26,7 @@
     padding: var(--u-pad);
     border-block-end: var(--border-size-1) solid var(--line);
   }
-  .modal__title { font-size: var(--font-size-3); font-weight: var(--font-weight-7); }
+  .modal__title { font-size: var(--font-size-3); font-weight: var(--font-weight-8); }
   .modal__body { padding: var(--u-pad); }
   .modal__footer {
     display: flex;

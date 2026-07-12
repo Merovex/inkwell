@@ -16,7 +16,7 @@
   }
   .empty__icon { color: var(--ink-muted); }
   .empty__icon .lucide { inline-size: 2.5rem; block-size: 2.5rem; }
-  .empty__title { font-size: var(--font-size-3); font-weight: var(--font-weight-7); color: var(--ink); }
+  .empty__title { font-size: var(--font-size-3); font-weight: var(--font-weight-8); color: var(--ink); }
   .empty__text { max-inline-size: 32rem; }
   .empty__actions { margin-block-start: calc(var(--u-pad) / 2); }
 }

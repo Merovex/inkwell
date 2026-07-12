@@ -19,7 +19,9 @@
     color: var(--ink);
     font-family: var(--font-body);
     font-size: var(--font-size-1);
-    line-height: var(--font-lineheight-3);
+    font-weight: var(--font-weight-5); /* 500 — the app's standard text weight */
+    line-height: 1.65;
+    letter-spacing: 0.015em;
     -webkit-font-smoothing: antialiased;
     transition: background-color 0.2s var(--ease-3), color 0.2s var(--ease-3);
   }
@@ -27,7 +29,7 @@
   /* app shell: header / .canvas / footer stack in the body column.
      The .canvas content panel is defined in canvas.css. */
 
-  h1, h2, h3, h4 { line-height: var(--font-lineheight-1); font-weight: var(--font-weight-7); }
+  h1, h2, h3, h4 { line-height: var(--font-lineheight-1); font-weight: var(--font-weight-8); }
   h1 { font-size: var(--font-size-6); letter-spacing: var(--font-letterspacing-1); }
   h2 { font-size: var(--font-size-4); }
   h3 { font-size: var(--font-size-3); }
@@ -41,6 +43,10 @@
     h3 { font-size: var(--font-size-2); }
     h4 { font-size: var(--font-size-1); }
   }
+
+  /* bold text sits one notch above the UA's 700 to keep contrast with the
+     500-weight body */
+  b, strong { font-weight: var(--font-weight-8); }
 
   a { color: var(--link); text-decoration: underline; text-underline-offset: 2px; } /* AAA link; underlined since it's dark */
 

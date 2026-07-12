@@ -56,7 +56,7 @@
   .list__title {
     min-inline-size: 0;
     font-size: var(--font-size-3);  /* ~20px */
-    font-weight: var(--font-weight-7);
+    font-weight: var(--font-weight-8);
     color: var(--ink);
     overflow: hidden;
     text-overflow: ellipsis;
@@ -105,7 +105,7 @@
     background: var(--brand-strong); /* teal-800 — white text hits 7.6:1 (AAA) */
     color: #fff;
     font-size: var(--font-size-0);
-    font-weight: var(--font-weight-7);
+    font-weight: var(--font-weight-8);
     line-height: 1;
   }
 }

@@ -4,7 +4,7 @@
  */
 @layer utilities {
   .u-text-muted  { color: var(--ink-muted); }
-  .u-text-strong { font-weight: var(--font-weight-7); }
+  .u-text-strong { font-weight: var(--font-weight-8); }
   .u-text-small  { font-size: var(--font-size-0); }
   .u-text-large  { font-size: var(--font-size-3); }
   .u-text-center { text-align: center; }

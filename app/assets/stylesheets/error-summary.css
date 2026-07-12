@@ -11,6 +11,6 @@
     border: var(--border-size-1) solid var(--danger-ink);
     border-radius: var(--radius-ui);
   }
-  .error-summary__title { font-weight: var(--font-weight-7); margin-block-end: calc(var(--u-pad) / 3); }
+  .error-summary__title { font-weight: var(--font-weight-8); margin-block-end: calc(var(--u-pad) / 3); }
   .error-summary__list { margin: 0; padding-inline-start: var(--u-pad); }
 }

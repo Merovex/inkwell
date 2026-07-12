@@ -3,7 +3,7 @@
  * status code is bespoke (it's a <p>, so the heading defaults don't reach it). */
 .press-notfound__code {
   font-family: var(--press-serif);
-  font-weight: 700;
+  font-weight: 800;
   font-size: clamp(3.5rem, 12vw, 6rem);
   line-height: 1;
   color: var(--accent);

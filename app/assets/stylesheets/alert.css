@@ -13,7 +13,7 @@
     background: var(--canvas);
     color: var(--ink);
   }
-  .alert__title { font-weight: var(--font-weight-7); }
+  .alert__title { font-weight: var(--font-weight-8); }
 
   .alert--info    { border-inline-start-color: var(--accent); background: var(--accent-soft); }
   .alert--success { border-inline-start-color: var(--success-ink); background: var(--success-surface); color: var(--success-ink); }

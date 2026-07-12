@@ -27,7 +27,7 @@
 .press-brand__word {
   text-transform: uppercase;
   letter-spacing: 0.12em;
-  font-weight: 700;
+  font-weight: 800;
   font-size: 0.9rem;
 }
 .press-nav__links { display: flex; align-items: center; gap: 1.5rem; }

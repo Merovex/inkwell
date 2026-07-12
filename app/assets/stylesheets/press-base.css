@@ -34,7 +34,11 @@
   background: var(--surface-0);
   color: var(--text-1);
   font-family: var(--press-sans);
-  line-height: 1.6;
+  /* Literal values (not Open Props vars): public_minimal loads this file
+     without open-props.css. The variable fonts cover 200–900. */
+  font-weight: 500;
+  line-height: 1.65;
+  letter-spacing: 0.015em;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -49,7 +53,7 @@
 .press :where(h1, h2, h3) {
   margin: 0;
   font-family: var(--press-serif);
-  font-weight: 700;
+  font-weight: 800;
   line-height: 1.2;
   color: var(--text-1);
 }

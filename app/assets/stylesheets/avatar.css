@@ -14,7 +14,7 @@
     background: var(--accent-soft);
     color: var(--ink-on-soft); /* AAA teal on the soft fill; matches the accent badge */
     font-size: calc(var(--avatar-size) / 2.4);
-    font-weight: var(--font-weight-7);
+    font-weight: var(--font-weight-8);
     text-transform: uppercase;
     overflow: clip;
     user-select: none;

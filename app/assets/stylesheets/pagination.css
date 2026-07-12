@@ -28,7 +28,7 @@
     background: var(--brand-strong);   /* teal-800 + white = AAA */
     border-color: var(--brand-strong);
     color: #fff;
-    font-weight: var(--font-weight-7);
+    font-weight: var(--font-weight-8);
   }
   .pagination__item--gap { border: none; background: none; cursor: default; }
   .pagination__item[aria-disabled="true"],

@@ -23,7 +23,7 @@
 
   .table thead th {
     font-size: var(--font-size-0);
-    font-weight: var(--font-weight-7);
+    font-weight: var(--font-weight-8);
     color: var(--ink-muted);
     text-transform: uppercase;
     letter-spacing: 0.04em;
