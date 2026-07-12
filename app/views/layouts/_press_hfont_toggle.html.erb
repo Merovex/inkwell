@@ -1,0 +1,8 @@
+<%# locals: (classes: "") %>
+<%# TEMP heading-font audition button: shows the active candidate, cycles
+    alphabetically on click (handler in public.js, persisted as the
+    press_hfont cookie). Delete with press-hfont.css when a winner is picked. %>
+<button type="button" class="press-btn press-btn--outline hfont-toggle <%= classes %>"
+        aria-label="Heading font: <%= press_heading_font.tr("-", " ") %>" title="Cycle heading font">
+  <%= press_heading_font.split("-").map { |word| word == "pt" ? "PT" : word.capitalize }.join(" ") %>
+</button>

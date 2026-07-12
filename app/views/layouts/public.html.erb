@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="<%= press_theme %>" data-hfont="<%= press_heading_font %>">
   <head>
     <title><%= content_for(:title) || [site_settings.site_name, site_settings.tagline.presence].compact.join(" — ") %></title>
     <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -43,7 +43,10 @@
           <%= link_to "About", about_path, class: "press-nav__link#{' is-active' if current_page?(about_path)}" %>
         </div>
 
-        <%= link_to "Join the Newsletter", newsletter_path(source: "nav"), class: "press-btn press-btn--primary press-nav__cta" %>
+        <div class="u-cluster">
+          <%= render "layouts/press_theme_toggle", classes: "press-nav__theme" %>
+          <%= link_to "Join the Newsletter", newsletter_path(source: "nav"), class: "press-btn press-btn--primary press-nav__cta" %>
+        </div>
 
         <button class="press-nav__toggle u-unbutton" type="button" aria-expanded="false" aria-controls="press-nav-menu" aria-label="Menu">
           <span class="press-nav__toggle-bar"></span>
@@ -57,6 +60,7 @@
         <%= link_to "Books", books_path, class: "press-nav__menu-link#{' is-active' if controller_name == 'books'}" %>
         <%= link_to "Blog", blog_path, class: "press-nav__menu-link#{' is-active' if controller_name == 'blog'}" %>
         <%= link_to "About", about_path, class: "press-nav__menu-link#{' is-active' if current_page?(about_path)}" %>
+        <%= render "layouts/press_theme_toggle" %>
         <%= link_to "Join the Newsletter", newsletter_path(source: "nav"), class: "press-btn press-btn--primary press-nav__menu-cta" %>
       </div>
     </nav>

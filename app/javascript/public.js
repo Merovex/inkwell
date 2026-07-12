@@ -31,3 +31,39 @@ document.addEventListener("keydown", (event) => {
   toggle.setAttribute("aria-expanded", "false")
   document.getElementById(toggle.getAttribute("aria-controls")).hidden = true
 })
+
+// Theme cycler: light → dark → auto, persisted as the public-only `press_theme`
+// cookie (separate from the admin `theme` cookie; the layout renders it back
+// as <html data-theme>, so no flash on next load). Delegated like the
+// hamburger so it survives Turbo body swaps; both nav buttons stay in sync.
+document.addEventListener("click", (event) => {
+  const toggle = event.target.closest(".theme-toggle")
+  if (!toggle) return
+  const modes = ["light", "dark", "auto"]
+  const current = document.documentElement.dataset.theme || "dark"
+  const next = modes[(modes.indexOf(current) + 1) % modes.length]
+  document.documentElement.dataset.theme = next
+  document.cookie = `press_theme=${next}; path=/; max-age=31536000; samesite=lax`
+  document.querySelectorAll(".theme-toggle").forEach((button) => {
+    button.dataset.mode = next
+    button.setAttribute("aria-label", `Theme: ${next}`)
+  })
+})
+
+// TEMP heading-font audition: cycle the candidates alphabetically and persist
+// as press_hfont; the layout renders it back as <html data-hfont>, which
+// press-hfont.css maps to a font stack. Delete with the button when decided.
+document.addEventListener("click", (event) => {
+  const toggle = event.target.closest(".hfont-toggle")
+  if (!toggle) return
+  const fonts = ["antonio", "archivo-narrow"]
+  const current = document.documentElement.dataset.hfont || "archivo-narrow"
+  const next = fonts[(fonts.indexOf(current) + 1) % fonts.length]
+  document.documentElement.dataset.hfont = next
+  document.cookie = `press_hfont=${next}; path=/; max-age=31536000; samesite=lax`
+  const label = next.split("-").map((word) => word === "pt" ? "PT" : word[0].toUpperCase() + word.slice(1)).join(" ")
+  document.querySelectorAll(".hfont-toggle").forEach((button) => {
+    button.textContent = label
+    button.setAttribute("aria-label", `Heading font: ${next.replaceAll("-", " ")}`)
+  })
+})

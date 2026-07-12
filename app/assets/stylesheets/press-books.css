@@ -42,5 +42,6 @@
 
 /* --- book detail: cover + meta side by side --- */
 .press-book__top { display: flex; gap: 2rem; align-items: flex-start; flex-wrap: wrap; margin-block: 2rem; }
-.press-book__cover { width: 220px; flex: none; border-radius: 0.5rem; }
+/* Border frames the art — dark covers otherwise bleed into the dark canvas. */
+.press-book__cover { width: 220px; flex: none; border: 1px solid var(--border-1); border-radius: 0.5rem; }
 .press-book__meta { flex: 1; min-width: 15rem; }

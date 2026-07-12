@@ -36,6 +36,14 @@
   cursor: pointer;
   transition: background-color 200ms ease, color 200ms ease, border-color 200ms ease;
 }
+/* Square icon button, exactly a standard .press-btn's height: 1.65em line box
+   + 0.6em vertical padding ×2 + 1px borders (border-box). */
+.press-btn--icon {
+  --press-btn-size: calc(1.65em + 1.2em + 2px);
+  padding: 0;
+  width: var(--press-btn-size);
+  height: var(--press-btn-size);
+}
 .press-btn--primary { background: var(--button-bg); color: var(--button-text); }
 .press-btn--primary:hover { background: var(--link-hover); }
 .press-btn--outline { background: transparent; border-color: var(--link-color); color: var(--link-color); }

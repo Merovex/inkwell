@@ -1,0 +1,6 @@
+/* Heading-font audition harness — PARKED (Archivo Narrow won, July 2026).
+ * One rule per candidate, keyed off <html data-hfont> (press_hfont cookie).
+ * To re-audition: add candidates to PRESS_HEADING_FONTS, the `fonts` array in
+ * public.js, rules here, a Google CDN link in the public layouts, and render
+ * layouts/press_hfont_toggle back into the nav. */
+html[data-hfont="archivo-narrow"] .press { --press-serif: "Archivo Narrow", "Source Serif 4", Georgia, serif; }

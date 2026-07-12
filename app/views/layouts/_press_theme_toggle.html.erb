@@ -1,0 +1,11 @@
+<%# locals: (classes: "") %>
+<%# Square theme cycler for the public nav: light → dark → auto, persisted as
+    the public-only `press_theme` cookie (default dark). Icon visibility comes
+    from theme-toggle.css (data-mode); the click handler lives in public.js. %>
+<button type="button" class="press-btn press-btn--outline press-btn--icon theme-toggle <%= classes %>"
+        data-mode="<%= press_theme %>"
+        aria-label="Theme: <%= press_theme %>" title="Theme">
+  <%= inline_svg_tag "lucide/sun.svg", class: "lucide theme-toggle__icon theme-toggle__icon--light", size: "16px" %>
+  <%= inline_svg_tag "lucide/moon.svg", class: "lucide theme-toggle__icon theme-toggle__icon--dark", size: "16px" %>
+  <%= inline_svg_tag "lucide/monitor.svg", class: "lucide theme-toggle__icon theme-toggle__icon--auto", size: "16px" %>
+</button>

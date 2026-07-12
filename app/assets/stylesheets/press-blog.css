@@ -22,7 +22,10 @@
   box-shadow: 0 1px 2px rgb(0 0 0 / 0.04), 0 10px 24px -16px rgb(0 0 0 / 0.18);
   transition: background-color 200ms ease, border-color 200ms ease;
 }
-.press-article-card:hover { background: var(--surface-2); }
+/* Hover signals with the border, not a background jump — in dark mode the
+   surface-1→2 shift is a ~10%-lightness flash. The CTA pill fill (below)
+   carries the affordance. */
+.press-article-card:hover { border-color: var(--border-2); }
 
 .press-article-card__date {
   display: block;

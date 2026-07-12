@@ -9,30 +9,38 @@
  * page-load fade. Component files (press-nav, press-hero, …) build on top.
  */
 .press {
-  --press-serif: "Source Serif 4", Georgia, "Times New Roman", serif;
-  --press-sans:  "Source Sans 3", system-ui, -apple-system, "Segoe UI", sans-serif;
+  /* Display/headings: Archivo Narrow; body: Source Serif 4 — both self-hosted
+     (press-fonts.css). Token names are historical: --press-serif = display,
+     --press-sans = body. */
+  --press-serif: "Archivo Narrow", "Source Serif 4", Georgia, serif;
+  --press-sans:  "Source Serif 4", Georgia, "Times New Roman", serif;
 
-  /* semantic tokens — light */
-  --surface-0: var(--color-mountain-mist-50);
-  --surface-1: var(--color-mountain-mist-100);
-  --surface-2: var(--color-mountain-mist-200);
-  --border-1:  var(--color-mountain-mist-300);
-  --border-2:  var(--color-mountain-mist-400);
-  --text-1:    var(--color-mountain-mist-900);
-  --text-2:    var(--color-mountain-mist-700);
-  --text-3:    var(--color-mountain-mist-500);
-  --accent:      var(--color-syo-ro-600);
-  --link-color:  var(--color-syo-ro-600);
-  --link-hover:  var(--color-syo-ro-700);
-  --button-bg:   var(--color-syo-ro-500);
-  --button-text: var(--color-mountain-mist-50);
+  /* Semantic tokens as light-dark() pairs — which side renders is decided by
+     color-scheme, which the html[data-theme] rules below set from the theme
+     cookie (light / dark / auto→OS). One definition per token, no dark block. */
+  --surface-0: light-dark(var(--color-mountain-mist-50),  var(--color-mountain-mist-950));
+  --surface-1: light-dark(var(--color-mountain-mist-100), var(--color-syo-ro-950));
+  --surface-2: light-dark(var(--color-mountain-mist-200), var(--color-syo-ro-900));
+  --border-1:  light-dark(var(--color-mountain-mist-300), var(--color-mountain-mist-700));
+  --border-2:  light-dark(var(--color-mountain-mist-400), var(--color-mountain-mist-600));
+  --text-1:    light-dark(var(--color-mountain-mist-900), var(--color-mountain-mist-100));
+  /* Body copy steps down a level in dark so headings (mist-100) lead and
+     near-white paragraphs don't halate on the dark canvas. */
+  --text-body: light-dark(var(--color-mountain-mist-900), var(--color-mountain-mist-200));
+  --text-2:    light-dark(var(--color-mountain-mist-700), var(--color-mountain-mist-200));
+  --text-3:    light-dark(var(--color-mountain-mist-500), var(--color-mountain-mist-400));
+  --accent:      light-dark(var(--color-syo-ro-600), var(--color-syo-ro-300));
+  --link-color:  light-dark(var(--color-syo-ro-600), var(--color-syo-ro-300));
+  --link-hover:  light-dark(var(--color-syo-ro-700), var(--color-syo-ro-200));
+  --button-bg:   light-dark(var(--color-syo-ro-500), var(--color-syo-ro-300));
+  --button-text: light-dark(var(--color-mountain-mist-50), var(--color-mountain-mist-800));
 
   min-height: 100dvh;
   margin: 0;
   display: flex;
   flex-direction: column;
   background: var(--surface-0);
-  color: var(--text-1);
+  color: var(--text-body);
   font-family: var(--press-sans);
   /* Literal values (not Open Props vars): public_minimal loads this file
      without open-props.css. The variable fonts cover 200–900. */
@@ -58,31 +66,18 @@
   color: var(--text-1);
 }
 
-@media (prefers-color-scheme: dark) {
-  .press {
-    --surface-0: var(--color-mountain-mist-950);
-    --surface-1: var(--color-syo-ro-950);
-    --surface-2: var(--color-syo-ro-900);
-    --border-1:  var(--color-mountain-mist-700);
-    --border-2:  var(--color-mountain-mist-600);
-    --text-1:    var(--color-mountain-mist-100);
-    --text-2:    var(--color-mountain-mist-200);
-    --text-3:    var(--color-mountain-mist-500);
-    --accent:      var(--color-syo-ro-300);
-    --link-color:  var(--color-syo-ro-300);
-    --link-hover:  var(--color-syo-ro-200);
-    --button-bg:   var(--color-syo-ro-300);
-    --button-text: var(--color-mountain-mist-800);
-  }
-}
+/* Theme switching: the layouts render the theme cookie as <html data-theme>
+   (public default "dark"), and color-scheme resolves every light-dark() pair
+   above. "auto" leaves the UA's default (light dark from 01-tokens) so the OS
+   preference decides. These also correct UA widgets (scrollbars, form
+   controls) on admin pages that force a theme. */
+html[data-theme="light"] { color-scheme: light; }
+html[data-theme="dark"]  { color-scheme: dark; }
 
 /* Mirror the .press body background onto html so the document canvas matches in
    dark mode (avoids a white flash at overscroll / behind the page). --surface-0
    is scoped to .press, so use the same underlying tokens here. */
-html { background: var(--color-mountain-mist-50); }
-@media (prefers-color-scheme: dark) {
-  html { background: var(--color-mountain-mist-950); }
-}
+html { background: light-dark(var(--color-mountain-mist-50), var(--color-mountain-mist-950)); }
 
 /* --- page transitions ---
    The public site uses Turbo Drive; on each render the incoming content fades up

@@ -14,7 +14,7 @@ class ApplicationController < ActionController::Base
   # Changes to the importmap will invalidate the etag for HTML responses
   stale_when_importmap_changes
 
-  helper_method :hotwire_native?, :current_theme, :current_tint, :site_settings
+  helper_method :hotwire_native?, :current_theme, :press_theme, :press_heading_font, :current_tint, :site_settings
 
   # The install's public identity (name, tagline, logo…), memoized per request.
   # Drives the public Merovex Press chrome; see the "public" layout.
@@ -36,6 +36,20 @@ class ApplicationController < ActionController::Base
 
   def current_theme
     ALLOWED_THEMES.include?(cookies[:theme]) ? cookies[:theme] : "light"
+  end
+
+  # The public site keeps its own cookie so the admin preference never bleeds
+  # through — Merovex Press is dark by default.
+  def press_theme
+    ALLOWED_THEMES.include?(cookies[:press_theme]) ? cookies[:press_theme] : "dark"
+  end
+
+  # TEMP heading-font audition (see press-hfont.css): slugs cycled
+  # alphabetically by the public nav's font button. Delete when decided.
+  PRESS_HEADING_FONTS = %w[archivo-narrow].freeze
+
+  def press_heading_font
+    PRESS_HEADING_FONTS.include?(cookies[:press_hfont]) ? cookies[:press_hfont] : "archivo-narrow"
   end
 
   def current_tint
