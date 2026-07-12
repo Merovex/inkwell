@@ -112,8 +112,8 @@
   color: var(--text-1);
 }
 .press-article__byline { margin: 0.75rem 0 0; font-size: 0.95rem; color: var(--text-2); }
-.press-article__body { color: var(--text-1); line-height: 1.75; }
-.press-article__body > * + * { margin-block-start: 1.25rem; }
+/* flow spacing + line-height come from .prose (composed in the views) */
+.press-article__body { color: var(--text-1); }
 .press-article__body h2, .press-article__body h3 { font-family: var(--press-serif); line-height: 1.25; }
 .press-article__body a { color: var(--link-color); text-decoration: underline; text-underline-offset: 0.15em; }
 .press-article__body img { max-width: 100%; height: auto; border-radius: 0.5rem; }

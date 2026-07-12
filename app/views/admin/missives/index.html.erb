@@ -40,11 +40,13 @@
           <%= link_to missive_reply_mailto(missive), class: "button button--small" do %>
             <%= inline_svg_tag "lucide/message-square.svg", class: "lucide", size: "16px" %> Reply
           <% end %>
-          <%= button_to admin_missive_path(missive, state: @state), method: :delete, form_class: "list__action",
-                class: "button button--icon button--ghost", title: "Delete",
-                "aria-label": "Delete message from #{missive.name}",
-                form: { data: { turbo_confirm: "Permanently delete this message?" } } do %>
-            <%= inline_svg_tag "lucide/trash-2.svg", class: "lucide", size: "16px" %>
+          <% if @state == "active" %>
+            <%= button_to admin_missive_path(missive, state: @state), method: :delete, form_class: "list__action",
+                  class: "button button--icon button--ghost", title: "Move to Trash",
+                  "aria-label": "Move message from #{missive.name} to Trash",
+                  form: { data: { turbo_confirm: "Move this message to Trash?" } } do %>
+              <%= inline_svg_tag "lucide/trash-2.svg", class: "lucide", size: "16px" %>
+            <% end %>
           <% end %>
         </span>
       </li>
@@ -56,7 +58,7 @@
     <p class="empty__title">No <%= @state == "trashed" ? "trashed" : "recent" %> missives</p>
     <p class="empty__text">
       <% if @state == "trashed" %>
-        Missives older than 30 days rest here until they're purged at 60 days.
+        Trashed missives and those older than 30 days rest here until they're purged at 60 days.
       <% else %>
         Confirmed contact messages from the last 30 days appear here, newest first.
       <% end %>

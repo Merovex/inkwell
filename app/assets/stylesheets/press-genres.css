@@ -37,12 +37,3 @@
   color: var(--text-1);
 }
 .press-genre-card__blurb { margin: 0; color: var(--text-2); }
-.press-genre-card__more {
-  margin-top: 0.25rem;
-  align-self: flex-start;
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: var(--link-color);
-  text-decoration: none;
-}
-.press-genre-card__more:hover { text-decoration: underline; text-underline-offset: 0.15em; }

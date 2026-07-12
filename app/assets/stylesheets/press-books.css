@@ -69,5 +69,5 @@
 .press-book__title { margin: 0; font-family: var(--press-serif); font-weight: 700; font-size: clamp(1.8rem, 4vw, 2.6rem); line-height: 1.12; color: var(--text-1); }
 .press-book__date { margin: 0.5rem 0 0; color: var(--text-3); }
 .press-book__buy { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-block-start: 1.5rem; }
-.press-book__body { color: var(--text-1); line-height: 1.75; }
-.press-book__body > * + * { margin-block-start: 1.25rem; }
+/* flow spacing + line-height come from .prose (composed in the views) */
+.press-book__body { color: var(--text-1); }

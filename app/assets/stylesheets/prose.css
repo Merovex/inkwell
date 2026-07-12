@@ -1,0 +1,11 @@
+/*
+ * .prose — long-form rich-text flow. Add it to any container that renders
+ * authored rich text. Spaces block children, including one level down through
+ * the .lexxy-content wrapper Action Text emits — the global margin reset
+ * would otherwise fuse the paragraphs. Colors/fonts stay on the component.
+ */
+@layer components {
+  .prose { line-height: 1.75; }
+  .prose > * + *,
+  .prose .lexxy-content > * + * { margin-block-start: 1.25rem; }
+}

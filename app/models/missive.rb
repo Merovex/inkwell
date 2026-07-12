@@ -9,9 +9,11 @@
 #
 # Lifecycle is derived from timestamps, not a status column:
 #   - unconfirmed (confirmed_at nil): never shown; purged after UNCONFIRMED_TTL.
-#   - active   (confirmed, ≤ VISIBLE_DAYS old): the admin feed.
-#   - trashed  (confirmed, VISIBLE_DAYS–TRASH_DAYS old): the admin Trash tab.
-#   - purged   (older than TRASH_DAYS, or unconfirmed past its TTL): hard-deleted.
+#   - active   (confirmed, ≤ VISIBLE_DAYS old, not trashed): the admin feed.
+#   - trashed  (confirmed, VISIBLE_DAYS–TRASH_DAYS old, or trashed early via
+#     trash!/trashed_at): the admin Trash tab.
+#   - purged   (older than TRASH_DAYS, or unconfirmed past its TTL): hard-deleted
+#     by the purge sweep — the only place rows are ever destroyed.
 class Missive < ApplicationRecord
   VISIBLE_DAYS   = 30   # shown in the main feed
   TRASH_DAYS     = 60   # then hidden in Trash until this age, then purged
@@ -33,9 +35,15 @@ class Missive < ApplicationRecord
 
   scope :confirmed,   -> { where.not(confirmed_at: nil) }
   scope :unconfirmed, -> { where(confirmed_at: nil) }
-  # The admin feed (reverse-chron) and its Trash tab, keyed off submission age.
-  scope :active,  -> { confirmed.where(created_at: VISIBLE_DAYS.days.ago..).order(created_at: :desc) }
-  scope :trashed, -> { confirmed.where(created_at: TRASH_DAYS.days.ago...VISIBLE_DAYS.days.ago).order(created_at: :desc) }
+  # The admin feed (reverse-chron) and its Trash tab. A missive lands in Trash
+  # either by age (past VISIBLE_DAYS) or explicitly (trash! stamps trashed_at);
+  # both rest there until the purge sweep clears them at TRASH_DAYS.
+  scope :active,  -> { confirmed.where(trashed_at: nil).where(created_at: VISIBLE_DAYS.days.ago..).order(created_at: :desc) }
+  scope :trashed, lambda {
+    confirmed.where(created_at: TRASH_DAYS.days.ago..).where.not(trashed_at: nil)
+      .or(confirmed.where(created_at: TRASH_DAYS.days.ago...VISIBLE_DAYS.days.ago))
+      .order(created_at: :desc)
+  }
   # Everything the purge sweep should delete: confirmed past the trash window, or
   # never-confirmed and past its short TTL.
   scope :purgeable, lambda {
@@ -67,5 +75,11 @@ class Missive < ApplicationRecord
 
   def confirmed?
     confirmed_at.present?
+  end
+
+  # Move to the Trash tab now instead of waiting out VISIBLE_DAYS. Idempotent;
+  # no hard delete here — the purge sweep is the only thing that destroys rows.
+  def trash!
+    update!(trashed_at: Time.current) if trashed_at.nil?
   end
 end
