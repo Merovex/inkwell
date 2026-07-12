@@ -24,25 +24,20 @@
 }
 .press-brand__mark { display: inline-flex; width: 32px; height: 32px; color: var(--text-1); }
 .press-brand__mark svg { width: 100%; height: 100%; }
-.press-brand__word {
-  font-family: "Federo", var(--press-serif); /* wordmark keeps Federo (single-weight) */
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  font-weight: 800; /* synthesized — Federo only ships 400 */
-  font-size: 0.9rem;
-}
+/* brand text styling comes from .wordmark (press-utilities.css) */
 .press-nav__links { display: flex; align-items: center; gap: 1.5rem; }
-/* Shared link treatment for the desktop row and the mobile flyout. */
+/* Shared link treatment for the desktop row and the mobile flyout. Full-ink
+   text — the muted tone was too faint for small uppercase type on surface-1. */
 .press-nav__link,
 .press-nav__menu-link {
   font-family: var(--press-serif); /* Archivo Narrow, matching the headings */
   text-transform: uppercase;
   letter-spacing: 0.12em;
-  color: var(--text-2);
+  color: var(--text-1);
   text-decoration: none;
 }
 .press-nav__link { font-size: 0.75rem; transition: color 200ms ease; }
-.press-nav__link:hover { color: var(--text-1); }
+.press-nav__link:hover { color: var(--link-hover); }
 .press-nav__link.is-active,
 .press-nav__menu-link.is-active { color: var(--accent); }
 

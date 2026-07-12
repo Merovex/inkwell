@@ -46,6 +46,16 @@
 /* Header block (kicker/date + title + byline) at the top of a shell. */
 .press-header { margin-block: 2rem 2.5rem; }
 
+/* The site name set in the brand face (Federo, single-weight; the 800 is
+   synthesized). Used in the public nav brand and the footer. */
+.wordmark {
+  font-family: "Federo", var(--press-serif, serif);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-weight: 800;
+  font-size: 0.9rem;
+}
+
 /* Card surface — components add their own padding, hover, and layout. */
 .press-card {
   background: var(--surface-1);

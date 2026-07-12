@@ -33,7 +33,7 @@
               <%= inline_svg_tag "merovex-mark.svg" %>
             <% end %>
           </span>
-          <span class="press-brand__word"><%= site_settings.site_name %></span>
+          <span class="wordmark"><%= site_settings.site_name %></span>
         <% end %>
 
         <div class="press-nav__links">
@@ -70,6 +70,7 @@
     <footer class="press-footer">
       <div class="press-footer__inner">
         <span class="press-footer__mark"><%= inline_svg_tag "merovex-mark.svg" %></span>
+        <p class="wordmark"><%= site_settings.site_name %></p>
         <p class="press-footer__legal">
           &copy; <%= Date.current.year %> <%= site_settings.site_name %>.
           <%= link_to "Contact", contact_path, class: "press-link" %>
