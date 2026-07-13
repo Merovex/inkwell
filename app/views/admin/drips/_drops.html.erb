@@ -1,0 +1,20 @@
+<%# locals: (record:, drops:) %>
+<%# The drip's drops: a drag-sortable list in send order, oldest delay first. %>
+<section class="series-books">
+  <div class="series-books__head">
+    <h2 class="subhead">Emails in this sequence</h2>
+    <%= link_to "New drop", new_admin_drip_drop_path(record), class: "button button--small" %>
+  </div>
+
+  <% if drops.any? %>
+    <ol class="sortable" id="drip_drops" data-controller="sortable"
+        data-sortable-url-value="<%= reorder_admin_drip_path(record) %>"
+        data-sortable-param-value="drop_record_ids[]">
+      <% drops.each do |drop| %>
+        <%= render "admin/drips/drop_row", drip_record: record, drop: drop %>
+      <% end %>
+    </ol>
+  <% else %>
+    <p class="u-text-muted">No drops yet — add the first email in the sequence.</p>
+  <% end %>
+</section>

@@ -1,0 +1,18 @@
+<%# locals: (drip_record:, drop:) %>
+<li class="mrow u-surface sortable__item" id="<%= dom_id(drop.record) %>"
+    data-sortable-target="item" data-record-id="<%= drop.record_id %>"
+    draggable="true"
+    data-action="dragstart->sortable#start dragover->sortable#over dragend->sortable#end">
+  <span class="sortable__handle" aria-hidden="true">
+    <%= inline_svg_tag "lucide/ellipsis-vertical.svg", class: "lucide", size: "16px" %>
+  </span>
+  <span class="sortable__label">
+    <%= link_to drop.subject, edit_admin_drip_drop_path(drip_record, drop.record) %>
+    <span class="badge"><%= drop.delay_days.zero? ? "Day 0" : "Day #{drop.delay_days}" %></span>
+  </span>
+  <%= button_to admin_drip_drop_path(drip_record, drop.record), method: :delete, class: "mrow__remove u-unbutton",
+        aria: { label: "Remove #{drop.subject}" },
+        form: { data: { turbo_confirm: "Remove “#{drop.subject}”?" } } do %>
+    <%= inline_svg_tag "lucide/trash-2.svg", class: "lucide", size: "16px" %>
+  <% end %>
+</li>

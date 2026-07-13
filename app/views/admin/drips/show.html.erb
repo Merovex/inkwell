@@ -1,0 +1,26 @@
+<% content_for :title, "#{@drip.title} — Inkwell" %>
+
+<%= render "admin/shared/canvas_head", crumbs: [["Drips", admin_drips_path], [@drip.title, nil]],
+      edit_href: edit_admin_drip_path(@record) do %>
+  <% if @drip.active? %>
+    <%= button_to "Deactivate", activate_admin_drip_path(@record, active: false), method: :patch, class: "menu__item", role: "menuitem" %>
+  <% else %>
+    <%= button_to "Activate", activate_admin_drip_path(@record, active: true), method: :patch, class: "menu__item", role: "menuitem" %>
+  <% end %>
+  <hr class="menu__separator">
+  <%= button_to "Move to trash", admin_drip_path(@record), method: :delete, class: "menu__item", role: "menuitem" %>
+<% end %>
+
+<header class="perma-header">
+  <h1 class="perma-header__title"><%= @drip.title %></h1>
+  <p class="perma-header__content u-text-muted">
+    <% if @drip.active? %>
+      <span class="badge badge--accent">Active</span>
+    <% else %>
+      <span class="badge">Inactive</span>
+    <% end %>
+    · Trigger: <%= @drip.trigger.humanize %>
+  </p>
+</header>
+
+<%= render "drops", record: @record, drops: @drops %>

@@ -100,6 +100,9 @@ gem "aws-sdk-sns", "~> 1.90"
 
 gem "ruby-vips", "~> 2.3"
 
+# Charts for the drip dashboard (Chart.js via importmap; grouping done in Ruby).
+gem "chartkick", "~> 5.0"
+
 gem "honeybadger", "~> 6.9"
 
 gem "geocode", "~> 0.2.1"

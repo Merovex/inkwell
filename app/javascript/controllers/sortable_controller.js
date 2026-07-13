@@ -2,9 +2,10 @@ import { Controller } from "@hotwired/stimulus"
 
 // Drag-reorder a vertical list, then PATCH the new order to the server. Each
 // item carries data-record-id; on drop we collect them in DOM order and post
-// them as book_record_ids[]. Native HTML5 drag — no library.
+// them under the param name (default book_record_ids[]; drops set their own via
+// data-sortable-param-value). Native HTML5 drag — no library.
 export default class extends Controller {
-  static values = { url: String }
+  static values = { url: String, param: { type: String, default: "book_record_ids[]" } }
   static targets = ["item"]
 
   start(event) {
@@ -30,7 +31,7 @@ export default class extends Controller {
 
   save() {
     const body = new URLSearchParams()
-    this.itemTargets.forEach((el) => body.append("book_record_ids[]", el.dataset.recordId))
+    this.itemTargets.forEach((el) => body.append(this.paramValue, el.dataset.recordId))
     fetch(this.urlValue, {
       method: "PATCH",
       headers: {

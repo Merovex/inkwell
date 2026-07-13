@@ -1,0 +1,6 @@
+<% content_for :title, "Edit drop — Inkwell" %>
+
+<%= render "admin/shared/canvas_head",
+      crumbs: [["Drips", admin_drips_path], [@drip.title, admin_drip_path(@record)], [@drop.subject, nil]] %>
+
+<%= render "form", drop: @drop, url: admin_drip_drop_path(@record, @drop_record) %>

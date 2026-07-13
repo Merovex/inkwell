@@ -1,0 +1,23 @@
+/* Drip dashboard — overview stat tiles + chart/panel spacing. Component layer;
+ * :app includes this file automatically (alphabetical, @layer-ordered). */
+@layer components {
+  .drip-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));
+    gap: var(--u-pad);
+    margin-block-end: calc(var(--u-pad) * 2);
+  }
+
+  .drip-stat {
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--u-pad) / 4);
+    padding: var(--u-pad);
+    border-radius: var(--radius-ui);
+    text-align: center;
+  }
+  .drip-stat__num { font-size: 2rem; font-weight: 600; line-height: 1; }
+
+  .drip-panel { margin-block-start: calc(var(--u-pad) * 2); }
+  .drip-panel__chart { padding: var(--u-pad); border-radius: var(--radius-ui); }
+}

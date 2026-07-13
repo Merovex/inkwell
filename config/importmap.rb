@@ -6,6 +6,9 @@ pin "@hotwired/stimulus", to: "stimulus.min.js"
 pin "@hotwired/stimulus-loading", to: "stimulus-loading.js"
 pin_all_from "app/javascript/controllers", under: "controllers"
 pin "lexxy", to: "lexxy.min.js"
+# Charts for the drip dashboard (chartkick + Chart.js, both vendored by the gem).
+pin "chartkick", to: "chartkick.js"
+pin "Chart.bundle", to: "Chart.bundle.js"
 # Lexxy uses Active Storage direct uploads for images; it imports this module.
 pin "@rails/activestorage", to: "activestorage.esm.js"
 # First-party analytics on the public site (client-side, so it survives edge

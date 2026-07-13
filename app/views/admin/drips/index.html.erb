@@ -1,0 +1,47 @@
+<% content_for :title, "Drips — Inkwell" %>
+
+<%= render "admin/shared/canvas_head", crumbs: [["Drips", nil]] %>
+
+<header class="perma-header">
+  <h1 class="perma-header__title">Drips</h1>
+  <div class="perma-header__content">
+    <nav class="perma-header__toolbar" aria-label="Actions">
+      <%= link_to "Dashboard", dashboard_admin_drips_path, class: "button button--small" %>
+      <%= link_to new_admin_drip_path, class: "button button--primary button--small" do %>
+        <%= inline_svg_tag "lucide/plus.svg", class: "lucide", size: "16px" %> New drip
+      <% end %>
+    </nav>
+  </div>
+</header>
+
+<% if @drips.any? %>
+  <ul class="list">
+    <% @drips.each do |drip| %>
+      <li class="list__item">
+        <%= link_to admin_drip_path(drip.record), class: "list__body" do %>
+          <span class="list__titlerow">
+            <span class="list__title"><%= drip.title %></span>
+            <% if drip.active? %>
+              <span class="badge badge--accent">Active</span>
+            <% else %>
+              <span class="badge">Inactive</span>
+            <% end %>
+          </span>
+        <% end %>
+        <%= button_to admin_drip_path(drip.record), method: :delete, form_class: "list__action",
+              class: "button button--icon button--ghost", title: "Trash",
+              "aria-label": "Move #{drip.title} to trash",
+              form: { data: { turbo_confirm: "Move “#{drip.title}” to trash?" } } do %>
+          <%= inline_svg_tag "lucide/trash-2.svg", class: "lucide", size: "16px" %>
+        <% end %>
+      </li>
+    <% end %>
+  </ul>
+<% else %>
+  <div class="empty">
+    <span class="empty__icon"><%= inline_svg_tag "lucide/inbox.svg", class: "lucide", size: "40px" %></span>
+    <p class="empty__title">No drips yet</p>
+    <p class="empty__text">Create a welcome sequence — an ordered set of emails sent to new subscribers.</p>
+    <div class="empty__actions"><%= link_to "New drip", new_admin_drip_path, class: "button button--primary" %></div>
+  </div>
+<% end %>

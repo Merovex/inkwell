@@ -1,0 +1,18 @@
+<%# locals: (drip:, url:) %>
+<%= render "admin/shared/error_summary", model: drip %>
+
+<%= form_with model: drip, url: url, class: "settings" do |f| %>
+  <div class="field">
+    <%= f.label :title, "Name", class: "field__label" %>
+    <%= f.text_field :title, class: "field__control", required: true, autofocus: true,
+          placeholder: "e.g. Welcome sequence" %>
+  </div>
+
+  <div class="field">
+    <%= f.label :trigger, "Trigger", class: "field__label" %>
+    <%= f.select :trigger, Drip::TRIGGERS.map { |t| [ t.humanize, t ] }, {}, class: "field__control" %>
+    <p class="u-text-muted">When enrollment starts. “Confirmed” anchors the schedule to the subscriber's confirmed_at.</p>
+  </div>
+
+  <%= f.submit "Save", class: "button button--primary" %>
+<% end %>

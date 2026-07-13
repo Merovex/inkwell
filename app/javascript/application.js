@@ -9,3 +9,7 @@ if ("serviceWorker" in navigator) {
 
 // Rich text editor for Action Text bodies (replaces Trix; speaks the same protocol).
 import "lexxy"
+
+// Charts for the drip dashboard (Chart.js via chartkick).
+import "chartkick"
+import "Chart.bundle"

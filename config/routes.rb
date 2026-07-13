@@ -166,6 +166,21 @@ Rails.application.routes.draw do
       end
     end
 
+    # Drip campaigns (welcome sequences) and their ordered drops (emails).
+    # Activate/deactivate gates enrollment; reorder drags the drops into send order.
+    resources :drips do
+      collection do
+        get :dashboard
+      end
+      member do
+        patch :activate
+        patch :reorder
+      end
+      scope module: :drips do
+        resources :drops, only: %i[new create edit update destroy]
+      end
+    end
+
     # Living styleguide for building/eyeballing standard elements + components.
     get "theme" => "static#theme", as: :theme
     # Composition demos: a list-view (perma-header + list) and an item-view (editable header).

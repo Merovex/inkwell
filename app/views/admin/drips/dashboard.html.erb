@@ -1,0 +1,55 @@
+<% content_for :title, "Drip dashboard — Inkwell" %>
+
+<%= render "admin/shared/canvas_head", crumbs: [["Drips", admin_drips_path], ["Dashboard", nil]] %>
+
+<header class="perma-header">
+  <h1 class="perma-header__title">Drip dashboard</h1>
+  <div class="perma-header__content">
+    <nav class="perma-header__toolbar" aria-label="Actions">
+      <%= link_to "Manage drips", admin_drips_path, class: "button button--small" %>
+    </nav>
+  </div>
+</header>
+
+<section class="drip-stats">
+  <div class="drip-stat u-surface">
+    <span class="drip-stat__num"><%= @subscribers_count %></span>
+    <span class="drip-stat__label u-microcaps u-text-muted">Subscribers</span>
+  </div>
+  <div class="drip-stat u-surface">
+    <span class="drip-stat__num"><%= @delivered_count %></span>
+    <span class="drip-stat__label u-microcaps u-text-muted">Delivered</span>
+  </div>
+  <div class="drip-stat u-surface">
+    <span class="drip-stat__num"><%= @skipped_count %></span>
+    <span class="drip-stat__label u-microcaps u-text-muted">Skipped</span>
+  </div>
+  <div class="drip-stat u-surface">
+    <span class="drip-stat__num"><%= @active_count %></span>
+    <span class="drip-stat__label u-microcaps u-text-muted">Active</span>
+  </div>
+</section>
+
+<section class="drip-panel">
+  <h2 class="subhead">Delivered — last 90 days</h2>
+  <div class="drip-panel__chart u-surface">
+    <%= line_chart @history, height: "240px", points: false, curve: false, library: { scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } } %>
+  </div>
+</section>
+
+<section class="drip-panel">
+  <h2 class="subhead">Upcoming</h2>
+  <% if @upcoming.any? %>
+    <ul class="mrows">
+      <% @upcoming.each do |row| %>
+        <li class="mrow u-surface">
+          <span class="mrow__label"><%= row[:subscriber].email_address %></span>
+          <span class="u-text-muted"><%= link_to row[:drip].title, admin_drip_path(row[:drip].record) %></span>
+          <span class="mrow__meta u-text-muted"><%= time_ago_in_words(row[:send_at]) %></span>
+        </li>
+      <% end %>
+    </ul>
+  <% else %>
+    <p class="u-text-muted">Nothing scheduled.</p>
+  <% end %>
+</section>
