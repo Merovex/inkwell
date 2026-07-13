@@ -5,6 +5,11 @@ class ApplicationController < ActionController::Base
   # Only allow modern browsers supporting webp images, web push, badges, import maps, CSS nesting, and CSS :has.
   allow_browser versions: :modern
 
+  # Serve Action Text image attachments as WebP for the website (every visitor is
+  # webp-capable per allow_browser above). Mailers have no request and so never
+  # run this, leaving them email-safe (JPEG). See ApplicationHelper#attachment_variation.
+  before_action { Current.web_images = true }
+
   # Every scoped lookup in the app (wrong id, trashed record, wrong type,
   # someone else's yours-only content) lands here: one friendly in-app 404
   # instead of an exception page, offering the way back to where they just

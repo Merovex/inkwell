@@ -9,7 +9,7 @@
   </header>
 
   <% @series.each do |series, books| %>
-    <% cache [ series, books ] do %>
+    <% cache [ cover_fragment_version, series, books ] do %>
       <section class="press-series u-flow">
         <h2 class="press-display-md u-text-center"><%= series.title %></h2>
         <% blurb = series.content.to_plain_text.to_s %>
@@ -26,7 +26,7 @@
   <% end %>
 
   <% if @standalone.any? %>
-    <% cache @standalone do %>
+    <% cache [ cover_fragment_version, @standalone ] do %>
       <section class="press-series u-flow">
         <h2 class="press-display-md u-text-center">Standalone</h2>
         <div class="press-book-grid">
