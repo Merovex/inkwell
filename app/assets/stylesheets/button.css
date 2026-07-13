@@ -17,6 +17,10 @@
     border-radius: var(--radius-ui);
     background: var(--canvas);
     color: var(--ink);
+    /* Archivo Narrow (the display/heading font) — so buttons don't inherit the
+       serif body font. Named directly since --press-serif is scoped to .press;
+       falls back to the system sans off the press site. */
+    font-family: "Archivo Narrow", var(--font-sans);
     font-weight: var(--font-weight-6);
     line-height: 1;
     text-decoration: none;
