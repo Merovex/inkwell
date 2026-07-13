@@ -32,4 +32,14 @@ class DropMailerTest < ActionMailer::TestCase
     assert_match %r{/newsletter/unsubscribe/}, email["List-Unsubscribe"].to_s
     assert_equal "List-Unsubscribe=One-Click", email["List-Unsubscribe-Post"].to_s
   end
+
+  test "tags the message with the marketing config set and drop/subscriber tags" do
+    email = DropMailer.step(@stream, @drop)
+    settings = email.delivery_method.settings
+
+    assert_equal Rails.application.credentials.dig(:ses, :marketing_config_set), settings[:configuration_set_name]
+    tags = settings[:email_tags].index_by { |t| t[:name] }
+    assert_equal @drop.record_id.to_s, tags["drop_record_id"][:value]
+    assert_equal @sub.id.to_s, tags["subscriber_id"][:value]
+  end
 end

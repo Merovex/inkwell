@@ -67,9 +67,7 @@ class Webhooks::SesController < ActionController::Base
     end
 
     def ingest(event)
-      tags = event.dig("mail", "tags") || {}
-      delivery = BroadcastDelivery.find_by(
-        broadcast_id: tag(tags, "broadcast_id"), subscriber_id: tag(tags, "subscriber_id"))
+      delivery = find_delivery(event.dig("mail", "tags") || {})
       return unless delivery
 
       internal = internal_event(event)
@@ -81,6 +79,17 @@ class Webhooks::SesController < ActionController::Base
       # the consent trail like any other opt-out). SES has no unsubscribe event.
       if first_time && internal == "complained"
         delivery.subscriber.unsubscribe!(source: "ses")
+      end
+    end
+
+    # Route by the id tag SES echoed: broadcasts stamp a BroadcastDelivery, drip
+    # drops a DropDelivery. Both speak record_event! and belong to a subscriber.
+    def find_delivery(tags)
+      subscriber_id = tag(tags, "subscriber_id")
+      if (broadcast_id = tag(tags, "broadcast_id"))
+        BroadcastDelivery.find_by(broadcast_id:, subscriber_id:)
+      elsif (drop_record_id = tag(tags, "drop_record_id"))
+        DropDelivery.find_by(drop_record_id:, subscriber_id:)
       end
     end
 

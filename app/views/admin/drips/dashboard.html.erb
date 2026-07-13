@@ -19,6 +19,12 @@
   <div class="drip-stat u-surface">
     <span class="drip-stat__num"><%= @delivered_count %></span>
     <span class="drip-stat__label u-microcaps u-text-muted">Delivered</span>
+    <% if @delivered_count.positive? %>
+      <span class="drip-stat__sub u-text-muted">
+        <%= (100.0 * @opened_count / @delivered_count).round %>% opened ·
+        <%= (100.0 * @clicked_count / @delivered_count).round %>% clicked
+      </span>
+    <% end %>
   </div>
   <div class="drip-stat u-surface">
     <span class="drip-stat__num"><%= @skipped_count %></span>

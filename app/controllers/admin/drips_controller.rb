@@ -18,6 +18,8 @@ class Admin::DripsController < Admin::BaseController
     @delivered_count = DropDelivery.status_sent.count
     @skipped_count = DropDelivery.status_skipped.count
     @active_count = Drip.live.count
+    @opened_count = DropDelivery.where.not(opened_at: nil).count
+    @clicked_count = DropDelivery.where.not(clicked_at: nil).count
     @history = delivered_by_day
     @upcoming = upcoming_sends
   end

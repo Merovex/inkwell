@@ -17,6 +17,7 @@
     text-align: center;
   }
   .drip-stat__num { font-size: 2rem; font-weight: 600; line-height: 1; }
+  .drip-stat__sub { font-size: 0.75rem; }
 
   .drip-panel { margin-block-start: calc(var(--u-pad) * 2); }
   .drip-panel__chart { padding: var(--u-pad); border-radius: var(--radius-ui); }
