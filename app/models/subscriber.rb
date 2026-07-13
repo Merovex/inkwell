@@ -7,6 +7,7 @@
 class Subscriber < ApplicationRecord
   has_many :events, -> { order(:created_at) }, class_name: "SubscriptionEvent", dependent: :destroy
   has_many :broadcast_deliveries, dependent: :destroy
+  has_many :streams, dependent: :destroy
 
   enum :status, %w[ pending confirmed unsubscribed ].index_by(&:itself), default: "pending"
 
@@ -70,7 +71,9 @@ class Subscriber < ApplicationRecord
     SubscriberMailer.confirmation(self, generate_token_for(:confirmation)).deliver_later
   end
 
-  # Complete double opt-in: the confirmation link was clicked.
+  # Complete double opt-in: the confirmation link was clicked. Confirmation is
+  # the drip trigger — enroll into every active Drip, then advance each stream so
+  # any day-0 Drop goes out right away (later Drops fire via the daily tick).
   def confirm!(ip: nil)
     return if confirmed?
 
@@ -78,9 +81,14 @@ class Subscriber < ApplicationRecord
       update!(status: :confirmed, confirmed_at: Time.current)
       log_event!("confirmed", ip:)
     end
+
+    Drip.enroll(self)
+    streams.active.find_each { |stream| DripAdvanceJob.perform_later(stream) }
   end
 
   # Honor an opt-out. The row is kept (never deleted) as a suppression record.
+  # Any in-flight drip runs end here so no further Drops go out (the tick's own
+  # confirmed? guard is a backstop).
   def unsubscribe!(ip: nil, source: nil)
     return if unsubscribed?
 
@@ -88,6 +96,8 @@ class Subscriber < ApplicationRecord
       update!(status: :unsubscribed, unsubscribed_at: Time.current)
       log_event!("unsubscribed", ip:, source:)
     end
+
+    streams.active.find_each { |stream| stream.end!("unsubscribed") }
   end
 
   # Append one immutable event to the consent log.

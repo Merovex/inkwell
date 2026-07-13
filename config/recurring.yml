@@ -26,6 +26,12 @@ production:
     class: SubscriberSunsetJob
     schedule: at 8am every Monday
 
+  # Daily drip heartbeat: send each active stream's next due Drop. Day-0 Drops
+  # fire immediately on confirmation; this catches every later Drop by its day.
+  drip_tick:
+    class: DripTickJob
+    schedule: at 7am every day
+
   # Daily contact-form digest to the domain admins ("X new messages"), counting
   # missives confirmed in the last 24h. Skips the send when there's nothing new.
   missive_digest:

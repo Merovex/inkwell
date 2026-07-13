@@ -99,6 +99,10 @@
       inset-block-start: auto;
       inset-block-end: 0;
       inset-inline: 0;
+      /* override the UA [popover] width:fit-content so inset-inline:0 can stretch
+         the sheet full-width; without this it collapses to content width and
+         sits at the bottom-left. */
+      inline-size: auto;
       min-inline-size: 0;
       padding: var(--u-pad);
       padding-block-end: max(var(--u-pad), env(safe-area-inset-bottom));

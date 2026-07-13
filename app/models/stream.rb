@@ -15,6 +15,33 @@ class Stream < ApplicationRecord
 
   def drip = drip_record.recordable
 
+  # Send every Drop now due to this subscriber, or record a skip if they've
+  # become ineligible (unsubscribed) by the time it comes due. Idempotent: a
+  # delivery already sent/skipped is left alone, so re-running the tick — or a
+  # retried job — never re-mails. Drops come due in position order.
+  def advance!(now: Time.current)
+    return if ended_at
+
+    due_drops(now:).each do |drop|
+      delivery = deliveries.create_or_find_by!(drop_record: drop.record) { |d| d.subscriber = subscriber }
+      next unless delivery.status_pending?
+
+      if subscriber.confirmed?
+        DropMailer.step(self, drop).deliver_now
+        delivery.update!(status: :sent, sent_at: Time.current)
+      else
+        delivery.update!(status: :skipped, skip_reason: subscriber.status)
+      end
+    end
+  end
+
+  # Drops whose scheduled day has arrived (enrolled_at + delay_days ≤ now) and
+  # that haven't been recorded yet, in send order.
+  def due_drops(now: Time.current)
+    recorded = deliveries.pluck(:drop_record_id)
+    drip.drops.reject { |drop| recorded.include?(drop.record_id) || drop.send_at_for(self) > now }
+  end
+
   # Close the run (unsubscribed / completed). Idempotent.
   def end!(reason)
     update!(ended_at: Time.current, ended_reason: reason) unless ended_at
