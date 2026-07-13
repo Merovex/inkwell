@@ -15,6 +15,15 @@
   font-display: swap;
   src: url("source-serif-4.woff2") format("woff2");
 }
+/* Merriweather (body) — variable wght 300–900, OFL. Kept alongside Source Serif
+   4, which remains available as the fallback. */
+@font-face {
+  font-family: "Merriweather";
+  font-style: normal;
+  font-weight: 300 900;
+  font-display: swap;
+  src: url("merriweather.woff2") format("woff2");
+}
 /* Federo is single-weight (400) — used for the nav brand wordmark. */
 @font-face {
   font-family: "Federo";

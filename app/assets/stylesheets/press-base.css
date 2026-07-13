@@ -9,11 +9,11 @@
  * page-load fade. Component files (press-nav, press-hero, …) build on top.
  */
 .press {
-  /* Display/headings: Archivo Narrow; body: Source Serif 4 — both self-hosted
-     (press-fonts.css). Token names are historical: --press-serif = display,
-     --press-sans = body. */
+  /* Display/headings: Archivo Narrow; body: Merriweather (Source Serif 4 kept as
+     the fallback) — all self-hosted (press-fonts.css). Token names are
+     historical: --press-serif = display, --press-sans = body. */
   --press-serif: "Archivo Narrow", "Source Serif 4", Georgia, serif;
-  --press-sans:  "Source Serif 4", Georgia, "Times New Roman", serif;
+  --press-sans:  "Merriweather", "Source Serif 4", Georgia, "Times New Roman", serif;
 
   /* Semantic tokens as light-dark() pairs — which side renders is decided by
      color-scheme, which the html[data-theme] rules below set from the theme
