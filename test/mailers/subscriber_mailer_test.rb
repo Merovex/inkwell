@@ -7,10 +7,10 @@ class SubscriberMailerTest < ActionMailer::TestCase
 
     email = SubscriberMailer.confirmation(subscriber, token)
 
-    assert_equal ["reader@example.com"], email.to
+    assert_equal [ "reader@example.com" ], email.to
     assert_match Setting.current.site_name, email.subject
     # Assert on the decoded parts — the raw MIME soft-wraps the long token.
-    [email.text_part, email.html_part].each do |part|
+    [ email.text_part, email.html_part ].each do |part|
       assert_match "/newsletter/confirm/#{token}", part.decoded
       assert_match %r{/newsletter/unsubscribe/}, part.decoded
     end
@@ -22,9 +22,9 @@ class SubscriberMailerTest < ActionMailer::TestCase
 
     email = SubscriberMailer.re_engagement(subscriber, token)
 
-    assert_equal ["reader@example.com"], email.to
+    assert_equal [ "reader@example.com" ], email.to
     assert_match Setting.current.site_name, email.subject
-    [email.text_part, email.html_part].each do |part|
+    [ email.text_part, email.html_part ].each do |part|
       assert_match "/newsletter/keep/#{token}", part.decoded
       assert_match "/newsletter/unsubscribe/#{token}", part.decoded
     end
@@ -38,8 +38,8 @@ class SubscriberMailerTest < ActionMailer::TestCase
 
     # From must be the verified news.merovex.press identity (aligned DKIM), not
     # the raw contact address; replies still route to the press.
-    assert_equal ["press@example.com"], email.reply_to
-    assert_not_equal ["press@example.com"], email.from
-    assert_equal [Rails.application.credentials.dig(:ses, :marketing_from)], email.from
+    assert_equal [ "press@example.com" ], email.reply_to
+    assert_not_equal [ "press@example.com" ], email.from
+    assert_equal [ Rails.application.credentials.dig(:ses, :marketing_from) ], email.from
   end
 end

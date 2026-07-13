@@ -8,7 +8,8 @@ class AuthenticationFlowTest < ActionDispatch::IntegrationTest
     assert_redirected_to new_session_path
   end
 
-  test "the styleguide is a public dev reference, no sign in required" do
+  test "the styleguide is an admin dev reference behind sign-in" do
+    sign_in_as users(:admin)
     get admin_theme_path
     assert_response :success
   end

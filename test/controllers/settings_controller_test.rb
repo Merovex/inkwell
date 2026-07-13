@@ -48,7 +48,7 @@ class SettingsControllerTest < ActionDispatch::IntegrationTest
 
     get root_path
     assert_response :success
-    assert_select ".press-brand__word", text: "Verkilo Press"
+    assert_select ".wordmark", text: "Verkilo Press"
     assert_select "title", text: /Verkilo Press/
   end
 end

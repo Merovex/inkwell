@@ -13,7 +13,7 @@ require "cgi"
 
 namespace :blog do
   desc "Import Jekyll _posts markdown into Inkwell. Arg: path to _posts. DRY_RUN=1 to preview."
-  task :import, [:posts_path] => :environment do |_t, args|
+  task :import, [ :posts_path ] => :environment do |_t, args|
     posts_path = args[:posts_path].to_s
     abort "Usage: bin/rails 'blog:import[/path/to/_posts]'" if posts_path.blank?
     abort "Not a directory: #{posts_path}" unless File.directory?(posts_path)
@@ -81,7 +81,7 @@ namespace :blog do
   end
 
   desc "Import Jekyll _books into Inkwell (+ Series, covers, buy links). DRY_RUN=1 to preview."
-  task :import_books, [:books_path] => :environment do |_t, args|
+  task :import_books, [ :books_path ] => :environment do |_t, args|
     books_path = args[:books_path].to_s
     abort "Usage: bin/rails 'blog:import_books[/path/to/_books]'" if books_path.blank?
     abort "Not a directory: #{books_path}" unless File.directory?(books_path)

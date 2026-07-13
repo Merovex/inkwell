@@ -3,7 +3,6 @@
 # edge-cached loads too. Per-page detail lives in the visits' landing pages;
 # richer drill-down can come later.
 class Admin::AnalyticsController < Admin::BaseController
-
   WINDOW = 30.days
 
   def show

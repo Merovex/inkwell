@@ -102,5 +102,4 @@ class CommentsControllerTest < ActionDispatch::IntegrationTest
     assert_response :not_found
     assert_not records(:kickoff_comment).reload.trashed?
   end
-
 end

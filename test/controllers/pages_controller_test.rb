@@ -7,8 +7,8 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
 
     get about_path
     assert_response :success
-    assert_select ".press-article__title", text: "About Verkilo Press"
-    assert_select ".press-article__body em", text: "wonders"
+    assert_select ".press-display-lg", text: "About Verkilo Press"
+    assert_select ".press-body em", text: "wonders"
   end
 
   test "the About page falls back gracefully with no blurb set" do
@@ -16,6 +16,6 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
 
     get about_path
     assert_response :success
-    assert_select ".press-article__body", text: /coming soon/
+    assert_select ".press-body", text: /coming soon/
   end
 end

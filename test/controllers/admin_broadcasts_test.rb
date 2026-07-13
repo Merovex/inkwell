@@ -16,7 +16,7 @@ class AdminBroadcastsTest < ActionDispatch::IntegrationTest
 
     get admin_broadcasts_path
     assert_response :success
-    assert_select ".broadcasts-table__title", text: posts(:kickoff).title
+    assert_select ".table td .u-text-strong", text: posts(:kickoff).title
     assert_match "67%", response.body  # open rate 6/9 ≈ 67%
   end
 

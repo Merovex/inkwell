@@ -57,12 +57,16 @@ class SubscriberTest < ActiveSupport::TestCase
     assert_equal subscriber, Subscriber.find_by_token_for(:unsubscribe, subscriber.generate_token_for(:unsubscribe))
   end
 
-  test "a used confirmation token stops working once confirmed" do
+  test "the confirmation token stays valid after confirming, and confirm! is idempotent" do
+    # The token deliberately does NOT fold in confirmed_at: a scanner prefetch
+    # that confirms first must not leave the human's click with a dead link.
     subscriber = Subscriber.opt_in(email_address: "reader@example.com")
     token = subscriber.generate_token_for(:confirmation)
     subscriber.confirm!
 
-    assert_nil Subscriber.find_by_token_for(:confirmation, token)
+    assert_equal subscriber, Subscriber.find_by_token_for(:confirmation, token)
+    assert_nothing_raised { subscriber.confirm! }
+    assert subscriber.reload.confirmed?
   end
 
   test "events are append-only" do

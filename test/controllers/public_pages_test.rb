@@ -43,10 +43,10 @@ class PublicPagesTest < ActionDispatch::IntegrationTest
 
     get privacy_path
     assert_response :success
-    assert_select ".press-article__body", text: /respect your cookies/
+    assert_select ".press-body", text: /respect your cookies/
 
     get terms_path
-    assert_select ".press-article__body", text: /Be excellent/
+    assert_select ".press-body", text: /Be excellent/
   end
 
   test "the footer links to a legal page only when it has content" do

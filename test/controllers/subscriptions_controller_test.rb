@@ -18,7 +18,7 @@ class SubscriptionsControllerTest < ActionDispatch::IntegrationTest
         post newsletter_path, params: { email_address: "reader@example.com", source: "hero" }
       end
     end
-    assert_redirected_to newsletter_path
+    assert_redirected_to newsletter_sent_path
 
     subscriber = Subscriber.find_by(email_address: "reader@example.com")
     assert subscriber.pending?
@@ -32,7 +32,9 @@ class SubscriptionsControllerTest < ActionDispatch::IntegrationTest
           InvisibleCaptcha.honeypots.first => "i am a bot" }
       end
     end
-    assert_redirected_to newsletter_path
+    # Silently mimics a real opt-in (redirects to the same "check your email"
+    # page) so the bot can't tell it was discarded.
+    assert_redirected_to newsletter_sent_path
   end
 
   test "the confirmation link confirms the subscriber" do

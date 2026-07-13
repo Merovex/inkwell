@@ -2,7 +2,6 @@
 # be), with its newsletter metrics. Domain-admin only. Read-only — sending is
 # driven from the post page (Admin::Posts::BroadcastsController).
 class Admin::BroadcastsController < Admin::BaseController
-
   def index
     @broadcasts = Broadcast.includes(:record).order(created_at: :desc)
   end

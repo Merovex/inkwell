@@ -4,7 +4,6 @@ require "csv"
 # there's no create/edit here, since subscribers opt in from the public site. The
 # CSV export is the bridge to an external sender until one is wired (ADR 0011).
 class Admin::SubscribersController < Admin::BaseController
-
   # The roster is one state at a time; the header links between them.
   STATES = %w[ confirmed pending unsubscribed ].freeze
 

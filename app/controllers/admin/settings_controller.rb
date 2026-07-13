@@ -2,7 +2,6 @@
 # identity. Always the singleton Setting.current, so no id in the URL (like the
 # personal Admin::User::SettingsController, but install-scoped and admin-only).
 class Admin::SettingsController < Admin::BaseController
-
   before_action :set_setting
 
   def show

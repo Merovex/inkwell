@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 #
 # NOTIONAL schema for Inkwell — a thinking artifact, NOT a real migration.
 # Modeled on Basecamp's delegated-type (Record/Recordable) pattern.
@@ -6,14 +7,13 @@
 # anything inferred rather than observed is noted inline.
 
 ActiveRecord::Schema[7.2].define(version: 0) do
-
   # ── People & accounts ──────────────────────────────────────────────────────
 
   create_table "people", force: :cascade do |t|
     t.string   "name",          null: false
     t.string   "email_address", null: false
     t.timestamps
-    t.index ["email_address"], unique: true
+    t.index [ "email_address" ], unique: true
   end
 
   # The tenant — a writing community's shared space. ("bucket" in Basecamp terms.)
@@ -29,7 +29,7 @@ ActiveRecord::Schema[7.2].define(version: 0) do
     t.references "account", null: false, foreign_key: true
     t.string     "role",    null: false, default: "member"   # owner | member
     t.timestamps
-    t.index ["account_id", "person_id"], unique: true
+    t.index [ "account_id", "person_id" ], unique: true
   end
 
   # ── The spine: Recording (delegated-type parent) ───────────────────────────
@@ -52,10 +52,10 @@ ActiveRecord::Schema[7.2].define(version: 0) do
     t.datetime "trashed_at"
     t.timestamps
 
-    t.index ["recordable_type", "recordable_id"], unique: true,
+    t.index [ "recordable_type", "recordable_id" ], unique: true,
             name: "index_recordings_on_recordable"
-    t.index ["account_id", "status"]
-    t.index ["parent_id"]
+    t.index [ "account_id", "status" ]
+    t.index [ "parent_id" ]
   end
   # add_foreign_key "recordings", "recordings", column: "parent_id"
 
@@ -118,7 +118,7 @@ ActiveRecord::Schema[7.2].define(version: 0) do
     t.date       "group_on", null: false     # the week/day this answer belongs to
     # body → Action Text
     t.timestamps
-    t.index ["question_id", "group_on"]
+    t.index [ "question_id", "group_on" ]
   end
 
   create_table "comments", force: :cascade do |t|
@@ -141,7 +141,7 @@ ActiveRecord::Schema[7.2].define(version: 0) do
     t.references "creator", null: false, foreign_key: { to_table: :people }
     t.text       "content", null: false     # plain/light markup, no Action Text
     t.datetime   "created_at", null: false
-    t.index ["chat_id", "created_at"]
+    t.index [ "chat_id", "created_at" ]
   end
 
   # ── Envelope tables implied by the pattern (reserved, shapes inferred) ──────
@@ -150,7 +150,7 @@ ActiveRecord::Schema[7.2].define(version: 0) do
     t.references "recording", null: false, foreign_key: true
     t.references "person",    null: false, foreign_key: true
     t.timestamps
-    t.index ["recording_id", "person_id"], unique: true
+    t.index [ "recording_id", "person_id" ], unique: true
   end
 
   create_table "boosts", force: :cascade do |t|     # emoji reactions

@@ -7,7 +7,7 @@ class PostBroadcastMailerTest < ActionMailer::TestCase
 
     email = PostBroadcastMailer.issue(broadcast, subscriber)
 
-    assert_equal ["reader@example.com"], email.to
+    assert_equal [ "reader@example.com" ], email.to
     assert_equal posts(:kickoff).title, email.subject
     assert_match records(:kickoff).to_slug, email.text_part.decoded
     assert_match %r{/newsletter/unsubscribe/}, email.text_part.decoded

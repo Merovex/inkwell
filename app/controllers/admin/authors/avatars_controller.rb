@@ -1,7 +1,6 @@
 # An author's avatar as a resource — the same auto-submitting well as the user's
 # own picture. PATCH swaps it, DELETE reverts to the monogram.
 class Admin::Authors::AvatarsController < Admin::BaseController
-
   before_action :set_author
 
   def update

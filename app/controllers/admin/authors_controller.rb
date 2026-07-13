@@ -2,7 +2,6 @@
 # edited in place (no draft/publish). Domain-admin only. Content creators just
 # *select* an author on the composer; curating the personas is the admin's job.
 class Admin::AuthorsController < Admin::BaseController
-
   before_action :set_author, only: %i[edit update destroy]
 
   def index

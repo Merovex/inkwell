@@ -9,7 +9,7 @@ class AuthorsTest < ActionDispatch::IntegrationTest
     get author_page_path(author)
     assert_response :success
     assert_select "h1", text: "Ben Wilson"
-    assert_select ".press-article__body", text: /Writes science fiction/
+    assert_select ".press-body", text: /Writes science fiction/
     assert_select ".press-article-card__title", text: posts(:kickoff).title
     assert_match '"@type":"Person"', response.body   # JSON-LD
   end
@@ -27,7 +27,7 @@ class AuthorsTest < ActionDispatch::IntegrationTest
 
     get "/blog/#{records(:kickoff).to_slug}"
     assert_response :success
-    assert_select ".press-article__byline a[href=?]", author_page_path(author), text: "Ben Wilson"
+    assert_select ".press-muted a[href=?]", author_page_path(author), text: "Ben Wilson"
     assert_match '"@type":"Article"', response.body   # JSON-LD
   end
 
