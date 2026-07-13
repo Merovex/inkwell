@@ -69,6 +69,8 @@ aliases:
   shell: app exec --interactive --reuse "bash"
   logs: app logs -f
   dbc: app exec --interactive --reuse "bin/rails dbconsole --include-password"
+  # Emergency sign-in: mint + print a magic-link code for the root user when email fails.
+  rescue-code: app exec --reuse "bin/rails auth:rescue_code"
 
 # Use a persistent storage volume for sqlite database files and local Active Storage files.
 # Recommended to change this to a mounted volume path that is backed up off server.

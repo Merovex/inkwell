@@ -50,6 +50,7 @@ for canonical naming.
 - [theme-model-playbook](concepts/theme-model-playbook.md) — the three appearance axes (mode / tint / accent) + how-to steps to change each
 - [app-shell](concepts/app-shell.md) — top-bar shell; responsive nav; the responsive-web vs Hotwire Native mobile fork
 - [css-architecture](concepts/css-architecture.md) — CUBE/BEM hybrid: layers, u- compositions/utilities, standard BEM blocks, exceptions via modifiers/data-attrs
+- [break-glass-sign-in](concepts/break-glass-sign-in.md) — email-failure escape hatch: `bin/kamal rescue-code` mints a magic-link code for the root user
 
 ## Entities
 

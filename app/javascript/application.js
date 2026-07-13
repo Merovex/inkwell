@@ -8,7 +8,11 @@ if ("serviceWorker" in navigator) {
 }
 
 // Rich text editor for Action Text bodies (replaces Trix; speaks the same protocol).
-import "lexxy"
+// Cap headings at H2 so bodies never emit an <h1> — the page title owns that level.
+// configure() must run synchronously right after the import (editors register once
+// the import's call stack completes).
+import * as Lexxy from "lexxy"
+Lexxy.configure({ default: { headings: ["h2", "h3", "h4"] } })
 
 // Charts for the drip dashboard (Chart.js via chartkick).
 import "chartkick"

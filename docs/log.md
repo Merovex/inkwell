@@ -2,6 +2,11 @@
 
 Append-only. Newest first. Format defined in [[CLAUDE]] (`CLAUDE.md`).
 
+## [2026-07-13] build | Break-glass sign-in — email-failure escape hatch
+- Added `bin/kamal rescue-code`: mints a fresh single-use magic-link code for the root user (domain admin, else lowest-id user) and prints code + verify URL + expiry. Recovers admin access when email delivery is down. Only the SHA-256 digest of a code is stored, so recovery = minting a new one, not reading an existing plaintext. Verify URL uses the mailer's host (`ses.host`), so it targets the live site.
+- pages touched: [[break-glass-sign-in]] (new concept), index.md
+- refs: ../lib/tasks/auth.rake, ../config/deploy.yml (rescue-code alias), ../app/models/sign_in_code.rb
+
 ## [2026-07-12] build | Drip campaigns — web-defined welcome sequences (Drip/Drop)
 - New newsletter automation: an admin-authored **Drip** (campaign) holds ordered **Drops** (emails), mailed to a subscriber on a schedule anchored to their `confirmed_at`. Both are **recordables** on the spine — Drop mirrors Comment (a versioned Lexxy body, parented to the Drip's Record, ordered by `records.position`). Runtime state is split out: **Stream** = one subscriber's run (`enrolled_at` = confirmed_at, ends on unsubscribe), **DropDelivery** = per (stream, drop) row (pending/sent/skipped + SES engagement timestamps, mirrors BroadcastDelivery). `delay_days` is an absolute offset from confirmation (0 = immediately). Metrics are computed from delivery rows, not cached counters (avoids counters on a versioned model).
 - Sending: `Subscriber#confirm!` enrolls into every active Drip and enqueues `DripAdvanceJob` (day-0 fires at once); recurring `DripTickJob` (config/recurring.yml, 7am daily) advances each active stream as later Drops come due; a Drop due for an unsubscribed subscriber records `status: skipped` rather than mailing. Idempotent throughout (unique [stream, drop_record] index).
