@@ -6,6 +6,11 @@
     grid-auto-columns: 200px;
     overflow-x: scroll;
     scroll-snap-type: x mandatory;
+    /* Lets the children query whether the shelf actually overflows (below). */
+    container-type: scroll-state;
+    /* "safe" falls back to start-aligned when the shelf overflows, so the
+       leftmost covers stay reachable; centered only when everything fits. */
+    justify-content: safe center;
     margin-block: 1em;
     padding-block: 1em;
 }
@@ -50,8 +55,22 @@
 .overflow-scroller > * {
     scroll-snap-align: center;
 
-    /* Animation properties */
+    /* Animation properties (shorthand first — it resets the timeline) */
     animation: scroller linear both;
     animation-timeline: view(x);
+}
+
+/* On screens wide enough to fit every card there's nothing to scroll, so the
+   view(x) timeline can't progress and the edge cards would freeze at their
+   shrunken keyframes — pin them to full size instead. The override targets the
+   animated properties (!important beats keyframes in the cascade), NOT
+   animation-*: Chromium treats animation properties that depend on a
+   scroll-state query as a potential timeline cycle and disables the whole
+   animation. */
+@container not scroll-state(scrollable: x) {
+    .overflow-scroller > * {
+        opacity: 1 !important;
+        scale: 1 !important;
+    }
 }
 
