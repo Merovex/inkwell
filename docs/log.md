@@ -2,6 +2,12 @@
 
 Append-only. Newest first. Format defined in [[CLAUDE]] (`CLAUDE.md`).
 
+## [2026-07-16] build | Home-page book scroller (overflow-scroller)
+- New `pages/_overflow_scroller.html.erb` partial renders `books/card` covers inside `.overflow-scroller` (new `scroller.css`: grid auto-flow column, scroll-snap, `view(x inline)` scroll-driven fade/scale). Inserted on the home page between the hero and the genre cards.
+- `PagesController#home` (previously empty) builds `@scroller_books`: published series in `feed_ordered` order with each series' books reordered by `publication_date`, then standalone books by `publication_date`, deduped by `record_id` (multi-series books appear once). Fragment-cached with `cover_fragment_version` per the Jul 13 covers incident.
+- pages touched: [[merovex-press-public-site]]
+- refs: ../app/views/pages/{home.html.erb,_overflow_scroller.html.erb}, ../app/controllers/pages_controller.rb, ../app/assets/stylesheets/scroller.css
+
 ## [2026-07-13] fix | Covers disappeared — stale Solid Cache fragments + web/email image formats
 - **Incident:** all public book covers rendered broken for every visitor (incognito too); uploading one cover made them "all reappear". Root cause was **not** Active Storage — the Jul 11 cover-variant change (`[600,900]` JPG → `[480,720]` WebP `preprocessed`, commit d3cd734) changed every cover's signed proxy URL, but the `cache [series, books]` fragments in books/index+show bake those URLs in and are stored in **Solid Cache (DB-backed, survives deploys)**. A model change alters neither the template digest nor any Book/Series `updated_at`, so the fragments never invalidated and kept serving dead JPG URLs. An upload bumped a record in the cached collection → collection key changed → fragment regenerated with live WebP URLs → covers reappeared.
 - **Fix:** added `ApplicationHelper#cover_fragment_version` (`"covers-v2"`) into all three cover fragment keys; bump on any cover-variant change. Prod remediation: `bin/kamal app exec --reuse "bin/rails runner 'Rails.cache.clear'"`.

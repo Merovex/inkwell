@@ -1,0 +1,8 @@
+<%# locals: (books:) %>
+<%# Horizontal scroll-snap shelf of book covers (scroller.css). Each direct
+    child is a snap target, so the cards render straight into the container. %>
+<section class="overflow-scroller" aria-label="Books from Merovex Press">
+  <% books.each do |book| %>
+    <%= render "books/card", book: book %>
+  <% end %>
+</section>

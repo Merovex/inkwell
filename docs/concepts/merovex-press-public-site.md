@@ -4,7 +4,7 @@ title: Merovex Press public site (front-of-house)
 status: active
 tags: [public-site, hotwire, css, routing]
 created: 2026-07-08
-updated: 2026-07-12
+updated: 2026-07-16
 sources: [../decisions/0010-id-first-public-slugs.md]
 ---
 
@@ -43,6 +43,14 @@ color-token scales with the admin.
   `press_theme` cookie (default **dark**), independent of the admin `theme`
   cookie. The layout renders `<html data-theme>` server-side (no flash); the
   cycler is event-delegated in `public.js` so it survives Turbo body swaps.
+- **Home book scroller** — between the hero and the genre cards, `pages/
+  _overflow_scroller.html.erb` renders `books/card` covers in a horizontal
+  scroll-snap shelf (`scroller.css`, `.overflow-scroller` — CSS grid auto-flow
+  column with a `view(x inline)` scroll-driven fade/scale animation).
+  `PagesController#home` builds the list: series in `feed_ordered` order with
+  each series' books by `publication_date`, then standalone books by
+  `publication_date`, deduped by `record_id`. Fragment-cached with
+  `cover_fragment_version` (see [[public-image-handling]]).
 - **URLs** — id-first slugs, see [0010](../decisions/0010-id-first-public-slugs.md).
 - **Error pages** — branded, self-contained static files `public/*.html`
   (400/403/404/406/422/500/503), since a real error means the app/asset pipeline

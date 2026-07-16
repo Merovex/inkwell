@@ -1,0 +1,57 @@
+/* The Scroll Container */
+.overflow-scroller {
+    display: grid;
+    gap: 1rem;
+    grid-auto-flow: column;
+    grid-auto-columns: 200px;
+    overflow-x: scroll;
+    scroll-snap-type: x mandatory;
+    margin-block: 1em;
+    padding-block: 1em;
+}
+/* Scrollbar — thin rounded thumb on an invisible track (Chromium/Safari).
+   Setting scrollbar-color/-width would disable these pseudo-elements in
+   Chromium, so the standard properties live only in the Firefox guard below. */
+.overflow-scroller::-webkit-scrollbar {
+    height: 8px;
+}
+.overflow-scroller::-webkit-scrollbar-track {
+    background: transparent;
+}
+.overflow-scroller::-webkit-scrollbar-thumb {
+    background: var(--border-2);
+    border-radius: 4px;
+}
+.overflow-scroller::-webkit-scrollbar-thumb:hover {
+    background: var(--text-3);
+}
+
+/* Firefox: no ::-webkit-scrollbar — recolor the native thin scrollbar. */
+@supports not selector(::-webkit-scrollbar) {
+    .overflow-scroller {
+        scrollbar-color: var(--border-2) transparent;
+        scrollbar-width: thin;
+    }
+}
+
+/* Keyframes for the fade and scale effect */
+@keyframes scroller {
+    0%, 100% {
+        opacity: 0.5;
+        scale: 0.5;
+    }
+    35%, 65% {
+        opacity: 1;
+        scale: 1;
+    }
+}
+
+/* The Cards (Children) */
+.overflow-scroller > * {
+    scroll-snap-align: center;
+
+    /* Animation properties */
+    animation: scroller linear both;
+    animation-timeline: view(x);
+}
+

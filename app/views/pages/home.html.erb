@@ -32,6 +32,12 @@
   </div>
 </section>
 
+<% if @scroller_books.any? %>
+  <% cache [ cover_fragment_version, @scroller_books ] do %>
+    <%= render "pages/overflow_scroller", books: @scroller_books %>
+  <% end %>
+<% end %>
+
 <section class="press-genres">
   <article class="press-card press-genre-card">
     <p class="press-kicker">Ben Wilson</p>

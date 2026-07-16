@@ -1,9 +1,18 @@
 # Public-facing Merovex Press pages (the front of house). Anonymous — no session
 # required — and rendered in the standalone "public" layout rather than the
-# Inkwell admin chrome. Static for now; links are placeholders (#) until the
-# real destinations exist.
+# Inkwell admin chrome.
 class PagesController < PublicController
   def home
+    # Books for the home-page scroller: series order first (books within a
+    # series by release date), then standalone titles by release date. A book
+    # in multiple series appears once.
+    linked = Installment.select(:book_record_id)
+    in_series = Series.current.published.feed_ordered.flat_map do |series|
+      series.books.published.reorder(:publication_date).to_a
+    end
+    standalone = Book.current.published.where.not(record_id: linked)
+      .includes(:record, :depiction).order(:publication_date)
+    @scroller_books = (in_series + standalone).uniq(&:record_id)
   end
 
   # Renders the About blurb an admin sets in System settings (Setting#description).
