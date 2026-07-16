@@ -51,6 +51,7 @@ for canonical naming.
 - [app-shell](concepts/app-shell.md) — top-bar shell; responsive nav; the responsive-web vs Hotwire Native mobile fork
 - [css-architecture](concepts/css-architecture.md) — CUBE/BEM hybrid: layers, u- compositions/utilities, standard BEM blocks, exceptions via modifiers/data-attrs
 - [break-glass-sign-in](concepts/break-glass-sign-in.md) — email-independent console sign-in: `auth:setup_admin` (bootstrap first admin) + `bin/kamal rescue-code` (break-glass); sessions/SES-sandbox notes
+- [public-image-handling](concepts/public-image-handling.md) — Active Storage on the public site: cover WebP variants + fragment-cache versioning (the "covers disappeared" incident), and web-WebP/email-JPEG Action Text attachments
 
 ## Entities
 
