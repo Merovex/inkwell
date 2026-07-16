@@ -1,0 +1,11 @@
+@layer utilities {
+    .u-pile {
+        display: grid;
+        grid-template-areas: "pile";
+        place-items: center; /* Optional: centers the content */
+    }
+
+    .u-pile > * {
+        grid-area: pile;
+    }
+}

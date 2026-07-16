@@ -2,6 +2,24 @@
 
 Append-only. Newest first. Format defined in [[CLAUDE]] (`CLAUDE.md`).
 
+## [2026-07-16] build | Home hero — teal-shifted backdrop asset, gradient finalized into press-hero.css
+- Rebaked the starry-night backdrop into the brand family: `guille-pozzi-sbcIAn4Mn14-unsplash-teal.avif` via `magick -modulate 100,100,80.5` (HSL −60° overshot in OKLCH; 80.5 lands the sky's dominant clusters at OKLCH hue 175–181.5 vs syō-ro's 179.3–180.4; original sky was hue ~239 slate blue).
+- Gradient design settled and moved off the inline style onto `.press-hero-backdrop` in `press-hero.css`: site-bg wash at 50% opacity at top/bottom edges rising to an 80% plateau across 25%–75% (double-position stop), over the cover/center photo. Propshaft resolves the `url()` in CSS.
+- pages touched: [[merovex-press-public-site]]
+- refs: ../app/assets/stylesheets/press-hero.css, ../app/views/pages/home.html.erb, ../app/assets/images/guille-pozzi-sbcIAn4Mn14-unsplash-teal.avif
+
+## [2026-07-16] build | Home hero — full-bleed backdrop, site-bg gradient band, Unsplash credit
+- Hero background went full-bleed: the inline photo+gradient background moved to a `.press-hero-backdrop` wrapper `<section>` (full width of `#main-content`); `.press-hero` is now an inner div keeping its 1100px centered layout. Photo swapped to `guille-pozzi-sbcIAn4Mn14-unsplash.avif` (starry night).
+- Gradient placeholder replaced: transparent → `color-mix(in oklab, var(--site-bg) 80%, transparent)` at the 50% stop → transparent, so a soft band of the page background (tint/dark-mode aware) backs the hero text while the photo shows at the edges.
+- Unsplash attribution added as `.press-hero-backdrop__credit` (absolute, bottom-right corner, 0.7rem translucent white) in `press-hero.css`.
+- pages touched: [[merovex-press-public-site]]
+- refs: ../app/views/pages/home.html.erb, ../app/assets/stylesheets/press-hero.css
+
+## [2026-07-16] build | Home hero — photo + gradient as CSS background (dropped u-pile experiment)
+- The home hero briefly used `.u-pile` to stack a full-bleed photo `<img>` behind a gradient wrapper div; reverted to plain `<section class="press-hero">` (unchanged `press-hero.css` layout: photo right of text ≥900px, stacked below) with the photo and a semi-transparent gradient composed as an inline `background-image` (`linear-gradient(...), url(image_path ...)`, cover/center). Rationale: a raw `<img>` grid layer contributes its intrinsic size to track sizing (2078×1373 photo would set the section height), while stacked CSS backgrounds keep the section content-sized for free. Gradient colors (red→yellow at 55% alpha) are placeholders. Note: the background covers only the 1100px `.press-hero` box, not full-bleed.
+- pages touched: [[merovex-press-public-site]]
+- refs: ../app/views/pages/home.html.erb
+
 ## [2026-07-16] build | Home-page book scroller (overflow-scroller)
 - New `pages/_overflow_scroller.html.erb` partial renders `books/card` covers inside `.overflow-scroller` (new `scroller.css`: grid auto-flow column, scroll-snap, `view(x inline)` scroll-driven fade/scale). Inserted on the home page between the hero and the genre cards.
 - `PagesController#home` (previously empty) builds `@scroller_books`: published series in `feed_ordered` order with each series' books reordered by `publication_date`, then standalone books by `publication_date`, deduped by `record_id` (multi-series books appear once). Fragment-cached with `cover_fragment_version` per the Jul 13 covers incident.

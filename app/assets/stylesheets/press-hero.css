@@ -2,6 +2,7 @@
  * Headline type comes from the heading defaults + .press-display-xl; this file
  * keeps the responsive column/row flip and the photo ring. */
 .press-hero {
+  --hero-text-color: var(--color-mountain-mist-50);
   display: flex;
   flex-direction: column-reverse;
   align-items: center;
@@ -10,6 +11,14 @@
   margin-inline: auto;
   padding: 5rem 1.5rem 3.5rem;
   text-align: center;
+  text-shadow: 1px 1px 1px var(--hero-bg-color);
+  /* color: var(--color-mountain-mist-50); */
+  .press-display-xl {
+    color: var(--hero-text-color) !important;
+  }
+  .press-muted {
+    color: var(--color-mountain-mist-200);
+  }
 }
 .press-hero__text {
   display: flex;
@@ -25,6 +34,32 @@
   overflow: hidden;
 }
 .press-hero__ring img { width: 100%; height: 100%; object-fit: cover; object-position: center top; display: block; }
+
+/* Full-bleed backdrop wrapper: teal-shifted starry-night photo under a site-bg
+ * wash (50% at the edges, 80% plateau across the middle half where the text
+ * sits), and anchors the Unsplash attribution to its corner. */
+.press-hero-backdrop {
+  --hero-bg-color: var(--color-mountain-mist-950);
+  position: relative;
+  background-image:
+    linear-gradient(to bottom,
+      color-mix(in oklab, var(--hero-bg-color) 50%, transparent),
+      color-mix(in oklab, var(--hero-bg-color) 75%, transparent) 25% 75%,
+      color-mix(in oklab, var(--hero-bg-color) 50%, transparent)),
+    url("guille-pozzi-sbcIAn4Mn14-unsplash-teal.avif");
+  background-size: cover;
+  background-position: center;
+}
+.press-hero-backdrop__credit {
+  position: absolute;
+  inset-block-end: 0.35rem;
+  inset-inline-end: 0.75rem;
+  margin: 0;
+  font-family: sans-serif;
+  font-size: 0.5rem;
+  color: rgb(255 255 255 / 0.65);
+}
+.press-hero-backdrop__credit a { color: inherit; }
 
 @media (min-width: 900px) {
   .press-hero { flex-direction: row; justify-content: space-between; text-align: left; gap: 4rem; }

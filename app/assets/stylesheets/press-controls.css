@@ -36,6 +36,7 @@
   border-radius: 0.25rem;
   cursor: pointer;
   transition: background-color 200ms ease, color 200ms ease, border-color 200ms ease;
+  text-shadow: none !important;
 }
 /* Square icon button, exactly a standard .press-btn's height: 1.65em line box
    + 0.6em vertical padding ×2 + 1px borders (border-box). */

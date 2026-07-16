@@ -1,7 +1,8 @@
 <%# Static Merovex Press home page — mirrors the merovex.press split hero + genre
     cards. All links are placeholders (#) for now. %>
 
-<section class="press-hero">
+<section class="press-hero-backdrop">
+<div class="press-hero">
   <div class="press-hero__text">
     <h1 class="press-display-xl">Worlds break. People don't.</h1>
     <p class="press-hero__lede press-muted">
@@ -30,6 +31,12 @@
             srcset: hero_srcset, sizes: hero_sizes %>
     </div>
   </div>
+</div>
+
+<p class="press-hero-backdrop__credit">
+  Background by <a href="https://unsplash.com/@guillepozzi?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">guille pozzi</a>
+  on <a href="https://unsplash.com/photos/low-angle-photo-of-starry-night-sbcIAn4Mn14?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">Unsplash</a>
+</p>
 </section>
 
 <% if @scroller_books.any? %>
