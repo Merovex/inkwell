@@ -5,6 +5,12 @@ class PublicController < ApplicationController
   allow_unauthenticated_access
   layout "public"
 
+  # Fold the cover-variant version into every public ETag: a variant-format
+  # change (the Jul 13 covers incident) alters image URLs without touching any
+  # record's updated_at or the template digest, so a browser revalidating
+  # against the old ETag would 304 onto dead cover URLs.
+  etag { helpers.cover_fragment_version }
+
   private
     def render_not_found
       render "errors/public_not_found", status: :not_found

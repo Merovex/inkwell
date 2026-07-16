@@ -3,7 +3,7 @@ module AuthorsHelper
   # holder's display name for content with no author set.
   def byline_link(recordable)
     if (author = recordable.author)
-      link_to author.name, author_page_path(author), class: "press-link"
+      link_to author.name, author_page_path(author.public_slug), class: "press-link"
     else
       recordable.record.creator.display_name
     end

@@ -8,6 +8,7 @@ class BlogController < PublicController
     @posts = Post.current.published
       .includes(record: :creator, body: :rich_text_content)
       .feed_ordered
+    fresh_when etag: [ @posts, site_settings ], public: true
   end
 
   # RSS 2.0 of the latest published posts (footer + feed readers).

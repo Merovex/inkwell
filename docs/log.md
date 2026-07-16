@@ -2,6 +2,14 @@
 
 Append-only. Newest first. Format defined in [[CLAUDE]] (`CLAUDE.md`).
 
+## [2026-07-16] build | Public caching audit fixes + pretty author URLs
+- **ETag hole closed:** `PublicController` now declares `etag { helpers.cover_fragment_version }`, folding the covers version into every public ETag — a variant-format change (Jul 13 incident class) changes cover URLs without touching `updated_at` or template digests, so browsers revalidating a stale ETag would 304 onto dead URLs. Added missing `fresh_when` to `pages#home` (`[@scroller_books, site_settings]`), `pages#about`, `blog#index` (`[@posts, site_settings]`), `books#index` (`[@series, @standalone, site_settings]`).
+- **Author pages:** canonical public URL is now the pretty name slug (`/authors/troy-buzby`, was 404 — only id-first `3-troy-buzby` resolved). `Author#public_slug` (= `name.parameterize`); `to_param` keeps the id-first slug for admin routes. `AuthorsController#show` resolves the name slug first, falls back to the Record spine for legacy id-first/bare-id links and 301s them. Byline helper + JSON-LD emit the pretty slug. Caveat: two authors with names parameterizing identically would collide (first wins).
+- Author page: avatar no longer rendered in the header (bio on top, then books, then writing); og/JSON-LD image metadata kept. Books/posts sections fragment-cached (`[cover_fragment_version, @books]` / `@posts`), matching books-index. Note: byline URLs inside pre-existing Solid Cache fragments keep the old id-first form until those fragments bust (helper changes don't alter template digests) — harmless, they 301.
+- 33 controller tests green (authors/blog/books/pages/public/admin-authors), incl. new legacy-slug canonicalization test.
+- pages touched: [[merovex-press-public-site]]
+- refs: ../app/controllers/{public,authors,blog,books,pages}_controller.rb, ../app/models/author.rb, ../app/helpers/authors_helper.rb, ../app/views/authors/show.html.erb, ../test/controllers/authors_test.rb
+
 ## [2026-07-16] build | Home hero — teal-shifted backdrop asset, gradient finalized into press-hero.css
 - Rebaked the starry-night backdrop into the brand family: `guille-pozzi-sbcIAn4Mn14-unsplash-teal.avif` via `magick -modulate 100,100,80.5` (HSL −60° overshot in OKLCH; 80.5 lands the sky's dominant clusters at OKLCH hue 175–181.5 vs syō-ro's 179.3–180.4; original sky was hue ~239 slate blue).
 - Gradient design settled and moved off the inline style onto `.press-hero-backdrop` in `press-hero.css`: site-bg wash at 50% opacity at top/bottom edges rising to an 80% plateau across 25%–75% (double-position stop), over the cover/center photo. Propshaft resolves the `url()` in CSS.

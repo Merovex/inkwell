@@ -8,15 +8,12 @@
     "name": @author.name,
     "description": @author.bio.to_plain_text.to_s.truncate(300).presence,
     "image": (url_for(@author.avatar.variant(:thumb)) if @author.avatar.attached?),
-    "url": author_page_url(@author)
+    "url": author_page_url(@author.public_slug)
   }) %>
 <% end %>
 
 <article class="press-shell">
   <header class="press-author__head">
-    <% if @author.avatar.attached? %>
-      <%= image_tag @author.avatar.variant(:thumb), class: "press-author__avatar", alt: @author.name %>
-    <% end %>
     <h1 class="press-display-lg"><%= @author.name %></h1>
   </header>
 
@@ -26,31 +23,35 @@
 </article>
 
 <% if @books.any? %>
-  <section class="press-shell press-shell--wide u-flow">
-    <h2 class="press-display-md u-text-center">Books</h2>
-    <div class="press-book-grid">
-      <% @books.each do |book| %>
-        <%= render "books/card", book: book %>
-      <% end %>
-    </div>
-  </section>
+  <% cache [ cover_fragment_version, @books ] do %>
+    <section class="press-shell press-shell--wide u-flow">
+      <h2 class="press-display-md u-text-center">Books</h2>
+      <div class="press-book-grid">
+        <% @books.each do |book| %>
+          <%= render "books/card", book: book %>
+        <% end %>
+      </div>
+    </section>
+  <% end %>
 <% end %>
 
 <% if @posts.any? %>
-  <section class="press-shell">
-    <h2 class="press-display-md u-text-center">Writing</h2>
-    <div class="press-articles">
-      <% @posts.each do |post| %>
-        <article class="press-article-card">
-          <time class="press-article-card__date" datetime="<%= post.published_at.iso8601 %>">
-            <%= post.published_at.strftime("%B %-d, %Y") %>
-          </time>
-          <h3 class="press-article-card__title">
-            <%= link_to post.title, blog_post_path(post.record.to_slug), class: "press-article-card__link" %>
-          </h3>
-          <p class="press-article-card__desc"><%= post.summary %></p>
-        </article>
-      <% end %>
-    </div>
-  </section>
+  <% cache @posts do %>
+    <section class="press-shell">
+      <h2 class="press-display-md u-text-center">Writing</h2>
+      <div class="press-articles">
+        <% @posts.each do |post| %>
+          <article class="press-article-card">
+            <time class="press-article-card__date" datetime="<%= post.published_at.iso8601 %>">
+              <%= post.published_at.strftime("%B %-d, %Y") %>
+            </time>
+            <h3 class="press-article-card__title">
+              <%= link_to post.title, blog_post_path(post.record.to_slug), class: "press-article-card__link" %>
+            </h3>
+            <p class="press-article-card__desc"><%= post.summary %></p>
+          </article>
+        <% end %>
+      </div>
+    </section>
+  <% end %>
 <% end %>

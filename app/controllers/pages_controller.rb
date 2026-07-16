@@ -13,10 +13,12 @@ class PagesController < PublicController
     standalone = Book.current.published.where.not(record_id: linked)
       .includes(:record, :depiction).order(:publication_date)
     @scroller_books = (in_series + standalone).uniq(&:record_id)
+    fresh_when etag: [ @scroller_books, site_settings ], public: true
   end
 
   # Renders the About blurb an admin sets in System settings (Setting#description).
   def about
+    fresh_when etag: site_settings, public: true
   end
 
   # Legal pages, authored as rich text in System settings. Cookies live inside

@@ -6,7 +6,7 @@ class AuthorsTest < ActionDispatch::IntegrationTest
     author = originate_author("Ben Wilson", bio: "<p>Writes science fiction.</p>")
     posts(:kickoff).update_column(:author_record_id, author.record_id)
 
-    get author_page_path(author)
+    get author_page_path(author.public_slug)
     assert_response :success
     assert_select "h1", text: "Ben Wilson"
     assert_select ".press-body", text: /Writes science fiction/
@@ -18,7 +18,14 @@ class AuthorsTest < ActionDispatch::IntegrationTest
     author = originate_author("Ben Wilson")
 
     get "/authors/#{author.record_id}"
-    assert_redirected_to author_page_path(author)
+    assert_redirected_to author_page_path(author.public_slug)
+  end
+
+  test "the author page canonicalizes a legacy id-first slug" do
+    author = originate_author("Ben Wilson")
+
+    get "/authors/#{author.record.to_slug}"
+    assert_redirected_to author_page_path(author.public_slug)
   end
 
   test "a blog post links its byline to the author page" do
@@ -27,7 +34,7 @@ class AuthorsTest < ActionDispatch::IntegrationTest
 
     get "/blog/#{records(:kickoff).to_slug}"
     assert_response :success
-    assert_select ".press-muted a[href=?]", author_page_path(author), text: "Ben Wilson"
+    assert_select ".press-muted a[href=?]", author_page_path(author.public_slug), text: "Ben Wilson"
     assert_match '"@type":"Article"', response.body   # JSON-LD
   end
 

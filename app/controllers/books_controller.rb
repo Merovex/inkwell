@@ -12,6 +12,7 @@ class BooksController < PublicController
     linked = Installment.select(:book_record_id)
     @standalone = Book.current.published.where.not(record_id: linked)
       .includes(:record, :depiction).order(:publication_date)
+    fresh_when etag: [ @series, @standalone, site_settings ], public: true
   end
 
   def show

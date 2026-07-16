@@ -38,6 +38,12 @@ class Author < ApplicationRecord
 
   def to_param = record.to_slug
 
+  # The public page uses a pretty name-based slug (/authors/troy-buzby) rather
+  # than the id-first form — personas are few, always-live, and the name is the
+  # brand. Admin routes keep to_param's id-first slug; AuthorsController still
+  # resolves legacy id-first public links and 301s them to this.
+  def public_slug = name.parameterize
+
   # Carry the bio + avatar forward on action-only versions (trash/restore) so a
   # restored persona doesn't come back blank — the same trick Comment uses.
   def build_successor(event:, creator:, **changes)
