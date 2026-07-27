@@ -2,6 +2,13 @@
 
 Append-only. Newest first. Format defined in [[CLAUDE]] (`CLAUDE.md`).
 
+## [2026-07-27] fix | DoubleRenderError on legal pages (fresh_when + render)
+- Production Honeybadger fault (#133020461, `pages#privacy`): `render_legal` called `fresh_when` then `render :legal` unconditionally. On a conditional GET with a matching ETag, `fresh_when` renders the 304 itself, so the follow-up `render` raised `AbstractController::DoubleRenderError`. Only bit revalidating clients — first visits were fine.
+- Fix: `render :legal if stale?(etag: site_settings, public: true)` — `stale?` is the conditional form of `fresh_when` for exactly this explicit-render case. Regression test added: privacy ETag round-trip expects 304.
+- Rule of thumb now in the concept page: `fresh_when` only pairs with implicit rendering; any action that calls `render` explicitly must use `stale?`.
+- pages touched: [[merovex-press-public-site]]
+- refs: ../app/controllers/pages_controller.rb, ../test/controllers/public_pages_test.rb
+
 ## [2026-07-16] build | Public caching audit fixes + pretty author URLs
 - **ETag hole closed:** `PublicController` now declares `etag { helpers.cover_fragment_version }`, folding the covers version into every public ETag — a variant-format change (Jul 13 incident class) changes cover URLs without touching `updated_at` or template digests, so browsers revalidating a stale ETag would 304 onto dead URLs. Added missing `fresh_when` to `pages#home` (`[@scroller_books, site_settings]`), `pages#about`, `blog#index` (`[@posts, site_settings]`), `books#index` (`[@series, @standalone, site_settings]`).
 - **Author pages:** canonical public URL is now the pretty name slug (`/authors/troy-buzby`, was 404 — only id-first `3-troy-buzby` resolved). `Author#public_slug` (= `name.parameterize`); `to_param` keeps the id-first slug for admin routes. `AuthorsController#show` resolves the name slug first, falls back to the Record spine for legacy id-first/bare-id links and 301s them. Byline helper + JSON-LD emit the pretty slug. Caveat: two authors with names parameterizing identically would collide (first wins).

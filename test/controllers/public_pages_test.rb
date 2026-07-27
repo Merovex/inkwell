@@ -49,6 +49,14 @@ class PublicPagesTest < ActionDispatch::IntegrationTest
     assert_select ".press-body", text: /Be excellent/
   end
 
+  test "legal pages answer a matching ETag with 304, not a double render" do
+    get privacy_path
+    assert_response :success
+
+    get privacy_path, headers: { "If-None-Match" => response.headers["ETag"] }
+    assert_response :not_modified
+  end
+
   test "the footer links to a legal page only when it has content" do
     Setting.current.update!(privacy_policy: "<p>present</p>", terms: "")
 

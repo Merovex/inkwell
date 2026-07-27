@@ -4,7 +4,7 @@ title: Merovex Press public site (front-of-house)
 status: active
 tags: [public-site, hotwire, css, routing]
 created: 2026-07-08
-updated: 2026-07-16
+updated: 2026-07-27
 sources: [../decisions/0010-id-first-public-slugs.md]
 ---
 
@@ -66,3 +66,8 @@ color-token scales with the admin.
 - Book detail ends with a cached "More in <series>" section per published
   series (other published books only); the series list joins the `fresh_when`
   etag.
+- `fresh_when` pairs only with **implicit** rendering. An action that calls
+  `render` explicitly must use `stale?` instead (`render :x if stale?(...)`) —
+  on an ETag match `fresh_when` renders the 304 itself, and the follow-up
+  `render` raises `DoubleRenderError` (2026-07-27 production fault on
+  `pages#privacy` via `render_legal`).

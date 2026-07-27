@@ -47,7 +47,6 @@ class PagesController < PublicController
   private
     def render_legal(title, body)
       @title, @body = title, body
-      fresh_when etag: site_settings, public: true
-      render :legal
+      render :legal if stale?(etag: site_settings, public: true)
     end
 end
