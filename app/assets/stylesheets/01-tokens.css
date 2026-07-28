@@ -6,7 +6,7 @@
  *
  * Color model: semantic tokens (--ink, --canvas, --site-bg, --line, --accent)
  * that components read. Inkwell shares the Merovex Press palette so the admin
- * backend and the public site converge: the accent is the "syō-ro" teal family
+ * backend and the public site converge: the accent is the muted "pine" teal family
  * and the neutral surfaces are the "mountain-mist" family (both ported from
  * ~/Work/merovex.press/assets/css/colors.css as OKLCH literals). Dark mode
  * overrides the structural neutrals. The rotating account tint is retired — the
@@ -24,18 +24,23 @@
   --radius-card: var(--radius-3);
   --elevation-card: var(--shadow-2);
 
-  /* --- syō-ro: the Merovex teal accent scale --- */
-  --color-syo-ro-50:  oklch(94.8% 0.066 179.56);
-  --color-syo-ro-100: oklch(89.6% 0.142 179.34);
-  --color-syo-ro-200: oklch(81.9% 0.130 179.39);
-  --color-syo-ro-300: oklch(73.5% 0.116 179.27);
-  --color-syo-ro-400: oklch(66.0% 0.105 179.47);
-  --color-syo-ro-500: oklch(57.7% 0.091 179.50);
-  --color-syo-ro-600: oklch(49.1% 0.078 179.63);
-  --color-syo-ro-700: oklch(39.8% 0.063 179.53);
-  --color-syo-ro-800: oklch(31.2% 0.049 180.39);
-  --color-syo-ro-900: oklch(22.0% 0.035 179.11);
-  --color-syo-ro-950: oklch(17.3% 0.028 177.86);
+  /* --- pine: the Merovex muted-teal brand scale. Hue + lightness keep the
+     retired syō-ro curve (every documented contrast ratio below still holds);
+     chroma is ported per-stop from marketing's "Pine" accent
+     (~/Work/merovexpress.com/assets/css/tokens.css) — the same
+     lightness-from-one-scale, chroma-from-another move that built Pine
+     itself. Page backgrounds stay mountain-mist; pine is brand only. --- */
+  --color-pine-50:  oklch(94.8% 0 179.56);
+  --color-pine-100: oklch(89.6% 0.003 179.34);
+  --color-pine-200: oklch(81.9% 0.005 179.39);
+  --color-pine-300: oklch(73.5% 0.012 179.27);
+  --color-pine-400: oklch(66.0% 0.019 179.47);
+  --color-pine-500: oklch(57.7% 0.034 179.50);
+  --color-pine-600: oklch(49.1% 0.029 179.63);
+  --color-pine-700: oklch(39.8% 0.029 179.53);
+  --color-pine-800: oklch(31.2% 0.024 180.39);
+  --color-pine-900: oklch(22.0% 0.019 179.11);
+  --color-pine-950: oklch(17.3% 0.008 177.86);
 
   /* --- mountain-mist: the Merovex neutral surface/ink scale (warm-tinted).
      Evenly stepped in OKLCH lightness (~8-9% per level) — no cliffs. --- */
@@ -72,22 +77,22 @@
   --code-selector:    #22863a;
   --code-variable:    #e36209;
 
-  /* --- brand: the syō-ro teal family --- */
-  --brand-deep:   var(--color-syo-ro-950); /* deep bg, sidebars, strong text */
-  --brand-strong: var(--color-syo-ro-800); /* solid fill for white text (AAA) — primary buttons */
-  --brand-muted:  var(--color-syo-ro-600); /* secondary borders, inactive states */
-  --brand:        var(--color-syo-ro-500); /* key interactive: focus rings, switches, progress */
+  /* --- brand: the pine muted-teal family --- */
+  --brand-deep:   var(--color-pine-950); /* deep bg, sidebars, strong text */
+  --brand-strong: var(--color-pine-800); /* solid fill for white text (AAA) — primary buttons */
+  --brand-muted:  var(--color-pine-600); /* secondary borders, inactive states */
+  --brand:        var(--color-pine-500); /* key interactive: focus rings, switches, progress */
 
   --accent: var(--brand);                  /* interactive color the components read */
   --accent-ink: var(--brand-deep);         /* dark teal text reads on the brand fill */
-  --accent-soft: var(--color-syo-ro-100);  /* subtle fill: hover / selected */
-  --menu-context-bg: var(--color-syo-ro-800); /* dark teal — AAA with near-white ink */
+  --accent-soft: var(--color-pine-100);  /* subtle fill: hover / selected */
+  --menu-context-bg: var(--color-pine-800); /* dark teal — AAA with near-white ink */
   --menu-context-ink: var(--color-mountain-mist-50); /* near-white text on the dark teal */
 
   /* AAA (7:1) foregrounds — muted metadata intentionally stays AA */
-  --link: var(--color-syo-ro-700);         /* dark teal link on the canvas (underlined) */
-  --ink-on-soft: var(--color-syo-ro-800);  /* text on --accent-soft: avatar initials, accent badge */
-  --brand-text: var(--color-syo-ro-700);   /* teal-tinted body text at 7:1 on the canvas */
+  --link: var(--color-pine-700);         /* dark teal link on the canvas (underlined) */
+  --ink-on-soft: var(--color-pine-800);  /* text on --accent-soft: avatar initials, accent badge */
+  --brand-text: var(--color-pine-700);   /* teal-tinted body text at 7:1 on the canvas */
 
   /* semantic surfaces + AAA inks (light pills; shared by badges + alerts) */
   --success-surface: oklch(94% 0.06 150);
@@ -116,7 +121,7 @@
 /*
  * Dark mode. Applies via explicit [data-theme="dark"] or the OS preference when
  * no explicit theme is set. Structural neutrals drop down the mountain-mist
- * scale; the syō-ro accent lifts to a lighter shade so it pops on the dark canvas.
+ * scale; the pine accent lifts to a lighter shade so it pops on the dark canvas.
  */
 [data-theme="dark"],
 :root:not([data-theme="light"]) {
@@ -140,14 +145,14 @@
   --code-punctuation: #c9d1d9;
   --code-selector:    #7ee787;
   --code-variable:    #ffa657;
-  --accent: var(--color-syo-ro-300);              /* lighter teal pops on dark */
-  --accent-ink: var(--color-syo-ro-950);
-  --accent-soft: var(--color-syo-ro-800);
-  --menu-context-bg: var(--color-syo-ro-300);     /* light teal — AAA with syō-ro-950 ink */
-  --menu-context-ink: var(--color-syo-ro-950);    /* dark teal text on the light teal */
-  --link: var(--color-syo-ro-300);                /* light teal link on the dark canvas */
-  --ink-on-soft: var(--color-syo-ro-100);         /* light teal on syō-ro-800 (avatar, accent badge) */
-  --brand-text: var(--color-syo-ro-300);          /* teal-tinted body text on dark */
+  --accent: var(--color-pine-300);              /* lighter teal pops on dark */
+  --accent-ink: var(--color-pine-950);
+  --accent-soft: var(--color-pine-800);
+  --menu-context-bg: var(--color-pine-300);     /* light teal — AAA with pine-950 ink */
+  --menu-context-ink: var(--color-pine-950);    /* dark teal text on the light teal */
+  --link: var(--color-pine-300);                /* light teal link on the dark canvas */
+  --ink-on-soft: var(--color-pine-100);         /* light teal on pine-800 (avatar, accent badge) */
+  --brand-text: var(--color-pine-300);          /* teal-tinted body text on dark */
 }
 
 @media (prefers-color-scheme: dark) {
@@ -168,13 +173,13 @@
     --code-punctuation: #c9d1d9;
     --code-selector:    #7ee787;
     --code-variable:    #ffa657;
-    --accent: var(--color-syo-ro-300);
-    --accent-ink: var(--color-syo-ro-950);
-    --accent-soft: var(--color-syo-ro-800);
-    --menu-context-bg: var(--color-syo-ro-300);
-    --menu-context-ink: var(--color-syo-ro-950);
-    --link: var(--color-syo-ro-300);
-    --ink-on-soft: var(--color-syo-ro-100);
-    --brand-text: var(--color-syo-ro-300);
+    --accent: var(--color-pine-300);
+    --accent-ink: var(--color-pine-950);
+    --accent-soft: var(--color-pine-800);
+    --menu-context-bg: var(--color-pine-300);
+    --menu-context-ink: var(--color-pine-950);
+    --link: var(--color-pine-300);
+    --ink-on-soft: var(--color-pine-100);
+    --brand-text: var(--color-pine-300);
   }
 }

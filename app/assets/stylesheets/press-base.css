@@ -19,8 +19,8 @@
      color-scheme, which the html[data-theme] rules below set from the theme
      cookie (light / dark / auto→OS). One definition per token, no dark block. */
   --surface-0: light-dark(var(--color-mountain-mist-50),  var(--color-mountain-mist-950));
-  --surface-1: light-dark(var(--color-mountain-mist-100), var(--color-syo-ro-950));
-  --surface-2: light-dark(var(--color-mountain-mist-200), var(--color-syo-ro-900));
+  --surface-1: light-dark(var(--color-mountain-mist-100), var(--color-pine-950));
+  --surface-2: light-dark(var(--color-mountain-mist-200), var(--color-pine-900));
   --border-1:  light-dark(var(--color-mountain-mist-300), var(--color-mountain-mist-700));
   --border-2:  light-dark(var(--color-mountain-mist-400), var(--color-mountain-mist-600));
   --text-1:    light-dark(var(--color-mountain-mist-900), var(--color-mountain-mist-100));
@@ -29,10 +29,10 @@
   --text-body: light-dark(var(--color-mountain-mist-900), var(--color-mountain-mist-200));
   --text-2:    light-dark(var(--color-mountain-mist-700), var(--color-mountain-mist-200));
   --text-3:    light-dark(var(--color-mountain-mist-500), var(--color-mountain-mist-400));
-  --accent:      light-dark(var(--color-syo-ro-600), var(--color-syo-ro-300));
-  --link-color:  light-dark(var(--color-syo-ro-600), var(--color-syo-ro-300));
-  --link-hover:  light-dark(var(--color-syo-ro-700), var(--color-syo-ro-200));
-  --button-bg:   light-dark(var(--color-syo-ro-500), var(--color-syo-ro-300));
+  --accent:      light-dark(var(--color-pine-600), var(--color-pine-300));
+  --link-color:  light-dark(var(--color-pine-600), var(--color-pine-300));
+  --link-hover:  light-dark(var(--color-pine-700), var(--color-pine-200));
+  --button-bg:   light-dark(var(--color-pine-500), var(--color-pine-300));
   --button-text: light-dark(var(--color-mountain-mist-50), var(--color-mountain-mist-800));
 
   min-height: 100dvh;

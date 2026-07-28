@@ -5,7 +5,8 @@ class Admin::BooksController < Admin::BaseController
   before_action -> { authorize! @record, to: :manage }, only: %i[edit update destroy]
 
   def index
-    @books = Book.current.includes(:record, :creator, :depiction, body: :rich_text_content).feed_ordered
+    books = Book.current.includes(:record, :creator, :depiction, body: :rich_text_content).feed_ordered
+    @sections = sections_for(books)
   end
 
   def show
@@ -59,6 +60,22 @@ class Admin::BooksController < Admin::BaseController
   end
 
   private
+    # [["Series title", books in reading order], ..., ["Standalone", the rest]].
+    # A book in two series appears under both; sections follow series title order.
+    def sections_for(books)
+      by_record_id = books.index_by(&:record_id)
+      installments = Installment.where(book_record_id: by_record_id.keys).order(:position)
+      in_series = installments.group_by(&:series_record_id)
+
+      sections = Series.current.where(record_id: in_series.keys).order(:title).map do |series|
+        [ series.title, in_series[series.record_id].filter_map { |i| by_record_id[i.book_record_id] } ]
+      end
+
+      standalone = books.reject { |book| installments.any? { |i| i.book_record_id == book.record_id } }
+      sections << [ "Standalone", standalone ] if standalone.any?
+      sections.reject { |_, list| list.empty? }
+    end
+
     def book_params
       params.expect(book: [ :title, :content, :publication_date, :author_record_id ])
     end

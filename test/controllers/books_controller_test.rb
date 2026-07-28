@@ -22,7 +22,9 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
 
     get admin_books_path
     assert_response :success
-    assert_select ".list__title", text: "Shown Book"
+    assert_select ".book-card__title", text: "Shown Book"
+    assert_select ".book-shelf__title", text: "Standalone"
+    assert_select "[data-controller=filter] .filter-by-text__input"
 
     get admin_book_path(record)
     assert_response :success

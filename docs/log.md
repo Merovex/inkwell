@@ -2,6 +2,13 @@
 
 Append-only. Newest first. Format defined in [[CLAUDE]] (`CLAUDE.md`).
 
+## [2026-07-28] build | Books index becomes a sectioned card shelf with typeahead filter; brand color → pine
+- Admin books index redesigned: one `.book-shelf` section per series (reading order via installments) plus Standalone, each with a count badge; `.book-card` cards show the 600×900 cover variant, title, ~700-char excerpt (line-clamped), and a publication-date/status meta line pinned to the card bottom. Grouping is built in `Admin::BooksController#sections_for`.
+- New generic `filter` Stimulus controller (first user of the existing `.filter-by-text` CSS): hides non-matching cards by `data-filter-text`, hides emptied sections, keeps count badges honest, shows a "No books match" blank slate. F or / focuses from anywhere (guarded against typing contexts); Esc clears.
+- Brand color switched from syō-ro to **pine**, ported from the marketing site: the `--color-pine-*` scale keeps syō-ro's hue+lightness curve (so every documented AAA contrast holds) with marketing pine's per-stop chroma — the same derivation move that built Pine itself. All semantic brand/accent tokens in `01-tokens.css` and the press-page accents in `press-base.css` repointed; page backgrounds (mountain-mist) untouched; syō-ro scale removed.
+- pages touched: [[index]] (none new)
+- refs: ../app/assets/stylesheets/01-tokens.css, ../app/assets/stylesheets/book-cards.css, ../app/assets/stylesheets/press-base.css, ../app/javascript/controllers/filter_controller.js, ../app/views/admin/books/index.html.erb, ../app/controllers/admin/books_controller.rb
+
 ## [2026-07-28] build | Phase 1 begins: migrations truncated, prod copied local, accounts table shipped
 - Protected production first: consistent snapshot of the live primary via `VACUUM INTO` inside the running container, full `/var/lib/inkwell` rsynced to `~/Backups/inkwell-prod-2026-07-28/` (integrity-checked; 32 records / 6 subscribers / 1 user). Dev DB replaced with the prod copy (old dev DB kept at `~/Backups/inkwell-dev-pre-multitenant.sqlite3`) so every tenancy migration rehearses on real data.
 - Truncated all 41 files in `db/migrate/` — `schema.rb` (version 2026_07_12_180003) is now the authoritative baseline; Phase 1 migrations start clean.
