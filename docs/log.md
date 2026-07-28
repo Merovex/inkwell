@@ -2,6 +2,13 @@
 
 Append-only. Newest first. Format defined in [[CLAUDE]] (`CLAUDE.md`).
 
+## [2026-07-28] build | App host → app.kindredquill.com + account picker (ADR 0019)
+- `APP_HOST` moves to the app subdomain; the AccountHost middleware 301s the bare apex to it (path intact, `apex_host` derived by stripping the subdomain). kamal proxy gains app.kindredquill.com — DNS (Cloudflare proxied, SSL Full) must exist before the deploy.
+- App-host root is now `AccountsController#index` (auth layout): forces sign-in; one membership → straight to `/{SLUG}/admin`; several → account cards (new `.account-picker` CSS); zero → empty state. `/{SLUG}` bare redirects to `/{SLUG}/admin`, constrained to slug-mounted requests only (first cut shadowed the public root in legacy mode — caught by the suite). `default_admin_url` follows the same one-vs-many rule after sign-in.
+- Suite: 360 runs green (3 new host-routing tests; 14 total in that file).
+- pages touched: [[0019-app-subdomain-and-account-picker]], [[index]]
+- refs: ../lib/middleware/account_host.rb, ../app/controllers/accounts_controller.rb, ../app/views/accounts/index.html.erb, ../config/routes.rb, ../config/deploy.yml
+
 ## [2026-07-28] build | Host-role routing: admin moves to the app host (ADR 0018)
 - `AccountHost::Extractor` middleware (Fizzy's SCRIPT_NAME trick, slug edition): on the app host a real account slug prefix mounts the app under `/{SLUG}` and sets `Current.account`; tenant hosts resolve by `accounts.domain` (www folds in); unknown hosts 404. Route constraints split app/admin/public families — `merovex.press/admin` and `/session` become routing 404s under enforcement. All keyed off `APP_HOST` env (unset = exact legacy behavior; deploy A/B cut-over with env-var rollback).
 - Pulled forward two Phase 1 prerequisites: `Current.account` (+`with_account`) and role-less `account_users` (migration backfills every user into account 1; `Account#member?` gates the admin — non-members get the wrong-slug 404). `Sluggable` gains reserved slugs (ASSETS). Magic-link mail follows enforcement to the app host; subscriber mail + SNS webhook stay on the tenant domain.

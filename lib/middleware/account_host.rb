@@ -19,6 +19,13 @@ module AccountHost
 
   def self.app_host?(request) = request.host == app_host
 
+  # The app host's registrable domain (app.kindredquill.com → kindredquill.com):
+  # not a tenant, so strays there bounce to the app host. Nil when the app host
+  # has no subdomain to strip.
+  def self.apex_host
+    app_host.split(".", 2).last if app_host && app_host.count(".") >= 2
+  end
+
   # merovex.press and www.merovex.press are the same tenant.
   def self.canonical_host(host) = host.to_s.downcase.delete_prefix("www.")
 
@@ -38,12 +45,19 @@ module AccountHost
 
       if AccountHost.app_host?(request)
         call_with_slug_account(request, env)
+      elsif AccountHost.canonical_host(request.host) == AccountHost.apex_host
+        redirect_to_app_host(request)
       else
         call_with_tenant_account(request, env)
       end
     end
 
     private
+      # kindredquill.com itself isn't a tenant — send visitors to the app host.
+      def redirect_to_app_host(request)
+        location = "#{request.scheme}://#{AccountHost.app_host}#{request.fullpath}"
+        [ 301, { "location" => location, "content-type" => "text/html" }, [] ]
+      end
       # A prefix only counts when the account actually exists — shape alone
       # can't be trusted ("assets" is a plausible six-char slug, which is also
       # why Sluggable refuses to generate reserved words). Unprefixed paths on

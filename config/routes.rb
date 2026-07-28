@@ -19,10 +19,11 @@ Rails.application.routes.draw do
   admin_routes  = ->(request) { !AccountHost.enforced? || request.env["account_host.slug_account"].present? }
   public_routes = ->(request) { !AccountHost.enforced? || request.env["account_host.tenant_account"].present? }
 
-  # Bare app host: hand visitors to sign-in (which forwards signed-in users on
-  # to their account's admin). Declared before the public root; distinct :as.
-  constraints(->(request) { AccountHost.enforced? && AccountHost.app_host?(request) }) do
-    root to: redirect("/session/new"), as: :app_host_root
+  # Bare app host: the account picker. Authentication is forced by the
+  # controller; one membership skips the ceremony and lands straight in that
+  # account's admin. Declared before the public root; distinct :as.
+  constraints(->(request) { AccountHost.enforced? && AccountHost.app_host?(request) && request.env["account_host.slug_account"].nil? }) do
+    root "accounts#index", as: :app_host_root
   end
 
   # Authentication + the signed-in user's own account live at the top level, not
@@ -51,6 +52,12 @@ Rails.application.routes.draw do
   # (Admin::BaseController). Under APP_HOST enforcement it exists only on the
   # app host behind a resolved /{SLUG} prefix — a tenant domain's /admin is a
   # routing 404, not a controller rejection.
+  # /{SLUG} — the account's front door is its admin. Slug-mounted requests
+  # only (never legacy mode, where this would shadow the public root).
+  constraints(->(request) { request.env["account_host.slug_account"].present? }) do
+    root to: redirect { |_params, request| "#{request.script_name}/admin" }, as: :account_root
+  end
+
   constraints(admin_routes) do
   namespace :admin do
     # Unpublished work: drafts + scheduled posts. Declared before resources :posts

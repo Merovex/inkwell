@@ -27,8 +27,10 @@ proxy:
   hosts:
     - merovex.press
     - www.merovex.press
-    # The app host (admin + auth; ADR 0018). Cloudflare-proxied: SSL mode Full.
+    # The app host (admin + auth; ADR 0018/0019). Cloudflare-proxied: SSL Full.
+    # The apex just 301s to the app subdomain (AccountHost middleware).
     - kindredquill.com
+    - app.kindredquill.com
 
 # Where you keep your container images.
 registry:
@@ -51,11 +53,10 @@ env:
     # When you start using multiple servers, you should split out job processing to a dedicated machine.
     SOLID_QUEUE_IN_PUMA: true
 
-    # DEPLOY B (ADR 0018): uncomment once kindredquill.com serves the app and
-    # its cert is verified. Turns on host-role enforcement: admin moves to
-    # kindredquill.com/{SLUG}/admin, tenant domains' /admin 404s. Rollback is
-    # re-commenting this line — no code revert needed.
-    # APP_HOST: kindredquill.com
+    # Host-role enforcement (ADR 0018/0019): admin lives at
+    # app.kindredquill.com/{SLUG}/admin; tenant domains' /admin 404s; the bare
+    # apex 301s here. Rollback is commenting this line out and redeploying.
+    APP_HOST: app.kindredquill.com
 
     # Set number of processes dedicated to Solid Queue (default: 1)
     # JOB_CONCURRENCY: 3

@@ -1,10 +1,10 @@
 require "test_helper"
 
-# Host-role routing under APP_HOST enforcement (ADR 0018). Enforcement is off
-# by default in test — every other test exercises legacy single-tenant routing
-# — so each test here switches it on and teardown always switches it back.
+# Host-role routing under APP_HOST enforcement (ADR 0018/0019). Enforcement is
+# off by default in test — every other test exercises legacy single-tenant
+# routing — so each test here switches it on and teardown switches it back.
 class HostRoutingTest < ActionDispatch::IntegrationTest
-  APP_HOST = "kindredquill.example"
+  APP_HOST = "app.kindredquill.example"
 
   setup do
     Rails.configuration.x.app_host = APP_HOST
@@ -74,10 +74,41 @@ class HostRoutingTest < ActionDispatch::IntegrationTest
     assert_response :not_found
   end
 
-  test "bare app host redirects to sign-in" do
+  test "bare app host forces authentication" do
     host! APP_HOST
     get "/"
     assert_redirected_to "/session/new"
+  end
+
+  test "the apex 301s to the app host, path intact" do
+    host! "kindredquill.example"
+    get "/anything?x=1"
+    assert_response :moved_permanently
+    assert_equal "http://#{APP_HOST}/anything?x=1", response.headers["Location"]
+  end
+
+  test "signed in with one account, the root and /SLUG land in its admin" do
+    host! APP_HOST
+    sign_in_as users(:admin)
+
+    get "/"
+    assert_redirected_to "http://#{APP_HOST}/#{@account.slug}/admin"
+
+    get "/#{@account.slug}"
+    assert_redirected_to "/#{@account.slug}/admin"
+  end
+
+  test "signed in with several accounts, the root offers picker cards" do
+    second = Account.create!(name: "Second Press", owner: users(:admin))
+    AccountUser.create!(account: second, user: users(:admin))
+
+    host! APP_HOST
+    sign_in_as users(:admin)
+    get "/"
+
+    assert_response :success
+    assert_select ".account-picker__card", 2
+    assert_select ".account-picker__card[href=?]", "/#{second.slug}/admin", text: /Second Press/
   end
 
   test "signing in on the app host lands in the account's admin" do

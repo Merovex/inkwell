@@ -1,0 +1,38 @@
+/*
+ * .account-picker — the app-host root's account chooser (auth layout, inside
+ * the standard .card). One tappable row-card per account membership.
+ * Structure: ul.account-picker > li > a.account-picker__card > name + meta
+ */
+@layer components {
+  .account-picker {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: calc(var(--u-pad) / 2);
+  }
+
+  .account-picker__card {
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--u-pad) / 4);
+    padding: var(--u-pad);
+    border: var(--border-size-1) solid var(--line);
+    border-radius: var(--radius-ui);
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .account-picker__card:hover,
+  .account-picker__card:focus-visible {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+  }
+
+  .account-picker__name { font-weight: var(--font-weight-6); }
+
+  .account-picker__meta {
+    color: var(--ink-muted);
+    font-size: var(--font-size-0);
+  }
+}

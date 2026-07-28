@@ -1,0 +1,21 @@
+<% content_for :title, "Choose an account — Inkwell" %>
+
+<div class="card auth__card">
+  <header class="card__header"><span class="card__title">Choose an account</span></header>
+  <div class="card__body u-stack">
+    <% if @accounts.any? %>
+      <ul class="account-picker">
+        <% @accounts.each do |account| %>
+          <li>
+            <%= link_to admin_root_path(script_name: "/#{account.slug}"), class: "account-picker__card" do %>
+              <span class="account-picker__name"><%= account.name %></span>
+              <span class="account-picker__meta"><%= account.domain || account.slug %></span>
+            <% end %>
+          </li>
+        <% end %>
+      </ul>
+    <% else %>
+      <p class="u-text-muted">You don't belong to any accounts yet. Ask an account owner to add you.</p>
+    <% end %>
+  </div>
+</div>

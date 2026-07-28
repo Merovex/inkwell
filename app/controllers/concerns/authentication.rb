@@ -51,12 +51,16 @@ module Authentication
   end
 
   # Under APP_HOST enforcement the bare admin_root_url would 404 (no slug
-  # prefix) — land on the user's account instead, mounted under its slug.
+  # prefix). One membership lands straight in that account's admin; anything
+  # else (several, none) lands on the account picker at the app-host root.
   def default_admin_url
-    if AccountHost.enforced? && (account = Current.user&.accounts&.first)
-      admin_root_url(script_name: "/#{account.slug}")
+    return admin_root_url unless AccountHost.enforced?
+
+    accounts = Current.user&.accounts || Account.none
+    if accounts.one?
+      admin_root_url(script_name: "/#{accounts.first.slug}")
     else
-      admin_root_url
+      app_host_root_url
     end
   end
 
