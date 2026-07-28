@@ -40,12 +40,4 @@ class UserTest < ActiveSupport::TestCase
     assert_match(/smaller than 5 MB/, user.errors[:avatar].to_sentence)
   end
 
-  test "registration policy reflects configuration" do
-    assert_equal :invite_only, User.registration_policy
-    assert_not User.registration_open?
-
-    with_registration_policy :open do
-      assert User.registration_open?
-    end
-  end
 end

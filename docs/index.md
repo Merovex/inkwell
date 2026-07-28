@@ -44,6 +44,7 @@ for canonical naming.
 | [0017](decisions/0017-phase-1-tenancy-model.md) | Phase 1 tenancy model — explicit account-start scoping on the Record spine | accepted | 2026-07-28 |
 | [0018](decisions/0018-app-host-and-tenant-hosts.md) | App host + tenant hosts — admin moves to kindredquill.com/{SLUG}/admin | accepted, amended → 0019 | 2026-07-28 |
 | [0019](decisions/0019-app-subdomain-and-account-picker.md) | App host moves to app.kindredquill.com; account picker at its root | accepted | 2026-07-28 |
+| [0020](decisions/0020-join-code-signup-and-root-role.md) | Join-code signup, owner_id authority, and the root role | accepted | 2026-07-28 |
 
 ## Concepts
 

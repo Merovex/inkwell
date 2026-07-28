@@ -119,7 +119,7 @@ class HostRoutingTest < ActionDispatch::IntegrationTest
   end
 
   test "a non-member gets the same 404 as a wrong slug" do
-    outsider = User.create!(email_address: "outsider@example.com", role: "domain_admin")
+    outsider = User.create!(email_address: "outsider@example.com")
     host! APP_HOST
     sign_in_as outsider
 

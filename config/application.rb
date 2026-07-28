@@ -29,12 +29,10 @@ module Inkwell
     # config.time_zone = "Central Time (US & Canada)"
     # config.eager_load_paths << Rails.root.join("extras")
 
-    # Magic-link registration policy:
-    #   :invite_only — only existing users may sign in; new accounts are added
-    #                  out-of-band. (The first user ever is created via the Setup
-    #                  flow, which runs only when no users exist — see SetupsController.)
-    #   :open        — anyone may self-register via the Signup flow.
-    config.x.authentication.registration_policy = :invite_only
+    # Who may hand out join codes (Signup's gate). false = only root users
+    # hold a code; flip to true for open beta, where every user may invite
+    # (their code appears in personal settings). Hard-coded on purpose.
+    config.x.join_codes.open = false
 
     # The app host: admin + auth for every account, path-prefixed by account
     # slug (kindredquill.com/K7TXM4/admin). When set, host-role routing is

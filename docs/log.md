@@ -2,6 +2,20 @@
 
 Append-only. Newest first. Format defined in [[CLAUDE]] (`CLAUDE.md`).
 
+## [2026-07-28] build | Join-code signup, press creation, root role (ADR 0020)
+- Signup gated by `JoinCode`: inviter-owned, multi-use, rotatable Crockford-8 codes (one per inviter, unique index; `redeem` normalizes case/I-L-O and strips grouping); new users stamp `users.inviter_id`. Root-only inviting via `User#can_invite?` + hard-coded `config.x.join_codes.open` (default false — flip for open beta). Registration-policy config retired.
+- Phase 2: any signed-in user founds a press from the picker — `Account.create_with_owner` (atomic account + owner membership), unique name (DB index + case-insensitive validation), lands in `/{SLUG}/admin`.
+- Authority rework: `users.role` renamed domain_admin → `root` (platform staff; passes admin + membership gates everywhere). Account owners are per-account superusers via `owner_id` (`User#administers?`) — AdminOnly, the app-menu chrome, and ApplicationPolicy all switched; signup-created users stay global member forever. Isolation spec's rival owner deliberately downgraded to member to prove owner_id authority.
+- Honeypots (invisible_captcha) on signup and sign-in create; trips fake the "check your email" page, persisting nothing.
+- Ops: after deploy, mint the first code — `JoinCode.create!(user: User.root.first)` (share `.formatted`); rotate on abuse with `.rotate!`. Suite: 377 green.
+- pages touched: [[0020-join-code-signup-and-root-role]], [[index]]
+- refs: ../app/models/join_code.rb, ../app/models/signup.rb, ../app/controllers/accounts_controller.rb, ../db/migrate/20260728000005_rename_domain_admin_role_to_root.rb, ../db/migrate/20260728000006_create_join_codes.rb
+
+## [2026-07-28] note | Phase 1 deployed to production and verified
+- All Phase 1 migrations ran against the live DB; user confirmed admin (app.kindredquill.com/W8YRHR/admin) and public site (merovex.press) behave correctly. Remaining exit criterion: the tenancy guard soaking clean through ~a week of normal dev use, then a guard-retirement decision. 1.6 (person/subscriber split) deferred to late Phase 2; SES/email decoupling explicitly last. Next: Phase 2 (static serving to R2 + Worker); tenant #2 stays dev-only until it ships.
+- pages touched: (none)
+- refs: [[0017-phase-1-tenancy-model]], [[0018-app-host-and-tenant-hosts]], [[0019-app-subdomain-and-account-picker]]
+
 ## [2026-07-28] build | 1.5: Setting singleton → per-account Site recordable; settings table dropped
 - New `Site` recordable (spine, versioned, Author-style mutable-in-place): site_name + tagline columns, the About/privacy/terms rich texts, and the logo attachment — everything the old Setting held beyond what 1.1 already moved. `contact_email` delegates to the account so the settings form and mailer reply_to keep reading one object. `Account#site` is cached (self-busting) and creates on first read (new accounts render sensibly before touching settings).
 - Migration converts the settings row into account 1's Site (record + version + re-keying the Setting-typed action_text_rich_texts and active_storage_attachments rows), then drops `settings`. Rehearsed on the prod copy: name, tagline, About blurb, and contact email all survived.

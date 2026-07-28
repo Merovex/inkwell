@@ -11,7 +11,8 @@ class TenantIsolationTest < ActionDispatch::IntegrationTest
     Rails.configuration.x.app_host = APP_HOST
     @merovex = accounts(:merovex)
 
-    @rival_owner = User.create!(email_address: "rival@example.com", role: "domain_admin", name: "Rival Owner")
+    # Deliberately a plain member: per-account authority flows from owner_id.
+    @rival_owner = User.create!(email_address: "rival@example.com", name: "Rival Owner")
     @rival = Account.create!(name: "Rival Press", owner: @rival_owner, domain: "rival.example")
     AccountUser.create!(account: @rival, user: @rival_owner)
 

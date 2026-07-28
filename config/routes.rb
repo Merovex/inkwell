@@ -37,8 +37,10 @@ Rails.application.routes.draw do
     get "session/verify" => "sessions#verify", as: :verify_session
     # First-run install setup (first user → domain admin); only when no users exist.
     resource :setup, only: %i[new create]
-    # Open self-registration; only when the registration policy is :open.
+    # Self-registration, gated by a join code (see Signup).
     resource :signup, only: %i[new create]
+    # Create a press: any signed-in user; lands in the new account's admin.
+    resources :accounts, only: %i[new create]
     # Personal settings — always Current.user, no id in the URL. The avatar is its
     # own resource so picking/dropping a picture can auto-submit.
     namespace :user do

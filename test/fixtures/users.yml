@@ -1,7 +1,7 @@
 alice:
   email_address: alice@example.com
   name: Alice Example
-  role: domain_admin
+  role: root
 
 bob:
   email_address: bob@example.com
@@ -11,4 +11,4 @@ bob:
 admin:
   email_address: admin@example.com
   name: Ada Admin
-  role: domain_admin
+  role: root

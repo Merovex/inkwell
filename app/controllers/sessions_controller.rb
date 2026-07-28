@@ -3,6 +3,10 @@ class SessionsController < ApplicationController
 
   allow_unauthenticated_access only: %i[new create verify]
 
+  # A bot tripping the honeypot gets the same "check your email" page as a
+  # real request — nothing sent, nothing revealed.
+  invisible_captcha only: :create, on_spam: :pretend_sent, on_timestamp_spam: :pretend_sent
+
   # Throttle magic-link requests to blunt enumeration/spam of the mailer.
   rate_limit to: 10, within: 3.minutes, only: :create,
     with: -> { redirect_to new_session_path, alert: "Too many attempts. Try again later." }
@@ -38,4 +42,9 @@ class SessionsController < ApplicationController
     terminate_session
     redirect_to new_session_path, notice: "You're signed out."
   end
+
+  private
+    def pretend_sent
+      redirect_to new_session_path(sent: true)
+    end
 end

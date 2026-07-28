@@ -15,7 +15,8 @@
         <% end %>
       </ul>
     <% else %>
-      <p class="u-text-muted">You don't belong to any accounts yet. Ask an account owner to add you.</p>
+      <p class="u-text-muted">You don't belong to any presses yet.</p>
     <% end %>
+    <%= link_to "Create a press", new_account_path, class: (@accounts.any? ? "u-text-muted" : "button button--primary u-full-width") %>
   </div>
 </div>

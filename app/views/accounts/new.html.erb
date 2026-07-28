@@ -1,0 +1,16 @@
+<% content_for :title, "Create your press — Inkwell" %>
+
+<div class="card auth__card">
+  <header class="card__header"><span class="card__title">Create your press</span></header>
+  <div class="card__body u-stack">
+    <p class="u-text-muted">Name your press. This becomes your public site's name — you can change how it appears later in settings.</p>
+
+    <%= render "admin/shared/error_summary", model: @account %>
+
+    <%= form_with model: @account, url: accounts_path, class: "field" do |f| %>
+      <%= f.label :name, "Press name", class: "field__label" %>
+      <%= f.text_field :name, class: "field__control", placeholder: "Merovex Press", required: true, autofocus: true, autocomplete: "off" %>
+      <%= f.submit "Create press", class: "button button--primary u-full-width", style: "margin-block-start: var(--u-pad);" %>
+    <% end %>
+  </div>
+</div>

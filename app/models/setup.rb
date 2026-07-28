@@ -14,7 +14,7 @@ class Setup
   def save
     return false unless valid?
 
-    @user = User.new(email_address: email_address, role: :domain_admin)
+    @user = User.new(email_address: email_address, role: :root)
     if @user.save
       @user.send_magic_link(purpose: :sign_up)
       true

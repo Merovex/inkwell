@@ -19,14 +19,6 @@ module ActiveSupport
     # Setup all fixtures in test/fixtures/*.yml for all tests in alphabetical order.
     fixtures :all
 
-    # Run a block with the magic-link registration policy temporarily overridden.
-    def with_registration_policy(policy)
-      config = Rails.configuration.x.authentication
-      original = config.registration_policy
-      config.registration_policy = policy
-      yield
-    ensure
-      config.registration_policy = original
-    end
+
   end
 end

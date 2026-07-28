@@ -31,7 +31,7 @@ class SetupFlowTest < ActionDispatch::IntegrationTest
     end
     assert_redirected_to new_session_path(sent: true)
 
-    assert User.find_by(email_address: "founder@example.com").domain_admin?
+    assert User.find_by(email_address: "founder@example.com").root?
   end
 
   test "setup rejects an invalid email without creating a user" do

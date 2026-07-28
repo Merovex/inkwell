@@ -3,14 +3,23 @@
 <div class="card auth__card">
   <header class="card__header"><span class="card__title">Create your account</span></header>
   <div class="card__body u-stack">
-    <p class="u-text-muted">Enter your email and we'll send you a magic link to finish signing up — no password needed.</p>
+    <p class="u-text-muted">Enter your invite code and email and we'll send you a magic link to finish signing up — no password needed.</p>
 
     <%= render "admin/shared/error_summary", model: @signup %>
 
-    <%= form_with model: @signup, url: signup_path, class: "field" do |f| %>
-      <%= f.label :email_address, "Email", class: "field__label" %>
-      <%= f.email_field :email_address, class: "field__control", placeholder: "you@example.com", required: true, autofocus: true, autocomplete: "email" %>
-      <%= f.submit "Sign up", class: "button button--primary u-full-width", style: "margin-block-start: var(--u-pad);" %>
+    <%= form_with model: @signup, url: signup_path, class: "u-stack" do |f| %>
+      <%= invisible_captcha %>
+      <div class="field">
+        <%= f.label :invite_code, "Invite code", class: "field__label" %>
+        <%= f.text_field :invite_code, class: "field__control", placeholder: "XXXX-XXXX", required: true,
+              autofocus: @signup.invite_code.blank?, autocomplete: "off", autocapitalize: "characters", spellcheck: false %>
+      </div>
+      <div class="field">
+        <%= f.label :email_address, "Email", class: "field__label" %>
+        <%= f.email_field :email_address, class: "field__control", placeholder: "you@example.com", required: true,
+              autofocus: @signup.invite_code.present?, autocomplete: "email" %>
+      </div>
+      <%= f.submit "Sign up", class: "button button--primary u-full-width" %>
     <% end %>
 
     <%= link_to "Already have an account? Sign in", new_session_path, class: "u-text-muted" %>

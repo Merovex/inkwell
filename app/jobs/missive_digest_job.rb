@@ -10,7 +10,7 @@ class MissiveDigestJob < ApplicationJob
     count = Current.allowing_unscoped_tenancy { Missive.confirmed.where(confirmed_at: 24.hours.ago..).count }
     return if count.zero?
 
-    recipients = User.domain_admin.pluck(:email_address)
+    recipients = User.root.pluck(:email_address)
     return if recipients.empty?
 
     MissiveMailer.digest(recipients, count).deliver_later

@@ -6,9 +6,13 @@ class User < ApplicationRecord
 
   has_many :sessions, dependent: :destroy
   has_many :sign_in_codes, dependent: :destroy
-  # Accounts this user may administer; drives the post-sign-in landing (ADR 0018).
+  # Accounts this user belongs to; drives the post-sign-in landing (ADR 0018).
   has_many :account_users, dependent: :destroy
   has_many :accounts, through: :account_users
+  # The rotatable invite code this user hands out (root-only until open beta),
+  # and who vouched for this user at signup — the abuse-tracing referral chain.
+  has_one :join_code, dependent: :destroy
+  belongs_to :inviter, class_name: "User", optional: true
   # Exists so "your own boost" authorization can be a scope (BoostsController).
   has_many :boosts, foreign_key: :creator_id, inverse_of: :creator, dependent: :delete_all
 
@@ -20,9 +24,10 @@ class User < ApplicationRecord
 
   validate :acceptable_avatar
 
-  # :member is the baseline; :domain_admin is granted to the first user ever (via
-  # the Setup flow) and administers the whole install.
-  enum :role, { member: "member", domain_admin: "domain_admin" }, default: :member
+  # :member is the baseline; :root is platform staff — the first user ever
+  # (via the Setup flow), superuser across every account. Per-account authority
+  # comes from ownership (accounts.owner_id), not from this global role.
+  enum :role, { member: "member", root: "root" }, default: :member
 
   normalizes :email_address, with: -> { it.strip.downcase }
 
@@ -34,6 +39,18 @@ class User < ApplicationRecord
   # they've set one.
   def display_name
     name.presence || email_address
+  end
+
+  # Per-account superuser: the owner administers their account; root
+  # administers every account (platform staff).
+  def administers?(account)
+    root? || account&.owner_id == id
+  end
+
+  # Who may hold a join code: root always; everyone once the hard-coded
+  # open-beta switch flips (config.x.join_codes.open).
+  def can_invite?
+    root? || Rails.configuration.x.join_codes.open
   end
 
   # Generate a fresh single-use code and email its magic link. `purpose`

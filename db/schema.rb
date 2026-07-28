@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.2].define(version: 2026_07_28_000004) do
+ActiveRecord::Schema[8.2].define(version: 2026_07_28_000006) do
   create_table "account_users", force: :cascade do |t|
     t.integer "account_id", null: false
     t.integer "user_id", null: false
@@ -30,6 +30,7 @@ ActiveRecord::Schema[8.2].define(version: 2026_07_28_000004) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["domain"], name: "index_accounts_on_domain", unique: true
+    t.index ["name"], name: "index_accounts_on_name", unique: true
     t.index ["owner_id"], name: "index_accounts_on_owner_id"
     t.index ["slug"], name: "index_accounts_on_slug", unique: true
   end
@@ -299,6 +300,16 @@ ActiveRecord::Schema[8.2].define(version: 2026_07_28_000004) do
     t.index ["series_record_id", "position"], name: "index_installments_on_series_record_id_and_position"
   end
 
+  create_table "join_codes", force: :cascade do |t|
+    t.integer "user_id", null: false
+    t.string "code", null: false
+    t.datetime "rotated_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["code"], name: "index_join_codes_on_code", unique: true
+    t.index ["user_id"], name: "index_join_codes_on_user_id", unique: true
+  end
+
   create_table "messages", force: :cascade do |t|
     t.string "title", null: false
     t.string "status", default: "drafted", null: false
@@ -469,7 +480,9 @@ ActiveRecord::Schema[8.2].define(version: 2026_07_28_000004) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "role", default: "member", null: false
+    t.integer "inviter_id"
     t.index ["email_address"], name: "index_users_on_email_address", unique: true
+    t.index ["inviter_id"], name: "index_users_on_inviter_id"
   end
 
   add_foreign_key "account_users", "accounts"
@@ -484,6 +497,7 @@ ActiveRecord::Schema[8.2].define(version: 2026_07_28_000004) do
   add_foreign_key "drop_deliveries", "records", column: "drop_record_id"
   add_foreign_key "drop_deliveries", "streams"
   add_foreign_key "drop_deliveries", "subscribers"
+  add_foreign_key "join_codes", "users"
   add_foreign_key "messages", "bodies"
   add_foreign_key "messages", "categories"
   add_foreign_key "messages", "records"
@@ -502,4 +516,5 @@ ActiveRecord::Schema[8.2].define(version: 2026_07_28_000004) do
   add_foreign_key "streams", "records", column: "drip_record_id"
   add_foreign_key "streams", "subscribers"
   add_foreign_key "subscription_events", "subscribers"
+  add_foreign_key "users", "users", column: "inviter_id"
 end

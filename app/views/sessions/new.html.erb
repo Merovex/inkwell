@@ -33,6 +33,7 @@
       <p class="u-text-muted">Enter your email and we'll send you a magic link — no password needed.</p>
 
       <%= form_with url: session_path, method: :post, class: "field" do |f| %>
+        <%= invisible_captcha %>
         <%= f.label :email_address, "Email", class: "field__label" %>
         <%= f.email_field :email_address, class: "field__control", placeholder: "you@example.com", required: true, autofocus: true, autocomplete: "email" %>
         <%= f.submit "Send magic link", class: "button button--primary", style: "margin-block-start: var(--u-pad);" %>

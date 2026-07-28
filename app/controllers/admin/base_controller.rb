@@ -19,6 +19,8 @@ class Admin::BaseController < ApplicationController
     # never confirmed to outsiders (ADR 0018).
     def require_account_membership
       return unless AccountHost.enforced?
+      return if Current.user&.root? # platform staff reach every account
+
       raise ActiveRecord::RecordNotFound unless Current.account&.member?(Current.user)
     end
 end

@@ -14,7 +14,7 @@ class Account < ApplicationRecord
   has_many :records
   has_many :missives
 
-  validates :name, presence: true
+  validates :name, presence: true, uniqueness: { case_sensitive: false }
 
   # Account-scoped counterparts of each content type's `.current` scope —
   # the sanctioned starting point for every content query (ADR 0017):
@@ -35,6 +35,18 @@ class Account < ApplicationRecord
     Rails.cache.fetch([ "site", id ]) do
       Site.where(id: records.active.where(recordable_type: "Site").select(:recordable_id)).first || create_site
     end
+  end
+
+  # Birth of an account: the press plus its owner's membership, atomically.
+  # The owner's superuser authority is the owner_id itself (User#administers?);
+  # ownership transfers are a console operation, never UI. Returns the account,
+  # unsaved with errors when invalid (name taken, blank).
+  def self.create_with_owner(name:, owner:)
+    account = new(name: name, owner: owner)
+    transaction do
+      account.account_users.create!(user: owner) if account.save
+    end
+    account
   end
 
   # Resolving an account from a URL identifies it; membership authorizes it.
