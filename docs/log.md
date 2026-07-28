@@ -2,6 +2,18 @@
 
 Append-only. Newest first. Format defined in [[CLAUDE]] (`CLAUDE.md`).
 
+## [2026-07-28] build | Phase 1 begins: migrations truncated, prod copied local, accounts table shipped
+- Protected production first: consistent snapshot of the live primary via `VACUUM INTO` inside the running container, full `/var/lib/inkwell` rsynced to `~/Backups/inkwell-prod-2026-07-28/` (integrity-checked; 32 records / 6 subscribers / 1 user). Dev DB replaced with the prod copy (old dev DB kept at `~/Backups/inkwell-dev-pre-multitenant.sqlite3`) so every tenancy migration rehearses on real data.
+- Truncated all 41 files in `db/migrate/` — `schema.rb` (version 2026_07_12_180003) is now the authoritative baseline; Phase 1 migrations start clean.
+- Shipped 1.1: `accounts` table per ADR 0017 (name, Crockford slug via new `Sluggable` concern, NOT-NULL owner FK, unique domain, contact_email), seeded in-migration from the settings singleton — Merovex Press became account 1 (slug RSDC31) with zero behavior change. `setup_flow_test`'s fresh-install helper now clears accounts before users (owner FK). Full suite green (346 runs).
+- pages touched: [[0017-phase-1-tenancy-model]], [[index]]
+- refs: ../db/migrate/20260728000001_create_accounts.rb, ../app/models/account.rb, ../app/models/concerns/sluggable.rb, ../test/models/account_test.rb
+
+## [2026-07-28] decision | Phase 1 tenancy model agreed (ADR 0017)
+- Settled the multi-tenancy model against the Fizzy source and the 37signals baseline: `account_id` on the Record spine only; explicit account-start read scoping (`Current.account.records…` — models never read `Current.account` for reads); ambient write defaults; Fizzy's `AccountTenanted` for jobs; accounts table slimmed (no status/personal/billing/subdomain/jsonb-roles columns — each cut traced to a rule); `account_users` membership-only. Query guard reframed as deletable retrofit scaffolding; the isolation spec is the permanent artifact.
+- pages touched: [[0017-phase-1-tenancy-model]], [[index]]
+- refs: decisions/0017-phase-1-tenancy-model.md, ~/Work/fizzy
+
 ## [2026-07-27] note | CTO-facing systems architecture doc posted to Basecamp
 - Expanded the SaaS plan into a full systems-architecture document (13 sections, ~5,500 words) for handoff to a CTO/product team: system landscape + Worker routing contract, account management, author-facing domain setup + TLS provisioning via Cloudflare for SaaS, BYOD email provisioning walk-through (DKIM/MAIL FROM/DMARC), per-author bounce/complaint monitoring with auto-pause state machine ("reputation firewall"), full Rails schema for all new tables (accounts, account_users, domains, sending_identities, email_stats, static_builds) + tenancy columns, background-job inventory, security/compliance, observability, phasing, risks.
 - Posted as a Basecamp document in the Inkujo project (bc_spacer'd Lexxy HTML per ~/Work/basecamp conventions): https://app.basecamp.com/5516303/buckets/45027208/documents/10138266259
