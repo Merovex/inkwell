@@ -2,6 +2,12 @@
 
 Append-only. Newest first. Format defined in [[CLAUDE]] (`CLAUDE.md`).
 
+## [2026-07-28] build | Apex serves domain-less presses: kindredquill.com/{SLUG}/…
+- Until Phase 2, a press without a custom domain has a public home on the apex: the AccountHost extractor now mounts `kindredquill.com/{SLUG}` as that account's public site (same SCRIPT_NAME trick as the admin — URL helpers, feeds, and forms carry the prefix untouched). A press that HAS a domain 301s from its apex path to the domain (one canonical public URL each); bare/unknown apex paths still 301 to the app host. Picker cards show the effective public address (domain or apex/slug).
+- Known interim (email decoupling stays last, per standing decision): subscriber-facing mail still links to the configured host, so domain-less presses' email links aren't apex-prefixed yet.
+- Suite: 383 green.
+- refs: ../lib/middleware/account_host.rb, ../test/integration/host_routing_test.rb
+
 ## [2026-07-28] fix | Cross-tenant leak: audience tables (ahoy, subscribers, broadcasts) tenanted
 - User-reported: a freshly created account's Analytics dashboard showed Merovex's traffic. Root cause: the 1.4 audit covered the records spine but not the audience tables. Blast radius confirmed wider: subscribers roster, broadcasts dashboard, and — worst — PostBroadcastJob fanned out to ALL confirmed subscribers globally (an account-2 broadcast would have mailed account 1's list).
 - Fix: `account_id` on `subscribers` (backfill → NOT NULL + FK, [account_id, status] index) and `ahoy_visits` (nullable — app-host traffic belongs to no tenant; Ahoy::Store#track_visit stamps Current.account). All three dashboards + broadcast fan-out + Subscriber.opt_in dedupe + Drip.enroll now account-scoped; DripAdvanceJob and the sunset sweep render each mail under the subscriber's own press. Tenancy guard extended to the new tables; isolation spec grew audience-dashboard assertions.

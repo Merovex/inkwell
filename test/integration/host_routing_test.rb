@@ -87,6 +87,26 @@ class HostRoutingTest < ActionDispatch::IntegrationTest
     assert_equal "http://#{APP_HOST}/anything?x=1", response.headers["Location"]
   end
 
+  test "a domain-less press serves its public site from the apex under its slug" do
+    domainless = Account.create!(name: "Nameless Press", owner: users(:bob))
+    host! "kindredquill.example"
+
+    get "/#{domainless.slug}/books"
+    assert_response :success
+    assert_select "a[href^=?]", "/#{domainless.slug}/", minimum: 1  # links carry the prefix
+
+    get "/#{domainless.slug}"
+    assert_response :success  # the public home, not the admin redirect
+  end
+
+  test "an apex slug path for a press WITH a domain 301s to the domain" do
+    host! "kindredquill.example"
+    get "/#{@account.slug}/books?x=1"
+
+    assert_response :moved_permanently
+    assert_equal "http://#{@account.domain}/books?x=1", response.headers["Location"]
+  end
+
   test "signed in with one account, the root and /SLUG land in its admin" do
     host! APP_HOST
     sign_in_as users(:admin)

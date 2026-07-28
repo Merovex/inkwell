@@ -51,13 +51,39 @@ module AccountHost
       if AccountHost.app_host?(request)
         call_with_slug_account(request, env)
       elsif AccountHost.canonical_host(request.host) == AccountHost.apex_host
-        redirect_to_app_host(request)
+        call_with_apex_public(request, env)
       else
         call_with_tenant_account(request, env)
       end
     end
 
     private
+      # The apex is every domain-less press's public home until Phase 2:
+      # kindredquill.com/{SLUG}/blog serves that account's public site (same
+      # SCRIPT_NAME mount as the admin, so URL helpers carry the prefix). A
+      # press that HAS a domain 301s to it — one canonical public URL per
+      # press. Bare or unrecognized apex paths go to the app host.
+      def call_with_apex_public(request, env)
+        if (match = SLUG_PREFIX.match(request.path_info)) &&
+           (account = Account.find_by(slug: Sluggable.normalize(match[1])))
+          return redirect_to_domain(request, account, match) if account.domain.present?
+
+          env["account_host.tenant_account"] = account
+          mount_at_prefix(request, account, match)
+          Current.with_account(account) { @app.call(env) }
+        else
+          redirect_to_app_host(request)
+        end
+      end
+
+      def redirect_to_domain(request, account, match)
+        rest = match.post_match
+        rest = "/" if rest.empty?
+        query = request.query_string.presence
+        location = "#{request.scheme}://#{account.domain}#{rest}#{"?#{query}" if query}"
+        [ 301, { "location" => location, "content-type" => "text/html" }, [] ]
+      end
+
       # kindredquill.com itself isn't a tenant — send visitors to the app host.
       def redirect_to_app_host(request)
         location = "#{request.scheme}://#{AccountHost.app_host}#{request.fullpath}"
