@@ -5,7 +5,7 @@ class Admin::CategoriesController < Admin::BaseController
   before_action :set_category, only: %i[edit update destroy]
 
   def index
-    @categories = Category.ordered
+    @categories = Current.account.categories.ordered
   end
 
   def new
@@ -52,7 +52,7 @@ class Admin::CategoriesController < Admin::BaseController
 
   private
     def set_category
-      @category = Category.find(params[:id])
+      @category = Current.account.categories.find(params[:id])
     end
 
     def category_params

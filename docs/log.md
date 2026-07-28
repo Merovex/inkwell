@@ -2,6 +2,14 @@
 
 Append-only. Newest first. Format defined in [[CLAUDE]] (`CLAUDE.md`).
 
+## [2026-07-28] build | Phase 1 closed out: 1.6 person split, shims deleted, categories per-press
+- **1.6 shipped** (the last plan item): `people` table (one row per email globally), `subscribers.person_id` backfilled + NOT NULL, the global email-unique index replaced by unique `[person_id, account_id]` — one address can now subscribe to every press. email_address stays denormalized on subscribers (delivery code untouched, per plan). Subscribers self-provision their Person from a bare email (find_or_initialize + autosave, so bad emails are validation errors); uniqueness validation scoped per account. Token decision: subscriber tokens DON'T gain account_id — `subscribers.account_id` is now authoritative after token lookup, so every outstanding unsubscribe/confirm link in sent email keeps working (CAN-SPAM-safe; the plan's payload idea predated the column).
+- **Legacy shims deleted**: `Current.account || Account.first` fallbacks removed from Record/Missive/Subscriber defaults and Author callbacks; mailers now derive the press from their data (subscriber.account / broadcast.record.account / missive.account) instead of ambient state — only MissiveDigest keeps a fallback (install-wide, email-phase). Test harness pins `Current.account = accounts(:merovex)` in setup, mirroring the middleware; a record without account context is now a validation failure (spec'd).
+- **Categories are per-press** (decision closed): account FK backfilled + NOT NULL, name unique per account, admin CRUD + message form scoped through `Current.account.categories`.
+- **Fresh-install gap closed by design**: Setup → root user → picker → "Create a press" is a complete path; no console account creation needed.
+- Remaining before "done-done": the guard soak week (calendar, not code) and the email transition (last, by decision). Suite: 384 green.
+- refs: ../db/migrate/20260728000008_create_people_and_tenant_categories.rb, ../app/models/person.rb, ../app/models/subscriber.rb, ../app/models/category.rb
+
 ## [2026-07-28] build | Apex serves domain-less presses: kindredquill.com/{SLUG}/…
 - Until Phase 2, a press without a custom domain has a public home on the apex: the AccountHost extractor now mounts `kindredquill.com/{SLUG}` as that account's public site (same SCRIPT_NAME trick as the admin — URL helpers, feeds, and forms carry the prefix untouched). A press that HAS a domain 301s from its apex path to the domain (one canonical public URL each); bare/unknown apex paths still 301 to the app host. Picker cards show the effective public address (domain or apex/slug).
 - Known interim (email decoupling stays last, per standing decision): subscriber-facing mail still links to the configured host, so domain-less presses' email links aren't apex-prefixed yet.

@@ -1,7 +1,9 @@
 announcement:
+  account: merovex
   name: Announcement
   icon: 📢
 
 question:
+  account: merovex
   name: Question
   icon: 🤔

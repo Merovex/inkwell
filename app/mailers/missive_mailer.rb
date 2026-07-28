@@ -21,7 +21,7 @@ class MissiveMailer < ApplicationMailer
   }
 
   def confirmation(missive, token)
-    setting = (Current.account || Account.first).site
+    setting = missive.account.site
     @site_name = setting.site_name
     @confirm_url = confirm_contact_url(token: token)
 

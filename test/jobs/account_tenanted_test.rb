@@ -19,9 +19,10 @@ class AccountTenantedTest < ActiveJob::TestCase
 
   test "a job enqueued without an account performs without one" do
     ProbeJob.seen_account = :unset
-    ProbeJob.perform_later
-
-    perform_enqueued_jobs
+    Current.without_account do
+      ProbeJob.perform_later
+      perform_enqueued_jobs
+    end
     assert_nil ProbeJob.seen_account
   end
 end

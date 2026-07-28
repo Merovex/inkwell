@@ -14,6 +14,7 @@ class Account < ApplicationRecord
   has_many :records
   has_many :missives
   has_many :subscribers
+  has_many :categories
   has_many :broadcasts, through: :records
   has_many :ahoy_visits, class_name: "Ahoy::Visit"
 

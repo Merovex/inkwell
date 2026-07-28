@@ -11,9 +11,12 @@ class RecordTest < ActiveSupport::TestCase
     assert_equal other, record.account
   end
 
-  test "without request context a new record falls back to the first account" do
-    record = Record.originate(Post.new(title: "Legacy", creator: users(:alice), body: Body.create!))
-    assert_equal Account.first, record.account
+  test "a record cannot be born without an account in context" do
+    Current.without_account do
+      assert_raises ActiveRecord::RecordInvalid do
+        Record.originate(Post.new(title: "Orphan", creator: users(:alice), body: Body.create!))
+      end
+    end
   end
 
   test "revise inserts an immutable version and repoints the cursor" do

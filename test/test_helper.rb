@@ -19,6 +19,10 @@ module ActiveSupport
     # Setup all fixtures in test/fixtures/*.yml for all tests in alphabetical order.
     fixtures :all
 
+    # Mirror the middleware's resolution: tests run inside the fixture
+    # account unless they say otherwise (Current resets between tests).
+    setup { Current.account ||= accounts(:merovex) }
+
 
   end
 end

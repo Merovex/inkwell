@@ -5,9 +5,16 @@
 # proof: a new opt-in is always :pending until the emailed confirmation link
 # flips it (SubscriberMailer#confirmation). See ADR 0011.
 class Subscriber < ApplicationRecord
-  # The press this reader subscribed to. Account.first is the single-tenant
-  # legacy shim (model tests); public subscribes carry Current.account.
-  belongs_to :account, default: -> { Current.account || Account.first }
+  # The press this reader subscribed to, and the person behind the address
+  # (1.6): one Person per email globally, one Subscriber per person per press.
+  belongs_to :account, default: -> { Current.account }
+  belongs_to :person
+
+  # A subscriber built from a bare email self-provisions its Person, so every
+  # creation path (opt-in, imports, tests) stays one call.
+  before_validation do
+    self.person ||= Person.find_or_initialize_by(email_address: email_address) if email_address.present?
+  end
 
   has_many :events, -> { order(:created_at) }, class_name: "SubscriptionEvent", dependent: :destroy
   has_many :broadcast_deliveries, dependent: :destroy
@@ -30,7 +37,7 @@ class Subscriber < ApplicationRecord
 
   validates :email_address, presence: true,
     format: { with: URI::MailTo::EMAIL_REGEXP },
-    uniqueness: true
+    uniqueness: { scope: :account_id }
 
   # The confirmation-link token expires but is otherwise stable — it does NOT
   # fold in confirmed_at. Email clients and security scanners routinely GET a
@@ -49,8 +56,9 @@ class Subscriber < ApplicationRecord
   # confirmation email. Returns the subscriber.
   def self.opt_in(email_address:, source: nil, ip: nil)
     subscriber = transaction do
-      record = (Current.account || Account.first).subscribers
-        .find_or_initialize_by(email_address: normalize_value_for(:email_address, email_address))
+      person = Person.find_or_create_by!(email_address: normalize_value_for(:email_address, email_address))
+      record = Current.account.subscribers.find_or_initialize_by(person: person)
+      record.email_address = person.email_address
 
       action =
         if record.confirmed?      then nil

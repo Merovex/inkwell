@@ -76,10 +76,17 @@ class SubscriberTest < ActiveSupport::TestCase
     assert_raises(ActiveRecord::ReadOnlyRecord) { event.update!(action: "confirmed") }
   end
 
-  test "email address must be unique and well-formed" do
+  test "one membership per person per press; same address on another press is fine" do
     Subscriber.create!(email_address: "reader@example.com")
 
     assert_not Subscriber.new(email_address: "reader@example.com").valid?
+
+    other = Account.create!(name: "Other Press", owner: users(:bob))
+    assert Current.with_account(other) { Subscriber.create!(email_address: "reader@example.com") }.persisted?
+    assert_equal 1, Person.where(email_address: "reader@example.com").count
+  end
+
+  test "email address must be well-formed" do
     assert_not Subscriber.new(email_address: "not-an-email").valid?
   end
 end

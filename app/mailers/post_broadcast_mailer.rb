@@ -7,7 +7,7 @@
 class PostBroadcastMailer < ApplicationMailer
   def issue(broadcast, subscriber)
     @post = broadcast.post
-    setting = (Current.account || Account.first).site
+    setting = broadcast.record.account.site
     @site_name = setting.site_name
     @web_url = blog_post_url(broadcast.record.to_slug)
     # Carry the broadcast so an unsubscribe from *this* issue attributes to it on

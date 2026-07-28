@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.2].define(version: 2026_07_28_000007) do
+ActiveRecord::Schema[8.2].define(version: 2026_07_28_000008) do
   create_table "account_users", force: :cascade do |t|
     t.integer "account_id", null: false
     t.integer "user_id", null: false
@@ -206,7 +206,9 @@ ActiveRecord::Schema[8.2].define(version: 2026_07_28_000007) do
     t.string "icon", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["name"], name: "index_categories_on_name", unique: true
+    t.integer "account_id", null: false
+    t.index ["account_id", "name"], name: "index_categories_on_account_id_and_name", unique: true
+    t.index ["account_id"], name: "index_categories_on_account_id"
   end
 
   create_table "chat_lines", force: :cascade do |t|
@@ -348,6 +350,13 @@ ActiveRecord::Schema[8.2].define(version: 2026_07_28_000007) do
     t.index ["created_at"], name: "index_missives_on_created_at"
   end
 
+  create_table "people", force: :cascade do |t|
+    t.string "email_address", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["email_address"], name: "index_people_on_email_address", unique: true
+  end
+
   create_table "posts", force: :cascade do |t|
     t.string "title", null: false
     t.string "status", default: "drafted", null: false
@@ -464,8 +473,11 @@ ActiveRecord::Schema[8.2].define(version: 2026_07_28_000007) do
     t.datetime "last_engaged_at"
     t.datetime "re_engagement_sent_at"
     t.integer "account_id", null: false
+    t.integer "person_id", null: false
     t.index ["account_id", "status"], name: "index_subscribers_on_account_id_and_status"
-    t.index ["email_address"], name: "index_subscribers_on_email_address", unique: true
+    t.index ["email_address"], name: "index_subscribers_on_email_address"
+    t.index ["person_id", "account_id"], name: "index_subscribers_on_person_id_and_account_id", unique: true
+    t.index ["person_id"], name: "index_subscribers_on_person_id"
     t.index ["status", "last_engaged_at"], name: "index_subscribers_on_status_and_last_engaged_at"
   end
 
@@ -499,6 +511,7 @@ ActiveRecord::Schema[8.2].define(version: 2026_07_28_000007) do
   add_foreign_key "boosts", "users", column: "creator_id"
   add_foreign_key "broadcast_deliveries", "broadcasts"
   add_foreign_key "broadcast_deliveries", "subscribers"
+  add_foreign_key "categories", "accounts"
   add_foreign_key "drop_deliveries", "records", column: "drop_record_id"
   add_foreign_key "drop_deliveries", "streams"
   add_foreign_key "drop_deliveries", "subscribers"
@@ -521,6 +534,7 @@ ActiveRecord::Schema[8.2].define(version: 2026_07_28_000007) do
   add_foreign_key "streams", "records", column: "drip_record_id"
   add_foreign_key "streams", "subscribers"
   add_foreign_key "subscribers", "accounts"
+  add_foreign_key "subscribers", "people"
   add_foreign_key "subscription_events", "subscribers"
   add_foreign_key "users", "users", column: "inviter_id"
 end

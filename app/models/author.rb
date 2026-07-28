@@ -50,9 +50,8 @@ class Author < ApplicationRecord
 
   private
     # Default-flag maintenance is per-account: the first persona in an account
-    # becomes its default, and marking one demotes only its account's others.
-    # (Current.account fallback covers the pre-record create; Account.first is
-    # the single-tenant legacy shim, like Record#account's default.)
+    # becomes its default, and marking one demotes only its account's others
+    # (Current.account covers the pre-record create).
     def become_default_if_first
       self.default = true if owning_account.authors.none?
     end
@@ -62,7 +61,7 @@ class Author < ApplicationRecord
     end
 
     def owning_account
-      record&.account || Current.account || Account.first
+      record&.account || Current.account
     end
 
     def acceptable_avatar

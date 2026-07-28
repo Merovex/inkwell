@@ -48,6 +48,7 @@ class SetupFlowTest < ActionDispatch::IntegrationTest
     # no memberships or accounts (they reference their users), then no users.
     def simulate_fresh_install
       Record.destroy_all
+      Category.delete_all
       AccountUser.delete_all
       Account.delete_all
       User.delete_all

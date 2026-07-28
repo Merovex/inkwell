@@ -19,9 +19,8 @@ class Missive < ApplicationRecord
   TRASH_DAYS     = 60   # then hidden in Trash until this age, then purged
   UNCONFIRMED_TTL = 7.days # never-confirmed submissions swept after this
 
-  # Whose site's contact form this arrived through. Same legacy fallback as
-  # Record#account; goes away with the 1.4 query guard.
-  belongs_to :account, default: -> { Current.account || Account.first }
+  # Whose site's contact form this arrived through.
+  belongs_to :account, default: -> { Current.account }
 
   normalizes :email_address, with: -> { it.strip.downcase }
 

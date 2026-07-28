@@ -13,7 +13,7 @@ class SubscriberMailer < ApplicationMailer
   }
 
   def confirmation(subscriber, token)
-    setting = (Current.account || Account.first).site
+    setting = subscriber.account.site
     @site_name = setting.site_name
     @confirm_url = confirm_newsletter_url(token: token)
     @unsubscribe_url = unsubscribe_newsletter_url(token: subscriber.generate_token_for(:unsubscribe))
@@ -28,7 +28,7 @@ class SubscriberMailer < ApplicationMailer
   # depend on the SES open pixel); ignoring it leads to an automatic
   # unsubscribe after the grace window.
   def re_engagement(subscriber, token)
-    setting = (Current.account || Account.first).site
+    setting = subscriber.account.site
     @site_name = setting.site_name
     @keep_url = keep_newsletter_url(token: token)
     @unsubscribe_url = unsubscribe_newsletter_url(token: token)

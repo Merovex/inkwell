@@ -11,10 +11,9 @@ class Record < ApplicationRecord
 
   delegated_type :recordable, types: RECORDABLE_TYPES, optional: true
   belongs_to :creator, class_name: "User", default: -> { Current.user }
-  # Tenancy is stamped at birth and never changes. The Account.first fallback
-  # is the single-tenant legacy shim (model tests, APP_HOST-off mode); it goes
-  # away with the 1.4 query guard before any second tenant exists.
-  belongs_to :account, default: -> { Current.account || Account.first }
+  # Tenancy is stamped at birth and never changes; every write path carries
+  # a resolved Current.account (middleware, jobs, or the test harness).
+  belongs_to :account, default: -> { Current.account }
 
   # Self-referential threading: a comment's record will parent to the record it
   # comments on; same mechanism for any future child content.
