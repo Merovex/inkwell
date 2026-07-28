@@ -10,4 +10,15 @@
 # everything under /admin goes through this gate.
 class Admin::BaseController < ApplicationController
   include AdminOnly
+
+  before_action :require_account_membership
+
+  private
+    # Resolving a slug from the URL identifies an account; it doesn't grant
+    # access. Non-members get the same 404 as a wrong slug — membership is
+    # never confirmed to outsiders (ADR 0018).
+    def require_account_membership
+      return unless AccountHost.enforced?
+      raise ActiveRecord::RecordNotFound unless Current.account&.member?(Current.user)
+    end
 end

@@ -2,6 +2,14 @@
 
 Append-only. Newest first. Format defined in [[CLAUDE]] (`CLAUDE.md`).
 
+## [2026-07-28] build | Host-role routing: admin moves to the app host (ADR 0018)
+- `AccountHost::Extractor` middleware (Fizzy's SCRIPT_NAME trick, slug edition): on the app host a real account slug prefix mounts the app under `/{SLUG}` and sets `Current.account`; tenant hosts resolve by `accounts.domain` (www folds in); unknown hosts 404. Route constraints split app/admin/public families — `merovex.press/admin` and `/session` become routing 404s under enforcement. All keyed off `APP_HOST` env (unset = exact legacy behavior; deploy A/B cut-over with env-var rollback).
+- Pulled forward two Phase 1 prerequisites: `Current.account` (+`with_account`) and role-less `account_users` (migration backfills every user into account 1; `Account#member?` gates the admin — non-members get the wrong-slug 404). `Sluggable` gains reserved slugs (ASSETS). Magic-link mail follows enforcement to the app host; subscriber mail + SNS webhook stay on the tenant domain.
+- Honest caveat recorded in the ADR: 1.2/1.4/1.5 are still open — tenant-host resolution sets `Current.account` but public queries remain globally scoped (safe only while one account exists).
+- kamal: kindredquill.com added to proxy hosts (Cloudflare, SSL Full); `APP_HOST: kindredquill.com` staged as a comment for deploy B. Suite: 357 runs green incl. 11 new host-routing tests.
+- pages touched: [[0018-app-host-and-tenant-hosts]], [[index]]
+- refs: ../lib/middleware/account_host.rb, ../config/routes.rb, ../db/migrate/20260728000002_create_account_users.rb, ../app/controllers/admin/base_controller.rb, ../test/integration/host_routing_test.rb, ../config/deploy.yml
+
 ## [2026-07-28] build | Books index becomes a sectioned card shelf with typeahead filter; brand color → pine
 - Admin books index redesigned: one `.book-shelf` section per series (reading order via installments) plus Standalone, each with a count badge; `.book-card` cards show the 600×900 cover variant, title, ~700-char excerpt (line-clamped), and a publication-date/status meta line pinned to the card bottom. Grouping is built in `Admin::BooksController#sections_for`.
 - New generic `filter` Stimulus controller (first user of the existing `.filter-by-text` CSS): hides non-matching cards by `data-filter-text`, hides emptied sections, keeps count badges honest, shows a "No books match" blank slate. F or / focuses from anywhere (guarded against typing contexts); Esc clears.

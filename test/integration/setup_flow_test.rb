@@ -45,9 +45,10 @@ class SetupFlowTest < ActionDispatch::IntegrationTest
 
   private
     # Simulate a fresh install: no content (records reference their creators),
-    # no accounts (they reference their owners), then no users.
+    # no memberships or accounts (they reference their users), then no users.
     def simulate_fresh_install
       Record.destroy_all
+      AccountUser.delete_all
       Account.delete_all
       User.delete_all
     end

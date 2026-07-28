@@ -17,7 +17,14 @@ class SessionMailer < ApplicationMailer
     @user = user
     @code = plaintext
     @formatted_code = SignInCode.format(plaintext)
-    @verify_url = verify_session_url(code: plaintext)
+    # Sign-in lives on the app host once enforcement is on; the default host
+    # (the tenant domain) would 404 the link (ADR 0018).
+    @verify_url =
+      if AccountHost.enforced?
+        verify_session_url(code: plaintext, host: AccountHost.app_host)
+      else
+        verify_session_url(code: plaintext)
+      end
 
     mail to: user.email_address, subject: SUBJECTS.fetch(purpose, SUBJECTS[:sign_in])
   end

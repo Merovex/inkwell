@@ -42,6 +42,7 @@ for canonical naming.
 | [0015](decisions/0015-email-relay-mailgun-to-ses.md) | Email relay — migrate Mailgun → Amazon SES/SNS | accepted | 2026-07-10 |
 | [0016](decisions/0016-admin-backend-domain-admin-only.md) | Admin backend is domain-admin-only; auth + account move out of /admin | accepted | 2026-07-10 |
 | [0017](decisions/0017-phase-1-tenancy-model.md) | Phase 1 tenancy model — explicit account-start scoping on the Record spine | accepted | 2026-07-28 |
+| [0018](decisions/0018-app-host-and-tenant-hosts.md) | App host + tenant hosts — admin moves to kindredquill.com/{SLUG}/admin | accepted | 2026-07-28 |
 
 ## Concepts
 

@@ -9,27 +9,49 @@ Rails.application.routes.draw do
   get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
   get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
 
+  # Host roles (AccountHost, ADR 0018). Until APP_HOST is set every constraint
+  # passes and routing behaves exactly as the single-tenant app always has.
+  #   app    — any path on the app host (sign-in, setup, personal settings)
+  #   admin  — app host AND a real account slug prefix resolved by the extractor
+  #   public — a tenant host resolved by domain (the app host never serves the
+  #            public site; tenant hosts never serve the admin or sign-in)
+  app_routes    = ->(request) { !AccountHost.enforced? || AccountHost.app_host?(request) }
+  admin_routes  = ->(request) { !AccountHost.enforced? || request.env["account_host.slug_account"].present? }
+  public_routes = ->(request) { !AccountHost.enforced? || request.env["account_host.tenant_account"].present? }
+
+  # Bare app host: hand visitors to sign-in (which forwards signed-in users on
+  # to their account's admin). Declared before the public root; distinct :as.
+  constraints(->(request) { AccountHost.enforced? && AccountHost.app_host?(request) }) do
+    root to: redirect("/session/new"), as: :app_host_root
+  end
+
   # Authentication + the signed-in user's own account live at the top level, not
   # under /admin: signing in and managing yourself aren't domain-admin actions.
-  # Passwordless (magic-link) authentication.
-  resource :session, only: %i[new create destroy]
-  # Redeems the emailed code — hit by the magic link and the manual entry form.
-  get "session/verify" => "sessions#verify", as: :verify_session
-  # First-run install setup (first user → domain admin); only when no users exist.
-  resource :setup, only: %i[new create]
-  # Open self-registration; only when the registration policy is :open.
-  resource :signup, only: %i[new create]
-  # Personal settings — always Current.user, no id in the URL. The avatar is its
-  # own resource so picking/dropping a picture can auto-submit.
-  namespace :user do
-    resource :settings, only: %i[show update]
-    resource :avatar, only: %i[update destroy]
+  # On the app host these work unprefixed — you sign in before you have an
+  # account context, exactly like Fizzy.
+  constraints(app_routes) do
+    # Passwordless (magic-link) authentication.
+    resource :session, only: %i[new create destroy]
+    # Redeems the emailed code — hit by the magic link and the manual entry form.
+    get "session/verify" => "sessions#verify", as: :verify_session
+    # First-run install setup (first user → domain admin); only when no users exist.
+    resource :setup, only: %i[new create]
+    # Open self-registration; only when the registration policy is :open.
+    resource :signup, only: %i[new create]
+    # Personal settings — always Current.user, no id in the URL. The avatar is its
+    # own resource so picking/dropping a picture can auto-submit.
+    namespace :user do
+      resource :settings, only: %i[show update]
+      resource :avatar, only: %i[update destroy]
+    end
   end
 
   # Inkwell — the admin backend. Everything the author uses to write, publish,
   # and moderate lives under /admin as Admin::*, gated to domain admins
-  # (Admin::BaseController). The public Merovex Press site will own the root URL
-  # space in a later pass.
+  # (Admin::BaseController). Under APP_HOST enforcement it exists only on the
+  # app host behind a resolved /{SLUG} prefix — a tenant domain's /admin is a
+  # routing 404, not a controller rejection.
+  constraints(admin_routes) do
   namespace :admin do
     # Unpublished work: drafts + scheduled posts. Declared before resources :posts
     # so /admin/posts/drafts isn't swallowed by /admin/posts/:id. DELETE destroys
@@ -190,7 +212,16 @@ Rails.application.routes.draw do
     # Admin landing: the traffic dashboard.
     root "analytics#show"
   end
+  end
 
+  # SES event notifications relayed via SNS (delivered/opened/clicked/bounced/
+  # complained) → broadcast metrics. Authenticity is the SNS message signature,
+  # verified in the controller (ADR 0015 Phase 2). Deliberately unconstrained:
+  # the SNS subscription points at the tenant domain and stays put (ADR 0018).
+  post "webhooks/ses" => "webhooks/ses#create"
+
+  # The public site — everything below resolves per-tenant by domain.
+  constraints(public_routes) do
   # Public blog. The index lists published posts only; :id on the article page
   # is the Record id (the stable public identity), matching the admin side.
   get "blog" => "blog#index", as: :blog
@@ -204,11 +235,6 @@ Rails.application.routes.draw do
   # Public book catalog: published books, grouped by series.
   get "books" => "books#index", as: :books
   get "books/:id" => "books#show", as: :book
-
-  # SES event notifications relayed via SNS (delivered/opened/clicked/bounced/
-  # complained) → broadcast metrics. Authenticity is the SNS message signature,
-  # verified in the controller (ADR 0015 Phase 2).
-  post "webhooks/ses" => "webhooks/ses#create"
 
   # The public Merovex Press site. The About page renders the site's About blurb
   # from Setting.current; the admin backend lives at /admin.
@@ -253,4 +279,5 @@ Rails.application.routes.draw do
   get  "contact/confirm(/:token)" => "contacts#confirm", as: :confirm_contact
 
   root "pages#home"
+  end
 end

@@ -10,7 +10,17 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.2].define(version: 2026_07_28_000001) do
+ActiveRecord::Schema[8.2].define(version: 2026_07_28_000002) do
+  create_table "account_users", force: :cascade do |t|
+    t.integer "account_id", null: false
+    t.integer "user_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "user_id"], name: "index_account_users_on_account_id_and_user_id", unique: true
+    t.index ["account_id"], name: "index_account_users_on_account_id"
+    t.index ["user_id"], name: "index_account_users_on_user_id"
+  end
+
   create_table "accounts", force: :cascade do |t|
     t.string "name", null: false
     t.string "slug", null: false
@@ -454,6 +464,8 @@ ActiveRecord::Schema[8.2].define(version: 2026_07_28_000001) do
     t.index ["email_address"], name: "index_users_on_email_address", unique: true
   end
 
+  add_foreign_key "account_users", "accounts"
+  add_foreign_key "account_users", "users"
   add_foreign_key "accounts", "users", column: "owner_id"
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"

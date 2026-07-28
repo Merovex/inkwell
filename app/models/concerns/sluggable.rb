@@ -117,9 +117,15 @@ module Sluggable
       all.find(*ids, &block)
     end
 
+    # Never issue a slug that collides with a first path segment the app host
+    # serves unprefixed (see AccountHost::Extractor). Only words of exactly
+    # SLUG_LENGTH Crockford characters can collide; "assets" qualifies.
+    RESERVED_SLUGS = %w[ ASSETS ].freeze
+
     def generate_unique_slug
       loop do
         candidate = "#{slug_prefix}#{generate_slug}"
+        next if RESERVED_SLUGS.include?(candidate)
         return candidate unless exists?(slug: candidate) # advisory; index is authoritative
       end
     end

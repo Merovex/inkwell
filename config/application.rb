@@ -5,6 +5,7 @@ require "rails/all"
 # Rack middleware inserted into the stack below — required here (not autoloaded)
 # because the stack needs the class at boot, before Zeitwerk is set up.
 require_relative "../lib/middleware/scanner_blocker"
+require_relative "../lib/middleware/account_host"
 
 # Require the gems listed in Gemfile, including any gems
 # you've limited to :test, :development, or :production.
@@ -35,6 +36,13 @@ module Inkwell
     #   :open        — anyone may self-register via the Signup flow.
     config.x.authentication.registration_policy = :invite_only
 
+    # The app host: admin + auth for every account, path-prefixed by account
+    # slug (kindredquill.com/K7TXM4/admin). When set, host-role routing is
+    # enforced and tenant domains serve only their public site. Unset =
+    # single-tenant legacy behavior, so a deploy without APP_HOST can never
+    # lock the admin out (ADR 0018).
+    config.x.app_host = ENV["APP_HOST"]
+
     # Turn the weekly newsletter sunset sweep on only once SES open/click
     # tracking is live — otherwise everyone looks cold (ADR 0014).
     config.x.newsletter.sunset_enabled = ENV["NEWSLETTER_SUNSET"] == "true"
@@ -54,5 +62,9 @@ module Inkwell
     # very front of the Rack stack, before routing, so they don't spam the logs
     # with RoutingError noise. (Required above; passed as a class, not a string.)
     config.middleware.insert_before 0, ScannerBlocker
+
+    # Resolve the request's account last in the stack, right before routing:
+    # slug prefix on the app host, domain lookup on tenant hosts (ADR 0018).
+    config.middleware.insert_after Rack::TempfileReaper, AccountHost::Extractor
   end
 end

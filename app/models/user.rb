@@ -6,6 +6,9 @@ class User < ApplicationRecord
 
   has_many :sessions, dependent: :destroy
   has_many :sign_in_codes, dependent: :destroy
+  # Accounts this user may administer; drives the post-sign-in landing (ADR 0018).
+  has_many :account_users, dependent: :destroy
+  has_many :accounts, through: :account_users
   # Exists so "your own boost" authorization can be a scope (BoostsController).
   has_many :boosts, foreign_key: :creator_id, inverse_of: :creator, dependent: :delete_all
 

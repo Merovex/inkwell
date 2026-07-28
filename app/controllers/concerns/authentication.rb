@@ -47,7 +47,17 @@ module Authentication
   end
 
   def after_authentication_url
-    session.delete(:return_to_after_authenticating) || admin_root_url
+    session.delete(:return_to_after_authenticating) || default_admin_url
+  end
+
+  # Under APP_HOST enforcement the bare admin_root_url would 404 (no slug
+  # prefix) — land on the user's account instead, mounted under its slug.
+  def default_admin_url
+    if AccountHost.enforced? && (account = Current.user&.accounts&.first)
+      admin_root_url(script_name: "/#{account.slug}")
+    else
+      admin_root_url
+    end
   end
 
   def start_new_session_for(user)
