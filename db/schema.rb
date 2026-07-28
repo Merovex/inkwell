@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.2].define(version: 2026_07_28_000006) do
+ActiveRecord::Schema[8.2].define(version: 2026_07_28_000007) do
   create_table "account_users", force: :cascade do |t|
     t.integer "account_id", null: false
     t.integer "user_id", null: false
@@ -111,6 +111,8 @@ ActiveRecord::Schema[8.2].define(version: 2026_07_28_000006) do
     t.string "platform"
     t.datetime "started_at"
     t.string "country_code"
+    t.integer "account_id"
+    t.index ["account_id"], name: "index_ahoy_visits_on_account_id"
     t.index ["user_id"], name: "index_ahoy_visits_on_user_id"
     t.index ["visit_token"], name: "index_ahoy_visits_on_visit_token", unique: true
     t.index ["visitor_token", "started_at"], name: "index_ahoy_visits_on_visitor_token_and_started_at"
@@ -461,6 +463,8 @@ ActiveRecord::Schema[8.2].define(version: 2026_07_28_000006) do
     t.datetime "updated_at", null: false
     t.datetime "last_engaged_at"
     t.datetime "re_engagement_sent_at"
+    t.integer "account_id", null: false
+    t.index ["account_id", "status"], name: "index_subscribers_on_account_id_and_status"
     t.index ["email_address"], name: "index_subscribers_on_email_address", unique: true
     t.index ["status", "last_engaged_at"], name: "index_subscribers_on_status_and_last_engaged_at"
   end
@@ -490,6 +494,7 @@ ActiveRecord::Schema[8.2].define(version: 2026_07_28_000006) do
   add_foreign_key "accounts", "users", column: "owner_id"
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "ahoy_visits", "accounts"
   add_foreign_key "boosts", "records"
   add_foreign_key "boosts", "users", column: "creator_id"
   add_foreign_key "broadcast_deliveries", "broadcasts"
@@ -515,6 +520,7 @@ ActiveRecord::Schema[8.2].define(version: 2026_07_28_000006) do
   add_foreign_key "sites", "users", column: "creator_id"
   add_foreign_key "streams", "records", column: "drip_record_id"
   add_foreign_key "streams", "subscribers"
+  add_foreign_key "subscribers", "accounts"
   add_foreign_key "subscription_events", "subscribers"
   add_foreign_key "users", "users", column: "inviter_id"
 end

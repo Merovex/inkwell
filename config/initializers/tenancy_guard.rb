@@ -12,8 +12,8 @@
 # (the permanent artifact is test/integration/tenant_isolation_test.rb).
 if Rails.env.local?
   module TenancyGuard
-    TENANTED = /(?:FROM|JOIN)\s+"(?:records|missives)"/
-    ANCHORED = /account_id|"records"\."id"|parent_id|record_id|"missives"\."id"/
+    TENANTED = /(?:FROM|JOIN)\s+"(?:records|missives|subscribers|ahoy_visits)"/
+    ANCHORED = /account_id|"records"\."id"|parent_id|record_id|"missives"\."id"|"subscribers"\."id"|subscriber_id|"ahoy_visits"\."id"|visit_id/
 
     def self.check(payload)
       return if payload[:name] == "SCHEMA"

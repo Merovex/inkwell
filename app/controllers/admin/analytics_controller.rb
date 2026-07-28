@@ -7,17 +7,17 @@ class Admin::AnalyticsController < Admin::BaseController
 
   def show
     since = WINDOW.ago
-    @visits = Ahoy::Visit.where(started_at: since..).count
+    @visits = Current.account.ahoy_visits.where(started_at: since..).count
     # Unique people (well, browsers): ahoy's long-lived visitor token, not visits.
-    @visitors = Ahoy::Visit.where(started_at: since..).distinct.count(:visitor_token)
-    @views  = Ahoy::Event.where(name: "$view", time: since..).count
-    @landing_pages = top(Ahoy::Visit.where(started_at: since..).where.not(landing_page: nil), :landing_page)
-    @referrers = top(Ahoy::Visit.where(started_at: since..).where.not(referring_domain: [ nil, "" ]), :referring_domain)
+    @visitors = Current.account.ahoy_visits.where(started_at: since..).distinct.count(:visitor_token)
+    @views  = Ahoy::Event.where(visit_id: Current.account.ahoy_visits.select(:id), name: "$view", time: since..).count
+    @landing_pages = top(Current.account.ahoy_visits.where(started_at: since..).where.not(landing_page: nil), :landing_page)
+    @referrers = top(Current.account.ahoy_visits.where(started_at: since..).where.not(referring_domain: [ nil, "" ]), :referring_domain)
 
     # Geography (unique visitors, not visits) — filled by the GeoLite2 geocode
     # job; empty until storage/geoip/ has the database. Region is grouped with
     # its country so "Texas" and, say, "Bavaria" don't collide.
-    geographed = Ahoy::Visit.where(started_at: since..).where.not(country: [ nil, "" ])
+    geographed = Current.account.ahoy_visits.where(started_at: since..).where.not(country: [ nil, "" ])
     @countries = top(geographed, :country, distinct: :visitor_token)
     @regions = top(geographed.where.not(region: [ nil, "" ]), [ :region, :country_code ], distinct: :visitor_token)
     # Choropleth data (all rows, no top-N): world by ISO country code, and US

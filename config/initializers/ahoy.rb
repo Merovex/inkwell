@@ -1,4 +1,11 @@
 class Ahoy::Store < Ahoy::DatabaseStore
+  # Visits carry the tenant whose public site they landed on (nil for
+  # app-host traffic) — the analytics dashboard is per-account (ADR 0017).
+  def track_visit(data)
+    data[:account_id] = Current.account&.id
+    super
+  end
+
   # Coarse geography only: keep country/region from the geocode result, drop
   # city/postal/lat-lng, and discard the (already masked) IP once it has served
   # its purpose. Net effect: we store LESS identifying data than before

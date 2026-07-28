@@ -3,6 +3,6 @@
 # driven from the post page (Admin::Posts::BroadcastsController).
 class Admin::BroadcastsController < Admin::BaseController
   def index
-    @broadcasts = Broadcast.includes(:record).order(created_at: :desc)
+    @broadcasts = Current.account.broadcasts.includes(:record).order(created_at: :desc)
   end
 end

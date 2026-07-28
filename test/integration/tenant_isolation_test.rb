@@ -65,6 +65,27 @@ class TenantIsolationTest < ActionDispatch::IntegrationTest
     assert_response :not_found
   end
 
+  test "audience dashboards are per-account: subscribers, broadcasts, analytics" do
+    merovex_subscriber = Current.with_account(@merovex) do
+      Subscriber.create!(email_address: "reader@example.com", status: "confirmed", confirmed_at: Time.current)
+    end
+    Ahoy::Visit.create!(visit_token: "v1", visitor_token: "p1", started_at: 1.hour.ago, account_id: @merovex.id)
+
+    host! APP_HOST
+    sign_in_as @rival_owner
+
+    get "/#{@rival.slug}/admin/subscribers"
+    assert_response :success
+    assert_no_match merovex_subscriber.email_address.split("@").first, response.body
+
+    get "/#{@rival.slug}/admin/broadcasts"
+    assert_response :success
+
+    get "/#{@rival.slug}/admin/analytics"
+    assert_response :success
+    assert_select ".analytics__number", text: "1", count: 0
+  end
+
   test "each domain serves only its own public site" do
     host! @rival.domain
     get "/blog"

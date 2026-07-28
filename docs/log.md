@@ -2,6 +2,13 @@
 
 Append-only. Newest first. Format defined in [[CLAUDE]] (`CLAUDE.md`).
 
+## [2026-07-28] fix | Cross-tenant leak: audience tables (ahoy, subscribers, broadcasts) tenanted
+- User-reported: a freshly created account's Analytics dashboard showed Merovex's traffic. Root cause: the 1.4 audit covered the records spine but not the audience tables. Blast radius confirmed wider: subscribers roster, broadcasts dashboard, and — worst — PostBroadcastJob fanned out to ALL confirmed subscribers globally (an account-2 broadcast would have mailed account 1's list).
+- Fix: `account_id` on `subscribers` (backfill → NOT NULL + FK, [account_id, status] index) and `ahoy_visits` (nullable — app-host traffic belongs to no tenant; Ahoy::Store#track_visit stamps Current.account). All three dashboards + broadcast fan-out + Subscriber.opt_in dedupe + Drip.enroll now account-scoped; DripAdvanceJob and the sunset sweep render each mail under the subscriber's own press. Tenancy guard extended to the new tables; isolation spec grew audience-dashboard assertions.
+- Interim limit, accepted: the GLOBAL subscriber email-unique index stays until 1.6's person split — one address can't subscribe to two presses (fails loudly at the index, never attaches to the wrong press).
+- Suite: 381 green.
+- refs: ../db/migrate/20260728000007_add_account_to_audience.rb, ../config/initializers/ahoy.rb, ../app/jobs/post_broadcast_job.rb, ../app/controllers/admin/analytics_controller.rb
+
 ## [2026-07-28] build | Join-code signup, press creation, root role (ADR 0020)
 - Signup gated by `JoinCode`: inviter-owned, multi-use, rotatable Crockford-8 codes (one per inviter, unique index; `redeem` normalizes case/I-L-O and strips grouping); new users stamp `users.inviter_id`. Root-only inviting via `User#can_invite?` + hard-coded `config.x.join_codes.open` (default false — flip for open beta). Registration-policy config retired.
 - Phase 2: any signed-in user founds a press from the picker — `Account.create_with_owner` (atomic account + owner membership), unique name (DB index + case-insensitive validation), lands in `/{SLUG}/admin`.

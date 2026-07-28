@@ -11,8 +11,8 @@ class Admin::SubscribersController < Admin::BaseController
 
   def index
     @state = STATES.include?(params[:state]) ? params[:state] : "confirmed"
-    @subscribers = Subscriber.where(status: @state).order(created_at: :desc)
-    @counts = Subscriber.group(:status).count
+    @subscribers = Current.account.subscribers.where(status: @state).order(created_at: :desc)
+    @counts = Current.account.subscribers.group(:status).count
 
     respond_to do |format|
       format.html
@@ -29,7 +29,7 @@ class Admin::SubscribersController < Admin::BaseController
 
   private
     def set_subscriber
-      @subscriber = Subscriber.find(params[:id])
+      @subscriber = Current.account.subscribers.find(params[:id])
     end
 
     def subscribers_csv

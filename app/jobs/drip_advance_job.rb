@@ -6,6 +6,8 @@ class DripAdvanceJob < ApplicationJob
   discard_on ActiveJob::DeserializationError  # stream/subscriber gone → nothing to do
 
   def perform(stream)
-    stream.advance!
+    # The daily tick enqueues account-less; the drop mail must render with the
+    # subscriber's press identity either way.
+    Current.with_account(stream.subscriber.account) { stream.advance! }
   end
 end

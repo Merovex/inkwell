@@ -13,6 +13,9 @@ class Account < ApplicationRecord
   has_many :users, through: :account_users
   has_many :records
   has_many :missives
+  has_many :subscribers
+  has_many :broadcasts, through: :records
+  has_many :ahoy_visits, class_name: "Ahoy::Visit"
 
   validates :name, presence: true, uniqueness: { case_sensitive: false }
 

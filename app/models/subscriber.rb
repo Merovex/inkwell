@@ -5,6 +5,10 @@
 # proof: a new opt-in is always :pending until the emailed confirmation link
 # flips it (SubscriberMailer#confirmation). See ADR 0011.
 class Subscriber < ApplicationRecord
+  # The press this reader subscribed to. Account.first is the single-tenant
+  # legacy shim (model tests); public subscribes carry Current.account.
+  belongs_to :account, default: -> { Current.account || Account.first }
+
   has_many :events, -> { order(:created_at) }, class_name: "SubscriptionEvent", dependent: :destroy
   has_many :broadcast_deliveries, dependent: :destroy
   has_many :streams, dependent: :destroy
@@ -45,7 +49,8 @@ class Subscriber < ApplicationRecord
   # confirmation email. Returns the subscriber.
   def self.opt_in(email_address:, source: nil, ip: nil)
     subscriber = transaction do
-      record = find_or_initialize_by(email_address: normalize_value_for(:email_address, email_address))
+      record = (Current.account || Account.first).subscribers
+        .find_or_initialize_by(email_address: normalize_value_for(:email_address, email_address))
 
       action =
         if record.confirmed?      then nil

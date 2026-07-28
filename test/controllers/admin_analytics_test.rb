@@ -10,7 +10,7 @@ class AdminAnalyticsTest < ActionDispatch::IntegrationTest
   end
 
   test "the dashboard summarizes recent visits, views, and referrers" do
-    visit = Ahoy::Visit.create!(visit_token: SecureRandom.uuid, visitor_token: SecureRandom.uuid,
+    visit = Ahoy::Visit.create!(account: accounts(:merovex), visit_token: SecureRandom.uuid, visitor_token: SecureRandom.uuid,
       started_at: 1.day.ago, landing_page: "https://example.com/blog", referring_domain: "google.com")
     Ahoy::Event.create!(visit: visit, name: "$view", time: 1.day.ago, properties: {})
     sign_in_as users(:admin)
@@ -22,7 +22,7 @@ class AdminAnalyticsTest < ActionDispatch::IntegrationTest
   end
 
   test "old visits fall outside the 30-day window" do
-    Ahoy::Visit.create!(visit_token: SecureRandom.uuid, visitor_token: SecureRandom.uuid,
+    Ahoy::Visit.create!(account: accounts(:merovex), visit_token: SecureRandom.uuid, visitor_token: SecureRandom.uuid,
       started_at: 90.days.ago, landing_page: "https://example.com/")
     sign_in_as users(:admin)
 
