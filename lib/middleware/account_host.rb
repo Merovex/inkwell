@@ -80,15 +80,18 @@ module AccountHost
         rest = match.post_match
         rest = "/" if rest.empty?
         query = request.query_string.presence
-        location = "#{request.scheme}://#{account.domain}#{rest}#{"?#{query}" if query}"
-        [ 301, { "location" => location, "content-type" => "text/html" }, [] ]
+        moved_permanently "#{request.scheme}://#{account.domain}#{rest}#{"?#{query}" if query}"
       end
 
       # kindredquill.com itself isn't a tenant — send visitors to the app host.
       def redirect_to_app_host(request)
-        location = "#{request.scheme}://#{AccountHost.app_host}#{request.fullpath}"
+        moved_permanently "#{request.scheme}://#{AccountHost.app_host}#{request.fullpath}"
+      end
+
+      def moved_permanently(location)
         [ 301, { "location" => location, "content-type" => "text/html" }, [] ]
       end
+
       # A prefix only counts when the account actually exists — shape alone
       # can't be trusted ("assets" is a plausible six-char slug, which is also
       # why Sluggable refuses to generate reserved words). Unprefixed paths on

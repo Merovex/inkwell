@@ -7,7 +7,7 @@ class AccountsController < ApplicationController
 
   def index
     @accounts = Current.user.accounts.order(:name)
-    redirect_to admin_root_url(script_name: "/#{@accounts.first.slug}") if @accounts.one?
+    redirect_to @accounts.first.admin_path if @accounts.one?
   end
 
   def new
@@ -17,7 +17,7 @@ class AccountsController < ApplicationController
   def create
     @account = Account.create_with_owner(name: account_params[:name], owner: Current.user)
     if @account.persisted?
-      redirect_to admin_root_url(script_name: "/#{@account.slug}")
+      redirect_to @account.admin_path
     else
       render :new, status: :unprocessable_entity
     end

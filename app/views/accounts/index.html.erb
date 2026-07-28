@@ -7,9 +7,9 @@
       <ul class="account-picker">
         <% @accounts.each do |account| %>
           <li>
-            <%= link_to admin_root_path(script_name: "/#{account.slug}"), class: "account-picker__card" do %>
+            <%= link_to account.admin_path, class: "account-picker__card" do %>
               <span class="account-picker__name"><%= account.name %></span>
-              <span class="account-picker__meta"><%= account.domain || [ AccountHost.apex_host, account.slug ].compact.join("/") %></span>
+              <span class="account-picker__meta"><%= account.public_address %></span>
             <% end %>
           </li>
         <% end %>

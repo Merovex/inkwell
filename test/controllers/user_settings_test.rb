@@ -73,7 +73,7 @@ class UserSettingsTest < ActionDispatch::IntegrationTest
     patch user_join_code_path
     assert_redirected_to user_settings_path
     assert_not_equal old_code, users(:alice).join_code.reload.code
-    assert_nil JoinCode.redeem(old_code)
+    assert_nil JoinCode.lookup(old_code)
   end
 
   test "a plain member sees no invite code and cannot rotate" do

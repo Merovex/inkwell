@@ -8,8 +8,11 @@ class Admin::SettingsController < Admin::BaseController
   end
 
   def update
-    if @site.update(site_params)
-      @site.account.save!
+    # One form, two rows (contact_email delegates to the account): save both
+    # or neither.
+    saved = Site.transaction { @site.update(site_params) && @site.account.save! }
+
+    if saved
       redirect_to admin_settings_path, notice: "Settings saved."
     else
       render :show, status: :unprocessable_entity

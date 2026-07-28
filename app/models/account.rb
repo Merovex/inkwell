@@ -32,13 +32,11 @@ class Account < ApplicationRecord
   def authors  = Author.where(id: records.active.authors.select(:recordable_id))
   def chat_lines = ChatLine.where(id: records.active.chat_lines.select(:recordable_id))
 
-  # The account's public-site identity, read on every public request — cached,
-  # self-busting on edit (Site's after_commit), created on first read so a new
-  # account renders sensibly before anyone touches /admin/settings.
+  # The account's public-site identity, created on first read so a new account
+  # renders sensibly before anyone touches /admin/settings. One indexed query;
+  # memoized because the layout and etags both ask within a request.
   def site
-    Rails.cache.fetch([ "site", id ]) do
-      Site.where(id: records.active.where(recordable_type: "Site").select(:recordable_id)).first || create_site
-    end
+    @site ||= Site.where(id: records.active.where(recordable_type: "Site").select(:recordable_id)).first || create_site
   end
 
   # Birth of an account: the press plus its owner's membership, atomically.
@@ -53,10 +51,14 @@ class Account < ApplicationRecord
     account
   end
 
-  # Resolving an account from a URL identifies it; membership authorizes it.
-  # The owner is always a member, join row or not.
-  def member?(user)
-    user.present? && (owner_id == user.id || account_users.exists?(user: user))
+  # Where this press's admin lives on the app host (script_name-mounted).
+  def admin_path
+    "/#{slug}/admin"
+  end
+
+  # The public site's address: the custom domain, else the apex slug path.
+  def public_address
+    domain || [ AccountHost.apex_host, slug ].compact.join("/")
   end
 
   private

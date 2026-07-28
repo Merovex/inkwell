@@ -52,37 +52,28 @@ module Sluggable
     [ title_or_name.to_s.parameterize, slug ].compact.join("-")
   end
 
-  # Retry once with a fresh slug if the unique index catches a
-  # generation race. Message sniffing is adapter-specific; the
-  # ".slug" fragment matches SQLite and MySQL constraint errors.
-  def save(**options)
-    attempts = 0
-    begin
-      super
-    rescue ActiveRecord::RecordNotUnique => e
-      raise unless new_record? && e.message.include?("slug") && (attempts += 1) <= 2
-
-      self.slug = self.class.generate_unique_slug
-      retry
-    end
-  end
-
-  def save!(**options)
-    attempts = 0
-    begin
-      super
-    rescue ActiveRecord::RecordNotUnique => e
-      raise unless new_record? && e.message.include?("slug") && (attempts += 1) <= 2
-
-      self.slug = self.class.generate_unique_slug
-      retry
-    end
-  end
+  def save(**)  = retrying_slug_collision { super }
+  def save!(**) = retrying_slug_collision { super }
 
   private
 
   def set_slug
     self.slug ||= self.class.generate_unique_slug
+  end
+
+  # Retry with a fresh slug if the unique index catches a generation race.
+  # Message sniffing is adapter-specific; the "slug" fragment matches SQLite
+  # and MySQL constraint errors.
+  def retrying_slug_collision
+    attempts = 0
+    begin
+      yield
+    rescue ActiveRecord::RecordNotUnique => e
+      raise unless new_record? && e.message.include?("slug") && (attempts += 1) <= 2
+
+      self.slug = self.class.generate_unique_slug
+      retry
+    end
   end
 
   # Slug-aware find, applied to both the class and all relations
@@ -136,11 +127,6 @@ module Sluggable
       first = LETTERS.chars.sample(random: SecureRandom)
       rest  = SecureRandom.alphanumeric(size - 1, chars: CROCKFORD_32.chars)
       "#{first}#{rest}"
-    end
-
-    # Deprecated — use find().
-    def find_by_slug(param)
-      find(param)
     end
   end
 end

@@ -12,9 +12,7 @@ class Subscriber < ApplicationRecord
 
   # A subscriber built from a bare email self-provisions its Person, so every
   # creation path (opt-in, imports, tests) stays one call.
-  before_validation do
-    self.person ||= Person.find_or_initialize_by(email_address: email_address) if email_address.present?
-  end
+  before_validation :assign_person
 
   has_many :events, -> { order(:created_at) }, class_name: "SubscriptionEvent", dependent: :destroy
   has_many :broadcast_deliveries, dependent: :destroy
@@ -166,6 +164,10 @@ class Subscriber < ApplicationRecord
   end
 
   private
+    def assign_person
+      self.person ||= Person.find_or_initialize_by(email_address: email_address) if email_address.present?
+    end
+
     def nudgeworthy?
       (days_since_engagement >= RE_ENGAGE_DAYS && emails_since_engagement >= RE_ENGAGE_EMAILS) ||
         days_since_engagement >= RE_ENGAGE_CAP_DAYS

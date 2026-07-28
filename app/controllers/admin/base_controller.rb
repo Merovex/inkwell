@@ -1,7 +1,8 @@
 # Base for the Inkwell admin backend. Every action requires an authenticated
 # session (inherited from ApplicationController's require_authentication) *and*
-# the domain-admin role (AdminOnly). The backend is the author's alone — a
-# signed-in non-admin gets the same 404 as a missing record.
+# administration of the current account (AdminOnly: its owner, or root). The
+# backend is the author's alone — a signed-in non-admin gets the same 404 as a
+# missing record.
 #
 # The pre-login entry points — sign-in (SessionsController), first-run setup
 # (SetupsController), and open self-registration (SignupsController) —
@@ -10,17 +11,4 @@
 # everything under /admin goes through this gate.
 class Admin::BaseController < ApplicationController
   include AdminOnly
-
-  before_action :require_account_membership
-
-  private
-    # Resolving a slug from the URL identifies an account; it doesn't grant
-    # access. Non-members get the same 404 as a wrong slug — membership is
-    # never confirmed to outsiders (ADR 0018).
-    def require_account_membership
-      return unless AccountHost.enforced?
-      return if Current.user&.root? # platform staff reach every account
-
-      raise ActiveRecord::RecordNotFound unless Current.account&.member?(Current.user)
-    end
 end

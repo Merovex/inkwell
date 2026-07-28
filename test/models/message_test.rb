@@ -1,6 +1,15 @@
 require "test_helper"
 
 class MessageTest < ActiveSupport::TestCase
+  test "a category from another press is rejected" do
+    other = Account.create!(name: "Other Press", owner: users(:bob))
+    foreign = Current.with_account(other) { Category.create!(name: "Theirs", icon: "🚫") }
+
+    message = Message.new(title: "Hi", body: Body.create!, creator: users(:alice), category: foreign)
+    assert_not message.valid?
+    assert message.errors[:category].any?
+  end
+
   test "messages share the publishable regime: publish stamps once, unpublish returns to mutable" do
     record = records(:roadmap)
     assert_nil record.recordable.published_at

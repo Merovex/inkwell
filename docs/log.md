@@ -2,6 +2,20 @@
 
 Append-only. Newest first. Format defined in [[CLAUDE]] (`CLAUDE.md`).
 
+## [2026-07-28] fix | DHH-review pass 2: dead gate, atomic settings save, collation
+- Dead filter deleted: `require_account_membership` could never fire (AdminOnly's `require_admin` runs first and only owner/root pass; owner is always a member, root skipped). Ownership is the whole admin story until per-account roles; `Account#member?` went with it (no app callers left — the test asserts the association instead).
+- `Admin::SettingsController#update` is atomic: site + delegated contact_email save in one transaction (was site-then-account, two commits, 500-after-partial-write on the second).
+- `Sluggable`: save/save! retry duplication boiled into `retrying_slug_collision`; born-deprecated `find_by_slug` deleted. `Account#site` no longer marshals an AR instance into Rails.cache — one indexed query, instance-memoized; Site's cache-bust callback gone.
+- `JoinCode.redeem` → `lookup` (it's a find; the code is multi-use and survives every match — `SignInCode.redeem` keeps its name, it genuinely consumes).
+- `accounts.name` now `COLLATE NOCASE` (migration 9, column-level so it survives the SQLite schema dump — an expression index didn't), backing the case-insensitive uniqueness validation at the index. Routes: admin/public constraint bodies re-indented; stale Setting.current comment fixed; defensive `Current.user&.accounts || Account.none` trimmed.
+- Suite: 385 green, rubocop clean.
+- refs: ../app/controllers/admin/base_controller.rb, ../app/models/concerns/sluggable.rb, ../db/migrate/20260728000009_recollate_accounts_name_index.rb
+
+## [2026-07-28] fix | DHH-review pass on the session's work
+- One real bug: a tampered category_id could attach another press's category to a message (the presence validation loaded Category globally) — now `category_shares_account` rejects it, with a regression test.
+- Boil-downs: `Account#admin_path` and `#public_address` replace three hand-rolled `script_name:` constructions and view-level address logic; one `moved_permanently` helper in the extractor; `Signup` error copy de-duplicated; `Subscriber`'s person provisioning is a named callback; test harness uses plain assignment. Suite: 385 green.
+- refs: ../app/models/message.rb, ../app/models/account.rb, ../lib/middleware/account_host.rb
+
 ## [2026-07-28] build | Phase 1 closed out: 1.6 person split, shims deleted, categories per-press
 - **1.6 shipped** (the last plan item): `people` table (one row per email globally), `subscribers.person_id` backfilled + NOT NULL, the global email-unique index replaced by unique `[person_id, account_id]` — one address can now subscribe to every press. email_address stays denormalized on subscribers (delivery code untouched, per plan). Subscribers self-provision their Person from a bare email (find_or_initialize + autosave, so bad emails are validation errors); uniqueness validation scoped per account. Token decision: subscriber tokens DON'T gain account_id — `subscribers.account_id` is now authoritative after token lookup, so every outstanding unsubscribe/confirm link in sent email keeps working (CAN-SPAM-safe; the plan's payload idea predated the column).
 - **Legacy shims deleted**: `Current.account || Account.first` fallbacks removed from Record/Missive/Subscriber defaults and Author callbacks; mailers now derive the press from their data (subscriber.account / broadcast.record.account / missive.account) instead of ambient state — only MissiveDigest keeps a fallback (install-wide, email-phase). Test harness pins `Current.account = accounts(:merovex)` in setup, mirroring the middleware; a record without account context is now a validation failure (spec'd).

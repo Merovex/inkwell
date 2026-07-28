@@ -56,9 +56,9 @@ module Authentication
   def default_admin_url
     return admin_root_url unless AccountHost.enforced?
 
-    accounts = Current.user&.accounts || Account.none
+    accounts = Current.user.accounts
     if accounts.one?
-      admin_root_url(script_name: "/#{accounts.first.slug}")
+      accounts.first.admin_path
     else
       app_host_root_url
     end

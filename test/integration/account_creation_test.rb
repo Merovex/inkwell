@@ -24,7 +24,7 @@ class AccountCreationTest < ActionDispatch::IntegrationTest
 
     account = Account.find_by(name: "Founder Press")
     assert_equal @founder, account.owner
-    assert account.member?(@founder)
+    assert_includes @founder.accounts.reload, account
     assert_redirected_to "http://#{APP_HOST}/#{account.slug}/admin"
 
     follow_redirect!

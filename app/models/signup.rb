@@ -18,9 +18,9 @@ class Signup
   def save
     return false unless valid?
 
-    join_code = JoinCode.redeem(invite_code)
+    join_code = JoinCode.lookup(invite_code)
     unless join_code
-      errors.add(:invite_code, "isn't a valid invite code")
+      errors.add(:invite_code, "isn't valid")
       return false
     end
 

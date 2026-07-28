@@ -28,10 +28,6 @@ class Site < ApplicationRecord
 
   delegate :contact_email, :contact_email=, to: :account, allow_nil: true
 
-  # Read on every public request (layout identity + etags), so Account#site
-  # caches it; any change self-busts.
-  after_commit -> { Rails.cache.delete([ "site", record&.account_id ]) }
-
   def mutable? = true
 
   def account = record&.account

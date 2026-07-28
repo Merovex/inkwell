@@ -13,8 +13,9 @@ class JoinCode < ApplicationRecord
   validates :code, presence: true, uniqueness: true
 
   # Crockford-normalized lookup: case-insensitive, I/L→1, O→0, and any
-  # dash/space grouping the invitee typed is stripped.
-  def self.redeem(input)
+  # dash/space grouping the invitee typed is stripped. A find, not a
+  # redemption — the code is multi-use and survives every match.
+  def self.lookup(input)
     find_by(code: Sluggable.normalize(input.to_s.gsub(/[^0-9a-zA-Z]/, "")))
   end
 
