@@ -38,6 +38,8 @@
         <%= f.email_field :email_address, class: "field__control", placeholder: "you@example.com", required: true, autofocus: true, autocomplete: "email" %>
         <%= f.submit "Send magic link", class: "button button--primary", style: "margin-block-start: var(--u-pad);" %>
       <% end %>
+
+      <%= link_to "Have an invite code? Sign up", new_signup_path, class: "u-text-muted" %>
     </div>
   <% end %>
 </div>

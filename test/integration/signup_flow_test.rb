@@ -9,6 +9,11 @@ class SignupFlowTest < ActionDispatch::IntegrationTest
     @join_code = JoinCode.create!(user: users(:admin))
   end
 
+  test "the sign-in page links to signup" do
+    get new_session_path
+    assert_select "a[href=?]", new_signup_path, text: /Sign up/
+  end
+
   test "a valid code registers a member, records the inviter, and emails a link" do
     assert_difference "User.count", 1 do
       assert_enqueued_emails 1 do
