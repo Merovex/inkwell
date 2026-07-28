@@ -7,7 +7,7 @@ class Admin::Messages::DraftsController < Admin::BaseController
   before_action -> { authorize! @record, to: :manage }, only: :destroy
 
   def index
-    @messages = RecordPolicy.scope_for(Current.user, Message.current.where.not(status: :published))
+    @messages = RecordPolicy.scope_for(Current.user, Current.account.messages.where.not(status: :published))
       .includes(:record, :creator, :category, body: :rich_text_content).order(updated_at: :desc)
   end
 

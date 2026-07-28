@@ -8,7 +8,7 @@ class SubscriberMailerTest < ActionMailer::TestCase
     email = SubscriberMailer.confirmation(subscriber, token)
 
     assert_equal [ "reader@example.com" ], email.to
-    assert_match Setting.current.site_name, email.subject
+    assert_match accounts(:merovex).site.site_name, email.subject
     # Assert on the decoded parts — the raw MIME soft-wraps the long token.
     [ email.text_part, email.html_part ].each do |part|
       assert_match "/newsletter/confirm/#{token}", part.decoded
@@ -23,7 +23,7 @@ class SubscriberMailerTest < ActionMailer::TestCase
     email = SubscriberMailer.re_engagement(subscriber, token)
 
     assert_equal [ "reader@example.com" ], email.to
-    assert_match Setting.current.site_name, email.subject
+    assert_match accounts(:merovex).site.site_name, email.subject
     [ email.text_part, email.html_part ].each do |part|
       assert_match "/newsletter/keep/#{token}", part.decoded
       assert_match "/newsletter/unsubscribe/#{token}", part.decoded
@@ -31,7 +31,7 @@ class SubscriberMailerTest < ActionMailer::TestCase
   end
 
   test "confirmation sends from the aligned marketing identity and replies to the contact email" do
-    Setting.current.update!(contact_email: "press@example.com")
+    accounts(:merovex).update!(contact_email: "press@example.com")
     subscriber = Subscriber.create!(email_address: "reader@example.com")
 
     email = SubscriberMailer.confirmation(subscriber, subscriber.generate_token_for(:confirmation))

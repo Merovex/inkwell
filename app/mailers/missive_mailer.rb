@@ -21,7 +21,7 @@ class MissiveMailer < ApplicationMailer
   }
 
   def confirmation(missive, token)
-    setting = Setting.current
+    setting = (Current.account || Account.first).site
     @site_name = setting.site_name
     @confirm_url = confirm_contact_url(token: token)
 
@@ -34,7 +34,9 @@ class MissiveMailer < ApplicationMailer
   # in the last day; `recipients` is the domain admins' addresses. No message
   # content rides along — just the count and a link to the feed.
   def digest(recipients, count)
-    @site_name = Setting.current.site_name
+    # The digest is install-wide (cross-account sweep); the first account's
+    # identity fronts it until the multi-tenant email phase splits it up.
+    @site_name = (Current.account || Account.first).site.site_name
     @count = count
     @missives_url = admin_missives_url
 

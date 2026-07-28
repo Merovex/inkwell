@@ -24,7 +24,7 @@ class DropMailerTest < ActionMailer::TestCase
   end
 
   test "sends from the marketing identity and carries a one-click unsubscribe" do
-    Setting.current.update!(contact_email: "press@example.com")
+    accounts(:merovex).update!(contact_email: "press@example.com")
     email = DropMailer.step(@stream, @drop)
 
     assert_equal [ Rails.application.credentials.dig(:ses, :marketing_from) ], email.from

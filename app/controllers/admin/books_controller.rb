@@ -5,7 +5,7 @@ class Admin::BooksController < Admin::BaseController
   before_action -> { authorize! @record, to: :manage }, only: %i[edit update destroy]
 
   def index
-    books = Book.current.includes(:record, :creator, :depiction, body: :rich_text_content).feed_ordered
+    books = Current.account.books.includes(:record, :creator, :depiction, body: :rich_text_content).feed_ordered
     @sections = sections_for(books)
   end
 
@@ -67,7 +67,7 @@ class Admin::BooksController < Admin::BaseController
       installments = Installment.where(book_record_id: by_record_id.keys).order(:position)
       in_series = installments.group_by(&:series_record_id)
 
-      sections = Series.current.where(record_id: in_series.keys).order(:title).map do |series|
+      sections = Current.account.series.where(record_id: in_series.keys).order(:title).map do |series|
         [ series.title, in_series[series.record_id].filter_map { |i| by_record_id[i.book_record_id] } ]
       end
 
@@ -85,7 +85,7 @@ class Admin::BooksController < Admin::BaseController
       q = params[:q].to_s.strip
       return Book.none if q.blank?
 
-      scope = Book.current.where("title LIKE ?", "%#{Book.sanitize_sql_like(q)}%").order(:title).limit(10)
+      scope = Current.account.books.where("title LIKE ?", "%#{Book.sanitize_sql_like(q)}%").order(:title).limit(10)
       if params[:series_record_id].present?
         scope = scope.where.not(record_id: Installment.where(series_record_id: params[:series_record_id]).select(:book_record_id))
       end

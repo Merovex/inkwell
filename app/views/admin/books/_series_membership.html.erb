@@ -8,7 +8,7 @@
         anchor_id: record.id, placeholder: "Search series to add…" %>
   <ul class="mrows" id="book_series">
     <% book.installments.each do |installment| %>
-      <% series = Series.current.find_by(record_id: installment.series_record_id) %>
+      <% series = Current.account.series.find_by(record_id: installment.series_record_id) %>
       <% next unless series %>
       <%= render "admin/books/series_row", installment: installment, series: series %>
     <% end %>

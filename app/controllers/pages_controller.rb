@@ -7,10 +7,10 @@ class PagesController < PublicController
     # series by release date), then standalone titles by release date. A book
     # in multiple series appears once.
     linked = Installment.select(:book_record_id)
-    in_series = Series.current.published.feed_ordered.flat_map do |series|
+    in_series = Current.account.series.published.feed_ordered.flat_map do |series|
       series.books.published.reorder(:publication_date).to_a
     end
-    standalone = Book.current.published.where.not(record_id: linked)
+    standalone = Current.account.books.published.where.not(record_id: linked)
       .includes(:record, :depiction).order(:publication_date)
     @scroller_books = (in_series + standalone).uniq(&:record_id)
     fresh_when etag: [ @scroller_books, site_settings ], public: true
@@ -33,8 +33,8 @@ class PagesController < PublicController
 
   # XML sitemap of the public surface for search engines.
   def sitemap
-    @posts = Post.current.published.includes(:record)
-    @books = Book.current.published.includes(:record)
+    @posts = Current.account.posts.published.includes(:record)
+    @books = Current.account.books.published.includes(:record)
     fresh_when etag: [ @posts, @books, site_settings ], public: true
   end
 

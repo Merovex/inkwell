@@ -10,7 +10,7 @@ module DripScoped
 
   private
     def set_record
-      @record = Record.active.drips.find(params[:drip_id] || params[:id])
+      @record = Current.account.records.active.drips.find(params[:drip_id] || params[:id])
       @drip = @record.recordable
     end
 end

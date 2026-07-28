@@ -21,10 +21,10 @@ class ApplicationController < ActionController::Base
 
   helper_method :hotwire_native?, :current_theme, :press_theme, :press_heading_font, :current_tint, :site_settings
 
-  # The install's public identity (name, tagline, logo…), memoized per request.
-  # Drives the public Merovex Press chrome; see the "public" layout.
+  # The account's public identity (name, tagline, logo…), memoized per request.
+  # Drives the public site chrome; see the "public" layout.
   def site_settings
-    @site_settings ||= Setting.current
+    @site_settings ||= Current.account.site
   end
 
   # True when the request comes from the Hotwire Native wrapper (vs. web/PWA), so

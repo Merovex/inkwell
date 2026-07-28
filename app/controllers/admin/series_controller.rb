@@ -5,7 +5,7 @@ class Admin::SeriesController < Admin::BaseController
   before_action -> { authorize! @record, to: :manage }, only: %i[edit update destroy reorder]
 
   def index
-    @series = Series.current.includes(:record, :creator, body: :rich_text_content).feed_ordered
+    @series = Current.account.series.includes(:record, :creator, body: :rich_text_content).feed_ordered
   end
 
   # The series page lists its books in order — drag-sortable to set position.
@@ -79,7 +79,7 @@ class Admin::SeriesController < Admin::BaseController
       q = params[:q].to_s.strip
       return Series.none if q.blank?
 
-      scope = Series.current.where("title LIKE ?", "%#{Series.sanitize_sql_like(q)}%").order(:title).limit(10)
+      scope = Current.account.series.where("title LIKE ?", "%#{Series.sanitize_sql_like(q)}%").order(:title).limit(10)
       if params[:book_record_id].present?
         scope = scope.where.not(record_id: Installment.where(book_record_id: params[:book_record_id]).select(:series_record_id))
       end

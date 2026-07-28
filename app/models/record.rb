@@ -7,7 +7,7 @@ class Record < ApplicationRecord
   include Boostable
 
   # Content types that may live in the envelope; grows as recordables are added.
-  RECORDABLE_TYPES = %w[ Post Comment ChatLine Message Book Series Author Drip Drop ]
+  RECORDABLE_TYPES = %w[ Post Comment ChatLine Message Book Series Author Drip Drop Site ]
 
   delegated_type :recordable, types: RECORDABLE_TYPES, optional: true
   belongs_to :creator, class_name: "User", default: -> { Current.user }

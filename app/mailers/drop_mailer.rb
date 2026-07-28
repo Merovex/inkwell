@@ -10,7 +10,7 @@ class DropMailer < ApplicationMailer
   def step(stream, drop)
     @drop = drop
     subscriber = stream.subscriber
-    setting = Setting.current
+    setting = (Current.account || Account.first).site
     @site_name = setting.site_name
     @unsubscribe_url = unsubscribe_newsletter_url(token: subscriber.generate_token_for(:unsubscribe))
 

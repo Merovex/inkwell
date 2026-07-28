@@ -8,7 +8,7 @@ class Admin::DripsController < Admin::BaseController
   before_action -> { authorize! @record, to: :manage }, only: %i[edit update destroy activate reorder]
 
   def index
-    @drips = Drip.current.joins(:record).includes(:creator).order("records.created_at DESC")
+    @drips = Current.account.drips.joins(:record).includes(:creator).order("records.created_at DESC")
   end
 
   # Overview: send/skip totals, a delivered-per-day history, and the next
@@ -17,7 +17,7 @@ class Admin::DripsController < Admin::BaseController
     @subscribers_count = Stream.select(:subscriber_id).distinct.count
     @delivered_count = DropDelivery.status_sent.count
     @skipped_count = DropDelivery.status_skipped.count
-    @active_count = Drip.live.count
+    @active_count = Current.account.drips.live.count
     @opened_count = DropDelivery.where.not(opened_at: nil).count
     @clicked_count = DropDelivery.where.not(clicked_at: nil).count
     @history = delivered_by_day

@@ -47,6 +47,10 @@ module Inkwell
     # tracking is live — otherwise everyone looks cold (ADR 0014).
     config.x.newsletter.sunset_enabled = ENV["NEWSLETTER_SUNSET"] == "true"
 
+    # Mail rendered by deliver_later must carry the enqueuing request's
+    # account, like every other job (see ApplicationMailDeliveryJob).
+    config.action_mailer.delivery_job = "ApplicationMailDeliveryJob"
+
     # Use libvips — it's what the Dockerfile installs (and the Rails 8 default).
     # ImageMagick is NOT in the image, so :mini_magick fails to generate any
     # variant in production, which breaks every image (all render via variants).

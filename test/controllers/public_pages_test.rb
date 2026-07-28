@@ -39,7 +39,7 @@ class PublicPagesTest < ActionDispatch::IntegrationTest
   end
 
   test "legal pages render the admin-authored rich text" do
-    Setting.current.update!(privacy_policy: "<p>We respect your cookies.</p>", terms: "<p>Be excellent.</p>")
+    accounts(:merovex).site.update!(privacy_policy: "<p>We respect your cookies.</p>", terms: "<p>Be excellent.</p>")
 
     get privacy_path
     assert_response :success
@@ -58,7 +58,7 @@ class PublicPagesTest < ActionDispatch::IntegrationTest
   end
 
   test "the footer links to a legal page only when it has content" do
-    Setting.current.update!(privacy_policy: "<p>present</p>", terms: "")
+    accounts(:merovex).site.update!(privacy_policy: "<p>present</p>", terms: "")
 
     get root_path
     assert_select "a[href=?]", privacy_path

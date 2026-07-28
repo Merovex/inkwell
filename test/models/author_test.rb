@@ -11,7 +11,7 @@ class AuthorTest < ActiveSupport::TestCase
     troy.update!(default: true)
     assert troy.reload.default?
     assert_not ben.reload.default?
-    assert_equal troy, Author.default
+    assert_equal troy, accounts(:merovex).authors.find_by(default: true)
   end
 
   test "edits mutate the current version in place — no new row" do

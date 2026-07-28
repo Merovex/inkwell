@@ -4,6 +4,7 @@
 # opt-ins don't linger. Idempotent; a no-op when nothing is due.
 class MissivePurgeJob < ApplicationJob
   def perform
-    Missive.purgeable.delete_all
+    # A deliberate cross-account sweep: age, not tenancy, decides.
+    Current.allowing_unscoped_tenancy { Missive.purgeable.delete_all }
   end
 end

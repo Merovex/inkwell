@@ -7,13 +7,13 @@ class Admin::PostsController < Admin::BaseController
   # The default view is the published feed; unpublished work (drafts +
   # scheduled) lives behind the counted link to posts/drafts.
   def index
-    @posts = Post.current.published
+    @posts = Current.account.posts.published
       .includes(:record, :creator, body: :rich_text_content).feed_ordered
 
-    @comment_counts = Record.active.comments
+    @comment_counts = Current.account.records.active.comments
       .where(parent_id: @posts.map(&:record_id)).group(:parent_id).count
 
-    unpublished = RecordPolicy.scope_for(Current.user, Post.current.where.not(status: :published))
+    unpublished = RecordPolicy.scope_for(Current.user, Current.account.posts.where.not(status: :published))
       .group(:status).count
     @drafts_count = unpublished["drafted"].to_i
     @scheduled_count = unpublished["scheduled"].to_i

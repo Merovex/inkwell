@@ -35,7 +35,11 @@ class Missive < ApplicationRecord
   # 404. Keeping it resolvable lets the confirm action recognize an already-confirmed
   # missive and say so (confirm! is idempotent). (Unconfirmed rows outlive the
   # token by a few days before the purge sweep clears them.)
-  generates_token_for :confirmation, expires_in: 3.days
+  # The account_id in the payload signs tenant context into every link now, so
+  # the token format never has to migrate when tenant #2 arrives (ADR 0017).
+  generates_token_for :confirmation, expires_in: 3.days do
+    account_id
+  end
 
   scope :confirmed,   -> { where.not(confirmed_at: nil) }
   scope :unconfirmed, -> { where(confirmed_at: nil) }

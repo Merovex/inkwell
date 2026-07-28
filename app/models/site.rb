@@ -1,0 +1,52 @@
+# The public site's identity — name, tagline, About blurb, legal pages, logo.
+# One per account, a recordable on the spine (versioned like everything else),
+# reached through Account#site and edited from /admin/settings. Replaces the
+# old install-wide Setting singleton (ADR 0017 / plan 1.5).
+#
+# Like Author: always-live, no draft regime — edits amend the current version
+# in place. contact_email lives on the account (1.1); the delegation keeps the
+# settings form and the mailers' reply_to reading one object.
+class Site < ApplicationRecord
+  include Recordable
+
+  LOGO_CONTENT_TYPES = %w[ image/jpeg image/png image/avif image/webp image/svg+xml ]
+  LOGO_MAX_SIZE = 5.megabytes
+
+  # The About blurb — rich text so it can carry formatting on the About page;
+  # its plain-text form feeds the public <meta description>.
+  has_rich_text :description
+
+  # Legal pages, admin-authored rich text (cookies live inside the privacy copy).
+  has_rich_text :privacy_policy
+  has_rich_text :terms
+
+  # The public logo; absent means the built-in wordmark (see the public layout).
+  has_one_attached :logo
+
+  validates :site_name, presence: true
+  validate :acceptable_logo
+
+  delegate :contact_email, :contact_email=, to: :account, allow_nil: true
+
+  # Read on every public request (layout identity + etags), so Account#site
+  # caches it; any change self-busts.
+  after_commit -> { Rails.cache.delete([ "site", record&.account_id ]) }
+
+  def mutable? = true
+
+  def account = record&.account
+
+  def title = site_name
+
+  private
+    def acceptable_logo
+      return unless logo.attached?
+
+      unless logo.blob.content_type.in?(LOGO_CONTENT_TYPES)
+        errors.add(:logo, "must be a JPG, PNG, AVIF, WebP, or SVG image")
+      end
+      if logo.blob.byte_size > LOGO_MAX_SIZE
+        errors.add(:logo, "must be smaller than #{LOGO_MAX_SIZE / 1.megabyte} MB")
+      end
+    end
+end

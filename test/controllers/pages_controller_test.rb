@@ -3,7 +3,7 @@ require "test_helper"
 # The public Merovex Press front-of-house pages.
 class PagesControllerTest < ActionDispatch::IntegrationTest
   test "the About page renders the configured About blurb" do
-    Setting.current.update!(site_name: "Verkilo Press", description: "<p>We publish <em>wonders</em>.</p>")
+    accounts(:merovex).site.update!(site_name: "Verkilo Press", description: "<p>We publish <em>wonders</em>.</p>")
 
     get about_path
     assert_response :success
@@ -12,7 +12,7 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "the About page falls back gracefully with no blurb set" do
-    Setting.current.update!(description: "")
+    accounts(:merovex).site.update!(description: "")
 
     get about_path
     assert_response :success

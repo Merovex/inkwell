@@ -39,7 +39,12 @@ module AccountHost
     end
 
     def call(env)
-      return @app.call(env) unless AccountHost.enforced?
+      unless AccountHost.enforced?
+        # Single-tenant legacy mode pins the first account (the plan's 1.3
+        # "constant resolution") so controllers rely on Current.account
+        # uniformly whether or not host-role enforcement is on.
+        return Current.with_account(Account.first) { @app.call(env) }
+      end
 
       request = ActionDispatch::Request.new(env)
 

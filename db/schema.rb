@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.2].define(version: 2026_07_28_000003) do
+ActiveRecord::Schema[8.2].define(version: 2026_07_28_000004) do
   create_table "account_users", force: :cascade do |t|
     t.integer "account_id", null: false
     t.integer "user_id", null: false
@@ -403,14 +403,6 @@ ActiveRecord::Schema[8.2].define(version: 2026_07_28_000003) do
     t.index ["user_id"], name: "index_sessions_on_user_id"
   end
 
-  create_table "settings", force: :cascade do |t|
-    t.string "site_name"
-    t.string "tagline"
-    t.string "contact_email"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-  end
-
   create_table "sign_in_codes", force: :cascade do |t|
     t.integer "user_id", null: false
     t.string "code_digest", null: false
@@ -420,6 +412,18 @@ ActiveRecord::Schema[8.2].define(version: 2026_07_28_000003) do
     t.datetime "updated_at", null: false
     t.index ["code_digest"], name: "index_sign_in_codes_on_code_digest", unique: true
     t.index ["user_id"], name: "index_sign_in_codes_on_user_id"
+  end
+
+  create_table "sites", force: :cascade do |t|
+    t.string "site_name", null: false
+    t.string "tagline"
+    t.integer "record_id", null: false
+    t.integer "creator_id", null: false
+    t.string "event", default: "created", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["record_id", "id"], name: "index_sites_on_record_id_and_id"
+    t.index ["record_id"], name: "index_sites_on_record_id"
   end
 
   create_table "streams", force: :cascade do |t|
@@ -493,6 +497,8 @@ ActiveRecord::Schema[8.2].define(version: 2026_07_28_000003) do
   add_foreign_key "records", "users", column: "creator_id"
   add_foreign_key "sessions", "users"
   add_foreign_key "sign_in_codes", "users"
+  add_foreign_key "sites", "records"
+  add_foreign_key "sites", "users", column: "creator_id"
   add_foreign_key "streams", "records", column: "drip_record_id"
   add_foreign_key "streams", "subscribers"
   add_foreign_key "subscription_events", "subscribers"

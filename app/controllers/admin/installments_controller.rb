@@ -4,8 +4,8 @@
 # destroy unlinks. You may link/unlink if you can manage either side.
 class Admin::InstallmentsController < Admin::BaseController
   def create
-    @series_record = Record.active.series.find(params[:series_record_id])
-    @book_record   = Record.active.books.find(params[:book_record_id])
+    @series_record = Current.account.records.active.series.find(params[:series_record_id])
+    @book_record   = Current.account.records.active.books.find(params[:book_record_id])
     authorize_membership!(@series_record, @book_record)
     @context = params[:context]
 
@@ -17,7 +17,7 @@ class Admin::InstallmentsController < Admin::BaseController
 
   def destroy
     @installment = Installment.find(params[:id])
-    authorize_membership!(Record.find(@installment.series_record_id), Record.find(@installment.book_record_id))
+    authorize_membership!(Current.account.records.find(@installment.series_record_id), Current.account.records.find(@installment.book_record_id))
     @installment.destroy
     render turbo_stream: turbo_stream.remove(helpers.dom_id(@installment))
   end

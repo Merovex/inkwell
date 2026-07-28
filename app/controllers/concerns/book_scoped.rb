@@ -9,7 +9,7 @@ module BookScoped
 
   private
     def set_record
-      @record = Record.active.books.find(params[:book_id] || params[:id])
+      @record = Current.account.records.active.books.find(params[:book_id] || params[:id])
       @book = @record.recordable
     end
 end

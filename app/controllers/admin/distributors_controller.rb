@@ -18,7 +18,7 @@ class Admin::DistributorsController < Admin::BaseController
 
   private
     def set_record
-      @record = Record.active.find(params[:record_id] || Distributor.find(params[:id]).record_id)
+      @record = Current.account.records.active.find(params[:record_id] || Distributor.find(params[:id]).record_id)
       authorize! @record, to: :manage
     end
 

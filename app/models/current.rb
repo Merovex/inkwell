@@ -15,6 +15,14 @@ class Current < ActiveSupport::CurrentAttributes
     with(account: nil, &)
   end
 
+  # Deliberate cross-account work (purge sweeps, digests) declares itself so
+  # the dev/test tenancy guard lets it through. Greppable by design.
+  attribute :allow_unscoped_tenancy
+
+  def allowing_unscoped_tenancy(&)
+    with(allow_unscoped_tenancy: true, &)
+  end
+
   # True during web requests (set by ApplicationController), where we can serve
   # modern WebP images. Defaults to false (email-safe) because the Action Text
   # blob partial is shared with newsletter mailers — which have no request — and

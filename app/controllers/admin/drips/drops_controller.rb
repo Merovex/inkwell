@@ -41,12 +41,12 @@ class Admin::Drips::DropsController < Admin::BaseController
 
   private
     def set_drop
-      @drop_record = Record.active.drops.where(parent_id: @record.id).find(params[:id])
+      @drop_record = Current.account.records.active.drops.where(parent_id: @record.id).find(params[:id])
       @drop = @drop_record.recordable
     end
 
     def next_position
-      (Record.active.drops.where(parent_id: @record.id).maximum(:position) || 0) + 1
+      (Current.account.records.active.drops.where(parent_id: @record.id).maximum(:position) || 0) + 1
     end
 
     def drop_params

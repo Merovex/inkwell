@@ -244,7 +244,7 @@ Rails.application.routes.draw do
   get "books/:id" => "books#show", as: :book
 
   # The public Merovex Press site. The About page renders the site's About blurb
-  # from Setting.current; the admin backend lives at /admin.
+  # from the account's Site; the admin backend lives at /admin.
   get "about" => "pages#about", as: :about
 
   # Legal pages, authored in System settings (privacy carries the cookie notice).

@@ -10,13 +10,13 @@ class Admin::MessagesController < Admin::BaseController
   # The board: published messages, pinned first; unpublished work (drafts +
   # scheduled) lives behind the counted link to forum/drafts.
   def index
-    @messages = Message.current.published
+    @messages = Current.account.messages.published
       .includes(:record, :creator, :category, body: :rich_text_content).feed_ordered
 
-    @comment_counts = Record.active.comments
+    @comment_counts = Current.account.records.active.comments
       .where(parent_id: @messages.map(&:record_id)).group(:parent_id).count
 
-    unpublished = RecordPolicy.scope_for(Current.user, Message.current.where.not(status: :published))
+    unpublished = RecordPolicy.scope_for(Current.user, Current.account.messages.where.not(status: :published))
       .group(:status).count
     @drafts_count = unpublished["drafted"].to_i
     @scheduled_count = unpublished["scheduled"].to_i

@@ -27,11 +27,6 @@ class Author < ApplicationRecord
   # amend the current version in place; the world always sees the latest.
   def mutable? = true
 
-  # The persona to preselect when composing — the marked default, else the first.
-  def self.default
-    current.find_by(default: true) || current.ordered.first
-  end
-
   # name doubles as the slug title (Record#to_slug) and the avatar-helper name.
   def title = name
   def display_name = name
@@ -54,12 +49,20 @@ class Author < ApplicationRecord
   end
 
   private
+    # Default-flag maintenance is per-account: the first persona in an account
+    # becomes its default, and marking one demotes only its account's others.
+    # (Current.account fallback covers the pre-record create; Account.first is
+    # the single-tenant legacy shim, like Record#account's default.)
     def become_default_if_first
-      self.default = true if Author.current.none?
+      self.default = true if owning_account.authors.none?
     end
 
     def demote_other_defaults
-      Author.current.where.not(record_id: record_id).update_all(default: false)
+      owning_account.authors.where.not(record_id: record_id).update_all(default: false)
+    end
+
+    def owning_account
+      record&.account || Current.account || Account.first
     end
 
     def acceptable_avatar
