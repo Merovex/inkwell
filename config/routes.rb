@@ -46,6 +46,8 @@ Rails.application.routes.draw do
     namespace :user do
       resource :settings, only: %i[show update]
       resource :avatar, only: %i[update destroy]
+      # Rotate your invite code (inviters only — see User#can_invite?).
+      resource :join_code, only: :update
     end
   end
 

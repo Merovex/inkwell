@@ -7,7 +7,7 @@ Append-only. Newest first. Format defined in [[CLAUDE]] (`CLAUDE.md`).
 - Phase 2: any signed-in user founds a press from the picker — `Account.create_with_owner` (atomic account + owner membership), unique name (DB index + case-insensitive validation), lands in `/{SLUG}/admin`.
 - Authority rework: `users.role` renamed domain_admin → `root` (platform staff; passes admin + membership gates everywhere). Account owners are per-account superusers via `owner_id` (`User#administers?`) — AdminOnly, the app-menu chrome, and ApplicationPolicy all switched; signup-created users stay global member forever. Isolation spec's rival owner deliberately downgraded to member to prove owner_id authority.
 - Honeypots (invisible_captcha) on signup and sign-in create; trips fake the "check your email" page, persisting nothing.
-- Ops: after deploy, mint the first code — `JoinCode.create!(user: User.root.first)` (share `.formatted`); rotate on abuse with `.rotate!`. Suite: 377 green.
+- Web UI: personal settings gains an "Invite code" section for inviters (auto-mints on first view) — formatted code, copy-signup-link (clipboard controller, URL carries ?code= prefill), and a confirm-guarded Rotate button (`User::JoinCodesController`). Non-inviters see nothing and rotation 404s. Suite: 379 green.
 - pages touched: [[0020-join-code-signup-and-root-role]], [[index]]
 - refs: ../app/models/join_code.rb, ../app/models/signup.rb, ../app/controllers/accounts_controller.rb, ../db/migrate/20260728000005_rename_domain_admin_role_to_root.rb, ../db/migrate/20260728000006_create_join_codes.rb
 
