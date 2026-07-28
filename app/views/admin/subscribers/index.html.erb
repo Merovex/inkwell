@@ -27,7 +27,7 @@
       <li class="list__item">
         <span class="list__body">
           <span class="list__titlerow">
-            <span class="list__title"><%= subscriber.email_address %></span>
+            <span class="list__title"><%= redacted_email(subscriber.email_address) %></span>
             <% if subscriber.confirmed? && subscriber.re_engagement_sent_at %>
               <span class="badge badge--warning">Nudged</span>
             <% end %>
@@ -41,8 +41,8 @@
         <% unless subscriber.unsubscribed? %>
           <%= button_to unsubscribe_admin_subscriber_path(subscriber), method: :patch, form_class: "list__action",
                 class: "button button--icon button--ghost", title: "Unsubscribe",
-                "aria-label": "Unsubscribe #{subscriber.email_address}",
-                form: { data: { turbo_confirm: "Unsubscribe #{subscriber.email_address}?" } } do %>
+                "aria-label": "Unsubscribe #{redacted_email(subscriber.email_address)}",
+                form: { data: { turbo_confirm: "Unsubscribe #{redacted_email(subscriber.email_address)}?" } } do %>
             <%= inline_svg_tag "lucide/circle-x.svg", class: "lucide", size: "16px" %>
           <% end %>
         <% end %>

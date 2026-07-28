@@ -44,6 +44,15 @@ module ApplicationHelper
     user.display_name.scan(/[[:alpha:]]+/).first(2).map { |w| w[0] }.join.upcase
   end
 
+  # Masked email for admin lists: the first three letters of the local part,
+  # then a fixed three-dot mask (so the address length doesn't leak) and the
+  # domain — "benjamin@hey.com" → "ben•••@hey.com".
+  def redacted_email(address)
+    local, domain = address.to_s.split("@", 2)
+    masked = "#{local.to_s.first(3)}•••"
+    domain ? "#{masked}@#{domain}" : masked
+  end
+
   # The standard "who · when" line under list rows (comments, chat lines).
   def byline(creator, time, edited: false)
     tag.p class: "byline u-text-muted" do

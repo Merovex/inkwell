@@ -20,6 +20,7 @@ for canonical naming.
 - [database-and-scaling.md](database-and-scaling.md) — SQLite vs MariaDB; when to split app servers
 - [lexxy-and-active-record.md](lexxy-and-active-record.md) — Lexxy editor + Action Text coupling
 - [ses-migration-runbook.md](ses-migration-runbook.md) — Phase 0 (AWS + DNS) checklist for the Mailgun → SES/SNS migration (ADR 0015)
+- [saas-static-hosting-plan.md](saas-static-hosting-plan.md) — five-phase plan: static publish to Cloudflare R2 + Worker, multi-tenant SaaS (Fizzy pattern), BYODomain via CF for SaaS, per-tenant SES
 
 ## Decisions (ADRs)
 

@@ -2,6 +2,25 @@
 
 Append-only. Newest first. Format defined in [[CLAUDE]] (`CLAUDE.md`).
 
+## [2026-07-27] note | CTO-facing systems architecture doc posted to Basecamp
+- Expanded the SaaS plan into a full systems-architecture document (13 sections, ~5,500 words) for handoff to a CTO/product team: system landscape + Worker routing contract, account management, author-facing domain setup + TLS provisioning via Cloudflare for SaaS, BYOD email provisioning walk-through (DKIM/MAIL FROM/DMARC), per-author bounce/complaint monitoring with auto-pause state machine ("reputation firewall"), full Rails schema for all new tables (accounts, account_users, domains, sending_identities, email_stats, static_builds) + tenancy columns, background-job inventory, security/compliance, observability, phasing, risks.
+- Posted as a Basecamp document in the Inkujo project (bc_spacer'd Lexxy HTML per ~/Work/basecamp conventions): https://app.basecamp.com/5516303/buckets/45027208/documents/10138266259
+- pages touched: (none — external doc; companion to [[saas-static-hosting-plan]])
+- refs: docs/saas-static-hosting-plan.md
+
+## [2026-07-27] note | SaaS + static-hosting design plan written
+- New design doc: five-phase plan to turn Inkwell into a multi-client SaaS — (1) static publish of the public site to Cloudflare R2 behind a Worker (dynamic allowlist proxied to Rails: newsletter, contact, buy, ahoy, previews), (2) Fizzy-pattern multi-tenancy (`account_id` on the Record spine + subscriber tables, `Current.account`, `/:account_slug/admin` prefix), (3) BYODomain via Cloudflare for SaaS custom hostnames + Workers KV host→tenant routing, (4) per-tenant SES identities (platform mail domain default, BYOD sending subdomain on paid) with complaint/bounce auto-pause governance, (5) billing/operator console. Rails stays the writers' admin; readers never hit the origin, which is what keeps single-box SQLite viable.
+- pages touched: [[saas-static-hosting-plan]], index updated
+- refs: docs/saas-static-hosting-plan.md, builds on docs/multi-tenancy.md + ADRs 0006/0011/0012/0015
+
+## [2026-07-27] build | System settings form widened to the canvas
+- Dropped the `u-center u-center-narrow` wrapper (40rem cap) on admin/settings; the form now spans the canvas interior. The form itself gets `u-full-width` because the shared `.settings__section` grid uses `justify-items: start` (personal-settings page needs shrink-wrapped items), which would otherwise shrink the form to content width. Not yet visually verified — dev server was down.
+- refs: ../app/views/admin/settings/show.html.erb
+
+## [2026-07-27] build | Redact subscriber emails in the admin roster
+- Subscribers index now shows addresses masked to the first three letters of the local part + a fixed three-dot mask (`benjamin@hey.com` → `ben•••@hey.com`) via new `ApplicationHelper#redacted_email`; the mask length is fixed so address length doesn't leak. Applied to the list title, the unsubscribe aria-label, and the turbo-confirm text. CSV export intentionally keeps full addresses.
+- refs: ../app/helpers/application_helper.rb, ../app/views/admin/subscribers/index.html.erb, ../test/controllers/admin_subscribers_test.rb
+
 ## [2026-07-27] fix | DoubleRenderError on legal pages (fresh_when + render)
 - Production Honeybadger fault (#133020461, `pages#privacy`): `render_legal` called `fresh_when` then `render :legal` unconditionally. On a conditional GET with a matching ETag, `fresh_when` renders the 304 itself, so the follow-up `render` raised `AbstractController::DoubleRenderError`. Only bit revalidating clients — first visits were fine.
 - Fix: `render :legal if stale?(etag: site_settings, public: true)` — `stale?` is the conditional form of `fresh_when` for exactly this explicit-render case. Regression test added: privacy ETag round-trip expects 304.

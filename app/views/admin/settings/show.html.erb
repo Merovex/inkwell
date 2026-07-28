@@ -6,14 +6,14 @@
   <h1 class="perma-header__title">System settings</h1>
 </header>
 
-<div class="settings u-center u-center-narrow">
+<div class="settings">
   <%# Press / site identity — the public Merovex Press face. One form; logo and
       the text fields save together. Future sections (members, email…) slot in
       below as their own <section>s. %>
   <section class="settings__section" aria-label="Press identity">
     <%= render "admin/shared/error_summary", model: @setting %>
 
-    <%= form_with model: @setting, url: admin_settings_path, method: :patch, multipart: true do |f| %>
+    <%= form_with model: @setting, url: admin_settings_path, method: :patch, multipart: true, class: "u-full-width" do |f| %>
       <div class="field">
         <%= f.label :logo, "Logo", class: "field__label" %>
         <% if @setting.logo.attached? %>
