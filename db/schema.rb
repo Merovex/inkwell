@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.2].define(version: 2026_07_28_000002) do
+ActiveRecord::Schema[8.2].define(version: 2026_07_28_000003) do
   create_table "account_users", force: :cascade do |t|
     t.integer "account_id", null: false
     t.integer "user_id", null: false
@@ -329,6 +329,8 @@ ActiveRecord::Schema[8.2].define(version: 2026_07_28_000002) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.datetime "trashed_at"
+    t.integer "account_id", null: false
+    t.index ["account_id"], name: "index_missives_on_account_id"
     t.index ["confirmed_at"], name: "index_missives_on_confirmed_at"
     t.index ["created_at"], name: "index_missives_on_created_at"
   end
@@ -364,6 +366,8 @@ ActiveRecord::Schema[8.2].define(version: 2026_07_28_000002) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.datetime "purge_after"
+    t.integer "account_id", null: false
+    t.index ["account_id", "recordable_type"], name: "index_records_on_account_id_and_recordable_type"
     t.index ["creator_id"], name: "index_records_on_creator_id"
     t.index ["parent_id"], name: "index_records_on_parent_id"
     t.index ["purge_after"], name: "index_records_on_purge_after"
@@ -480,9 +484,11 @@ ActiveRecord::Schema[8.2].define(version: 2026_07_28_000002) do
   add_foreign_key "messages", "categories"
   add_foreign_key "messages", "records"
   add_foreign_key "messages", "users", column: "creator_id"
+  add_foreign_key "missives", "accounts"
   add_foreign_key "posts", "bodies"
   add_foreign_key "posts", "records"
   add_foreign_key "posts", "users", column: "creator_id"
+  add_foreign_key "records", "accounts"
   add_foreign_key "records", "records", column: "parent_id"
   add_foreign_key "records", "users", column: "creator_id"
   add_foreign_key "sessions", "users"

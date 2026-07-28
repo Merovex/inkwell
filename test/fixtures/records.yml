@@ -1,29 +1,36 @@
 kickoff:
   recordable: kickoff (Post)
   creator: alice
+  account: merovex
 
 typography:
   recordable: typography (Post)
   creator: alice
+  account: merovex
 
 kickoff_comment:
   recordable: kickoff_comment (Comment)
   creator: alice
+  account: merovex
   parent: kickoff
 
 hello_line:
   recordable: hello_line (ChatLine)
   creator: alice
+  account: merovex
 
 welcome:
   recordable: welcome (Message)
   creator: alice
+  account: merovex
 
 roadmap:
   recordable: roadmap (Message)
   creator: alice
+  account: merovex
 
 welcome_comment:
   recordable: welcome_comment (Comment)
   creator: alice
+  account: merovex
   parent: welcome

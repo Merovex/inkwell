@@ -2,6 +2,14 @@
 
 Append-only. Newest first. Format defined in [[CLAUDE]] (`CLAUDE.md`).
 
+## [2026-07-28] build | 1.2 + 1.3: tenancy on the spine, account-carrying jobs
+- `records.account_id` and `missives.account_id`: nullable ref → backfill to account 1 → NOT NULL → FK + `[account_id, recordable_type]` index, rehearsed on the prod-copy dev DB (SQLite handles the FK adds by table rebuild). Every recordable now inherits tenancy through its record row; installments validate both sides share an account (AR-only — SQLite can't express the cross-table constraint).
+- Write side: `Record`/`Missive` `belongs_to :account, default: -> { Current.account || Account.first }` — the `Account.first` fallback is the single-tenant legacy shim (model tests, APP_HOST-off), flagged for deletion with the 1.4 query guard. Known gap, deliberate: the fresh-install Setup flow creates no account, so a fresh install can't create content until one exists (account creation stays console-only for now).
+- Jobs: `AccountTenanted` prepended into ApplicationJob (Fizzy's pattern) — serializes `Current.account` as a GlobalID, restores it around perform, DeserializationError for a vanished account; account-less enqueues (cron ticks) run exactly as before. SES emailing deliberately untouched (decoupling is last, per user).
+- Suite: 366 runs green (installment pairing, account stamping, job round-trip tests added).
+- pages touched: (none new — extends [[0017-phase-1-tenancy-model]])
+- refs: ../db/migrate/20260728000003_add_account_to_spine.rb, ../app/models/record.rb, ../app/models/installment.rb, ../app/jobs/concerns/account_tenanted.rb
+
 ## [2026-07-28] build | App host → app.kindredquill.com + account picker (ADR 0019)
 - `APP_HOST` moves to the app subdomain; the AccountHost middleware 301s the bare apex to it (path intact, `apex_host` derived by stripping the subdomain). kamal proxy gains app.kindredquill.com — DNS (Cloudflare proxied, SSL Full) must exist before the deploy.
 - App-host root is now `AccountsController#index` (auth layout): forces sign-in; one membership → straight to `/{SLUG}/admin`; several → account cards (new `.account-picker` CSS); zero → empty state. `/{SLUG}` bare redirects to `/{SLUG}/admin`, constrained to slug-mounted requests only (first cut shadowed the public root in legacy mode — caught by the suite). `default_admin_url` follows the same one-vs-many rule after sign-in.

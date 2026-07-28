@@ -1,6 +1,21 @@
 require "test_helper"
 
 class RecordTest < ActiveSupport::TestCase
+  test "a new record is stamped with the current account at birth" do
+    other = Account.create!(name: "Other Press", owner: users(:bob))
+
+    record = Current.with_account(other) do
+      Record.originate(Post.new(title: "Elsewhere", creator: users(:alice), body: Body.create!))
+    end
+
+    assert_equal other, record.account
+  end
+
+  test "without request context a new record falls back to the first account" do
+    record = Record.originate(Post.new(title: "Legacy", creator: users(:alice), body: Body.create!))
+    assert_equal Account.first, record.account
+  end
+
   test "revise inserts an immutable version and repoints the cursor" do
     record = records(:kickoff)
     v1 = record.recordable
