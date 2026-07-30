@@ -36,6 +36,11 @@ class NotFoundTest < ActionDispatch::IntegrationTest
     assert_select ".empty__actions a.button--primary[href=?]", root_path, text: "Go home"
   end
 
+  test "a miss with a format extension still gets the HTML 404, not a 500" do
+    get admin_message_path(id: 999_999, format: :txt)
+    assert_response :not_found
+  end
+
   test "a version probe under the wrong record 404s" do
     other = posts(:typography)
     get admin_post_change_path(records(:kickoff), other)

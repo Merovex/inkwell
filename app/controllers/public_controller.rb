@@ -13,7 +13,7 @@ class PublicController < ApplicationController
 
   private
     def render_not_found
-      render "errors/public_not_found", status: :not_found
+      render "errors/public_not_found", status: :not_found, formats: :html
     end
 
     # The active record behind an id-first public slug, of the expected

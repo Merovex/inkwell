@@ -2,6 +2,12 @@
 
 Append-only. Newest first. Format defined in [[CLAUDE]] (`CLAUDE.md`).
 
+## [2026-07-30] fix | 404s no longer 500 on non-HTML format extensions
+- Production Honeybadger: a crawler hit `/blog/robots.txt`; `blog/:id` matched with `format: :text`, RecordNotFound fired `render_not_found`, and Rails looked for `errors/public_not_found` in text format — only the `.html.erb` exists, so the intended 404 became a MissingTemplate 500. Same latent bug in the base handler.
+- Both handlers (`PublicController#render_not_found`, `ApplicationController#render_not_found`) now pass `formats: :html` — the HTML 404 page answers every requested format, mirroring Rails' static `public/404.html` behavior. Regression tests in blog_test (`/blog/robots.txt` → 404) and not_found_test (`.txt` extension on an admin miss → 404).
+- The real robots.txt is unaffected: `get "robots.txt" => "pages#robots", format: false` at the root; per the robots spec only the root path counts, so `/blog/robots.txt` 404ing is correct.
+- refs: ../app/controllers/public_controller.rb, ../app/controllers/application_controller.rb, ../test/controllers/blog_test.rb, ../test/controllers/not_found_test.rb
+
 ## [2026-07-29] decision | Hugo renders the public sites (ADR 0021)
 - Phase 2's rendering engine settled: Hugo, not ERB extraction. Rails exports a versioned JSON contract (bodies pre-rendered as `body_html`); a pinned vendored Hugo binary (≥ 0.126 for content adapters) renders against pre-baked themes; pointer-flip deploys to immutable per-build R2 prefixes. Themes are owner-authored in a separate repo, being pre-built in parallel against the contract. Author-authored templates stay a non-goal.
 - New design doc [[hugo-build-pipeline]] (exporter/renderer/publisher, SiteBuildJob coalescing, process model, failure modes, capacity math, §11 reconciliation). [[phase-2-static-serving]] §2.1–2.4 amended in place (theme fields on `sites`; pointer-flip supersedes manifest-last; 60s max-age stands, no purge machinery); §2.6 cut-over check becomes a semantic diff (the byte diff died with ERB).

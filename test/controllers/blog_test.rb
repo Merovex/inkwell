@@ -26,6 +26,11 @@ class BlogTest < ActionDispatch::IntegrationTest
     assert_response :not_found
   end
 
+  test "a crawler probe with a format extension 404s instead of 500ing" do
+    get "/blog/robots.txt"
+    assert_response :not_found
+  end
+
   test "the blog list shows the author's excerpt when set" do
     posts(:kickoff).update!(excerpt: "A crisp, SEO-friendly summary.")
 

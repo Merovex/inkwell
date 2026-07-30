@@ -67,7 +67,7 @@ class ApplicationController < ActionController::Base
     # button never sends anyone off-site; direct hits fall back to home.
     def render_not_found
       @back_url = url_from(request.referer)
-      render "errors/not_found", status: :not_found
+      render "errors/not_found", status: :not_found, formats: :html
     end
 
     # The page a record's boost strip lives on, anchored to the strip: the
