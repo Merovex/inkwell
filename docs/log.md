@@ -2,6 +2,13 @@
 
 Append-only. Newest first. Format defined in [[CLAUDE]] (`CLAUDE.md`).
 
+## [2026-07-29] decision | Hugo renders the public sites (ADR 0021)
+- Phase 2's rendering engine settled: Hugo, not ERB extraction. Rails exports a versioned JSON contract (bodies pre-rendered as `body_html`); a pinned vendored Hugo binary (≥ 0.126 for content adapters) renders against pre-baked themes; pointer-flip deploys to immutable per-build R2 prefixes. Themes are owner-authored in a separate repo, being pre-built in parallel against the contract. Author-authored templates stay a non-goal.
+- New design doc [[hugo-build-pipeline]] (exporter/renderer/publisher, SiteBuildJob coalescing, process model, failure modes, capacity math, §11 reconciliation). [[phase-2-static-serving]] §2.1–2.4 amended in place (theme fields on `sites`; pointer-flip supersedes manifest-last; 60s max-age stands, no purge machinery); §2.6 cut-over check becomes a semantic diff (the byte diff died with ERB).
+- Still open (recommendations recorded in the doc): sync via aws-sdk-s3 vs rclone; pointer cache TTL vs Durable Object; preview via signed URL; images via Rails variants vs Hugo; `/out/:track_id` vs the existing `/buy/:id` proxy for click counting.
+- pages touched: [[hugo-build-pipeline]], [[0021-hugo-static-site-generator]], [[phase-2-static-serving]], [[index]]
+- refs: docs/hugo-build-pipeline.md, docs/decisions/0021-hugo-static-site-generator.md
+
 ## [2026-07-28] fix | DHH-review pass 2: dead gate, atomic settings save, collation
 - Dead filter deleted: `require_account_membership` could never fire (AdminOnly's `require_admin` runs first and only owner/root pass; owner is always a member, root skipped). Ownership is the whole admin story until per-account roles; `Account#member?` went with it (no app callers left — the test asserts the association instead).
 - `Admin::SettingsController#update` is atomic: site + delegated contact_email save in one transaction (was site-then-account, two commits, 500-after-partial-write on the second).
@@ -10,6 +17,12 @@ Append-only. Newest first. Format defined in [[CLAUDE]] (`CLAUDE.md`).
 - `accounts.name` now `COLLATE NOCASE` (migration 9, column-level so it survives the SQLite schema dump — an expression index didn't), backing the case-insensitive uniqueness validation at the index. Routes: admin/public constraint bodies re-indented; stale Setting.current comment fixed; defensive `Current.user&.accounts || Account.none` trimmed.
 - Suite: 385 green, rubocop clean.
 - refs: ../app/controllers/admin/base_controller.rb, ../app/models/concerns/sluggable.rb, ../db/migrate/20260728000009_recollate_accounts_name_index.rb
+
+## [2026-07-29] note | Phase 2 plan documented; email transition named Phase 2.5
+- New canonical delivery doc [[phase-2-static-serving]]: Phase 2 (template v1, SiteRenderer, SiteBuildJob, R2 layout, Worker with KV host map + apex slug routing, Merovex cut-over, invariant lift) updated for post-Phase-1 reality (accounts.domain seeds the host map; Site recordable exists; the dynamic-island allowlist now enumerates the ahoy endpoints, which the original plan missed). Phase 2.5 = the email transition in two tranches: 2.5a link-host decoupling (required before tenant #2 sends), 2.5b per-tenant SES identities + reputation firewall.
+- Older [[saas-static-hosting-plan]] gets a superseded-numbering pointer (its "Phase 1" meant static publish).
+- pages touched: [[phase-2-static-serving]], [[saas-static-hosting-plan]], [[index]]
+- refs: docs/phase-2-static-serving.md
 
 ## [2026-07-28] fix | DHH-review pass on the session's work
 - One real bug: a tampered category_id could attach another press's category to a message (the presence validation loaded Category globally) — now `category_shares_account` rejects it, with a regression test.

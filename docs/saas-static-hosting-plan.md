@@ -1,5 +1,11 @@
 # Inkwell → Multi-Tenant SaaS — Static Publishing on R2 + BYODomain + SES
 
+> **Numbering superseded (2026-07-29):** this draft's phases predate the
+> delivery numbering used since — see
+> [phase-2-static-serving.md](phase-2-static-serving.md) for the canonical
+> plan (Phase 1 = multi-tenancy, shipped; Phase 2 = static serving;
+> Phase 2.5 = email). This doc remains useful for its Worker/R2/SES detail.
+
 *Design plan, 2026-07-27. Turns Inkwell from the single-tenant Merovex Press
 install into a multi-client publishing SaaS: writers use the Rails app as their
 admin (posts, newsletters, email ops); readers get a static site served from
