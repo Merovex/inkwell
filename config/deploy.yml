@@ -86,6 +86,9 @@ aliases:
 volumes:
   - "/var/lib/inkwell:/rails/storage"
   - "/var/lib/inkwell/logs:/rails/log"
+  # Hugo build workspaces (Phase 2): regenerable scratch, so it lives under
+  # /var/cache — outside the backed-up /var/lib/inkwell tree.
+  - "/var/cache/inkwell/builds:/rails/builds"
 
 # Bridge fingerprinted assets, like JS and CSS, between versions to avoid
 # hitting 404 on in-flight requests. Combines all files from new and old

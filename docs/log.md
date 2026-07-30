@@ -2,6 +2,26 @@
 
 Append-only. Newest first. Format defined in [[CLAUDE]] (`CLAUDE.md`).
 
+## [2026-07-30] build | Exporter v1: the JSON transport, as a rake task
+- First running piece of Phase 2: `Exporter` (app/models/exporter.rb, the §5.1 PORO) serializes an account's published content to the contract-v1 workspace — data/{site,author,books,series,posts}.json plus assets/images (cover + avatar blobs, original files; who resizes stays Open Question 4). Snapshot semantics: current versions, published only. Rich text renders through ActionText then strips dev's template-annotation comments (byte-determinism across environments); regex pitfall found live: the annotation's `-->` follows a newline, so the comment match is `[^>]*`, not `.*? `.
+- Design block: no axes.yml manifest exists yet, so `DESIGN_DEFAULTS` pins the first option of every §6.1 axis (nebula/spread/split/epic/frame/left/photo). `track_id` on distributors is just the Distributor DB id for now — /out vs /buy (§11) stays open. Workspace root: `ENV["BUILDS_PATH"]`, default `/var/cache/inkwell/builds`.
+- `rails 'site:export[account_id]'` (lib/tasks/site_export.rake) runs the export and tars the workspace to `<build_id>.tar.gz` beside it, for scp-down/forensics. Verified against the dev DB: 16 posts, 7 books (covers + distributors), 2 series with ordered installments, all files valid JSON. 5 model tests.
+- pages touched: [[hugo-build-pipeline]]
+- refs: ../app/models/exporter.rb, ../lib/tasks/site_export.rake, ../test/models/exporter_test.rb
+
+## [2026-07-30] build | Provision the Hugo build-workspace directory
+- `bin/provision-storage.sh` now also creates `/var/cache/inkwell/builds` (uid 1000, 750) alongside the `/var/lib/inkwell` tree; deploy.yml gains the bind mount `/var/cache/inkwell/builds:/rails/builds`. Placement is deliberate FHS: `/var/lib` = irreplaceable state (backed up), `/var/cache` = regenerable scratch (not) — build workspaces are a pure function of theme + JSON, so they must not ride along in storage backups or disk alarms.
+- [[hugo-build-pipeline]] §4.1 workspace path updated from the draft's `/var/inkwell/builds/...` to the container path `/rails/builds/...` with the host mapping noted. Script re-run is idempotent; run as root on the prod server before the exporter ships.
+- pages touched: [[hugo-build-pipeline]]
+- refs: ../bin/provision-storage.sh, ../config/deploy.yml
+
+## [2026-07-30] ingest | Hugo pipeline doc revised: Docker provisioning + design axes
+- Folded the owner's 07-30 revision into [[hugo-build-pipeline]]. Hugo binary now installed into the Docker image at build time (Dockerfile ARG version + sha256 check, `ENV HUGO_BIN` with a dev-machine fallback) instead of vendored in the repo — the image is the one artifact identical across web/worker/future job hosts, and GitHub availability moves to the image-build failure domain.
+- New §6.1: the `inkwell-author` theme is a permutation engine — seven `data-*` design axes (18,200 combinations), presets derived not stored (axes are the only persisted truth), axis vocabulary exported as `data/axes.yml` and validated by the exporter at export time because CSS attribute selectors fail silently. New §6.2: preview vs reader builds — switcher FAB + `fk_prefs` cookie + pre-paint bootstrap in preview only; reader builds bake the design into `<html>` attributes; save path defaults to admin-iframe postMessage. New §7 failure row for invalid axis values.
+- Per owner direction (no independent decisions): open questions returned to open — sync tooling back to "benchmark rclone vs aws-cli", image pipeline back to "undecided" — and the per-publish Cloudflare purge step is reinstated (§3, §5.4, §7, §8); §11's cache-strategy bullet now records that question as re-opened rather than resolved. Theme config wording per revision: the `settings` singleton grows a `design` section.
+- pages touched: [[hugo-build-pipeline]]
+- refs: docs/hugo-build-pipeline.md
+
 ## [2026-07-30] fix | 404s no longer 500 on non-HTML format extensions
 - Production Honeybadger: a crawler hit `/blog/robots.txt`; `blog/:id` matched with `format: :text`, RecordNotFound fired `render_not_found`, and Rails looked for `errors/public_not_found` in text format — only the `.html.erb` exists, so the intended 404 became a MissingTemplate 500. Same latent bug in the base handler.
 - Both handlers (`PublicController#render_not_found`, `ApplicationController#render_not_found`) now pass `formats: :html` — the HTML 404 page answers every requested format, mirroring Rails' static `public/404.html` behavior. Regression tests in blog_test (`/blog/robots.txt` → 404) and not_found_test (`.txt` extension on an admin miss → 404).
