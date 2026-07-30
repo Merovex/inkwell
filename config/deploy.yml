@@ -61,6 +61,11 @@ env:
     # Set number of processes dedicated to Solid Queue (default: 1)
     # JOB_CONCURRENCY: 3
 
+    # Hugo build workspaces (Phase 2): the container-side path of the
+    # /var/cache/inkwell/builds bind mount. The Exporter's dev default is the
+    # host path, which doesn't exist inside the container.
+    BUILDS_PATH: /rails/builds
+
     # Set number of cores available to the application on each server (default: 1).
     # WEB_CONCURRENCY: 2
 
