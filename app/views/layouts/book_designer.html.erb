@@ -1,0 +1,36 @@
+<%# Full-screen shell for the SiteDesigner (docs/site-designer.md): no app
+    header, no .canvas gutters — the editor owns the whole viewport, like the
+    styleguide of a design tool. Same head plumbing as the application
+    layout so admin tokens, importmap, and CSRF all behave identically. %>
+<!DOCTYPE html>
+<html lang="en" data-theme="<%= current_theme %>" data-tint="<%= current_tint %>">
+  <head>
+    <title><%= content_for(:title) || "Site designer — Inkwell" %></title>
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+    <meta name="application-name" content="Inkwell">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+
+    <%= yield :head %>
+
+    <link rel="icon" href="/favicon.ico" sizes="any">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="apple-touch-icon" href="/icon.png">
+
+    <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
+
+    <%# The theme's font families, so the rail's pairing cards render in
+        their actual faces. Browsers fetch only the faces actually drawn. %>
+    <% if @theme&.fonts_url %>
+      <link rel="preconnect" href="https://fonts.googleapis.com">
+      <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+      <link rel="stylesheet" href="<%= @theme.fonts_url %>">
+    <% end %>
+  </head>
+
+  <body class="book-designer">
+    <%= yield %>
+    <%= render "layouts/toasts" %>
+  </body>
+</html>

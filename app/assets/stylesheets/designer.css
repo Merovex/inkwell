@@ -1,0 +1,545 @@
+/*
+ * .designer — the SiteDesigner's full-screen editor (ADR 0022; layout
+ * book_designer, no app chrome). Top bar, then a canvas showing a real Hugo
+ * build beside a fixed rail generated from the theme manifest. Nothing in
+ * the rail re-implements site markup.
+ * Structure: body.book-designer > .designer
+ *   > .designer__topbar
+ *   > .designer__body
+ *       > .designer__canvas (.designer__canvas-bar, .designer__stage >
+ *           .designer__scaler > iframe.designer__frame)
+ *       > .designer__rail > .designer__block (.designer__options > .design-option)
+ */
+@layer components {
+  body.book-designer { margin: 0; }
+
+  .designer {
+    height: 100dvh;
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
+    background: var(--site-bg);
+  }
+
+  /* The controller toggles `hidden` on panes, the logo thumb, and buttons.
+     The attribute is only UA-level display:none, which ANY author display
+     rule (.button's inline-flex, the thumb's block) silently defeats —
+     so enforce it for everything under the designer. */
+  .designer [hidden] { display: none !important; }
+
+  /* --- top bar --- */
+  .designer__topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--u-pad);
+    padding: calc(var(--u-pad) / 2) var(--u-pad);
+    background: var(--canvas);
+    border-block-end: var(--border-size-1) solid var(--line);
+  }
+  .designer__topbar-side {
+    display: flex;
+    align-items: center;
+    gap: var(--u-pad);
+    min-width: 0;
+  }
+  .designer__title {
+    margin: 0;
+    font-size: var(--font-size-3);
+    font-weight: var(--font-weight-7);
+  }
+  .designer__status {
+    margin: 0;
+    color: var(--ink-muted);
+    font-size: var(--font-size-0);
+    white-space: nowrap;
+  }
+
+  /* --- body: canvas + fixed rail. The scroll-containment chain: every
+         level pins its height (minmax(0,1fr) rows + min-height:0) so the
+         stage and the rail scroll INTERNALLY — an implicit auto row would
+         size to the rail's content and hand the overflow to the document,
+         scrolling the whole layout. --- */
+  .designer__body {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 22rem;
+    grid-template-rows: minmax(0, 1fr);
+    min-height: 0;
+  }
+
+  .designer__canvas {
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
+    min-width: 0;
+    min-height: 0;
+  }
+  .designer__canvas-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--u-pad);
+    padding: calc(var(--u-pad) / 2) var(--u-pad);
+  }
+  .designer__scale-note { margin: 0; font-size: var(--font-size-0); }
+
+  /* The stage scales a full-width desktop rendering to fit (70%, like the
+     teardown), or shows a phone-width frame at 100%. */
+  .designer__stage {
+    overflow: auto;
+    padding: 0 var(--u-pad) var(--u-pad);
+    display: grid;
+    justify-items: center;
+  }
+  .designer__scaler {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    border: var(--border-size-1) solid var(--line);
+    border-radius: var(--radius-card);
+    background: white;
+  }
+  .designer__frame { border: 0; display: block; }
+  .designer__stage[data-viewport="desktop"] .designer__frame {
+    width: calc(100% / 0.7);
+    height: calc(100% / 0.7);
+    transform: scale(0.7);
+    transform-origin: 0 0;
+  }
+  .designer__stage[data-viewport="mobile"] .designer__scaler { width: 24.375rem; /* 390px */ }
+  .designer__stage[data-viewport="mobile"] .designer__frame { width: 100%; height: 100%; }
+
+  /* --- rail: a root menu of summary rows, with sub-panes swapped in
+         (no routing — the controller flips [hidden]) --- */
+  .designer__rail {
+    min-height: 0;
+    overflow-y: auto;
+    /* Never a horizontal scrollbar (overflow-y alone would turn the x-axis
+       to auto). The real fix is the minmax(0,1fr) columns below: a nowrap
+       row summary sets the row's INTRINSIC min-content, and overflow:hidden
+       on the summary doesn't shrink that — an implicit `auto` grid column
+       floors at it and hands the rail the overflow. */
+    overflow-x: hidden;
+    padding: var(--u-pad);
+    background: var(--canvas);
+    border-inline-start: var(--border-size-1) solid var(--line);
+  }
+  .designer__pane {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--u-pad);
+    align-content: start;
+  }
+  .designer__pane-back {
+    justify-self: start;
+    border: 0;
+    background: none;
+    padding: 0;
+    font: inherit;
+    font-weight: var(--font-weight-6);
+    color: var(--accent);
+    cursor: pointer;
+  }
+  .designer__pane-back:hover { text-decoration: underline; }
+  .designer__rail-title {
+    margin: 0;
+    font-size: var(--font-size-2);
+    font-weight: var(--font-weight-7);
+  }
+
+  .designer__group { display: grid; grid-template-columns: minmax(0, 1fr); gap: calc(var(--u-pad) / 4); }
+  .designer__group-title {
+    margin: 0 0 calc(var(--u-pad) / 4);
+    font-size: var(--font-size-0);
+    font-weight: var(--font-weight-6);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--ink-muted);
+  }
+
+  /* Summary rows: label left, current value + chevron right. */
+  .designer__row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--u-pad);
+    width: 100%;
+    padding: calc(var(--u-pad) / 2);
+    border: var(--border-size-1) solid var(--line);
+    border-radius: var(--radius-ui);
+    background: var(--canvas);
+    font: inherit;
+    text-align: start;
+    cursor: pointer;
+  }
+  .designer__row:hover:not(:disabled) { border-color: var(--accent); }
+  .designer__row:disabled { cursor: default; opacity: 0.55; }
+  .designer__row-label { font-weight: var(--font-weight-6); white-space: nowrap; }
+  .designer__row-value {
+    color: var(--ink-muted);
+    font-size: var(--font-size-0);
+    text-align: end;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .designer__row:not(:disabled):not(.designer__row--card) .designer__row-value::after { content: " ›"; color: var(--ink-muted); }
+
+  /* Card rows (Site styles): visual chip + label/value stack + pencil. */
+  .designer__row--card { justify-content: flex-start; padding: calc(var(--u-pad) / 1.5) calc(var(--u-pad) / 2); }
+  .designer__row-chip {
+    flex: none;
+    inline-size: 3.75rem;
+    block-size: 2.5rem;
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    background: white;
+    border: var(--border-size-1) solid var(--line);
+    border-radius: var(--radius-ui);
+  }
+  .designer__chip-option { display: block; inline-size: 100%; block-size: 100%; }
+  .designer__chip-option svg { display: block; inline-size: 100%; block-size: 100%; }
+  .designer__chip-abc { font-weight: var(--font-weight-8); letter-spacing: 0.02em; color: #222; }
+  .designer__chip-swatches {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .designer__swatch { display: block; }
+  .designer__row-text {
+    flex: 1;
+    min-width: 0;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.1rem;
+    text-align: start;
+  }
+  .designer__row--card .designer__row-value { text-align: start; }
+  .designer__row-icon { flex: none; color: var(--ink-muted); }
+  .designer__row--card:hover .designer__row-icon { color: var(--accent); }
+
+  /* The hero's featured card: thumbnail placeholder, current variant, CTA. */
+  .designer__featured {
+    display: grid;
+    gap: calc(var(--u-pad) / 2);
+    justify-items: center;
+    padding: var(--u-pad);
+    border: var(--border-size-1) solid var(--line);
+    border-radius: var(--radius-card);
+    background: var(--site-bg);
+  }
+  .designer__featured-thumb {
+    width: 100%;
+    aspect-ratio: 16 / 7;
+    border-radius: var(--radius-ui);
+    background: var(--line);
+  }
+  .designer__featured-name { margin: 0; font-weight: var(--font-weight-6); }
+
+  .designer__block {
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+  .designer__block-title {
+    margin: 0 0 calc(var(--u-pad) / 2);
+    padding: 0;
+    font-size: var(--font-size-1);
+    font-weight: var(--font-weight-6);
+  }
+  .designer__options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: calc(var(--u-pad) / 4);
+  }
+  .designer__hint { margin: calc(var(--u-pad) / 2) 0 0; font-size: var(--font-size-0); }
+
+  /* --- option cards: hidden radio + label-as-chip, selection off :checked.
+         The option anchors its abspos radio: without a positioned ancestor
+         the radios resolve against <html>, escape the rail's scroll
+         clipping, and stretch the whole document. --- */
+  .design-option { position: relative; }
+  .design-option__input {
+    position: absolute;
+    inset-block-start: 0;
+    inset-inline-start: 0;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .design-option__label {
+    display: inline-block;
+    padding: calc(var(--u-pad) / 4) calc(var(--u-pad) / 2);
+    border: var(--border-size-1) solid var(--line);
+    border-radius: var(--radius-ui);
+    cursor: pointer;
+    font-size: var(--font-size-0);
+  }
+  .design-option__label:hover { border-color: var(--accent); }
+  .design-option:has(.design-option__input:checked) .design-option__label {
+    border-color: var(--accent);
+    background: color-mix(in oklab, var(--accent) 12%, var(--canvas));
+    font-weight: var(--font-weight-6);
+  }
+  .design-option:has(.design-option__input:focus-visible) .design-option__label {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+  }
+
+  /* Card options: big wireframe + caption, for layout choices (options that
+     carry a manifest `wireframe`). One per row, teardown-flow style. */
+  .design-option--card { width: 100%; }
+
+  /* Palette cards: name + the bg/accent/ink swatch row. */
+  .design-option__swatches { display: flex; gap: calc(var(--u-pad) / 2); }
+  .design-option__swatch {
+    inline-size: 3rem;
+    block-size: 3rem;
+    border: var(--border-size-1) solid var(--line);
+    border-radius: var(--radius-ui);
+  }
+
+  /* Sub-headings inside an axis, from manifest option groups. */
+  .designer__option-group {
+    margin: var(--u-pad) 0 calc(var(--u-pad) / 3);
+    font-size: var(--font-size-0);
+    font-weight: var(--font-weight-6);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--ink-muted);
+  }
+  .designer__option-group:first-of-type { margin-block-start: calc(var(--u-pad) / 3); }
+
+  /* Font-pairing cards: the name set in its display face, the families,
+     and a tagline in the body face. */
+  .design-option--font .design-option__label { gap: 0.15rem; }
+  .design-option__font-name { font-size: var(--font-size-4); line-height: 1.15; }
+  .design-option__font-families {
+    font-size: var(--font-size-0);
+    font-weight: var(--font-weight-4);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ink-muted);
+  }
+  .design-option__font-tagline { font-size: var(--font-size-1); font-weight: var(--font-weight-4); }
+  .design-option--card .design-option__label {
+    display: grid;
+    gap: calc(var(--u-pad) / 4);
+    width: 100%;
+    padding: calc(var(--u-pad) / 2);
+    font-weight: var(--font-weight-6);
+  }
+  .design-option__wireframe { display: block; }
+  .design-option__wireframe svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    border: var(--border-size-1) solid var(--line);
+    border-radius: var(--radius-ui);
+  }
+
+  /* --- the links-editor modal (the standard .modal component; this just
+         widens it for the row controls) --- */
+  .designer__links-modal { inline-size: min(42rem, calc(100% - 2rem)); }
+
+  /* --- custom-palette modal: three role slots + the Tailwind grid --- */
+  .designer__color-slots { display: flex; gap: calc(var(--u-pad) / 2); }
+  .designer__color-slot {
+    display: inline-flex;
+    align-items: center;
+    gap: calc(var(--u-pad) / 3);
+    padding: calc(var(--u-pad) / 3) calc(var(--u-pad) / 2);
+    border: var(--border-size-2) solid var(--line);
+    border-radius: var(--radius-ui);
+    background: var(--canvas);
+    font: inherit;
+    font-weight: var(--font-weight-6);
+    cursor: pointer;
+  }
+  .designer__color-slot.is-active { border-color: var(--accent); }
+  .designer__color-slot-chip {
+    inline-size: 1.5rem;
+    block-size: 1.5rem;
+    border-radius: 50%;
+    border: var(--border-size-1) solid var(--line);
+  }
+  .designer__color-slot-chip.is-empty {
+    background: repeating-conic-gradient(var(--line) 0% 25%, var(--canvas) 0% 50%) 50% / 0.5rem 0.5rem;
+  }
+  /* The custom-palette modal: narrower than standard, content centered. */
+  .designer__colors-modal { inline-size: min(27rem, calc(100% - 2rem)); }
+  .designer__colors-modal .modal__body { text-align: center; }
+  .designer__colors-modal .designer__color-slots { justify-content: center; }
+  .designer__hex {
+    inline-size: 9ch;
+    margin-inline: auto;
+    text-align: center;
+    font-family: var(--font-mono, monospace);
+  }
+
+  /* The chromatic wheel: each disc positioned by its --wheel-angle around
+     the center, with the muted tones (desaturation = the wheel's middle)
+     clustered inside the hole. */
+  .designer__wheel {
+    position: relative;
+    inline-size: 16rem;
+    block-size: 16rem;
+    margin-inline: auto;
+  }
+  .designer__hue--wheel {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(var(--wheel-angle)) translateY(-7rem) rotate(calc(-1 * var(--wheel-angle)));
+  }
+  /* Inner ring: same angle mechanism, smaller radius. The container spans
+     the whole wheel and paints above the outer discs, so it must pass
+     pointer events through — only its buttons catch clicks. */
+  .designer__wheel-center { position: absolute; inset: 0; pointer-events: none; }
+  .designer__wheel-center .designer__hue { pointer-events: auto; }
+  .designer__hue--muted {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(var(--wheel-angle)) translateY(-3.25rem) rotate(calc(-1 * var(--wheel-angle)));
+  }
+  .designer__hue {
+    display: grid;
+    place-items: center;
+    border: 0;
+    background: none;
+    padding: 2px;
+    border-radius: 50%;
+    cursor: pointer;
+  }
+  .designer__hue:hover .designer__hue-chip,
+  .designer__hue:focus-visible .designer__hue-chip { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .designer__hue-chip {
+    inline-size: 2rem;
+    block-size: 2rem;
+    border-radius: 50%;
+    /* the ring: 4px, two stops lighter than the fill (inline border-color) */
+    border: 4px solid;
+  }
+  .designer__hue--muted .designer__hue-chip { inline-size: 1.625rem; block-size: 1.625rem; border-width: 3px; }
+  .designer__assigning { margin: 0; text-align: center; font-size: var(--font-size-0); }
+
+  /* --- font-picker typeahead (custom-fonts modal): dropdown anchors to
+         its field --- */
+  .font-picker { position: relative; }
+  .font-picker__list {
+    position: absolute;
+    inset-inline: 0;
+    top: 100%;
+    z-index: 5;
+    margin: 0;
+    padding: calc(var(--u-pad) / 4);
+    list-style: none;
+    background: var(--canvas);
+    border: var(--border-size-1) solid var(--line);
+    border-radius: var(--radius-ui);
+    box-shadow: var(--shadow-2);
+    max-height: 14rem;
+    overflow-y: auto;
+  }
+  .font-picker__list li {
+    padding: calc(var(--u-pad) / 4) calc(var(--u-pad) / 2);
+    border-radius: var(--radius-ui);
+    cursor: pointer;
+  }
+  .font-picker__list li:hover,
+  .font-picker__list li[aria-selected="true"] {
+    background: color-mix(in oklab, var(--accent) 12%, var(--canvas));
+  }
+
+  .designer__links {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    /* Pin the single track to the container: the default auto track sizes
+       to the rows' max-content (two intrinsic-width inputs) and overflows
+       the modal; minmax(0, 1fr) lets the flex rows shrink instead. */
+    grid-template-columns: minmax(0, 1fr);
+    gap: calc(var(--u-pad) / 2);
+  }
+  .designer__link-row {
+    display: flex;
+    align-items: center;
+    gap: calc(var(--u-pad) / 2);
+    padding-block: calc(var(--u-pad) / 4);
+    border-block-end: var(--border-size-1) solid var(--line);
+  }
+  .designer__link-input {
+    flex: 1;
+    min-width: 0;
+    padding: calc(var(--u-pad) / 4) calc(var(--u-pad) / 2);
+    border: var(--border-size-1) solid var(--line);
+    border-radius: var(--radius-ui);
+    font: inherit;
+    background: var(--canvas);
+    color: var(--ink);
+  }
+  /* Logo slot: a drop zone (drop to auto-upload) around the thumb + buttons;
+     the hidden file input is triggered by its label-button. */
+  .designer__file { display: none; }
+  .designer__dropzone {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: calc(var(--u-pad) / 2);
+    padding: calc(var(--u-pad) / 2);
+    border: var(--border-size-2) dashed var(--line);
+    border-radius: var(--radius-ui);
+  }
+  .designer__dropzone.is-dragover {
+    border-color: var(--accent);
+    background: color-mix(in oklab, var(--accent) 8%, var(--canvas));
+  }
+  .designer__logo-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: calc(var(--u-pad) / 2);
+  }
+  .designer__logo-actions .designer__hint { margin: 0; }
+
+  /* Slider-rendered axes (e.g. cover corners). */
+  .designer__slider { display: grid; gap: calc(var(--u-pad) / 4); }
+  .designer__range { width: 100%; accent-color: var(--accent); }
+
+  /* Checkbox rows below controls (e.g. title-as-alt). */
+  .designer__check {
+    display: flex;
+    align-items: center;
+    gap: calc(var(--u-pad) / 3);
+    margin-block-start: calc(var(--u-pad) / 2);
+    font-size: var(--font-size-0);
+    cursor: pointer;
+  }
+  .designer__check input { margin: 0; }
+  .designer__logo-thumb {
+    display: block;
+    max-height: 3rem;
+    max-width: 8rem;
+    object-fit: contain;
+    border: var(--border-size-1) solid var(--line);
+    border-radius: var(--radius-ui);
+    padding: calc(var(--u-pad) / 4);
+    background: var(--site-bg);
+  }
+
+  .designer__link-input:disabled {
+    color: var(--ink-muted);
+    background: color-mix(in oklab, var(--canvas), var(--ink) 4%);
+  }
+  .designer__link-order { display: flex; gap: calc(var(--u-pad) / 4); }
+
+  /* Genuinely narrow viewports (phones/tablets): stack, canvas first,
+     natural page scroll. 52rem keeps a half-screen desktop window in the
+     fixed two-pane mode — the rail is 22rem, leaving a workable canvas. */
+  @media (max-width: 52rem) {
+    .designer { height: auto; }
+    .designer__body { grid-template-columns: 1fr; grid-template-rows: auto; }
+    .designer__stage { overflow: visible; }
+    .designer__scaler { height: 70dvh; }
+    .designer__rail { border-inline-start: 0; border-block-start: var(--border-size-1) solid var(--line); }
+  }
+}

@@ -1,0 +1,42 @@
+<%# locals: (axis:) %>
+<%# One design axis. Option rendering escalates with manifest metadata:
+    a `wireframe` makes a big picture card, `display`/`body`/`tagline` make
+    a font-pairing card set in its actual faces, otherwise a text chip.
+    Options carrying a `group` render under sub-headings, in manifest order.
+    Either way the radios are the designer's working state; data-label
+    feeds the root menu's summary values. %>
+<fieldset class="designer__block designer__axis">
+  <legend class="designer__block-title"><%= axis["noun"] %></legend>
+  <%# chunk drops nil-keyed elements, so ungrouped options key on false. %>
+  <% axis["options"].chunk { |option| option["group"] || false }.each do |group, options| %>
+    <% if group %><h4 class="designer__option-group"><%= group %></h4><% end %>
+    <div class="designer__options">
+      <% options.each do |option| %>
+        <% card = option["wireframe"] || option["display"] || option["swatches"] %>
+        <label class="design-option <%= "design-option--card" if card %> <%= "design-option--font" if option["display"] %>">
+          <input type="radio" class="design-option__input"
+                 name="design[<%= axis["key"] %>]" value="<%= option["id"] %>"
+                 data-label="<%= option["label"] %>"
+                 data-action="designer#change">
+          <span class="design-option__label">
+            <% if option["wireframe"] %>
+              <span class="design-option__wireframe" aria-hidden="true"><%= @theme.wireframe(option["wireframe"]) %></span>
+              <%= option["label"] %>
+            <% elsif option["display"] %>
+              <span class="design-option__font-name" style="font-family: '<%= option["display"] %>', serif"><%= option["label"] %></span>
+              <span class="design-option__font-families" style="font-family: '<%= option["body"] %>', serif"><%= option["display"] %> + <%= option["body"] %></span>
+              <span class="design-option__font-tagline" style="font-family: '<%= option["body"] %>', serif"><%= option["tagline"] %></span>
+            <% elsif option["swatches"] %>
+              <%= option["label"] %>
+              <span class="design-option__swatches" aria-hidden="true">
+                <% option["swatches"].each do |color| %><span class="design-option__swatch" style="background: <%= color %>"></span><% end %>
+              </span>
+            <% else %>
+              <%= option["label"] %>
+            <% end %>
+          </span>
+        </label>
+      <% end %>
+    </div>
+  <% end %>
+</fieldset>

@@ -1,7 +1,7 @@
 # Static Site Build Pipeline: Rails + Hugo + R2
 
 **Status:** Accepted ([ADR 0021](decisions/0021-hugo-static-site-generator.md)); revised
-**Date:** 2026-07-28 (drafted) / 2026-07-29 (accepted) / 2026-07-30 (revised: Docker binary provisioning, design axes §6.1–6.2, purge step reinstated, open questions re-opened) / 2026-07-30 (theme v1 landed: `filibuster` in the kindred-quill repo; manifest is `data/theme.json`, §6.1)
+**Date:** 2026-07-28 (drafted) / 2026-07-29 (accepted) / 2026-07-30 (revised: Docker binary provisioning, design axes §6.1–6.2, purge step reinstated, open questions re-opened) / 2026-07-30 (theme v1 landed: `filibuster` in the kindred-quill repo; manifest is `data/theme.json`, §6.1) / 2026-07-31 (switcher retired — [ADR 0022](decisions/0022-sitedesigner-design-json-sovereignty.md); §6.2 superseded by the SiteDesigner preview model in [site-designer.md](site-designer.md))
 **Decision:** Rails orchestrates; Hugo renders; R2 serves. Templates live in Hugo themes, not in Rails. Data crosses the boundary as JSON only.
 
 *This doc is the build-pipeline design for Phase 2
@@ -310,6 +310,13 @@ hero. JavaScript never touches layout; it only flips attributes. That is
 what makes the axes truly independent: any combination composes without
 special-casing or per-combination stylesheets.
 
+*(2026-07-31: the table below is the ORIGINAL seven; the vocabulary has
+since grown to twelve axes — nav, mode, catalog, alternate, corners added;
+dossier removed; palettes at 15 dual-mode, fonts at 21. `data/theme.json`
+in the theme repo is canonical; the filibuster README carries the current
+table. The §6.1 principles — attributes on `<html>`, closed vocabulary,
+manifest-driven validation — are unchanged.)*
+
 The seven axes as built:
 
 | Axis | Attribute | Options |
@@ -354,10 +361,11 @@ in a single theme manifest, **`data/theme.json`** (name, version,
 allowed options — plus the presets). It supersedes the draft's
 `switcher.js`-canonical `AXES` array and the suggested `axes.yml`. Three
 consumers, one file: Hugo templates read `hugo.Data.theme` to emit *and
-validate* the `<html>` attributes; the switcher gets it as a JSON island and
-generates its cycler buttons from it (nothing hand-listed in JS); the Rails
-exporter reads `themes/filibuster/data/theme.json` for export-time
-validation. CSS still keys off the attribute names by convention.
+validate* the `<html>` attributes; the **SiteDesigner** renders its option
+rail from it *(2026-07-31: replaces the switcher as the second consumer —
+ADR 0022)*; the Rails exporter reads `themes/filibuster/data/theme.json`
+for export-time validation. CSS still keys off the attribute names by
+convention.
 
 **Manifest validation (required).** CSS attribute selectors fail silently:
 an unknown axis value renders the default styling with no warning, so
@@ -376,46 +384,27 @@ drop `--quiet` or the captured stderr for a failed build will be empty.
 `<html>` attribute string; pages, media, and CSS are unchanged. Same
 pipeline, near-instant build, minimal sync delta.
 
-### 6.2 Preview vs reader builds
+### 6.2 Preview vs reader builds  *(superseded 2026-07-31 — ADR 0022; kept for history)*
 
-One theme, two build modes, distinguished by a single exporter flag
-(`preview: true` in the generated Hugo config).
+> **Superseded.** The switcher described below was exploratory and has been
+> **deleted from the theme** (2026-07-31). The design block is the single
+> source of design truth in every build mode; no client-side design
+> mutation exists. The authoring surface is the **SiteDesigner**
+> ([site-designer.md](site-designer.md)): it edits the Site draft, a
+> debounced job rebuilds a preview (draft design + published content) to a
+> local directory, and Rails serves that build in an authenticated admin
+> iframe — a real Hugo build, no deployment. `params.preview` survives only
+> to gate designer-facing affordances (module anchors, edit affordances) in
+> the preview iframe; it never varies the design. The "save path" question
+> below is moot: the designer's form writes the draft directly; the preview
+> is output-only.
 
-The switcher, as built, is a floating gear FAB opening a popover of cycler
-buttons — one for the preset plus one per axis. Clicking cycles to the next
-option and applies it instantly by flipping the `<html>` attribute; no
-reload. Its moving parts, all theme-side: `switcher.js` (cycler wiring, FAB
-open/close with Escape and click-outside; axes and presets come from the
-manifest, not a hardcoded list), the `switcher.html` partial (panel markup
-generated from the manifest, plus the `theme.json` JSON island), a
-single `fk_prefs` cookie holding all seven axis values (1-year,
-`SameSite=Lax`), an inline pre-paint bootstrap in `baseof.html`'s `<head>`
-that applies the cookie before first paint (no flash on navigation), and an
-`aria-live="polite"` status region announcing each change.
-
-| | Preview build | Reader build |
-|---|---|---|
-| Switcher (FAB, panel, `switcher.js`, JSON island) | Included | Omitted |
-| Pre-paint bootstrap in `baseof.html` | Included | **Omitted** — design is baked into the attributes at build time; the cookie-reading script is dead weight and a flash risk with no payoff. Gate it on the same `preview` param as the switcher partial, since it lives in `baseof.html`, not the switcher partial. |
-| `fk_prefs` cookie | Read + written | Never read |
-| Design source | Cookie (author experimenting) | `site.json` `design` block seeds the `<html>` attributes |
-| Destination | Private prefix / signed URL (Open Question 3) | `sites/<slug>/builds/<id>/` |
-
-**The switcher's save path.** The preview site is static; `fk_prefs`
-persists the author's experiment in their browser only. Rails is the system
-of record, so the selection must travel back before it exists in any reader
-build. Two candidate mechanisms, one to be chosen at implementation:
-
-1. Preview rendered inside the admin (iframe); switcher `postMessage`s the
-   seven axis values to the parent, which saves via a normal authenticated
-   endpoint. Keeps the preview build fully static, no CORS, no session on
-   the preview origin. **Default choice.**
-2. Switcher POSTs directly to an authenticated Rails endpoint. Requires CORS
-   and a cross-origin session story on a static site. Held in reserve.
-
-Saving updates the `design` section of `settings`, which flows into the next
-reader build's `site.json` and seeds the default `<html>` attributes at
-build time.
+The original design, for the record: two build modes distinguished by
+`preview: true`; a floating gear FAB cycling axes client-side via `<html>`
+attribute flips; a `fk_prefs` cookie + pre-paint bootstrap persisting the
+experiment browser-side; and a postMessage-to-admin save path returning the
+selection to Rails, which stored it in the `design` section and baked it
+into the next reader build.
 
 ---
 

@@ -28,11 +28,11 @@ class ExporterTest < ActiveSupport::TestCase
     end
   end
 
-  test "site.json carries identity and the first-option design defaults" do
+  test "site.json carries identity and the theme manifest's design defaults" do
     site = data("site")
     assert_equal "Merovex Press", site["name"]
     assert_equal "hello@merovex.press", site["contact_email"]
-    assert_equal Exporter::DESIGN_DEFAULTS.transform_keys(&:to_s), site["design"]
+    assert_equal Theme.current.defaults, site["design"]
   end
 
   test "posts.json holds published posts only, rendered as HTML" do

@@ -64,6 +64,9 @@ group :development do
 
   # Open sent mail (e.g. magic links) in the browser instead of delivering it [https://github.com/ryanb/letter_opener]
   gem "letter_opener"
+
+  # Live reload on view/CSS/Stimulus changes [https://github.com/hotwired/spark]
+  gem "hotwire-spark"
 end
 
 group :test do

@@ -170,6 +170,24 @@ Rails.application.routes.draw do
       # from the personal user settings; this shapes the account's public identity.
       resource :settings, only: %i[show update]
 
+      # The SiteDesigner (ADR 0022, docs/site-designer.md): the author designs
+      # the public site against a live preview. The working design lives in
+      # localStorage while the schema settles — the preview endpoint is
+      # stateless: POST builds the posted design + current published content
+      # through the real exporter/Hugo pipeline; GET serves the built files
+      # into the editor's iframe.
+      resource :designer, only: :show
+      scope path: "designer", module: :designers, as: :designer do
+        resource :preview, only: :create
+        # Declared before the wildcard so "version" isn't swallowed as a file path.
+        get "preview/version" => "previews#version", as: :preview_version
+        get "preview/(*path)" => "previews#show", as: :preview_file, format: false
+        # The header logo — the Site's attachment (also edited in System
+        # settings). Binaries can't ride the localStorage lab, so this
+        # persists immediately, unlike the rest of the working design.
+        resource :logo, only: %i[update destroy]
+      end
+
       # Newsletter roster — domain-admin only. Read + CSV export + manual
       # unsubscribe; subscribers themselves opt in from the public site.
       resources :subscribers, only: :index do

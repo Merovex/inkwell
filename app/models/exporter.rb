@@ -1,26 +1,28 @@
-# Phase 2's exporter (docs/hugo-build-pipeline.md §4): serializes one
-# account's published content to the versioned JSON transport that Hugo
-# themes consume, plus the referenced image blobs. Writes a fresh build
-# workspace under BUILDS_PATH — the /var/cache/inkwell/builds bind mount,
-# /rails/builds inside the container — and returns its path. hugo.toml
-# generation and the render/publish steps belong to the Renderer/Publisher.
+# Phase 2's exporter (docs/hugo-build-pipeline.md §4): assembles one
+# account's build workspace — the versioned JSON transport that Hugo themes
+# consume, the referenced image blobs, the generated hugo.toml (the one
+# place Rails writes Hugo-facing config), and a symlink to the pinned
+# theme. Writes a fresh workspace under BUILDS_PATH and returns its path.
+# The render/publish steps belong to the Renderer/Publisher.
 class Exporter
   CONTRACT_VERSION = 1
 
-  # No theme ships an axes.yml manifest yet (§6.1), so every export defaults
-  # to the first option of each design axis.
-  DESIGN_DEFAULTS = {
-    palette: "nebula",
-    cards: "spread",
-    hero: "split",
-    font: "epic",
-    avatar: "frame",
-    avatar_side: "left",
-    newsletter: "photo"
-  }.freeze
-
-  def initialize(account)
+  # design overrides the theme manifest's per-axis defaults and is validated
+  # against its vocabulary (§6.1) — an unknown value fails the export, before
+  # Hugo runs. nav is the header-content block (links, button) the
+  # SiteDesigner edits; absent, the theme renders its default nav. base_url
+  # lets a preview build render under the admin's preview path prefix;
+  # preview gates designer-facing affordances only (ADR 0022 — no build
+  # mode ever varies the design).
+  def initialize(account, design: {}, nav: nil, fonts: nil, colors: nil, base_url: "/", preview: false)
     @account = account
+    @theme = Theme.current
+    @design = @theme.permit!(design)
+    @nav = nav
+    @fonts = fonts
+    @colors = colors
+    @base_url = base_url
+    @preview = preview
   end
 
   # A build is a snapshot of "published now" (§5.1): current versions of
@@ -31,20 +33,61 @@ class Exporter
     write "books.json",  books_json
     write "series.json", series_json
     write "posts.json",  posts_json
+    write_hugo_config
+    link_theme
     workspace
   end
 
   private
-    attr_reader :account
+    attr_reader :account, :theme
 
     def workspace
-      @workspace ||= Pathname(ENV.fetch("BUILDS_PATH", "/var/cache/inkwell/builds"))
-        .join(account.slug, Time.current.utc.strftime("%Y%m%d%H%M%S%L"))
+      @workspace ||= Pathname(builds_path).join(account.slug, Time.current.utc.strftime("%Y%m%d%H%M%S%L"))
+    end
+
+    # Production sets BUILDS_PATH (the /var/cache/inkwell/builds bind mount,
+    # /rails/builds in-container); dev and test build under tmp/, which
+    # needs no provisioning.
+    def builds_path
+      ENV.fetch("BUILDS_PATH") { Rails.root.join("tmp/builds").to_s }
     end
 
     def write(filename, payload)
       workspace.join("data").tap(&:mkpath)
         .join(filename).write(JSON.pretty_generate(payload.merge(contract_version: CONTRACT_VERSION)))
+    end
+
+    def write_hugo_config
+      workspace.join("hugo.toml").write(<<~TOML)
+        baseURL = #{@base_url.to_json}
+        locale = "en-us"
+        title = #{account.site.site_name.to_json}
+        theme = #{theme.name.to_json}
+
+        # Payload dates (books/posts) can be ahead of build time.
+        buildFuture = true
+
+        disableKinds = ["taxonomy", "term"]
+
+        [params]
+        # Designer-facing affordances only; never varies the design (ADR 0022).
+        preview = #{@preview}
+
+        # The contract delivers pre-rendered, sanitized HTML bodies.
+        [security]
+        allowContent = ['^text/html$', '^text/markdown$']
+
+        # Cover images live in assets/images/ (per the contract); serve them
+        # at /images/... without an asset pipeline.
+        [module]
+          [[module.mounts]]
+            source = "assets/images"
+            target = "static/images"
+      TOML
+    end
+
+    def link_theme
+      workspace.join("themes").tap(&:mkpath).join(theme.name).make_symlink(theme.path)
     end
 
     def site_json
@@ -54,8 +97,11 @@ class Exporter
         tagline: site.tagline,
         contact_email: account.contact_email,
         description_html: html(site.description),
-        design: DESIGN_DEFAULTS
-      }
+        logo: copy_image(site.logo, "logo"),
+        design: theme.defaults.merge(@design)
+      }.merge(@nav.present? ? { nav: @nav } : {})
+        .merge(@fonts.present? ? { fonts: @fonts } : {})
+        .merge(@colors.present? ? { colors: @colors } : {})
     end
 
     # The default pen-name persona; an account that never created one falls

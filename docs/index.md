@@ -22,6 +22,9 @@ for canonical naming.
 - [ses-migration-runbook.md](ses-migration-runbook.md) — Phase 0 (AWS + DNS) checklist for the Mailgun → SES/SNS migration (ADR 0015)
 - [phase-2-static-serving.md](phase-2-static-serving.md) — CANONICAL delivery plan: Phase 2 (static serving cut-over) + Phase 2.5 (email transition)
 - [hugo-build-pipeline.md](hugo-build-pipeline.md) — Phase 2 build pipeline: Rails exports JSON contract → pinned Hugo + pre-baked themes → R2 pointer-flip deploys (ADR 0021)
+- [filibuster-merovex-parity.md](filibuster-merovex-parity.md) — gap analysis: what the `filibuster` theme must gain to capture the live merovex.press public design (multi-author REQUIRED; open questions; books/series index pages shipped 2026-07-31)
+- [site-designer.md](site-designer.md) — SiteDesigner design plan: manifest-driven rail, Site-draft save semantics, preview = local Hugo build in an iframe, CSS foundation pass (layers, `mode` axis, mobile-first), build order (ADR 0022)
+- [site-designer-user-guide.md](site-designer-user-guide.md) — author-facing copy (seed of "How to use this page"): the three-rung brand ladder, header controls, palettes + light/dark mode + custom colors, the books section, font pairings
 - [saas-static-hosting-plan.md](saas-static-hosting-plan.md) — five-phase plan: static publish to Cloudflare R2 + Worker, multi-tenant SaaS (Fizzy pattern), BYODomain via CF for SaaS, per-tenant SES
 
 ## Decisions (ADRs)
@@ -48,6 +51,7 @@ for canonical naming.
 | [0019](decisions/0019-app-subdomain-and-account-picker.md) | App host moves to app.kindredquill.com; account picker at its root | accepted | 2026-07-28 |
 | [0020](decisions/0020-join-code-signup-and-root-role.md) | Join-code signup, owner_id authority, and the root role | accepted | 2026-07-28 |
 | [0021](decisions/0021-hugo-static-site-generator.md) | Hugo renders the public sites — templates leave Rails | accepted | 2026-07-29 |
+| [0022](decisions/0022-sitedesigner-design-json-sovereignty.md) | SiteDesigner + design.json sovereignty — the switcher is retired | accepted | 2026-07-31 |
 
 ## Concepts
 
