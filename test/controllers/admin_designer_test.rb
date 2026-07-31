@@ -18,12 +18,15 @@ class AdminDesignerTest < ActionDispatch::IntegrationTest
     assert_response :success
 
     theme = Theme.current
-    # books + catalog + alternate + hero_book + hero_many render as
-    # switches; corners, buttons, and hero_scrim (manifest control:
-    # "slider") as sliders — not fieldsets
+    # books + catalog + alternate + hero_book + hero_many + the two
+    # home-visibility axes (hero_home, bio_home) render as switches;
+    # corners, buttons, and hero_scrim (manifest control: "slider") as
+    # sliders — not fieldsets
     sliders = theme.axes.count { it["control"] == "slider" }
-    assert_select ".designer__axis", count: theme.axes.size - 5 - sliders
-    assert_select ".switch__input[data-designer-target=axisToggle]", count: 5
+    assert_select ".designer__axis", count: theme.axes.size - 7 - sliders
+    assert_select ".switch__input[data-designer-target=axisToggle]", count: 7
+    assert_select ".switch__input[data-axis=hero_home]", count: 1
+    assert_select ".switch__input[data-axis=bio_home]", count: 1
     assert_select ".designer__range[data-axis=hero_scrim]", count: 1
     assert_select ".designer__range[data-axis=corners]", count: 1
     assert_select ".designer__range[data-axis=buttons]", count: 1
@@ -149,6 +152,14 @@ class AdminDesignerTest < ActionDispatch::IntegrationTest
     # Only home visibility toggles: the Books nav link (and the books/series
     # pages behind it) stay.
     assert_match(%r{books/"?>Books<}, response.body)
+
+    # Hero and Biography carry the same home-visibility axes.
+    post admin_designer_preview_path, params: { design: { hero_home: "no", bio_home: "no" } }, as: :json
+    assert_response :no_content
+    get admin_designer_preview_file_path(path: nil)
+    assert_no_match(/fk-hero /, response.body)
+    assert_no_match(/fk-author-band/, response.body)
+    assert_match(/fk-books/, response.body)
   end
 
   test "the hero copy source picks what the hero says" do

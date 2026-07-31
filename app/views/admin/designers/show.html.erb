@@ -161,6 +161,14 @@
       <%# --- sub-panes: hero, preset, one per style axis, one per page section --- %>
       <div class="designer__pane" data-designer-target="pane" data-pane="hero" hidden>
         <button type="button" class="designer__pane-back" data-action="designer#back">&larr; Edit website</button>
+        <label class="switch">
+          <input class="switch__input" type="checkbox"
+                 data-designer-target="axisToggle" data-axis="hero_home"
+                 data-on="yes" data-off="no"
+                 data-on-label="Shown" data-off-label="Hidden"
+                 data-action="designer#axisToggled">
+          Show on home page
+        </label>
         <%# Content first, presentation after (owner's flow): what the hero
             says, then how it's arranged and dressed. %>
         <%= render "hero_content" %>
@@ -242,6 +250,7 @@
               option labels feed the row summary. %>
           <% toggle_labels = {
             "books" => "Show on home page",
+            "bio_home" => "Show on home page",
             "catalog" => "Show only the first book of each series",
             "alternate" => "Alternate sides row by row"
           } %>

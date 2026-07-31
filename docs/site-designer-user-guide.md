@@ -49,8 +49,9 @@ its own dedicated slot at the top of the header.
 
 ## The hero
 
-The big opening section of your home page — three independent choices
-that combine freely:
+The big opening section of your home page — switch it off the home page
+entirely with **Show on home page**, or shape it with three independent
+choices that combine freely:
 
 - **Layout** — four arrangements: **No book** (your words, centered),
   **One book, centered**, **One book, right**, or **Many books** (a
@@ -127,6 +128,20 @@ buttons follow the palette's own character; the slider overrides it.
   fan (a series' covers fanned like a hand of cards, book one in front).
 - **Cover corners** — a slider from square to rounded, applied to every
   book image on the site.
+
+## The biography section
+
+**Show on home page** hides or shows the whole section, and three
+choices — each drawn as a small sketch — shape it:
+
+- **Photo** — your portrait as a framed rectangle, circle, square, or an
+  organic blob — or **No photo** for a pure-text biography.
+- **Photo side** — left of your bio or right of it.
+- **Band** — what sits behind the section: the plain page, a quiet band
+  of color, or the same band with angled edges.
+
+The name, bio text, and "More about" button come from your author
+profile, so the section stays current as you edit it.
 
 ## Font pairings
 
