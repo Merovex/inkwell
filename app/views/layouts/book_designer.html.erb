@@ -17,6 +17,10 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="apple-touch-icon" href="/icon.png">
 
+    <%# Linked BEFORE :app so lexxy-theme.css can override the gem's :root
+        variables (same order as the admin layout). The hero's "Your own
+        words" editor is a Lexxy field. %>
+    <%= stylesheet_link_tag "lexxy", "data-turbo-track": "reload" %>
     <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
 

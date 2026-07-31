@@ -18,11 +18,13 @@ class AdminDesignerTest < ActionDispatch::IntegrationTest
     assert_response :success
 
     theme = Theme.current
-    # books + catalog + alternate render as switches; corners and buttons
-    # (manifest control: "slider") as sliders — not fieldsets
+    # books + catalog + alternate + hero_book + hero_many render as
+    # switches; corners, buttons, and hero_scrim (manifest control:
+    # "slider") as sliders — not fieldsets
     sliders = theme.axes.count { it["control"] == "slider" }
-    assert_select ".designer__axis", count: theme.axes.size - 3 - sliders
-    assert_select ".switch__input[data-designer-target=axisToggle]", count: 3
+    assert_select ".designer__axis", count: theme.axes.size - 5 - sliders
+    assert_select ".switch__input[data-designer-target=axisToggle]", count: 5
+    assert_select ".designer__range[data-axis=hero_scrim]", count: 1
     assert_select ".designer__range[data-axis=corners]", count: 1
     assert_select ".designer__range[data-axis=buttons]", count: 1
     assert_select ".design-option__input[name='design[palette]']",
@@ -49,6 +51,14 @@ class AdminDesignerTest < ActionDispatch::IntegrationTest
     # The header-content editors ride the nav pane as standard modals.
     assert_select "dialog.modal .designer__links", count: 1
     assert_select "dialog.modal [data-designer-target=buttonLabel]", count: 1
+    # The hero pane carries the element editor (headline / intro / featured
+    # book) and the root menu's featured card shows the variant wireframes.
+    assert_select "[data-designer-target=heroHeadline]", count: 1
+    assert_select "select[data-designer-target=heroBook]", count: 1
+    hero_options = theme.axes.find { it["key"] == "hero" }["options"].size
+    assert_select ".designer__featured-thumb[data-chip-for=hero] svg", count: hero_options
+    # The canvas bar carries the preview-only Light/Dark peek.
+    assert_select ".designer__preview-mode", count: 2
   end
 
   test "the preview carries the posted header links and button through the build" do
@@ -105,6 +115,16 @@ class AdminDesignerTest < ActionDispatch::IntegrationTest
     assert_match(/data-palette="?grimoire"?[ >]/, response.body)
     assert_match(/data-hero="?centered"?[ >]/, response.body)
     assert_match(/data-buttons="?round"?[ >]/, response.body)
+
+    # The hero's orthogonal axes: structure × book rendering × backdrop.
+    post admin_designer_preview_path,
+      params: { design: { hero: "many", hero_book: "3d", hero_many: "staggered", hero_bg: "banner", hero_scrim: "80" } }, as: :json
+    assert_response :no_content
+    get admin_designer_preview_file_path(path: nil)
+    assert_match(/data-hero-book="?3d"?[ >]/, response.body)
+    assert_match(/data-hero-many="?staggered"?[ >]/, response.body)
+    assert_match(/data-hero-bg="?banner"?[ >]/, response.body)
+    assert_match(/data-hero-scrim="?80"?[ >]/, response.body)
     # Unspecified axes fall back to the manifest defaults.
     assert_match(/data-cards="?#{Theme.current.defaults.fetch("cards")}"?[ >]/, response.body)
   end
@@ -129,6 +149,43 @@ class AdminDesignerTest < ActionDispatch::IntegrationTest
     # Only home visibility toggles: the Books nav link (and the books/series
     # pages behind it) stay.
     assert_match(%r{books/"?>Books<}, response.body)
+  end
+
+  test "the hero copy source picks what the hero says" do
+    skip_unless_buildable
+    sign_in_as users(:admin)
+
+    # Default (author): the author's name leads the headline; the kicker
+    # drops its author span and shows the site name solo.
+    post admin_designer_preview_path, params: { design: {}, hero: nil }, as: :json
+    get admin_designer_preview_file_path(path: nil)
+    assert_match(%r{fk-hero-h-title"?>Alice Example<}, response.body)
+    assert_match(/fk-kicker-solo/, response.body)
+
+    # Custom: the author's own words — the rich lede is sanitized on every
+    # build (prose allowlist; script never reaches the contract), and an
+    # unknown book slug falls back to the newest release rather than
+    # failing the build.
+    post admin_designer_preview_path, params: {
+      design: {},
+      hero: { source: "custom", headline: "Steel and Static",
+              lede_html: "<p>Forgotten marines, <strong>unforgotten</strong> grudges.</p><script>alert(1)</script>",
+              book: "no-such-book" }
+    }, as: :json
+    assert_response :no_content
+    get admin_designer_preview_file_path(path: nil)
+    assert_match(/Steel and Static/, response.body)
+    assert_match(%r{<strong>unforgotten</strong>}, response.body)
+    assert_no_match(/alert\(1\)/, response.body)
+
+    # Featured with no published books: falls back to author copy.
+    post admin_designer_preview_path, params: { design: {}, hero: { source: "featured" } }, as: :json
+    get admin_designer_preview_file_path(path: nil)
+    assert_match(%r{fk-hero-h-title"?>Alice Example<}, response.body)
+
+    post admin_designer_preview_path, params: { design: {}, hero: { source: "evil" } }, as: :json
+    assert_response :unprocessable_entity
+    assert_match(/not a hero copy source/, response.parsed_body["error"])
   end
 
   test "an unknown design value fails the build loudly" do
@@ -235,6 +292,25 @@ class AdminDesignerTest < ActionDispatch::IntegrationTest
     delete admin_designer_logo_path
     assert_response :no_content
     assert_not accounts(:merovex).site.reload.logo.attached?
+  end
+
+  test "a banner upload persists to the Site and rides the preview build" do
+    skip_unless_buildable
+    sign_in_as users(:admin)
+
+    patch admin_designer_banner_path, params: { banner: fixture_file_upload("avatar.png", "image/png") }
+    assert_response :success
+    assert accounts(:merovex).site.banner.attached?
+
+    post admin_designer_preview_path, params: { design: { hero_bg: "banner" } }, as: :json
+    assert_response :no_content
+    get admin_designer_preview_file_path(path: nil)
+    assert_match(/data-hero-bg="?banner"?[ >]/, response.body)
+    assert_match(/fk-hero-bg-banner/, response.body)
+
+    delete admin_designer_banner_path
+    assert_response :no_content
+    assert_not accounts(:merovex).site.reload.banner.attached?
   end
 
   test "a bad logo upload reports the validation error" do

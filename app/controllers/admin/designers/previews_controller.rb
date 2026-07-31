@@ -17,6 +17,7 @@ class Admin::Designers::PreviewsController < Admin::BaseController
       nav: nav_params,
       fonts: fonts_params,
       colors: colors_params,
+      hero: hero_params,
       base_url: "#{admin_designer_preview_file_path(path: nil)}/",
       preview: true).export!
     Renderer.new(workspace).render!(destination: preview_root, clean: true)
@@ -75,6 +76,36 @@ class Admin::Designers::PreviewsController < Admin::BaseController
       return nil unless nav.is_a?(ActionController::Parameters)
 
       nav.permit(:title_as_alt, links: %i[id label url visible], button: %i[label url new_tab visible]).to_h
+    end
+
+    # The hero content block (schema-lab shape): source picks what the copy
+    # says (author's name & bio / featured book & description / the
+    # author's own words); headline and lede are the custom words; book
+    # picks the featured cover by slug. All plain strings — Hugo's
+    # templates escape them, and an unknown slug just falls back to the
+    # newest release.
+    # lede_html is the one rich field: sanitized here on EVERY build (the
+    # contract ships pre-rendered, sanitized HTML — the body_html pattern),
+    # with an allowlist narrowed to prose.
+    HERO_HTML_TAGS = %w[ p br strong em b i a ul ol li blockquote ].freeze
+    HERO_HTML_ATTRIBUTES = %w[ href ].freeze
+
+    def hero_params
+      hero = params[:hero]
+      return nil unless hero.is_a?(ActionController::Parameters)
+
+      hero.permit(:source, :headline, :lede, :lede_html, :book).to_h.compact_blank.tap do |block|
+        if block["source"] && !block["source"].in?(%w[author featured custom])
+          raise Theme::InvalidDesign, "#{block["source"].inspect} is not a hero copy source"
+        end
+        if block["lede_html"]
+          # Prune first: the allowlist pass strips disallowed TAGS but keeps
+          # their text — script bodies must go entirely.
+          pruned = Loofah.html5_fragment(block["lede_html"]).scrub!(:prune).to_s
+          block["lede_html"] = ActionText::ContentHelper.sanitizer.sanitize(
+            pruned, tags: HERO_HTML_TAGS, attributes: HERO_HTML_ATTRIBUTES)
+        end
+      end.presence
     end
 
     # Custom palette override (the escape valve past the palettes): authors

@@ -1,0 +1,52 @@
+<%# The hero's element editor (the first fed-content block): headline and
+    intro override what the site feeds the hero (tagline / bio excerpt);
+    the featured book picks which cover the one-book variants show. Blank
+    fields keep the fed defaults, so this is override-only — like the nav
+    block, it rides the working state until Save exists. %>
+<section class="designer__block" aria-label="Hero content">
+  <h3 class="designer__block-title">Hero content</h3>
+  <%# What the hero copy says; the action buttons stay regardless. %>
+  <fieldset class="designer__block designer__hero-source">
+    <legend class="field__label">Hero text</legend>
+    <div class="designer__options">
+      <% { "featured" => "Book description", "author" => "Bio", "custom" => "Your own words" }.each do |value, label| %>
+        <label class="design-option">
+          <input type="radio" class="design-option__input" name="hero_source" value="<%= value %>"
+                 <%= "checked" if value == "author" %>
+                 data-designer-target="heroSource" data-action="designer#heroEdited">
+          <span class="design-option__label"><%= label %></span>
+        </label>
+      <% end %>
+    </div>
+  </fieldset>
+  <div class="field">
+    <label class="field__label" for="designer-hero-book">Featured book</label>
+    <select id="designer-hero-book" class="field__control"
+            data-designer-target="heroBook" data-action="designer#heroEdited">
+      <option value="">Newest release (default)</option>
+      <% @books.each do |book| %>
+        <option value="<%= book.record.to_slug %>"><%= book.title %></option>
+      <% end %>
+    </select>
+  </div>
+  <div data-designer-target="heroCustomFields" hidden>
+    <div class="field">
+      <label class="field__label" for="designer-hero-headline">Headline</label>
+      <input type="text" id="designer-hero-headline" class="field__control"
+             placeholder="Your tagline (default)" maxlength="120"
+             data-designer-target="heroHeadline" data-action="input->designer#heroEdited">
+    </div>
+    <div class="field">
+      <label class="field__label" for="designer-hero-lede">Text</label>
+      <%# Rich text riding the working state as HTML — sanitized server-side
+          on every build (ActionText allowlist), shipped as hero.lede_html. %>
+      <%= rich_textarea_tag "hero_lede", nil, id: "designer-hero-lede",
+            placeholder: "Your bio's opening lines (default)",
+            data: { designer_target: "heroLede",
+                    action: "input->designer#heroEdited change->designer#heroEdited" } %>
+      <%# Soft budget, deliberately un-enforced: 170/160 reads as a nudge. %>
+      <p class="designer__count u-text-muted"><span data-designer-target="heroLedeCount">0/160</span></p>
+    </div>
+  </div>
+  <p class="designer__hint u-text-muted">The hero writes itself from your site — your name and bio, or the featured book — unless you take the pen. Blank custom fields fall back to your tagline and bio.</p>
+</section>

@@ -23,11 +23,15 @@ export default class extends Controller {
     "linksList", "linkTemplate", "buttonLabel", "buttonUrl", "buttonNewTab",
     "buttonVisible", "buttonFields",
     "logoThumb", "logoRemove", "logoDropzone", "logoTitleWrap", "logoTitleAsAlt",
+    "bannerThumb", "bannerRemove", "bannerDropzone",
     "colorSlot", "colorChip", "assigning", "hexInput", "axisToggle", "axisSlider",
-    "customFontCard", "customFontName", "customFontFamilies"]
+    "customFontCard", "customFontName", "customFontFamilies",
+    "heroHeadline", "heroLede", "heroBook", "heroSource", "heroCustomFields", "heroBookWrap",
+    "heroLedeCount", "heroManyWrap", "heroScrimWrap"]
   static values = {
     buildUrl: String, frameUrl: String, storageKey: String, defaults: Object,
     logoUrl: String,
+    bannerUrl: String,
     // Development live reload: poll versionUrl every watch ms and rebuild
     // when the theme tree changes. watch is 0 outside development.
     versionUrl: String, watch: Number
@@ -40,6 +44,20 @@ export default class extends Controller {
     const stored = this.stored()
     const legacyFlat = !("design" in stored)
     this.design = { ...this.defaultsValue, ...(legacyFlat ? stored : stored.design) }
+    // Schema-lab migrations: scrim/blur/3d graduated from hero LAYOUTS to
+    // the orthogonal hero_book / hero_bg axes; then the layouts collapsed
+    // to none/centered/right/many (split & duet → right, fan → many,
+    // name → none).
+    const graduated = {
+      scrim: { hero: "right", hero_bg: "scrim" },
+      blur: { hero: "right", hero_bg: "cover" },
+      "3d": { hero: "right", hero_book: "3d", hero_bg: "cover" },
+      split: { hero: "right" },
+      duet: { hero: "right" },
+      fan: { hero: "many" },
+      name: { hero: "none" }
+    }[this.design.hero]
+    if (graduated) this.design = { ...this.design, ...graduated }
     this.nav = legacyFlat ? null : this.validNav(stored.nav)
     this.fonts = legacyFlat ? null : this.validFonts(stored.fonts)
     this.colors = legacyFlat ? null : this.validColors(stored.colors)
@@ -47,10 +65,13 @@ export default class extends Controller {
     // stored states without the memory key seed it from the active block.
     this.customFonts = legacyFlat ? null
       : (this.validFonts(stored.custom_fonts) || this.validFonts(stored.fonts))
+    this.hero = legacyFlat ? null : this.validHero(stored.hero)
     this.updateCustomFontCard()
     this.applyToRail()
     this.refreshLabels()
     this.populateButtonFields()
+    this.populateHeroFields()
+    this.updateModeToggle()
     requestAnimationFrame(() => this.syncFontPickers())
     this.build()
     if (this.watchValue > 0) this.watcher = setInterval(() => this.checkTheme(), this.watchValue)
@@ -109,7 +130,9 @@ export default class extends Controller {
     this.customFonts = null
     this.colors = null
     this.workingColors = null
+    this.hero = null
     this.updateCustomFontCard()
+    this.populateHeroFields()
     this.applyToRail()
     this.refreshLabels()
     this.populateButtonFields()
@@ -203,6 +226,58 @@ export default class extends Controller {
     this.ensureNav()
     this.nav.title_as_alt = this.logoTitleAsAltTarget.checked
     this.commit()
+  }
+
+  // --- the hero banner (same immediate-persist deal as the logo)
+
+  uploadBanner(event) {
+    const file = event.target.files[0]
+    if (file) this.sendBanner(file)
+    event.target.value = ""
+  }
+
+  bannerDragOver(event) {
+    event.preventDefault()
+    this.bannerDropzoneTarget.classList.add("is-dragover")
+  }
+
+  bannerDragLeave(event) {
+    if (!this.bannerDropzoneTarget.contains(event.relatedTarget)) {
+      this.bannerDropzoneTarget.classList.remove("is-dragover")
+    }
+  }
+
+  bannerDrop(event) {
+    event.preventDefault()
+    this.bannerDropzoneTarget.classList.remove("is-dragover")
+    const file = event.dataTransfer.files[0]
+    if (file) this.sendBanner(file)
+  }
+
+  async sendBanner(file) {
+    this.statusTarget.textContent = "Uploading banner…"
+    const body = new FormData()
+    body.append("banner", file)
+    const response = await fetch(this.bannerUrlValue, { method: "PATCH", headers: { "X-CSRF-Token": this.csrf }, body })
+
+    if (response.ok) {
+      const { url } = await response.json()
+      this.bannerThumbTarget.src = url
+      this.bannerThumbTarget.hidden = false
+      this.bannerRemoveTarget.hidden = false
+      this.build()
+    } else {
+      const failure = await response.json().catch(() => ({}))
+      this.statusTarget.textContent = failure.error || "Banner upload failed"
+    }
+  }
+
+  async removeBanner() {
+    await fetch(this.bannerUrlValue, { method: "DELETE", headers: { "X-CSRF-Token": this.csrf } })
+    this.bannerThumbTarget.hidden = true
+    this.bannerThumbTarget.removeAttribute("src")
+    this.bannerRemoveTarget.hidden = true
+    this.build()
   }
 
   // --- custom palette: authors pick COLORS per role — wheel presets or
@@ -323,6 +398,59 @@ export default class extends Controller {
     this.refreshLabels()
   }
 
+  // --- hero content (the element editor: headline / intro / featured book;
+  //     blank fields keep the fed defaults, so the block is override-only)
+
+  heroEdited() {
+    const hero = {}
+    const source = this.heroSourceTargets.find(radio => radio.checked)?.value || "author"
+    if (source !== "author") hero.source = source
+    if (this.heroHeadlineTarget.value.trim()) hero.headline = this.heroHeadlineTarget.value.trim()
+    const ledeHtml = this.heroLedeTarget.value || ""
+    if (this.heroPlainText(ledeHtml)) hero.lede_html = ledeHtml
+    if (this.heroBookTarget.value) hero.book = this.heroBookTarget.value
+    this.hero = Object.keys(hero).length ? hero : null
+    this.heroCustomFieldsTarget.hidden = source !== "custom"
+    this.updateHeroCount()
+    this.commit()
+  }
+
+  populateHeroFields() {
+    if (!this.hasHeroHeadlineTarget) return
+    // Legacy working states carried plain hero.lede; the field is rich now.
+    if (this.hero?.lede && !this.hero.lede_html) {
+      const escaped = this.hero.lede.replace(/&/g, "&amp;").replace(/</g, "&lt;")
+      this.hero = { ...this.hero, lede_html: `<p>${escaped}</p>` }
+      delete this.hero.lede
+    }
+    const source = this.hero?.source || "author"
+    this.heroSourceTargets.forEach(radio => radio.checked = radio.value === source)
+    this.heroCustomFieldsTarget.hidden = source !== "custom"
+    this.heroHeadlineTarget.value = this.hero?.headline || ""
+    this.heroLedeTarget.value = this.hero?.lede_html || ""
+    this.heroBookTarget.value = this.hero?.book || ""
+    this.updateHeroCount()
+  }
+
+  // The soft text budget: 160 characters, deliberately un-enforced —
+  // "170/160" is a nudge, not a wall.
+  updateHeroCount() {
+    if (!this.hasHeroLedeCountTarget) return
+    const count = this.heroPlainText(this.heroLedeTarget.value || "").length
+    this.heroLedeCountTarget.textContent = `${count}/160`
+    this.heroLedeCountTarget.classList.toggle("designer__count--over", count > 160)
+  }
+
+  heroPlainText(html) {
+    return new DOMParser().parseFromString(html, "text/html").body.textContent.trim()
+  }
+
+  validHero(hero) {
+    if (!hero || typeof hero !== "object") return null
+    const filled = ["source", "headline", "lede", "lede_html", "book"].some(key => typeof hero[key] === "string" && hero[key])
+    return filled ? hero : null
+  }
+
   // The memory card: reactivate the remembered custom pairing.
   customFontCardPicked() {
     this.fonts = this.validFonts(this.customFonts) ? { ...this.customFonts } : null
@@ -413,6 +541,38 @@ export default class extends Controller {
     this.paneTargets.forEach(pane => pane.hidden = pane.dataset.pane !== "root")
   }
 
+  // --- preview-only mode peek: forces the iframe's data-mode so the
+  //     author can check both renditions without changing the design's
+  //     mode axis. Cleared by nothing — it's a viewing control.
+
+  previewMode(event) {
+    this.previewModeChoice = event.params.mode
+    this.applyPreviewMode()
+    this.updateModeToggle()
+  }
+
+  applyPreviewMode() {
+    const root = this.frameTarget.contentDocument?.documentElement
+    if (root && this.previewModeChoice) root.dataset.mode = this.previewModeChoice
+  }
+
+  frameLoaded() {
+    this.applyPreviewMode()
+  }
+
+  // Pressed state tracks the forced peek, or the design's effective mode
+  // (auto = the admin's own OS) until the author clicks.
+  updateModeToggle() {
+    const effective = this.previewModeChoice ||
+      (this.design.mode !== "auto" ? this.design.mode
+        : (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"))
+    this.element.querySelectorAll(".designer__preview-mode").forEach(button => {
+      const active = button.dataset.designerModeParam === effective
+      button.classList.toggle("is-active", active)
+      button.setAttribute("aria-pressed", String(active))
+    })
+  }
+
   viewport(event) {
     this.stageTarget.dataset.viewport = event.params.width
     this.scaleNoteTarget.textContent = event.params.width === "desktop" ? "Preview shown at 70%." : "Preview at full size."
@@ -435,7 +595,7 @@ export default class extends Controller {
   store() {
     localStorage.setItem(this.storageKeyValue,
       JSON.stringify({ design: this.design, nav: this.nav, fonts: this.fonts, colors: this.colors,
-        custom_fonts: this.customFonts }))
+        custom_fonts: this.customFonts, hero: this.hero }))
   }
 
   // Only a well-shaped block counts — a nav axis value ("split") once leaked
@@ -530,7 +690,9 @@ export default class extends Controller {
   }
 
   radios() {
-    return this.element.querySelectorAll(".design-option__input")
+    // Only design-axis radios: option-card styling is also worn by
+    // non-axis controls (the hero copy-source picker).
+    return this.element.querySelectorAll('.design-option__input[name^="design["]')
   }
 
   axisOf(radio) {
@@ -576,6 +738,21 @@ export default class extends Controller {
       if (summary) summary.textContent = "Custom"
     }
 
+    this.updateModeToggle()
+
+    // Conditional hero controls: the 3D switch wants a one-book layout,
+    // the stagger switch wants Many books, the scrim slider an image
+    // backdrop.
+    if (this.hasHeroBookWrapTarget) {
+      this.heroBookWrapTarget.hidden = !["centered", "right"].includes(this.design.hero)
+    }
+    if (this.hasHeroManyWrapTarget) {
+      this.heroManyWrapTarget.hidden = this.design.hero !== "many"
+    }
+    if (this.hasHeroScrimWrapTarget) {
+      this.heroScrimWrapTarget.hidden = !["cover", "banner"].includes(this.design.hero_bg)
+    }
+
     if (!this.hasPresetTarget) return
     const match = [...this.element.querySelectorAll(".designer__preset")].find(button => {
       const axes = JSON.parse(button.dataset.designerAxesParam)
@@ -606,7 +783,7 @@ export default class extends Controller {
     const response = await fetch(this.buildUrlValue, {
       method: "POST",
       headers: { "Content-Type": "application/json", "X-CSRF-Token": this.csrf },
-      body: JSON.stringify({ design: this.design, nav: this.nav, fonts: this.fonts, colors: this.colors })
+      body: JSON.stringify({ design: this.design, nav: this.nav, fonts: this.fonts, colors: this.colors, hero: this.hero })
     })
 
     if (response.ok) {

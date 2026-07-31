@@ -24,6 +24,7 @@
      data-designer-defaults-value="<%= @theme.defaults.to_json %>"
      data-designer-version-url-value="<%= admin_designer_preview_version_path %>"
      data-designer-logo-url-value="<%= admin_designer_logo_path %>"
+     data-designer-banner-url-value="<%= admin_designer_banner_path %>"
      data-designer-colors-url-value="<%= asset_path("tailwind_colors.json") %>"
      data-designer-watch-value="<%= Rails.env.development? ? 1500 : 0 %>">
 
@@ -44,16 +45,28 @@
     <section class="designer__canvas" aria-label="Site preview">
       <div class="designer__canvas-bar">
         <p class="designer__scale-note u-text-muted" data-designer-target="scaleNote">Preview shown at 70%.</p>
-        <div class="button-group" role="group" aria-label="Preview width">
-          <button type="button" class="button-group__btn designer__viewport is-active" data-action="designer#viewport"
-                  data-designer-width-param="desktop" aria-pressed="true">Desktop</button>
-          <button type="button" class="button-group__btn designer__viewport" data-action="designer#viewport"
-                  data-designer-width-param="mobile" aria-pressed="false">Mobile</button>
+        <div class="designer__canvas-controls">
+          <div class="button-group" role="group" aria-label="Preview width">
+            <button type="button" class="button-group__btn designer__viewport is-active" data-action="designer#viewport"
+                    data-designer-width-param="desktop" aria-pressed="true">Desktop</button>
+            <button type="button" class="button-group__btn designer__viewport" data-action="designer#viewport"
+                    data-designer-width-param="mobile" aria-pressed="false">Mobile</button>
+          </div>
+          <%# Preview-only mode peek: flips the iframe's data-mode without
+              touching the design's mode axis (that lives in the palette
+              pane). The controller re-applies it after every rebuild. %>
+          <div class="button-group" role="group" aria-label="Preview mode">
+            <button type="button" class="button-group__btn designer__preview-mode" data-action="designer#previewMode"
+                    data-designer-mode-param="light" aria-pressed="false">Light</button>
+            <button type="button" class="button-group__btn designer__preview-mode" data-action="designer#previewMode"
+                    data-designer-mode-param="dark" aria-pressed="false">Dark</button>
+          </div>
         </div>
       </div>
       <div class="designer__stage" data-designer-target="stage" data-viewport="desktop">
         <div class="designer__scaler">
-          <iframe class="designer__frame" data-designer-target="frame" title="Site preview" src="about:blank"></iframe>
+          <iframe class="designer__frame" data-designer-target="frame" title="Site preview" src="about:blank"
+                  data-action="load->designer#frameLoaded"></iframe>
         </div>
       </div>
     </section>
@@ -66,7 +79,13 @@
         <section class="designer__group" aria-label="Hero">
           <h3 class="designer__group-title">Hero</h3>
           <div class="designer__featured">
-            <div class="designer__featured-thumb" aria-hidden="true"></div>
+            <%# The current hero variant's wireframe, revealed by the same
+                chip mechanism as the Site styles rows. %>
+            <div class="designer__featured-thumb" data-chip-for="hero" aria-hidden="true">
+              <% @theme.axes.find { it["key"] == "hero" }["options"].each do |option| %>
+                <span class="designer__chip-option" data-option="<%= option["id"] %>" hidden><%= @theme.wireframe(option["wireframe"]) %></span>
+              <% end %>
+            </div>
             <p class="designer__featured-name"><span data-summary-for="hero">&hellip;</span></p>
             <button type="button" class="button button--primary" data-action="designer#showPane"
                     data-designer-pane-param="hero">Customize hero</button>
@@ -142,9 +161,39 @@
       <%# --- sub-panes: hero, preset, one per style axis, one per page section --- %>
       <div class="designer__pane" data-designer-target="pane" data-pane="hero" hidden>
         <button type="button" class="designer__pane-back" data-action="designer#back">&larr; Edit website</button>
-        <% hero_axes.each do |axis| %>
-          <%= render "axis", axis: axis %>
-        <% end %>
+        <%# Content first, presentation after (owner's flow): what the hero
+            says, then how it's arranged and dressed. %>
+        <%= render "hero_content" %>
+        <%= render "axis", axis: hero_axes.find { it["key"] == "hero" } %>
+        <%# The hero_book axis reads as a switch, shown only when a
+            one-book layout is selected (the controller toggles it). %>
+        <div data-designer-target="heroBookWrap">
+          <label class="switch">
+            <input class="switch__input" type="checkbox"
+                   data-designer-target="axisToggle" data-axis="hero_book"
+                   data-on="3d" data-off="straight"
+                   data-on-label="3D book" data-off-label="Straight on"
+                   data-action="designer#axisToggled">
+            Show as a 3D book
+          </label>
+        </div>
+        <%# Many-books arrangement: shown only under the Many books layout. %>
+        <div data-designer-target="heroManyWrap">
+          <label class="switch">
+            <input class="switch__input" type="checkbox"
+                   data-designer-target="axisToggle" data-axis="hero_many"
+                   data-on="staggered" data-off="fan"
+                   data-on-label="Staggered" data-off-label="Fanned"
+                   data-action="designer#axisToggled">
+            Stagger the covers
+          </label>
+        </div>
+        <%= render "axis", axis: hero_axes.find { it["key"] == "hero_bg" } %>
+        <%# The black-veil opacity over image backdrops (cover art, banner). %>
+        <div data-designer-target="heroScrimWrap">
+          <%= render "slider", axis: hero_axes.find { it["key"] == "hero_scrim" } %>
+        </div>
+        <%= render "banner" %>
       </div>
 
       <div class="designer__pane" data-designer-target="pane" data-pane="preset" hidden>

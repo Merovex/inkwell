@@ -23,8 +23,13 @@ class Site < ApplicationRecord
   # The public logo; absent means the built-in wordmark (see the public layout).
   has_one_attached :logo
 
+  # The hero banner (the SiteDesigner's "Banner image" hero background);
+  # absent, that background option just shows its legibility wash.
+  has_one_attached :banner
+
   validates :site_name, presence: true
   validate :acceptable_logo
+  validate :acceptable_banner
 
   delegate :contact_email, :contact_email=, to: :account, allow_nil: true
 
@@ -36,13 +41,22 @@ class Site < ApplicationRecord
 
   private
     def acceptable_logo
-      return unless logo.attached?
+      acceptable_image(:logo)
+    end
 
-      unless logo.blob.content_type.in?(LOGO_CONTENT_TYPES)
-        errors.add(:logo, "must be a JPG, PNG, AVIF, WebP, or SVG image")
+    def acceptable_banner
+      acceptable_image(:banner)
+    end
+
+    def acceptable_image(name)
+      attachment = public_send(name)
+      return unless attachment.attached?
+
+      unless attachment.blob.content_type.in?(LOGO_CONTENT_TYPES)
+        errors.add(name, "must be a JPG, PNG, AVIF, WebP, or SVG image")
       end
-      if logo.blob.byte_size > LOGO_MAX_SIZE
-        errors.add(:logo, "must be smaller than #{LOGO_MAX_SIZE / 1.megabyte} MB")
+      if attachment.blob.byte_size > LOGO_MAX_SIZE
+        errors.add(name, "must be smaller than #{LOGO_MAX_SIZE / 1.megabyte} MB")
       end
     end
 end

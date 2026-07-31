@@ -182,10 +182,12 @@ Rails.application.routes.draw do
         # Declared before the wildcard so "version" isn't swallowed as a file path.
         get "preview/version" => "previews#version", as: :preview_version
         get "preview/(*path)" => "previews#show", as: :preview_file, format: false
-        # The header logo — the Site's attachment (also edited in System
-        # settings). Binaries can't ride the localStorage lab, so this
-        # persists immediately, unlike the rest of the working design.
+        # The header logo and hero banner — Site attachments (the logo is
+        # also edited in System settings). Binaries can't ride the
+        # localStorage lab, so these persist immediately, unlike the rest
+        # of the working design.
         resource :logo, only: %i[update destroy]
+        resource :banner, only: %i[update destroy]
       end
 
       # Newsletter roster — domain-admin only. Read + CSV export + manual

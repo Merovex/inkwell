@@ -47,6 +47,39 @@ its own dedicated slot at the top of the header.
 - The logo saves to your account immediately (it's the same logo as System
   settings).
 
+## The hero
+
+The big opening section of your home page — three independent choices
+that combine freely:
+
+- **Layout** — four arrangements: **No book** (your words, centered),
+  **One book, centered**, **One book, right**, or **Many books** (a
+  fanned hand of your newest covers). Each card is a small sketch.
+- **Show as a 3D book** — on the one-book layouts, a switch turns the
+  featured cover into a standing paperback with page edges, built from
+  your flat cover automatically.
+- **Hero background** — what sits behind it all: your page background, a
+  **gradient** (two shades of your palette's accent), a **color scrim**,
+  your **cover's own art** blurred under a dark wash, or a **banner
+  image** you upload. The hero's text color picks light or dark
+  automatically to stay readable on whichever backdrop you choose.
+
+Below the layouts, **Hero content** decides what the hero says — the two
+action buttons stay regardless:
+
+- **Name & bio** (the default) — your name as the headline, your bio's
+  opening lines beneath it.
+- **Featured book** — the featured book's title and description; pairs
+  naturally with the one-book and many-book layouts.
+- **Your own words** — take the pen: a headline and free text of your own.
+  Blank halves fall back to your tagline and bio.
+- **Featured book** picker — which cover (and, with the source above,
+  which title) the hero features; the default is always your newest
+  release.
+
+Because the hero writes itself from your site by default, it never goes
+stale when you publish something new.
+
 ## The header
 
 - **Layout**: four arrangements — Split (brand left, links right),

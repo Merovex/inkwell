@@ -8,5 +8,8 @@ class Admin::DesignersController < Admin::BaseController
 
   def show
     @theme = Theme.current
+    # The hero content editor's featured-book picker: same published scope
+    # the exporter snapshots, so the picker offers exactly what can render.
+    @books = Current.account.books.published.feed_ordered
   end
 end
