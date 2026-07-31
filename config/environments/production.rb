@@ -62,14 +62,21 @@ Rails.application.configure do
   # resolve — not the sending subdomains.
   config.action_mailer.default_url_options = { host: Rails.application.credentials.dig(:ses, :host) || "example.com" }
 
-  # Deliver mail through Amazon SES (API v2). Region + IAM credentials come from
-  # encrypted credentials (ses:). Per-stream configuration sets and message tags
-  # are set on each mailer via delivery_method_options (ADR 0015).
-  config.action_mailer.delivery_method = :ses_v2
-  config.action_mailer.ses_v2_settings = {
-    region: Rails.application.credentials.dig(:ses, :region),
-    access_key_id: Rails.application.credentials.dig(:ses, :access_key_id),
-    secret_access_key: Rails.application.credentials.dig(:ses, :secret_access_key)
+  # SES (API v2) wiring, commented out in favor of Postmark but kept for an
+  # easy revert. Region + IAM credentials come from encrypted credentials
+  # (ses:). Per-stream configuration sets and message tags are set on each
+  # mailer via delivery_method_options (ADR 0015).
+  # config.action_mailer.delivery_method = :ses_v2
+  # config.action_mailer.ses_v2_settings = {
+  #   region: Rails.application.credentials.dig(:ses, :region),
+  #   access_key_id: Rails.application.credentials.dig(:ses, :access_key_id),
+  #   secret_access_key: Rails.application.credentials.dig(:ses, :secret_access_key)
+  # }
+
+  # Deliver mail through Postmark (token in encrypted credentials).
+  config.action_mailer.delivery_method = :postmark
+  config.action_mailer.postmark_settings = {
+    api_token: Rails.application.credentials.postmark_api_token
   }
 
   # Enable locale fallbacks for I18n (makes lookups for any locale fall back to
