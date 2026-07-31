@@ -82,6 +82,14 @@
   .designer__scale-note { margin: 0; font-size: var(--font-size-0); }
   .designer__canvas-controls { display: flex; gap: calc(var(--u-pad) / 2); }
   .designer__count { margin: 0.25rem 0 0; font-size: var(--font-size-0); text-align: end; }
+  .designer__order { list-style: none; margin: 0; padding: 0; display: grid; gap: calc(var(--u-pad) / 4); }
+  .designer__order-row {
+    display: flex; align-items: center; justify-content: space-between; gap: var(--u-pad);
+    padding: calc(var(--u-pad) / 2);
+    border: var(--border-size-1) solid var(--line); border-radius: var(--radius-ui);
+  }
+  .designer__order-label { font-weight: var(--font-weight-6); }
+  .designer__order-moves { display: flex; gap: calc(var(--u-pad) / 4); }
   .designer__count--over { color: oklch(0.5 0.19 27); font-weight: var(--font-weight-6); }
 
   /* The stage scales a full-width desktop rendering to fit (70%, like the

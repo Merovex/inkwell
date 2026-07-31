@@ -14,7 +14,7 @@ class Exporter
   # lets a preview build render under the admin's preview path prefix;
   # preview gates designer-facing affordances only (ADR 0022 — no build
   # mode ever varies the design).
-  def initialize(account, design: {}, nav: nil, fonts: nil, colors: nil, hero: nil, base_url: "/", preview: false)
+  def initialize(account, design: {}, nav: nil, fonts: nil, colors: nil, hero: nil, newsletter: nil, sections: nil, base_url: "/", preview: false)
     @account = account
     @theme = Theme.current
     @design = @theme.permit!(design)
@@ -22,6 +22,8 @@ class Exporter
     @fonts = fonts
     @colors = colors
     @hero = hero
+    @newsletter = newsletter
+    @sections = sections
     @base_url = base_url
     @preview = preview
   end
@@ -100,11 +102,14 @@ class Exporter
         description_html: html(site.description),
         logo: copy_image(site.logo, "logo"),
         banner: copy_image(site.banner, "banner"),
+        newsletter_photo: copy_image(site.newsletter_photo, "newsletter"),
         design: theme.defaults.merge(@design)
       }.merge(@nav.present? ? { nav: @nav } : {})
         .merge(@fonts.present? ? { fonts: @fonts } : {})
         .merge(@colors.present? ? { colors: @colors } : {})
         .merge(@hero.present? ? { hero: @hero } : {})
+        .merge(@newsletter.present? ? { newsletter: @newsletter } : {})
+        .merge(@sections.present? ? { home: { sections: @sections } } : {})
     end
 
     # The default pen-name persona; an account that never created one falls

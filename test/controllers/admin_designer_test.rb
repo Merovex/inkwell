@@ -34,12 +34,14 @@ class AdminDesignerTest < ActionDispatch::IntegrationTest
       count: theme.axes.find { it["key"] == "palette" }["options"].size
     assert_select ".designer__preset", count: theme.presets.size
 
-    # Root menu + one sub-pane per style axis, page section, hero, preset —
-    # grouping comes from the manifest's per-axis `section`. Section
-    # "palette" axes (mode) ride inside the palette pane, no pane of their own.
+    # Root menu + one sub-pane per style axis, page section, hero, preset,
+    # and the section-order pane — grouping comes from the manifest's
+    # per-axis `section`. Section "palette" axes (mode) ride inside the
+    # palette pane, no pane of their own.
     sections = theme.axes.map { it["section"] }.uniq
     styles = theme.axes.count { it["section"] == "styles" }
-    assert_select ".designer__pane", count: 2 + styles + (sections - %w[styles palette]).size
+    assert_select ".designer__pane", count: 3 + styles + (sections - %w[styles palette]).size
+    assert_select ".designer__order-row", count: 5
     assert_select ".designer__row[data-designer-pane-param=preset]", count: 1
 
     # Options carrying a manifest wireframe render as inlined-SVG cards.
@@ -119,6 +121,11 @@ class AdminDesignerTest < ActionDispatch::IntegrationTest
     assert_match(/data-hero="?centered"?[ >]/, response.body)
     assert_match(/data-buttons="?round"?[ >]/, response.body)
 
+    # The blog axis: home post cards as a vertical list.
+    post admin_designer_preview_path, params: { design: { blog: "list" } }, as: :json
+    get admin_designer_preview_file_path(path: nil)
+    assert_match(/data-blog="?list"?[ >]/, response.body)
+
     # The hero's orthogonal axes: structure × book rendering × backdrop.
     post admin_designer_preview_path,
       params: { design: { hero: "many", hero_book: "3d", hero_many: "staggered", hero_bg: "banner", hero_scrim: "80" } }, as: :json
@@ -197,6 +204,48 @@ class AdminDesignerTest < ActionDispatch::IntegrationTest
     post admin_designer_preview_path, params: { design: {}, hero: { source: "evil" } }, as: :json
     assert_response :unprocessable_entity
     assert_match(/not a hero copy source/, response.parsed_body["error"])
+  end
+
+  test "the newsletter band takes an icon presentation and custom copy" do
+    skip_unless_buildable
+    sign_in_as users(:admin)
+
+    post admin_designer_preview_path, params: {
+      design: { newsletter: "envelope" },
+      newsletter: { headline: "Get a free book", blurb: "Join and the first Postal Marines story is yours.", button_label: "Send my copy" }
+    }, as: :json
+    assert_response :no_content
+
+    get admin_designer_preview_file_path(path: nil)
+    assert_response :success
+    assert_match(/data-newsletter="?envelope"?[ >]/, response.body)
+    assert_match(/fk-newsletter-icon-envelope/, response.body)
+    assert_match(/Get a free book/, response.body)
+    assert_match(/Send my copy/, response.body)
+
+    # Absent block: the fed defaults keep the band from rendering empty.
+    post admin_designer_preview_path, params: { design: {} }, as: :json
+    get admin_designer_preview_file_path(path: nil)
+    assert_match(/Get new-release updates/, response.body)
+    assert_match(/Join the list/, response.body)
+  end
+
+  test "the section order reorders the home page and must be a permutation" do
+    skip_unless_buildable
+    sign_in_as users(:admin)
+
+    post admin_designer_preview_path,
+      params: { design: {}, sections: %w[bio hero books posts newsletter] }, as: :json
+    assert_response :no_content
+    get admin_designer_preview_file_path(path: nil)
+    assert_operator response.body.index("fk-author-band"), :<, response.body.index("fk-hero "),
+      "biography should render before the hero"
+
+    # Dropping a section through the order block is refused — visibility
+    # belongs to each section's own axis.
+    post admin_designer_preview_path, params: { design: {}, sections: %w[hero books] }, as: :json
+    assert_response :unprocessable_entity
+    assert_match(/ordering of/, response.parsed_body["error"])
   end
 
   test "an unknown design value fails the build loudly" do
@@ -282,7 +331,7 @@ class AdminDesignerTest < ActionDispatch::IntegrationTest
     skip_unless_buildable
     sign_in_as users(:admin)
 
-    patch admin_designer_logo_path, params: { logo: fixture_file_upload("avatar.png", "image/png") }
+    patch admin_designer_image_path(slot: :logo), params: { logo: fixture_file_upload("avatar.png", "image/png") }
     assert_response :success
     assert accounts(:merovex).site.logo.attached?
 
@@ -300,7 +349,7 @@ class AdminDesignerTest < ActionDispatch::IntegrationTest
     assert_match(/fk-brand-name"?>Merovex Press</, response.body)
     assert_match(/fk-brand-lockup/, response.body)
 
-    delete admin_designer_logo_path
+    delete admin_designer_image_path(slot: :logo)
     assert_response :no_content
     assert_not accounts(:merovex).site.reload.logo.attached?
   end
@@ -309,7 +358,7 @@ class AdminDesignerTest < ActionDispatch::IntegrationTest
     skip_unless_buildable
     sign_in_as users(:admin)
 
-    patch admin_designer_banner_path, params: { banner: fixture_file_upload("avatar.png", "image/png") }
+    patch admin_designer_image_path(slot: :banner), params: { banner: fixture_file_upload("avatar.png", "image/png") }
     assert_response :success
     assert accounts(:merovex).site.banner.attached?
 
@@ -319,15 +368,29 @@ class AdminDesignerTest < ActionDispatch::IntegrationTest
     assert_match(/data-hero-bg="?banner"?[ >]/, response.body)
     assert_match(/fk-hero-bg-banner/, response.body)
 
-    delete admin_designer_banner_path
+    delete admin_designer_image_path(slot: :banner)
     assert_response :no_content
     assert_not accounts(:merovex).site.reload.banner.attached?
+
+    # The signup band's own backdrop rides the same slot mechanism.
+    patch admin_designer_image_path(slot: :newsletter_photo),
+      params: { newsletter_photo: fixture_file_upload("avatar.png", "image/png") }
+    assert_response :success
+    assert accounts(:merovex).site.reload.newsletter_photo.attached?
+    post admin_designer_preview_path, params: { design: { newsletter: "photo" } }, as: :json
+    get admin_designer_preview_file_path(path: nil)
+    assert_match(%r{images/newsletter-}, response.body)
+    delete admin_designer_image_path(slot: :newsletter_photo)
+
+    # Only the allowlisted slots exist.
+    patch admin_designer_image_path(slot: :evil), params: { evil: fixture_file_upload("avatar.png", "image/png") }
+    assert_response :not_found
   end
 
   test "a bad logo upload reports the validation error" do
     sign_in_as users(:admin)
 
-    patch admin_designer_logo_path, params: { logo: fixture_file_upload("avatar.txt", "text/plain") }
+    patch admin_designer_image_path(slot: :logo), params: { logo: fixture_file_upload("avatar.txt", "text/plain") }
     assert_response :unprocessable_entity
     assert_match(/logo/i, response.parsed_body["error"])
   end

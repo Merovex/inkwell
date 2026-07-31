@@ -1,0 +1,25 @@
+<%# The email-collection copy (schema-lab block, like the hero's):
+    headline / blurb / button label, override-only — blank keeps the fed
+    defaults so the band never renders empty. %>
+<section class="designer__block" aria-label="Signup copy">
+  <h3 class="designer__block-title">Signup copy</h3>
+  <div class="field">
+    <label class="field__label" for="designer-nl-headline">Headline</label>
+    <input type="text" id="designer-nl-headline" class="field__control"
+           placeholder="Get new-release updates (default)" maxlength="80"
+           data-designer-target="nlHeadline" data-action="input->designer#newsletterEdited">
+  </div>
+  <div class="field">
+    <label class="field__label" for="designer-nl-blurb">Invitation</label>
+    <input type="text" id="designer-nl-blurb" class="field__control"
+           placeholder="Your tagline — hear about the next one first. (default)" maxlength="160"
+           data-designer-target="nlBlurb" data-action="input->designer#newsletterEdited">
+  </div>
+  <div class="field">
+    <label class="field__label" for="designer-nl-button">Button label</label>
+    <input type="text" id="designer-nl-button" class="field__control"
+           placeholder="Join the list (default)" maxlength="40"
+           data-designer-target="nlButton" data-action="input->designer#newsletterEdited">
+  </div>
+  <p class="designer__hint u-text-muted">Offering a free book for signups? Say so here &mdash; e.g. &ldquo;Get a free book&rdquo; with a &ldquo;Send my copy&rdquo; button.</p>
+</section>

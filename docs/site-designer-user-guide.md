@@ -143,6 +143,32 @@ choices — each drawn as a small sketch — shape it:
 The name, bio text, and "More about" button come from your author
 profile, so the section stays current as you edit it.
 
+## The blog band
+
+"From the Blog" on your home page shows your three newest posts — as a
+**card grid** or a **vertical list** with accent-marked datelines.
+
+## The email signup band
+
+The mailing-list section at the bottom of every page. Six presentations,
+each sketched in the picker: a **photo** backdrop with a translucent card
+(upload your own **Signup backdrop** below the cards — a dark forest, a
+starfield, whatever suits; without one your author photo stands in),
+a **quiet** plain band, or the band with a line drawing beside your
+invitation — an **envelope**, **paper plane**, **megaphone**, or
+**mailbox**, drawn in your palette's accent.
+
+**Signup copy** makes the pitch yours: headline, invitation line, and
+button label. Offering a free book for signups? Say so — "Get a free
+book" with a "Send my copy" button. Blank fields keep the friendly
+defaults.
+
+## Section order
+
+**Change section order** at the bottom of the menu rearranges your home
+page: Hero, Books, Blog, Biography, and Email signup, moved up and down
+with a click. The summary reads "Standard" until you've made it yours.
+
 ## Font pairings
 
 Each pairing is a heading face and a body face chosen to work together,

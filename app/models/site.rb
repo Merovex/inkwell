@@ -27,9 +27,12 @@ class Site < ApplicationRecord
   # absent, that background option just shows its legibility wash.
   has_one_attached :banner
 
+  # The signup band's own backdrop (the newsletter Photo presentation);
+  # absent, the band falls back to the author photo.
+  has_one_attached :newsletter_photo
+
   validates :site_name, presence: true
-  validate :acceptable_logo
-  validate :acceptable_banner
+  validate :acceptable_images
 
   delegate :contact_email, :contact_email=, to: :account, allow_nil: true
 
@@ -40,12 +43,8 @@ class Site < ApplicationRecord
   def title = site_name
 
   private
-    def acceptable_logo
-      acceptable_image(:logo)
-    end
-
-    def acceptable_banner
-      acceptable_image(:banner)
+    def acceptable_images
+      %i[ logo banner newsletter_photo ].each { |name| acceptable_image(name) }
     end
 
     def acceptable_image(name)

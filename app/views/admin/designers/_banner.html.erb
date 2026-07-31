@@ -1,23 +1,4 @@
-<%# The hero banner slot ("Banner image" hero background): the author's
-    own wide image behind the hero. Persists to the Site immediately —
-    images can't ride the localStorage lab. %>
-<% site = Current.account.site %>
-<section class="designer__block" aria-label="Banner image">
-  <h3 class="designer__block-title">Banner image</h3>
-  <div class="designer__dropzone" data-designer-target="bannerDropzone"
-       data-action="dragover->designer#bannerDragOver dragleave->designer#bannerDragLeave drop->designer#bannerDrop">
-    <img class="designer__logo-thumb" data-designer-target="bannerThumb" alt="Current banner"
-         <% if site.banner.attached? %>src="<%= url_for(site.banner) %>"<% else %>hidden<% end %>>
-    <div class="designer__logo-actions">
-      <label class="button">
-        Upload banner image
-        <input type="file" class="designer__file" accept="<%= Site::LOGO_CONTENT_TYPES.join(",") %>"
-               data-designer-target="bannerInput" data-action="designer#uploadBanner">
-      </label>
-      <button type="button" class="button button--ghost" data-designer-target="bannerRemove"
-              data-action="designer#removeBanner" <%= "hidden" unless site.banner.attached? %>>Remove</button>
-      <span class="designer__hint u-text-muted">&hellip;or drag an image here</span>
-    </div>
-  </div>
-  <p class="designer__hint u-text-muted">Shows when the hero background is Banner image. Wide images work best. JPG, PNG, AVIF, WebP, or SVG up to <%= Site::LOGO_MAX_SIZE / 1.megabyte %> MB; saves to the account right away.</p>
-</section>
+<%# The hero banner slot ("Banner image" hero background). %>
+<%= render "image_slot", slot: :banner, heading: "Banner image",
+      upload_label: "Upload banner image",
+      hint: "Shows when the hero background is Banner image. Wide images work best." %>

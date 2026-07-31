@@ -17,21 +17,24 @@ const BUILT_IN = DEFAULT_LINKS.map(link => link.id)
 // Built-in destinations, shown read-only in the links editor (the theme owns
 // the real paths; these are display values).
 const BUILT_IN_PATHS = { books: "/books/", posts: "/posts/", about: "/about/" }
+// The theme's home.sections default order (home.html) — same schema-lab
+// duplication deal as DEFAULT_LINKS.
+const DEFAULT_SECTIONS = ["hero", "books", "posts", "bio", "newsletter"]
 
 export default class extends Controller {
   static targets = ["frame", "stage", "status", "preset", "scaleNote", "pane",
     "linksList", "linkTemplate", "buttonLabel", "buttonUrl", "buttonNewTab",
     "buttonVisible", "buttonFields",
-    "logoThumb", "logoRemove", "logoDropzone", "logoTitleWrap", "logoTitleAsAlt",
-    "bannerThumb", "bannerRemove", "bannerDropzone",
+    "logoTitleWrap", "logoTitleAsAlt",
     "colorSlot", "colorChip", "assigning", "hexInput", "axisToggle", "axisSlider",
     "customFontCard", "customFontName", "customFontFamilies",
     "heroHeadline", "heroLede", "heroBook", "heroSource", "heroCustomFields", "heroBookWrap",
-    "heroLedeCount", "heroManyWrap", "heroScrimWrap"]
+    "heroLedeCount", "heroManyWrap", "heroScrimWrap",
+    "nlHeadline", "nlBlurb", "nlButton", "orderList", "orderSummary"]
   static values = {
     buildUrl: String, frameUrl: String, storageKey: String, defaults: Object,
-    logoUrl: String,
-    bannerUrl: String,
+    // Image-slot endpoint template; __SLOT__ is replaced per upload.
+    imagesUrl: String,
     // Development live reload: poll versionUrl every watch ms and rebuild
     // when the theme tree changes. watch is 0 outside development.
     versionUrl: String, watch: Number
@@ -66,11 +69,15 @@ export default class extends Controller {
     this.customFonts = legacyFlat ? null
       : (this.validFonts(stored.custom_fonts) || this.validFonts(stored.fonts))
     this.hero = legacyFlat ? null : this.validHero(stored.hero)
+    this.newsletter = legacyFlat ? null : this.validNewsletter(stored.newsletter)
+    this.sections = legacyFlat ? null : this.validSections(stored.sections)
     this.updateCustomFontCard()
     this.applyToRail()
     this.refreshLabels()
     this.populateButtonFields()
     this.populateHeroFields()
+    this.populateNewsletterFields()
+    this.populateSectionOrder()
     this.updateModeToggle()
     requestAnimationFrame(() => this.syncFontPickers())
     this.build()
@@ -131,8 +138,12 @@ export default class extends Controller {
     this.colors = null
     this.workingColors = null
     this.hero = null
+    this.newsletter = null
+    this.sections = null
     this.updateCustomFontCard()
     this.populateHeroFields()
+    this.populateNewsletterFields()
+    this.populateSectionOrder()
     this.applyToRail()
     this.refreshLabels()
     this.populateButtonFields()
@@ -202,82 +213,84 @@ export default class extends Controller {
     this.commit()
   }
 
-  // --- the header logo (persists to the Site immediately — binaries can't
-  //     ride localStorage; the exporter reads the attachment)
+  // --- the Site's image slots (logo / banner / newsletter photo): one
+  //     generic dropzone mechanism keyed by data-designer-slot; persists
+  //     immediately — binaries can't ride localStorage, the exporter reads
+  //     the attachments.
 
-  uploadLogo(event) {
+  imagePicked(event) {
     const file = event.target.files[0]
-    if (file) this.sendLogo(file)
+    if (file) this.sendImage(this.slotOf(event), file)
     event.target.value = ""
   }
 
-  logoDragOver(event) {
+  imageDragOver(event) {
     event.preventDefault()
-    this.logoDropzoneTarget.classList.add("is-dragover")
+    event.currentTarget.classList.add("is-dragover")
   }
 
-  logoDragLeave(event) {
-    if (!this.logoDropzoneTarget.contains(event.relatedTarget)) {
-      this.logoDropzoneTarget.classList.remove("is-dragover")
+  imageDragLeave(event) {
+    if (!event.currentTarget.contains(event.relatedTarget)) {
+      event.currentTarget.classList.remove("is-dragover")
     }
+  }
+
+  imageDrop(event) {
+    event.preventDefault()
+    event.currentTarget.classList.remove("is-dragover")
+    const file = event.dataTransfer.files[0]
+    if (file) this.sendImage(this.slotOf(event), file)
+  }
+
+  async sendImage(slot, file) {
+    this.statusTarget.textContent = "Uploading image…"
+    const body = new FormData()
+    body.append(slot, file)
+    const response = await fetch(this.imageUrl(slot), { method: "PATCH", headers: { "X-CSRF-Token": this.csrf }, body })
+
+    if (response.ok) {
+      const { url } = await response.json()
+      const zone = this.zone(slot)
+      const thumb = zone.querySelector("[data-image-role=thumb]")
+      thumb.src = url
+      thumb.hidden = false
+      zone.querySelector("[data-image-role=remove]").hidden = false
+      if (slot === "logo") this.logoTitleWrapTarget.hidden = false
+      this.build()
+    } else {
+      const failure = await response.json().catch(() => ({}))
+      this.statusTarget.textContent = failure.error || "Image upload failed"
+    }
+  }
+
+  async removeImage(event) {
+    const slot = this.slotOf(event)
+    await fetch(this.imageUrl(slot), { method: "DELETE", headers: { "X-CSRF-Token": this.csrf } })
+    const zone = this.zone(slot)
+    const thumb = zone.querySelector("[data-image-role=thumb]")
+    thumb.hidden = true
+    thumb.removeAttribute("src")
+    zone.querySelector("[data-image-role=remove]").hidden = true
+    if (slot === "logo") this.logoTitleWrapTarget.hidden = true
+    this.build()
+  }
+
+  slotOf(event) {
+    return event.target.closest("[data-designer-slot]").dataset.designerSlot
+  }
+
+  zone(slot) {
+    return this.element.querySelector(`[data-designer-slot="${slot}"]`)
+  }
+
+  imageUrl(slot) {
+    return this.imagesUrlValue.replace("__SLOT__", slot)
   }
 
   logoTitleEdited() {
     this.ensureNav()
     this.nav.title_as_alt = this.logoTitleAsAltTarget.checked
     this.commit()
-  }
-
-  // --- the hero banner (same immediate-persist deal as the logo)
-
-  uploadBanner(event) {
-    const file = event.target.files[0]
-    if (file) this.sendBanner(file)
-    event.target.value = ""
-  }
-
-  bannerDragOver(event) {
-    event.preventDefault()
-    this.bannerDropzoneTarget.classList.add("is-dragover")
-  }
-
-  bannerDragLeave(event) {
-    if (!this.bannerDropzoneTarget.contains(event.relatedTarget)) {
-      this.bannerDropzoneTarget.classList.remove("is-dragover")
-    }
-  }
-
-  bannerDrop(event) {
-    event.preventDefault()
-    this.bannerDropzoneTarget.classList.remove("is-dragover")
-    const file = event.dataTransfer.files[0]
-    if (file) this.sendBanner(file)
-  }
-
-  async sendBanner(file) {
-    this.statusTarget.textContent = "Uploading banner…"
-    const body = new FormData()
-    body.append("banner", file)
-    const response = await fetch(this.bannerUrlValue, { method: "PATCH", headers: { "X-CSRF-Token": this.csrf }, body })
-
-    if (response.ok) {
-      const { url } = await response.json()
-      this.bannerThumbTarget.src = url
-      this.bannerThumbTarget.hidden = false
-      this.bannerRemoveTarget.hidden = false
-      this.build()
-    } else {
-      const failure = await response.json().catch(() => ({}))
-      this.statusTarget.textContent = failure.error || "Banner upload failed"
-    }
-  }
-
-  async removeBanner() {
-    await fetch(this.bannerUrlValue, { method: "DELETE", headers: { "X-CSRF-Token": this.csrf } })
-    this.bannerThumbTarget.hidden = true
-    this.bannerThumbTarget.removeAttribute("src")
-    this.bannerRemoveTarget.hidden = true
-    this.build()
   }
 
   // --- custom palette: authors pick COLORS per role — wheel presets or
@@ -451,6 +464,64 @@ export default class extends Controller {
     return filled ? hero : null
   }
 
+  // --- home section order (the home.sections contract field; Up/Down rows
+  //     reorder the DOM, and the DOM is the state)
+
+  moveSection(event) {
+    const row = event.target.closest("[data-section]")
+    const dir = event.params.dir
+    const sibling = dir < 0 ? row.previousElementSibling : row.nextElementSibling
+    if (!sibling) return
+    dir < 0 ? sibling.before(row) : sibling.after(row)
+    this.sections = [...this.orderListTarget.children].map(li => li.dataset.section)
+    if (this.sections.join() === DEFAULT_SECTIONS.join()) this.sections = null
+    this.updateOrderSummary()
+    this.commit()
+  }
+
+  populateSectionOrder() {
+    if (!this.hasOrderListTarget) return
+    const order = this.validSections(this.sections) || DEFAULT_SECTIONS
+    order.forEach(id => {
+      const row = this.orderListTarget.querySelector(`[data-section="${id}"]`)
+      if (row) this.orderListTarget.append(row)
+    })
+    this.updateOrderSummary()
+  }
+
+  updateOrderSummary() {
+    if (this.hasOrderSummaryTarget) this.orderSummaryTarget.textContent = this.sections ? "Custom" : "Standard"
+  }
+
+  validSections(sections) {
+    if (!Array.isArray(sections)) return null
+    return [...sections].sort().join() === [...DEFAULT_SECTIONS].sort().join() ? sections : null
+  }
+
+  // --- newsletter copy (the email-collection block; override-only)
+
+  newsletterEdited() {
+    const block = {}
+    if (this.nlHeadlineTarget.value.trim()) block.headline = this.nlHeadlineTarget.value.trim()
+    if (this.nlBlurbTarget.value.trim()) block.blurb = this.nlBlurbTarget.value.trim()
+    if (this.nlButtonTarget.value.trim()) block.button_label = this.nlButtonTarget.value.trim()
+    this.newsletter = Object.keys(block).length ? block : null
+    this.commit()
+  }
+
+  populateNewsletterFields() {
+    if (!this.hasNlHeadlineTarget) return
+    this.nlHeadlineTarget.value = this.newsletter?.headline || ""
+    this.nlBlurbTarget.value = this.newsletter?.blurb || ""
+    this.nlButtonTarget.value = this.newsletter?.button_label || ""
+  }
+
+  validNewsletter(block) {
+    if (!block || typeof block !== "object") return null
+    const filled = ["headline", "blurb", "button_label"].some(key => typeof block[key] === "string" && block[key])
+    return filled ? block : null
+  }
+
   // The memory card: reactivate the remembered custom pairing.
   customFontCardPicked() {
     this.fonts = this.validFonts(this.customFonts) ? { ...this.customFonts } : null
@@ -496,40 +567,6 @@ export default class extends Controller {
     })
   }
 
-  logoDrop(event) {
-    event.preventDefault()
-    this.logoDropzoneTarget.classList.remove("is-dragover")
-    const file = event.dataTransfer.files[0]
-    if (file) this.sendLogo(file)
-  }
-
-  async sendLogo(file) {
-    this.statusTarget.textContent = "Uploading logo…"
-    const body = new FormData()
-    body.append("logo", file)
-    const response = await fetch(this.logoUrlValue, { method: "PATCH", headers: { "X-CSRF-Token": this.csrf }, body })
-
-    if (response.ok) {
-      const { url } = await response.json()
-      this.logoThumbTarget.src = url
-      this.logoThumbTarget.hidden = false
-      this.logoRemoveTarget.hidden = false
-      this.logoTitleWrapTarget.hidden = false
-      this.build()
-    } else {
-      const failure = await response.json().catch(() => ({}))
-      this.statusTarget.textContent = failure.error || "Logo upload failed"
-    }
-  }
-
-  async removeLogo() {
-    await fetch(this.logoUrlValue, { method: "DELETE", headers: { "X-CSRF-Token": this.csrf } })
-    this.logoThumbTarget.hidden = true
-    this.logoThumbTarget.removeAttribute("src")
-    this.logoRemoveTarget.hidden = true
-    this.logoTitleWrapTarget.hidden = true
-    this.build()
-  }
 
   // --- rail pane navigation (no routing; panes show/hide, teardown-style)
 
@@ -595,7 +632,7 @@ export default class extends Controller {
   store() {
     localStorage.setItem(this.storageKeyValue,
       JSON.stringify({ design: this.design, nav: this.nav, fonts: this.fonts, colors: this.colors,
-        custom_fonts: this.customFonts, hero: this.hero }))
+        custom_fonts: this.customFonts, hero: this.hero, newsletter: this.newsletter, sections: this.sections }))
   }
 
   // Only a well-shaped block counts — a nav axis value ("split") once leaked
@@ -783,7 +820,7 @@ export default class extends Controller {
     const response = await fetch(this.buildUrlValue, {
       method: "POST",
       headers: { "Content-Type": "application/json", "X-CSRF-Token": this.csrf },
-      body: JSON.stringify({ design: this.design, nav: this.nav, fonts: this.fonts, colors: this.colors, hero: this.hero })
+      body: JSON.stringify({ design: this.design, nav: this.nav, fonts: this.fonts, colors: this.colors, hero: this.hero, newsletter: this.newsletter, sections: this.sections })
     })
 
     if (response.ok) {

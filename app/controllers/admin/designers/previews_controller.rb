@@ -18,6 +18,8 @@ class Admin::Designers::PreviewsController < Admin::BaseController
       fonts: fonts_params,
       colors: colors_params,
       hero: hero_params,
+      newsletter: newsletter_params,
+      sections: sections_params,
       base_url: "#{admin_designer_preview_file_path(path: nil)}/",
       preview: true).export!
     Renderer.new(workspace).render!(destination: preview_root, clean: true)
@@ -106,6 +108,32 @@ class Admin::Designers::PreviewsController < Admin::BaseController
             pruned, tags: HERO_HTML_TAGS, attributes: HERO_HTML_ATTRIBUTES)
         end
       end.presence
+    end
+
+    # The home-page section order (the contract's home.sections). Must be a
+    # PERMUTATION of the known sections — the order editor reorders, it
+    # never adds or drops (visibility is each section's own axis).
+    HOME_SECTIONS = %w[ hero books posts bio newsletter ].freeze
+
+    def sections_params
+      list = params[:sections]
+      return nil unless list.is_a?(Array)
+
+      list = list.map(&:to_s)
+      unless list.sort == HOME_SECTIONS.sort
+        raise Theme::InvalidDesign, "sections must be an ordering of #{HOME_SECTIONS.join(", ")}"
+      end
+      list
+    end
+
+    # The email-collection copy (schema-lab shape): headline / blurb /
+    # button label, plain strings — Hugo's templates escape them; blank
+    # keeps the fed defaults.
+    def newsletter_params
+      block = params[:newsletter]
+      return nil unless block.is_a?(ActionController::Parameters)
+
+      block.permit(:headline, :blurb, :button_label).to_h.compact_blank.presence
     end
 
     # Custom palette override (the escape valve past the palettes): authors
