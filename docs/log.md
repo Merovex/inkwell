@@ -2,6 +2,13 @@
 
 Append-only. Newest first. Format defined in [[CLAUDE]] (`CLAUDE.md`).
 
+## [2026-07-30] build | Theme v1: `filibuster` permutation engine (kindred-quill repo)
+- The §6 pre-baked theme now exists, outside this repo: `~/Work/kindred-quill/filibuster`, ported from the frankie `inkwell-author` prototype and rewired to contract v1 (site/author/books/series/posts). Content adapters materialize every page from the JSON (each asserts `contract_version`); all seven §6.1 axes render as `<html data-*>` attributes — verified by rebuilding the same payload under nebula and grimoire designs with zero template changes.
+- Axis vocabulary + presets landed as a single manifest, `data/theme.json` — supersedes the doc's suggested `axes.yml` and the switcher's hardcoded `AXES` array. Consumers: Hugo templates (emit + validate attributes; `errorf` on unknown values as a theme-side backstop to the exporter gate), the preview-only switcher (JSON island, buttons generated), and the exporter's validation (which can also read `DESIGN_DEFAULTS` from the manifest's per-axis `default` instead of pinning them in Ruby).
+- Found live: `--quiet` in the §5.2 invocation swallows `errorf` text (exit still 1) — failed builds would capture empty stderr. Doc updated (§5.2, §6.1) recommending the flag be dropped. Preview mode is `params.preview` in the generated config; reader builds ship zero switcher bytes (verified).
+- pages touched: [[hugo-build-pipeline]]
+- refs: ~/Work/kindred-quill (filibuster/, dev/ workspace stand-in)
+
 ## [2026-07-30] build | Exporter v1: the JSON transport, as a rake task
 - First running piece of Phase 2: `Exporter` (app/models/exporter.rb, the §5.1 PORO) serializes an account's published content to the contract-v1 workspace — data/{site,author,books,series,posts}.json plus assets/images (cover + avatar blobs, original files; who resizes stays Open Question 4). Snapshot semantics: current versions, published only. Rich text renders through ActionText then strips dev's template-annotation comments (byte-determinism across environments); regex pitfall found live: the annotation's `-->` follows a newline, so the comment match is `[^>]*`, not `.*? `.
 - Design block: no axes.yml manifest exists yet, so `DESIGN_DEFAULTS` pins the first option of every §6.1 axis (nebula/spread/split/epic/frame/left/photo). `track_id` on distributors is just the Distributor DB id for now — /out vs /buy (§11) stays open. Workspace root: `ENV["BUILDS_PATH"]`, default `/var/cache/inkwell/builds`.

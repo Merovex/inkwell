@@ -49,6 +49,15 @@ module Inkwell
     # account, like every other job (see ApplicationMailDeliveryJob).
     config.action_mailer.delivery_job = "ApplicationMailDeliveryJob"
 
+    # Deliver through Postmark. The SES wiring in production.rb is being
+    # plumbed around, not removed — but note environments load after this
+    # file, so production.rb's delivery_method assignment wins until it is
+    # switched over.
+    config.action_mailer.delivery_method = :postmark
+    config.action_mailer.postmark_settings = {
+      api_token: Rails.application.credentials.postmark_api_token
+    }
+
     # Use libvips — it's what the Dockerfile installs (and the Rails 8 default).
     # ImageMagick is NOT in the image, so :mini_magick fails to generate any
     # variant in production, which breaks every image (all render via variants).

@@ -1,15 +1,17 @@
 # Static Site Build Pipeline: Rails + Hugo + R2
 
 **Status:** Accepted ([ADR 0021](decisions/0021-hugo-static-site-generator.md)); revised
-**Date:** 2026-07-28 (drafted) / 2026-07-29 (accepted) / 2026-07-30 (revised: Docker binary provisioning, design axes §6.1–6.2, purge step reinstated, open questions re-opened)
+**Date:** 2026-07-28 (drafted) / 2026-07-29 (accepted) / 2026-07-30 (revised: Docker binary provisioning, design axes §6.1–6.2, purge step reinstated, open questions re-opened) / 2026-07-30 (theme v1 landed: `filibuster` in the kindred-quill repo; manifest is `data/theme.json`, §6.1)
 **Decision:** Rails orchestrates; Hugo renders; R2 serves. Templates live in Hugo themes, not in Rails. Data crosses the boundary as JSON only.
 
 *This doc is the build-pipeline design for Phase 2
 ([phase-2-static-serving.md](phase-2-static-serving.md)). It supersedes that
 plan's ERB-extraction language (§2.1–2.2, amended in place) and its
 manifest-last deploy (§2.3–2.4) in favor of the pointer-flip scheme below.
-Themes are being pre-built separately (owner-authored, own repo). §11 lists
-the deltas against the phase-2 draft and the remaining open calls.*
+Theme v1 exists: **`filibuster`**, in the owner's `kindred-quill` repo
+(ported from the `inkwell-author` prototype), built against the §4 contract
+with its axis vocabulary in `data/theme.json` (§6.1). §11 lists the deltas
+against the phase-2 draft and the remaining open calls.*
 
 ---
 
@@ -227,7 +229,11 @@ end
 `--panicOnWarning` is load-bearing: template warnings (missing key, nil
 access) become hard build failures instead of silently rendering broken
 pages, and the failed build never flips the pointer (§5.4). The 30-second
-kill is enforced by a `Timeout` wrapper around the wait.
+kill is enforced by a `Timeout` wrapper around the wait. One flag to
+reconsider: `--quiet` also suppresses `ERROR` lines from template `errorf`
+(e.g. the theme's design-axis validation, §6.1) — the exit code still
+fails the build, but the captured stderr is empty. Drop `--quiet` so the
+failure reason lands in the build record.
 
 **Configuration.** `hugo.toml` is generated per build from an ERB stub — the
 one place Rails writes Hugo-facing config. It carries `baseURL`, the theme
@@ -286,14 +292,15 @@ This costs one small read on cache miss and buys atomic cutover, trivial rollbac
 
 ## 6. Theme Management
 
-- Themes live in their own repo, versioned with tags. The deploy vendors specific tags. Theme v1 is being pre-built (owner-authored) against the §4 contract, in parallel with the Rails-side pipeline work.
+- Themes live in their own repo, versioned with tags. The deploy vendors specific tags. Theme v1 — `filibuster`, in the `kindred-quill` repo — is built against the §4 contract; its `dev/` directory is a workspace stand-in (sample payload + theme symlink) for developing the theme without Rails.
 - Each account references `theme_name` + `theme_version`. A theme upgrade is a migration: bump the version on cohorts, rebuild, spot-check.
 - **A theme version change triggers rebuilds** for every account on that theme — this is the one bulk-rebuild scenario, and the queue design (single worker pool, per-tenant concurrency of 1) handles 10K sequential sub-second builds in a few hours without special machinery. If that ever matters, parallelize the pool, not the architecture.
 - The `settings` singleton grows a `design` section persisting the account's axis/preset choices (§6.1). Presentation config crosses the boundary inside `site.json`'s `design` block, so a theme exposes a small, declared set of knobs rather than arbitrary customization.
 
 ### 6.1 Design axes and the theme manifest
 
-The `inkwell-author` theme is a **permutation engine**, not a fixed design.
+The theme (`filibuster`; the `inkwell-author` prototype it was ported from
+established the pattern) is a **permutation engine**, not a fixed design.
 Every visual decision is factored into an independent design axis with a
 small closed set of values, applied as a `data-*` attribute on `<html>`. All
 ~127 axis-conditional rules in `site.css` key off those attributes —
@@ -341,21 +348,29 @@ is always derivable.
 }
 ```
 
-**One source of truth for axis vocabulary.** The canonical `AXES` array
-lives in `switcher.js` (key, attribute, option list), and `presets.yml` is
-injected into the page as a JSON island so JS and Hugo share preset data.
-The Rails exporter needs that same vocabulary for validation — so the theme
-must additionally export it as a data file (e.g. `data/axes.yml`) that both
-`switcher.js` generation and the exporter's manifest validation read.
-Vocabulary defined once, consumed three times (CSS by convention, JS, Rails).
+**One source of truth for axis vocabulary.** As built, the vocabulary lives
+in a single theme manifest, **`data/theme.json`** (name, version,
+`contract_version`, and per axis: key, `data-*` attribute, label, default,
+allowed options — plus the presets). It supersedes the draft's
+`switcher.js`-canonical `AXES` array and the suggested `axes.yml`. Three
+consumers, one file: Hugo templates read `hugo.Data.theme` to emit *and
+validate* the `<html>` attributes; the switcher gets it as a JSON island and
+generates its cycler buttons from it (nothing hand-listed in JS); the Rails
+exporter reads `themes/filibuster/data/theme.json` for export-time
+validation. CSS still keys off the attribute names by convention.
 
 **Manifest validation (required).** CSS attribute selectors fail silently:
 an unknown axis value renders the default styling with no warning, so
 `--panicOnWarning` cannot catch it — the site ships looking subtly wrong.
-The Rails exporter validates the `design` block against `axes.yml` for the
+The Rails exporter validates the `design` block against `theme.json` for the
 pinned `theme_version` **at export time**; an invalid value fails the build
 loudly, per the §7 invariant. Axis vocabulary changes between theme versions
-are caught at the same gate as contract-version drift.
+are caught at the same gate as contract-version drift. The theme enforces
+the same rule as a backstop: `baseof.html` `errorf`s on any design value
+outside the manifest, so an invalid axis can never render even if the
+exporter gate regresses. Caveat for the §5.2 invocation: `--quiet`
+suppresses the `errorf` message text (the exit code is still non-zero) —
+drop `--quiet` or the captured stderr for a failed build will be empty.
 
 **Design changes are the cheapest rebuild.** A design change alters only the
 `<html>` attribute string; pages, media, and CSS are unchanged. Same
@@ -369,9 +384,10 @@ One theme, two build modes, distinguished by a single exporter flag
 The switcher, as built, is a floating gear FAB opening a popover of cycler
 buttons — one for the preset plus one per axis. Clicking cycles to the next
 option and applies it instantly by flipping the `<html>` attribute; no
-reload. Its moving parts, all theme-side: `switcher.js` (canonical `AXES`
-array, cycler wiring, FAB open/close with Escape and click-outside), the
-`switcher.html` partial (panel markup plus the `presets.yml` JSON island), a
+reload. Its moving parts, all theme-side: `switcher.js` (cycler wiring, FAB
+open/close with Escape and click-outside; axes and presets come from the
+manifest, not a hardcoded list), the `switcher.html` partial (panel markup
+generated from the manifest, plus the `theme.json` JSON island), a
 single `fk_prefs` cookie holding all seven axis values (1-year,
 `SameSite=Lax`), an inline pre-paint bootstrap in `baseof.html`'s `<head>`
 that applies the cookie before first paint (no flash on navigation), and an
