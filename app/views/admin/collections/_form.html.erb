@@ -1,0 +1,11 @@
+<%# locals: (collection:, url:) %>
+<%= render "admin/shared/error_summary", model: collection %>
+
+<%= form_with model: collection, url: url, id: "composer", class: "composer" do |f| %>
+  <%= f.text_field :title, class: "composer__title", placeholder: "Collection title",
+        "aria-label": "Title", required: true, autofocus: true %>
+
+  <%= f.rich_textarea :content, placeholder: "About this collection…", "aria-label": "Body" %>
+
+  <%= render "admin/shared/author_select", f: f, resource: collection %>
+<% end %>

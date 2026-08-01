@@ -1,0 +1,16 @@
+<%# locals: (record:, book:) %>
+<%# A book's collections, with a typeahead to add more. %>
+<section class="book-series u-flow">
+  <h2 class="subhead">Collections</h2>
+  <%= render "admin/installments/combobox",
+        context: "book_collection", url: search_admin_collections_path,
+        anchor_param: "book_record_id", selected_param: "container_record_id",
+        anchor_id: record.id, placeholder: "Search collections to add…" %>
+  <ul class="mrows" id="book_collections">
+    <% book.installments.each do |installment| %>
+      <% collection = Current.account.collections.find_by(record_id: installment.container_record_id) %>
+      <% next unless collection %>
+      <%= render "admin/books/collection_row", installment: installment, collection: collection %>
+    <% end %>
+  </ul>
+</section>

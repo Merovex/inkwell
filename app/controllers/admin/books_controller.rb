@@ -62,16 +62,24 @@ class Admin::BooksController < Admin::BaseController
   private
     # [["Series title", books in reading order], ..., ["Standalone", the rest]].
     # A book in two series appears under both; sections follow series title order.
+    # Installments now also carry collection membership, so we group by container
+    # but only build sections for series — collection-only books fall to
+    # "Standalone" here (collections have their own index).
     def sections_for(books)
       by_record_id = books.index_by(&:record_id)
       installments = Installment.where(book_record_id: by_record_id.keys).order(:position)
-      in_series = installments.group_by(&:series_record_id)
+      by_container = installments.group_by(&:container_record_id)
 
-      sections = Current.account.series.where(record_id: in_series.keys).order(:title).map do |series|
-        [ series.title, in_series[series.record_id].filter_map { |i| by_record_id[i.book_record_id] } ]
+      series = Current.account.series.where(record_id: by_container.keys).order(:title)
+      series_container_ids = series.map(&:record_id).to_set
+
+      sections = series.map do |s|
+        [ s.title, by_container[s.record_id].filter_map { |i| by_record_id[i.book_record_id] } ]
       end
 
-      standalone = books.reject { |book| installments.any? { |i| i.book_record_id == book.record_id } }
+      standalone = books.reject do |book|
+        installments.any? { |i| i.book_record_id == book.record_id && series_container_ids.include?(i.container_record_id) }
+      end
       sections << [ "Standalone", standalone ] if standalone.any?
       sections.reject { |_, list| list.empty? }
     end
@@ -80,14 +88,15 @@ class Admin::BooksController < Admin::BaseController
       params.expect(book: [ :title, :content, :publication_date, :author_record_id ])
     end
 
-    # Current books matching ?q=, minus any already linked to ?series_record_id.
+    # Current books matching ?q=, minus any already linked to ?container_record_id
+    # (the series or collection the combobox is anchored to).
     def matching_books
       q = params[:q].to_s.strip
       return Book.none if q.blank?
 
       scope = Current.account.books.where("title LIKE ?", "%#{Book.sanitize_sql_like(q)}%").order(:title).limit(10)
-      if params[:series_record_id].present?
-        scope = scope.where.not(record_id: Installment.where(series_record_id: params[:series_record_id]).select(:book_record_id))
+      if params[:container_record_id].present?
+        scope = scope.where.not(record_id: Installment.where(container_record_id: params[:container_record_id]).select(:book_record_id))
       end
       scope
     end

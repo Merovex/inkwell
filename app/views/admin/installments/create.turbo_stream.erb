@@ -1,9 +1,18 @@
-<% if @context == "series" %>
+<% case @context
+   when "series" %>
   <%= turbo_stream.append "series_books" do %>
     <%= render "admin/series/book_row", installment: @installment, book: @book_record.recordable %>
   <% end %>
-<% else %>
+<% when "collection" %>
+  <%= turbo_stream.append "collection_books" do %>
+    <%= render "admin/collections/book_row", installment: @installment, book: @book_record.recordable %>
+  <% end %>
+<% when "book_series" %>
   <%= turbo_stream.append "book_series" do %>
-    <%= render "admin/books/series_row", installment: @installment, series: @series_record.recordable %>
+    <%= render "admin/books/series_row", installment: @installment, series: @container_record.recordable %>
+  <% end %>
+<% when "book_collection" %>
+  <%= turbo_stream.append "book_collections" do %>
+    <%= render "admin/books/collection_row", installment: @installment, collection: @container_record.recordable %>
   <% end %>
 <% end %>

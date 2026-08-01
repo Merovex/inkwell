@@ -98,9 +98,9 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
 
     assert_difference -> { Installment.count }, 1 do
       post admin_installments_path, as: :turbo_stream,
-        params: { series_record_id: series.id, book_record_id: book.id, context: "book" }
+        params: { container_record_id: series.id, book_record_id: book.id, context: "book_series" }
     end
-    installment = Installment.find_by(series_record_id: series.id, book_record_id: book.id)
+    installment = Installment.find_by(container_record_id: series.id, book_record_id: book.id)
     assert installment, "installment was created"
 
     assert_difference -> { Installment.count }, -1 do
@@ -116,13 +116,13 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
     post admin_books_path, params: { book: { title: "B2", content: "x" }, publish: "1" }
     b2 = Record.books.order(:id).last
 
-    post admin_installments_path, as: :turbo_stream, params: { series_record_id: series.id, book_record_id: b1.id, context: "series" }
-    post admin_installments_path, as: :turbo_stream, params: { series_record_id: series.id, book_record_id: b2.id, context: "series" }
+    post admin_installments_path, as: :turbo_stream, params: { container_record_id: series.id, book_record_id: b1.id, context: "series" }
+    post admin_installments_path, as: :turbo_stream, params: { container_record_id: series.id, book_record_id: b2.id, context: "series" }
 
     patch reorder_admin_series_path(series), params: { book_record_ids: [ b2.id, b1.id ] }
     assert_response :no_content
-    assert_equal 1, Installment.find_by(series_record_id: series.id, book_record_id: b2.id).position
-    assert_equal 2, Installment.find_by(series_record_id: series.id, book_record_id: b1.id).position
+    assert_equal 1, Installment.find_by(container_record_id: series.id, book_record_id: b2.id).position
+    assert_equal 2, Installment.find_by(container_record_id: series.id, book_record_id: b1.id).position
   end
 
   test "uploading a cover attaches a versioned depiction to the current version" do

@@ -1,19 +1,20 @@
-# A book's placement in a series: a join between two Records (the stable
-# identities, never version rows), so a book can belong to many series and a
-# series orders its books by `position`. Created/destroyed as books are added
-# to or removed from a series; reordered from the series admin page.
+# A book's placement in an ordered container — a Series or a Collection — as a
+# join between two Records (the stable identities, never version rows), so a
+# book can belong to many containers and each orders its books by `position`.
+# Created/destroyed as books are added to or removed from a container;
+# reordered from the container's admin page.
 class Installment < ApplicationRecord
-  belongs_to :series_record, class_name: "Record"
+  belongs_to :container_record, class_name: "Record"
   belongs_to :book_record, class_name: "Record"
 
-  validates :book_record_id, uniqueness: { scope: :series_record_id }
+  validates :book_record_id, uniqueness: { scope: :container_record_id }
   # Tenancy rides the two record rows; a cross-account pairing must be
   # unrepresentable (SQLite can't express this constraint — AR only).
   validate :records_share_account
 
   private
     def records_share_account
-      return if series_record&.account_id == book_record&.account_id
-      errors.add(:base, "Series and book must belong to the same account")
+      return if container_record&.account_id == book_record&.account_id
+      errors.add(:base, "Container and book must belong to the same account")
     end
 end

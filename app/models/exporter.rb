@@ -30,6 +30,7 @@ class Exporter
     write "author.json", author_json
     write "books.json",  books_json
     write "series.json", series_json
+    write "collections.json", collections_json
     write "posts.json",  posts_json
     write_hugo_config
     link_theme
@@ -146,22 +147,30 @@ class Exporter
             publication_date: book.publication_date,
             cover: book.cover? ? copy_image(book.depiction.image, book.record_id) : nil,
             description_html: html(book.content),
-            distributors: book.record.distributors.map do |distributor|
-              { name: distributor.display_name, url: distributor.url, track_id: distributor.id }
-            end
+            distributors: distributors_for(book.record)
           }
         end }
     end
 
+    # Series and collections are the same shape: a titled shelf of published
+    # books, with their own buy-links (authors may point at a whole shelf rather
+    # than each book — the links hang on the shelf's Record either way).
     def series_json
-      { series: account.series.published.feed_ordered.map do |series|
-          {
-            slug: series.record.to_slug,
-            title: series.title,
-            description_html: html(series.content),
-            books: series.books.published.map { |book| book.record.to_slug }
-          }
-        end }
+      { series: account.series.published.feed_ordered.map { |series| shelf_json(series) } }
+    end
+
+    def collections_json
+      { collections: account.collections.published.feed_ordered.map { |collection| shelf_json(collection) } }
+    end
+
+    def shelf_json(shelf)
+      {
+        slug: shelf.record.to_slug,
+        title: shelf.title,
+        description_html: html(shelf.content),
+        books: shelf.books.published.map { |book| book.record.to_slug },
+        distributors: distributors_for(shelf.record)
+      }
     end
 
     def posts_json
@@ -181,10 +190,16 @@ class Exporter
     # published — [series slug, position], or nil for a standalone book.
     def series_placement(book)
       book.installments.order(:position).each do |installment|
-        series = Series.current.published.find_by(record_id: installment.series_record_id)
+        series = Series.current.published.find_by(record_id: installment.container_record_id)
         return [ series.record.to_slug, installment.position ] if series
       end
       nil
+    end
+
+    def distributors_for(record)
+      record.distributors.map do |distributor|
+        { name: distributor.display_name, url: distributor.url, track_id: distributor.id }
+      end
     end
 
     # Rendered rich text as an HTML string, stripped of dev's template

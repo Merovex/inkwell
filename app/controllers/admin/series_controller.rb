@@ -66,7 +66,7 @@ class Admin::SeriesController < Admin::BaseController
     ids = Array(params[:book_record_ids]).map(&:to_i)
     Installment.transaction do
       ids.each_with_index do |book_record_id, i|
-        Installment.where(series_record_id: @record.id, book_record_id: book_record_id)
+        Installment.where(container_record_id: @record.id, book_record_id: book_record_id)
           .update_all(position: i + 1)
       end
     end
@@ -81,7 +81,7 @@ class Admin::SeriesController < Admin::BaseController
 
       scope = Current.account.series.where("title LIKE ?", "%#{Series.sanitize_sql_like(q)}%").order(:title).limit(10)
       if params[:book_record_id].present?
-        scope = scope.where.not(record_id: Installment.where(book_record_id: params[:book_record_id]).select(:series_record_id))
+        scope = scope.where.not(record_id: Installment.where(book_record_id: params[:book_record_id]).select(:container_record_id))
       end
       scope
     end

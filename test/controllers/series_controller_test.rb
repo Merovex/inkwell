@@ -36,7 +36,7 @@ class SeriesControllerTest < ActionDispatch::IntegrationTest
     post admin_books_path, params: { book: { title: "Second", content: "x" }, publish: "1" }
     second = Record.books.order(:id).last
     [ first, second ].each do |book|
-      post admin_installments_path, as: :turbo_stream, params: { series_record_id: series.id, book_record_id: book.id, context: "series" }
+      post admin_installments_path, as: :turbo_stream, params: { container_record_id: series.id, book_record_id: book.id, context: "series" }
     end
 
     get admin_series_path(series)

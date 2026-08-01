@@ -33,6 +33,7 @@ class Account < ApplicationRecord
   def messages = Message.where(id: records.active.messages.select(:recordable_id))
   def books    = Book.where(id: records.active.books.select(:recordable_id))
   def series   = Series.where(id: records.active.series.select(:recordable_id))
+  def collections = Collection.where(id: records.active.collections.select(:recordable_id))
   def drips    = Drip.where(id: records.active.drips.select(:recordable_id))
   def authors  = Author.where(id: records.active.authors.select(:recordable_id))
   def chat_lines = ChatLine.where(id: records.active.chat_lines.select(:recordable_id))

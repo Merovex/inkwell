@@ -1,7 +1,7 @@
 # The app menu (jump-to sheet): its destinations and recent records. Kept small
 # and server-rendered — the Stimulus controller only filters what's already here.
 module AppMenuHelper
-  MENU_RECORDABLES = %w[ Post Message Book Series ].freeze
+  MENU_RECORDABLES = %w[ Post Message Book Series Collection ].freeze
 
   # The most recently touched records the user can jump back to.
   def app_menu_recents(limit: 6)
@@ -11,7 +11,7 @@ module AppMenuHelper
   # The lucide glyph that represents a recordable type.
   RECORDABLE_ICONS = {
     "Post" => "file-text", "Message" => "message-square",
-    "Book" => "book", "Series" => "library"
+    "Book" => "book", "Series" => "library", "Collection" => "layers"
   }.freeze
 
   def app_menu_icon(recordable_type)
@@ -46,6 +46,7 @@ module AppMenuHelper
     when "Message" then admin_message_path(record)
     when "Book"    then admin_book_path(record)
     when "Series"  then admin_series_path(record)
+    when "Collection" then admin_collection_path(record)
     end
   end
 

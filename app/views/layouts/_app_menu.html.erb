@@ -9,6 +9,7 @@
       <%= app_menu_card "Posts", admin_posts_path, "file-text" %>
       <%= app_menu_card "Books", admin_books_path, "book" %>
       <%= app_menu_card "Series", admin_series_index_path, "library" %>
+      <%= app_menu_card "Collections", admin_collections_path, "layers" %>
     </nav>
 
     <input type="search" class="app-menu__search" placeholder="Search or jump to…"
@@ -38,6 +39,7 @@
           <%= app_menu_link "Missives", admin_missives_path %>
           <%= app_menu_link "Broadcasts", admin_broadcasts_path %>
           <%= app_menu_link "Drips", admin_drips_path %>
+          <%= app_menu_link "Site design", admin_designer_path %>
           <%= app_menu_link "System settings", admin_settings_path %>
         <% end %>
       </section>

@@ -158,12 +158,25 @@ Rails.application.routes.draw do
         end
       end
 
-      # Series↔book membership, added/removed immediately from the typeahead on
-      # either the book page (add a series) or the series page (add a book).
+      # Collections — recordables on the spine, Publishable and sortable exactly
+      # like Series (its show/edit page lists its books, drag-sortable; reorder
+      # PATCHes the Installment positions). A Collection is any curated grouping;
+      # a Series is a reading sequence.
+      resources :collections do
+        patch :reorder, on: :member
+        get :search, on: :collection
+        scope module: :collections do
+          resource :publish, only: %i[create destroy]
+        end
+      end
+
+      # Container↔book membership, added/removed immediately from the typeahead on
+      # the book page (add a series/collection) or a series/collection page (add a
+      # book). One controller serves every container (Series, Collection).
       resources :installments, only: %i[create destroy]
 
-      # Store buy-links, added/removed live from a book or series page. Keyed by
-      # the target Record, so one controller serves both.
+      # Store buy-links, added/removed live from a book, series, or collection
+      # page. Keyed by the target Record, so one controller serves them all.
       resources :distributors, only: %i[create destroy]
 
       # System settings — the account's one Site (no id), admin only. Distinct

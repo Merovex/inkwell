@@ -1,0 +1,37 @@
+<% content_for :title, "Collections — Inkwell" %>
+
+<%= render "admin/shared/canvas_head", crumbs: [["Collections", nil]] %>
+
+<header class="perma-header">
+  <h1 class="perma-header__title">Collections</h1>
+  <div class="perma-header__content">
+    <nav class="perma-header__toolbar" aria-label="Actions">
+      <%= link_to new_admin_collection_path, class: "button button--primary button--small" do %>
+        <%= inline_svg_tag "lucide/plus.svg", class: "lucide", size: "16px" %> New collection
+      <% end %>
+    </nav>
+  </div>
+</header>
+
+<% if @collections.any? %>
+  <ul class="list">
+    <% @collections.each do |collection| %>
+      <%= render "admin/shared/list_item",
+            href: admin_collection_path(collection.record),
+            title: collection.title,
+            author: collection.record.creator.display_name,
+            avatar_user: collection.record.creator,
+            date: l((collection.published_at || collection.created_at).to_date, format: :short),
+            excerpt: collection.content.to_plain_text.to_s.truncate(140),
+            scheduled_at: (collection.published_at if collection.scheduled?),
+            pinned: collection.pinned_at.present? %>
+    <% end %>
+  </ul>
+<% else %>
+  <div class="empty">
+    <span class="empty__icon"><%= inline_svg_tag "lucide/inbox.svg", class: "lucide", size: "40px" %></span>
+    <p class="empty__title">No collections yet</p>
+    <p class="empty__text">Create a collection and add books to it.</p>
+    <div class="empty__actions"><%= link_to "New collection", new_admin_collection_path, class: "button button--primary" %></div>
+  </div>
+<% end %>

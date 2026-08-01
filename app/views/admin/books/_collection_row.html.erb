@@ -1,0 +1,9 @@
+<%# locals: (installment:, collection:) %>
+<li class="mrow u-surface" id="<%= dom_id(installment) %>">
+  <span class="mrow__label"><%= link_to collection.title, admin_collection_path(collection.record) %></span>
+  <% unless collection.published? %><span class="badge">Draft</span><% end %>
+  <%= button_to admin_installment_path(installment), method: :delete, class: "mrow__remove u-unbutton",
+        aria: { label: "Remove from #{collection.title}" } do %>
+    <%= inline_svg_tag "lucide/trash-2.svg", class: "lucide", size: "16px" %>
+  <% end %>
+</li>

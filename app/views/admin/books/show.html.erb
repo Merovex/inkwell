@@ -64,12 +64,19 @@
 
 <% if can_manage %>
   <%= render "admin/books/series_membership", record: @record, book: @book %>
+  <%= render "admin/books/collection_membership", record: @record, book: @book %>
   <%= render "admin/distributors/section", record: @record %>
 <% else %>
   <% book_series = @book.series %>
   <% if book_series.any? %>
     <p class="u-text-muted">In series:
       <%= safe_join(book_series.map { |s| link_to s.title, admin_series_path(s.record) }, ", ") %>
+    </p>
+  <% end %>
+  <% book_collections = @book.collections %>
+  <% if book_collections.any? %>
+    <p class="u-text-muted">In collections:
+      <%= safe_join(book_collections.map { |c| link_to c.title, admin_collection_path(c.record) }, ", ") %>
     </p>
   <% end %>
   <%= render "admin/distributors/list", record: @record %>
