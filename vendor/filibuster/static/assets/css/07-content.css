@@ -6,15 +6,21 @@
 /* ---------- Blog ---------- */
 .fk-posts-band { background: var(--bg-alt); border-top: 1px solid var(--line); }
 .fk-post-grid {
-  list-style: none; margin: 2rem 0; display: grid; gap: 1.5rem;
-  grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+  list-style: none; margin: 2rem auto; display: grid; gap: 1.5rem;
+  /* One column of cards, centered — a single readable stack rather than a
+     three-across grid. */
+  grid-template-columns: 1fr; max-width: 46rem;
 }
 .fk-post-grid article {
   background: var(--surface); border: 1px solid var(--line);
   border-radius: var(--radius); padding: 1.5rem; height: 100%;
 }
+/* The posts-index page heading shares the post grid's centered column, so the
+   title lines up with the cards below rather than sitting full-width left.
+   (The library/generic headers live inside .fk-page-body, so this misses them.) */
+.fk-page > .fk-shell > .fk-page-header { max-width: 46rem; margin-inline: auto; }
 .fk-post-list { list-style: none; margin: 2rem 0 0; display: grid; gap: 2.5rem; max-width: 50rem; }
-.fk-post-title { font-size: 1.3rem; margin-bottom: 0.25em; }
+.fk-post-title { font-size: 1.6rem; margin-bottom: 0.25em; }
 .fk-post-title a { text-decoration: none; }
 .fk-post-title a:hover { text-decoration: underline; text-decoration-color: var(--accent); text-underline-offset: 6px; }
 .fk-post-meta { color: var(--ink-muted); font-size: 0.9rem; margin-top: 0; }
