@@ -1,11 +1,15 @@
 {{ define "main" }}
 <article class="fk-page">
   <div class="fk-shell">
-    <header class="fk-page-header">
-      <h1>{{ .Title }}</h1>
-      <p class="fk-post-meta">{{ with .Params.byline }}{{ . }} &middot; {{ end }}{{ .Date.Format "January 2, 2006" }}</p>
-    </header>
+    {{/* Heading rides inside .fk-prose so the title, date, and body share one
+         centered column. The date reads the explicit published_at param — the
+         content adapter's .Date isn't reliably set, which rendered the epoch
+         "January 1, 0001". */}}
     <div class="fk-prose">
+      <header class="fk-page-header">
+        <h1>{{ .Title }}</h1>
+        <p class="fk-post-meta">{{ with .Params.byline }}{{ . }} &middot; {{ end }}{{ with $.Params.published_at }}{{ (time .).Format "January 2, 2006" }}{{ end }}</p>
+      </header>
       {{ .Content }}
     </div>
   </div>

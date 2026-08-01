@@ -100,7 +100,9 @@ html[data-avatar-side="right"] .fk-portrait-band { order: 2; }
 .fk-breadcrumb li + li::before { content: "/"; margin-right: 0.5rem; }
 .fk-book-header {
   display: grid; grid-template-columns: minmax(0, 300px) 1fr; gap: 2.5rem; align-items: start;
-  margin-bottom: 2.5rem;
+  /* Same centered 44rem column as .fk-prose, so the cover+title header lines
+     up with the description below instead of floating full-width. */
+  max-width: 44rem; margin: 0 auto 2.5rem;
 }
 .fk-book-header h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); }
 .fk-book-cover { box-shadow: 0 16px 40px rgb(0 0 0 / 0.3); }
