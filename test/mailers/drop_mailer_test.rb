@@ -27,10 +27,11 @@ class DropMailerTest < ActionMailer::TestCase
     accounts(:merovex).update!(contact_email: "press@example.com")
     email = DropMailer.step(@stream, @drop)
 
-    assert_equal [ Rails.application.credentials.dig(:ses, :marketing_from) ], email.from
+    assert_equal [ "newsletter@merovex.press" ], email.from
     assert_equal [ "press@example.com" ], email.reply_to
     assert_match %r{/newsletter/unsubscribe/}, email["List-Unsubscribe"].to_s
     assert_equal "List-Unsubscribe=One-Click", email["List-Unsubscribe-Post"].to_s
+    assert_equal "broadcast", email["message-stream"].value
   end
 
   test "tags the message with the marketing config set and drop/subscriber tags" do

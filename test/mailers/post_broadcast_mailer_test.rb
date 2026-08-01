@@ -14,6 +14,15 @@ class PostBroadcastMailerTest < ActionMailer::TestCase
     assert_match "List-Unsubscribe=One-Click", email["List-Unsubscribe-Post"].to_s
   end
 
+  test "issue rides Postmark's broadcast stream, not the transactional one" do
+    subscriber = Subscriber.create!(email_address: "reader@example.com", status: :confirmed)
+    broadcast = records(:kickoff).create_broadcast!
+
+    email = PostBroadcastMailer.issue(broadcast, subscriber)
+
+    assert_equal "broadcast", email["message-stream"].value
+  end
+
   test "issue tags the message with the SES config set and message tags for event mapping" do
     subscriber = Subscriber.create!(email_address: "reader@example.com", status: :confirmed)
     broadcast = records(:kickoff).create_broadcast!

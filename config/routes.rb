@@ -210,9 +210,11 @@ Rails.application.routes.draw do
       end
 
       # Newsletter roster — domain-admin only. Read + CSV export + manual
-      # unsubscribe; subscribers themselves opt in from the public site.
+      # unsubscribe; subscribers themselves opt in from the public site. Resend
+      # re-issues the confirmation email to a still-pending subscriber.
       resources :subscribers, only: :index do
         patch :unsubscribe, on: :member
+        post  :resend, on: :member
       end
 
       # Broadcasts dashboard — domain-admin only. Read-only send analytics;

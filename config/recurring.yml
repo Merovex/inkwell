@@ -26,6 +26,12 @@ production:
     class: SubscriberSunsetJob
     schedule: at 8am every Monday
 
+  # Daily prune of dead opt-ins: hard-delete subscribers still pending 30 days
+  # after signup (the confirm token expired at 7 days). See PendingSubscriberPurgeJob.
+  purge_pending_subscribers:
+    class: PendingSubscriberPurgeJob
+    schedule: at 4am every day
+
   # Daily drip heartbeat: send each active stream's next due Drop. Day-0 Drops
   # fire immediately on confirmation; this catches every later Drop by its day.
   drip_tick:

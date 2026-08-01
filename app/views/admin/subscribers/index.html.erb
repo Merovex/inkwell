@@ -38,6 +38,14 @@
             </span>
           </span>
         </span>
+        <% if subscriber.pending? %>
+          <%= button_to resend_admin_subscriber_path(subscriber), method: :post, form_class: "list__action",
+                class: "button button--icon button--ghost", title: "Resend confirmation",
+                "aria-label": "Resend confirmation to #{redacted_email(subscriber.email_address)}",
+                form: { data: { turbo_confirm: "Resend the confirmation email to #{redacted_email(subscriber.email_address)}?" } } do %>
+            <%= inline_svg_tag "lucide/send.svg", class: "lucide", size: "16px" %>
+          <% end %>
+        <% end %>
         <% unless subscriber.unsubscribed? %>
           <%= button_to unsubscribe_admin_subscriber_path(subscriber), method: :patch, form_class: "list__action",
                 class: "button button--icon button--ghost", title: "Unsubscribe",

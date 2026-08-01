@@ -21,6 +21,9 @@ class DropMailer < ApplicationMailer
       to: subscriber.email_address,
       subject: drop.subject,
       from: marketing_from(setting),
+      # Bulk mail rides Postmark's Broadcast stream (required — Postmark won't
+      # send bulk on the transactional stream).
+      message_stream: broadcast_stream,
       delivery_method_options: {
         configuration_set_name: Rails.application.credentials.dig(:ses, :marketing_config_set),
         email_tags: [

@@ -7,7 +7,7 @@ class Admin::SubscribersController < Admin::BaseController
   # The roster is one state at a time; the header links between them.
   STATES = %w[ confirmed pending unsubscribed ].freeze
 
-  before_action :set_subscriber, only: :unsubscribe
+  before_action :set_subscriber, only: %i[ unsubscribe resend ]
 
   def index
     @state = STATES.include?(params[:state]) ? params[:state] : "confirmed"
@@ -25,6 +25,21 @@ class Admin::SubscribersController < Admin::BaseController
   def unsubscribe
     @subscriber.unsubscribe!(ip: request.remote_ip, source: "admin")
     redirect_to admin_subscribers_path, notice: "#{@subscriber.email_address} unsubscribed."
+  end
+
+  # Re-issue the double opt-in email to a still-pending subscriber — a fresh
+  # tokened confirm link (the original expires after 7 days). Useful for
+  # re-inviting people who signed up under the old sender identity. Only pending
+  # rows have anything to confirm, so anything else is a no-op with a heads-up.
+  def resend
+    if @subscriber.pending?
+      @subscriber.send_confirmation
+      redirect_to admin_subscribers_path(state: "pending"),
+        notice: "Confirmation email re-sent to #{@subscriber.email_address}."
+    else
+      redirect_to admin_subscribers_path(state: @subscriber.status),
+        alert: "#{@subscriber.email_address} isn't pending — nothing to confirm."
+    end
   end
 
   private

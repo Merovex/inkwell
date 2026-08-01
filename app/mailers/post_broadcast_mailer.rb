@@ -21,6 +21,9 @@ class PostBroadcastMailer < ApplicationMailer
       to: subscriber.email_address,
       subject: @post.title,
       from: marketing_from(setting),
+      # Bulk mail rides Postmark's Broadcast stream (required — Postmark won't
+      # send bulk on the transactional stream).
+      message_stream: broadcast_stream,
       # SES echoes these message tags on every event, so Webhooks::SesController
       # maps a delivered/opened/clicked/bounced event back to this recipient's
       # BroadcastDelivery. The marketing config set turns on open/click tracking.
