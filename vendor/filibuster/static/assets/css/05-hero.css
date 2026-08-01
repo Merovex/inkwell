@@ -20,7 +20,12 @@
 .fk-hero-lede p:last-child { margin-bottom: 0; }
 .fk-hero-lede a { text-decoration-color: var(--accent); text-underline-offset: 3px; }
 .fk-hero-actions { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-block: 1.5rem; }
-.fk-hero-art img { box-shadow: 0 20px 60px rgb(0 0 0 / 0.35); }
+/* The single-image hero art (cover / portrait / custom image) shares one
+   drop shadow, driven by --hero-art-shadow so data-hero-shadow can switch it
+   off. The many-fan and 3D-book keep their own shadows (part of those looks).
+   The specific art rules below inherit this — they no longer redeclare it. */
+.fk-hero-art img { box-shadow: var(--hero-art-shadow, 0 20px 60px rgb(0 0 0 / 0.35)); }
+html[data-hero-shadow="no"] { --hero-art-shadow: none; }
 
 /* Superset hero markup, three ORTHOGONAL axes (any combination composes):
      data-hero       the structure — split | centered | duet | fan | name
@@ -43,7 +48,6 @@
 .fk-hero-bg::after { content: ""; position: absolute; inset: 0; }
 .fk-hero-art-cover img {
   max-width: 20rem; margin-inline: auto;
-  box-shadow: 0 20px 60px rgb(0 0 0 / 0.35);
 }
 .fk-hero-art-fan { list-style: none; margin: 0; }
 
@@ -59,13 +63,11 @@ html[data-hero-art="image"]:not([data-hero="many"]) .fk-hero-art-image { display
 .fk-hero-art-portrait img {
   width: 100%; max-width: 22rem; margin-inline: auto; aspect-ratio: 1;
   object-fit: cover; border-radius: 50%;
-  box-shadow: 0 20px 60px rgb(0 0 0 / 0.35);
 }
 /* the custom image reads as a framed picture (not a round portrait): it keeps
    the palette's cover-radius and just gets sized and lifted off the page. */
 .fk-hero-art-image img {
   width: 100%; max-width: 24rem; margin-inline: auto;
-  box-shadow: 0 20px 60px rgb(0 0 0 / 0.35);
 }
 
 /* --- data-hero-bg: the backdrop, for every structure except name --- */

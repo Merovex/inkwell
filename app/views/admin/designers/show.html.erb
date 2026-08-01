@@ -181,6 +181,14 @@
                 hint: "Shows when the hero image is set to Custom image." %>
           <label class="switch">
             <input class="switch__input" type="checkbox"
+                   data-designer-target="axisToggle" data-axis="hero_shadow"
+                   data-on="yes" data-off="no"
+                   data-on-label="Shadow" data-off-label="No shadow"
+                   data-action="designer#axisToggled">
+            Drop shadow behind the hero image
+          </label>
+          <label class="switch">
+            <input class="switch__input" type="checkbox"
                    data-designer-target="axisToggle" data-axis="hero_book"
                    data-on="3d" data-off="straight"
                    data-on-label="3D book" data-off-label="Straight on"

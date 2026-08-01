@@ -428,6 +428,23 @@
       ]
     },
     {
+      "key": "hero_shadow",
+      "attr": "data-hero-shadow",
+      "noun": "Hero image shadow",
+      "default": "yes",
+      "section": "hero",
+      "options": [
+        {
+          "id": "yes",
+          "label": "Shadow"
+        },
+        {
+          "id": "no",
+          "label": "No shadow"
+        }
+      ]
+    },
+    {
       "key": "hero_many",
       "attr": "data-hero-many",
       "noun": "Many-book display",
