@@ -52,20 +52,17 @@
       {{ .Content }}
     </div>
 
+    {{/* The books render with the SAME markup as the home index's books
+         section (fk-series-list + book-card), so the cards axis (carousel /
+         grid / shelf / …) styles them identically — continuity across the
+         site. book-card carries the cover, number, year, and description. */}}
     <section aria-labelledby="titles-heading" class="fk-titles">
       <h2 id="titles-heading" class="fk-section-title">Books in this series</h2>
-      <ol class="fk-title-list">
-        {{ range $installments }}
-        <li class="fk-title-item">
-          <img src="{{ site.Home.RelPermalink }}{{ .cover }}" alt="Cover of {{ .title }}" loading="lazy">
-          <div>
-            <a class="fk-title-name" href="{{ site.Home.RelPermalink }}books/{{ .slug }}/">{{ .title }}</a>
-            <span class="fk-title-meta">Book {{ .position }} &middot; {{ substr .publication_date 0 4 }}</span>
-            {{ with .description_html }}<p class="fk-title-desc">{{ plainify . | truncate 260 }}</p>{{ end }}
-          </div>
-        </li>
+      <div class="fk-series-list">
+        {{ range $i, $b := $installments }}
+          {{ partial "book-card.html" (dict "book" $b "index" $i) }}
         {{ end }}
-      </ol>
+      </div>
     </section>
 
     {{/* Prev/next series, in series.json order. */}}
