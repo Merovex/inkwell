@@ -37,6 +37,11 @@ class Admin::Designers::PreviewsController < Admin::BaseController
     file = file.join("index.html") if file.directory?
 
     if file.file? && file.to_s.start_with?("#{preview_root}/")
+      # The preview is rebuilt in place on every design change, so its URLs must
+      # never be cached — otherwise the browser (or Thruster) serves a stale page
+      # for a URL the author already visited, which reads as "stuck on the home
+      # page." no-store keeps every navigation a fresh fetch.
+      response.set_header("cache-control", "no-store")
       send_file file, disposition: :inline,
         type: Mime::Type.lookup_by_extension(file.extname.delete("."))&.to_s || "application/octet-stream"
     else
