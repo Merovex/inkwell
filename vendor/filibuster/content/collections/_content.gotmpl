@@ -1,0 +1,16 @@
+{{/* Materialize one page per collection from data/collections.json. Identical
+     to the series adapter (content/series/_content.gotmpl): a collection's
+     `books` key is an ordered list of book slugs resolved against
+     data/books.json. */}}
+{{ $data := hugo.Data.collections }}
+{{ if ne (int ($data.contract_version | default 0)) (int hugo.Data.theme.contract_version) }}
+  {{ errorf "collections.json: theme expects contract_version %v, got %v" hugo.Data.theme.contract_version $data.contract_version }}
+{{ end }}
+{{ range $i, $c := $data.collections }}
+  {{ $.AddPage (dict
+      "path" $c.slug
+      "title" $c.title
+      "content" (dict "mediaType" "text/html" "value" $c.description_html)
+      "params" (merge $c (dict "order" $i))
+  ) }}
+{{ end }}
