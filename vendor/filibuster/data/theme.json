@@ -187,6 +187,16 @@
             "#121a26"
           ],
           "group": "Literary & Nonfiction"
+        },
+        {
+          "id": "ink",
+          "label": "Ink",
+          "swatches": [
+            "#111110",
+            "#a2aca9",
+            "#c4c4c1"
+          ],
+          "group": "Literary & Nonfiction"
         }
       ],
       "section": "styles"
@@ -393,6 +403,23 @@
         {
           "id": "3d",
           "label": "3D book"
+        }
+      ]
+    },
+    {
+      "key": "hero_art",
+      "attr": "data-hero-art",
+      "noun": "Hero image",
+      "default": "cover",
+      "section": "hero",
+      "options": [
+        {
+          "id": "cover",
+          "label": "Book cover"
+        },
+        {
+          "id": "portrait",
+          "label": "Author portrait"
         }
       ]
     },
@@ -674,6 +701,14 @@
           "body": "Inter",
           "tagline": "Confident clarity for big-idea nonfiction",
           "group": "Literary & Nonfiction"
+        },
+        {
+          "id": "gazette",
+          "label": "Gazette",
+          "display": "Archivo Narrow",
+          "body": "Merriweather",
+          "tagline": "Condensed newsroom headlines over a steady reading serif",
+          "group": "Literary & Nonfiction"
         }
       ],
       "section": "styles"
@@ -795,6 +830,23 @@
           "id": "angled",
           "label": "Angled band",
           "wireframe": "assets/wireframes/bio/band-angled.svg"
+        }
+      ]
+    },
+    {
+      "key": "authors",
+      "attr": "data-authors",
+      "noun": "Author grid",
+      "default": "no",
+      "section": "authors",
+      "options": [
+        {
+          "id": "yes",
+          "label": "Shown"
+        },
+        {
+          "id": "no",
+          "label": "Hidden"
         }
       ]
     },
@@ -1174,7 +1226,31 @@
         "blog": "grid",
         "newsletter": "quiet"
       }
+    },
+    {
+      "id": "press",
+      "label": "Press",
+      "group": "Literary & Nonfiction",
+      "tagline": "A small press in charcoal and sage, with a wall of pen names",
+      "axes": {
+        "palette": "ink",
+        "font": "gazette",
+        "nav": "split",
+        "hero": "right",
+        "hero_art": "portrait",
+        "hero_bg": "cover",
+        "hero_scrim": "60",
+        "cards": "carousel",
+        "catalog": "books",
+        "corners": "soft",
+        "buttons": "crisp",
+        "avatar": "round",
+        "bio_home": "no",
+        "authors": "yes",
+        "blog": "grid",
+        "newsletter": "quiet"
+      }
     }
   ],
-  "fonts_url": "https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Marcellus&family=Vollkorn:ital,wght@0,400;0,500;0,600;1,400&family=Spectral+SC:wght@400;600&family=Cardo:ital,wght@0,400;0,700;1,400&family=Barlow+Condensed:wght@500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=Oswald:wght@500;600;700&family=Spectral:ital,wght@0,400;0,600;1,400&family=Archivo:wght@500;600;700&family=Faustina:ital,wght@0,400;0,600;1,400&family=Cormorant+Garamond:wght@500;600;700&family=Crimson+Pro:ital,wght@0,400;0,600;1,400&family=Playfair+Display:wght@500;600;700&family=Alegreya:ital,wght@0,400;0,600;1,400&family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,600;1,7..72,400&family=Outfit:wght@500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&family=Bricolage+Grotesque:wght@500;600;700&family=Andada+Pro:ital,wght@0,400;0,600;1,400&family=IM+Fell+English+SC&family=Frank+Ruhl+Libre:wght@400;500;700&family=Bodoni+Moda:ital,wght@0,500;0,600;0,700;1,500&family=Manuale:ital,wght@0,400;0,600;1,400&family=Exo+2:wght@700;800&family=IBM+Plex+Serif:ital,wght@0,400;0,600;1,400&family=Anton&family=Lora:ital,wght@0,400;0,600;1,400&family=Rye&family=Bitter:ital,wght@0,400;0,600;1,400&family=Berkshire+Swash&family=Gelasio:ital,wght@0,400;0,600;1,400&family=Baloo+2:wght@600;700&family=Andika:ital,wght@0,400;0,700;1,400&family=DM+Serif+Text:ital@0;1&family=Mulish:ital,wght@0,400;0,600;0,700;1,400&family=Space+Grotesk:wght@500;700&family=Inter:wght@400;600&family=Italiana&family=Petrona:ital,wght@0,400;0,600;1,400&display=swap"
+  "fonts_url": "https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Marcellus&family=Vollkorn:ital,wght@0,400;0,500;0,600;1,400&family=Spectral+SC:wght@400;600&family=Cardo:ital,wght@0,400;0,700;1,400&family=Barlow+Condensed:wght@500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=Oswald:wght@500;600;700&family=Spectral:ital,wght@0,400;0,600;1,400&family=Archivo:wght@500;600;700&family=Faustina:ital,wght@0,400;0,600;1,400&family=Cormorant+Garamond:wght@500;600;700&family=Crimson+Pro:ital,wght@0,400;0,600;1,400&family=Playfair+Display:wght@500;600;700&family=Alegreya:ital,wght@0,400;0,600;1,400&family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,600;1,7..72,400&family=Outfit:wght@500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&family=Bricolage+Grotesque:wght@500;600;700&family=Andada+Pro:ital,wght@0,400;0,600;1,400&family=IM+Fell+English+SC&family=Frank+Ruhl+Libre:wght@400;500;700&family=Bodoni+Moda:ital,wght@0,500;0,600;0,700;1,500&family=Manuale:ital,wght@0,400;0,600;1,400&family=Exo+2:wght@700;800&family=IBM+Plex+Serif:ital,wght@0,400;0,600;1,400&family=Anton&family=Lora:ital,wght@0,400;0,600;1,400&family=Rye&family=Bitter:ital,wght@0,400;0,600;1,400&family=Berkshire+Swash&family=Gelasio:ital,wght@0,400;0,600;1,400&family=Baloo+2:wght@600;700&family=Andika:ital,wght@0,400;0,700;1,400&family=DM+Serif+Text:ital@0;1&family=Mulish:ital,wght@0,400;0,600;0,700;1,400&family=Space+Grotesk:wght@500;700&family=Inter:wght@400;600&family=Italiana&family=Petrona:ital,wght@0,400;0,600;1,400&family=Archivo+Narrow:wght@500;600;700;800&family=Merriweather:ital,wght@0,400;0,700;1,400&display=swap"
 }

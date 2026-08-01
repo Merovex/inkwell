@@ -170,9 +170,17 @@
             says, then how it's arranged and dressed. %>
         <%= render "hero_content" %>
         <%= render "axis", axis: hero_axes.find { it["key"] == "hero" } %>
-        <%# The hero_book axis reads as a switch, shown only when a
-            one-book layout is selected (the controller toggles it). %>
+        <%# hero_book and hero_art both dress the one-book layouts (right/
+            centered), so they share the wrap the controller toggles. %>
         <div data-designer-target="heroBookWrap">
+          <label class="switch">
+            <input class="switch__input" type="checkbox"
+                   data-designer-target="axisToggle" data-axis="hero_art"
+                   data-on="portrait" data-off="cover"
+                   data-on-label="Author portrait" data-off-label="Book cover"
+                   data-action="designer#axisToggled">
+            Show the author's portrait instead of a book
+          </label>
           <label class="switch">
             <input class="switch__input" type="checkbox"
                    data-designer-target="axisToggle" data-axis="hero_book"
@@ -212,7 +220,7 @@
               reads the order back from the DOM. %>
           <ul class="designer__order" data-designer-target="orderList">
             <% { "hero" => "Hero", "books" => "Books", "posts" => "Blog",
-                 "bio" => "Biography", "newsletter" => "Email signup" }.each do |id, label| %>
+                 "bio" => "Biography", "authors" => "Authors", "newsletter" => "Email signup" }.each do |id, label| %>
               <li class="designer__order-row" data-section="<%= id %>">
                 <span class="designer__order-label"><%= label %></span>
                 <span class="designer__order-moves">
@@ -288,6 +296,7 @@
           <% toggle_labels = {
             "books" => "Show on home page",
             "bio_home" => "Show on home page",
+            "authors" => "Show the author grid on the home page",
             "catalog" => "Show only the first book of each series",
             "alternate" => "Alternate sides row by row"
           } %>

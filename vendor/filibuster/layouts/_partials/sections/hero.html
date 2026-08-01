@@ -5,7 +5,7 @@
        data-hero-book: straight | 3d (how the featured cover renders)
        data-hero-bg: page | gradient | scrim | cover (blurred own art) |
          banner (site.json banner — the author's uploaded image)
-     CSS in site.css shows/hides the pieces; hidden images are loading="lazy"
+     CSS (05-hero.css) shows/hides the pieces; hidden images are loading="lazy"
      so unused variants cost nothing until selected. Everything renders from
      the contract: site.json, author.json, books.json. */}}
 {{ $site := hugo.Data.site }}
@@ -94,6 +94,14 @@
     {{ with $featured }}
     <div class="fk-hero-art fk-hero-art-cover">
       <img src="{{ site.Home.RelPermalink }}{{ .cover }}" alt="Cover of {{ .title }}" loading="eager">
+    </div>
+    {{ end }}
+    {{/* data-hero-art=portrait swaps the featured cover for the author's own
+         photo (CSS shows one or the other). Rendered only when there's an
+         avatar; falls back to the cover otherwise. */}}
+    {{ with $author.avatar }}
+    <div class="fk-hero-art fk-hero-art-portrait">
+      <img src="{{ site.Home.RelPermalink }}{{ . }}" alt="Portrait of {{ $author.name }}" loading="eager">
     </div>
     {{ end }}
     <ul class="fk-hero-art fk-hero-art-fan">

@@ -14,6 +14,9 @@ class Author < ApplicationRecord
   end
 
   validates :name, presence: true
+  # A one-line hook shown under the name in the author grid — kept short so
+  # it reads as a tagline, not a second bio.
+  validates :tagline, length: { maximum: 140 }, allow_blank: true
   validate :acceptable_avatar
 
   before_create :become_default_if_first

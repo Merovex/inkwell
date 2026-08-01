@@ -1,0 +1,223 @@
+/* filibuster stylesheet, split into parallel-loadable modules.
+   Loaded in filename order by layouts/baseof.html; that order IS the
+   cascade order, so keep the numeric prefixes. See 01-reset.css for the
+   axis vocabulary this sheet keys off. */
+
+/* ---------- Hero ---------- */
+.fk-hero {
+  position: relative; overflow: hidden;
+  background: var(--hero-bg);
+}
+.fk-hero-inner {
+  position: relative;
+  display: grid; gap: 2.5rem; align-items: center; padding-block: 4rem;
+  grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+}
+.fk-hero h1 { font-size: clamp(2rem, 4.5vw, 3.4rem); }
+.fk-hero-lede { font-size: 1.25rem; color: var(--ink-muted); max-width: 34em; }
+/* rich custom words: paragraph rhythm inside the lede block */
+.fk-hero-lede p { margin: 0 0 0.75em; }
+.fk-hero-lede p:last-child { margin-bottom: 0; }
+.fk-hero-lede a { text-decoration-color: var(--accent); text-underline-offset: 3px; }
+.fk-hero-actions { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-block: 1.5rem; }
+.fk-hero-art img { box-shadow: 0 20px 60px rgb(0 0 0 / 0.35); }
+
+/* Superset hero markup, three ORTHOGONAL axes (any combination composes):
+     data-hero       the structure — split | centered | duet | fan | name
+     data-hero-book  how the featured cover renders — straight | 3d
+     data-hero-bg    what sits behind the hero — page | scrim | cover
+   Everything variant-specific is hidden by default (split/straight/page).
+   Marquee name is the one exception: it keeps its identity author-photo
+   backdrop and ignores data-hero-bg. */
+.fk-hero-bg,
+.fk-hero-bg-self, .fk-hero-bg-banner,
+.fk-hero-art-fan,
+.fk-hero-art-portrait,
+.fk-hero-kicker-role { display: none; }
+/* author copy-source: the name moved into the headline, so the site name
+   stands alone in the kicker (the template dropped the author span). */
+.fk-kicker-solo { display: inline; }
+.fk-hero-bg { position: absolute; inset: 0; }
+.fk-hero-bg img { width: 100%; height: 100%; object-fit: cover; }
+.fk-hero-bg::after { content: ""; position: absolute; inset: 0; }
+.fk-hero-art-cover img {
+  max-width: 20rem; margin-inline: auto;
+  box-shadow: 0 20px 60px rgb(0 0 0 / 0.35);
+}
+.fk-hero-art-fan { list-style: none; margin: 0; }
+
+/* --- data-hero-art: swap the featured cover for a round author portrait.
+   Applies to the one-book structures (right/centered); the many-covers
+   structure keeps its fan. The 50% radius wins over the cover-radius rule
+   above by coming later at equal specificity. --- */
+html[data-hero-art="portrait"]:not([data-hero="many"]) .fk-hero-art-cover { display: none; }
+html[data-hero-art="portrait"]:not([data-hero="many"]) .fk-hero-art-portrait { display: block; }
+.fk-hero-art-portrait img {
+  width: 100%; max-width: 22rem; margin-inline: auto; aspect-ratio: 1;
+  object-fit: cover; border-radius: 50%;
+  box-shadow: 0 20px 60px rgb(0 0 0 / 0.35);
+}
+
+/* --- data-hero-bg: the backdrop, for every structure except name --- */
+html[data-hero-bg="gradient"] .fk-hero-bg,
+html[data-hero-bg="scrim"] .fk-hero-bg,
+html[data-hero-bg="cover"] .fk-hero-bg,
+html[data-hero-bg="banner"] .fk-hero-bg { display: block; }
+/* gradient: two levels of ONE hue — the accent's — quiet at the copy
+   corner, deep at the far one. Both stops mix accent into the (near-
+   neutral) ground, so the hue is the accent's at two strengths and the
+   copy side stays ink-legible in both modes. */
+html[data-hero-bg="gradient"] .fk-hero-bg::after {
+  background: linear-gradient(160deg,
+    color-mix(in oklab, var(--accent) 16%, var(--bg)) 0%,
+    color-mix(in oklab, var(--accent) 60%, var(--bg)) 110%);
+}
+/* scrim: a wash drawn from the palette's own ground tokens */
+html[data-hero-bg="scrim"] .fk-hero-bg::after {
+  background: linear-gradient(160deg,
+    var(--hero-glow) 0%,
+    color-mix(in srgb, var(--bg) 40%, transparent) 100%);
+}
+/* banner: the author's own uploaded image under the black scrim */
+html[data-hero-bg="banner"] .fk-hero-bg-banner { display: block; }
+/* cover: the featured cover's own art, blurred, under a MODE-INDEPENDENT
+   dark wash — the copy runs white over it */
+html[data-hero-bg="cover"] .fk-hero-bg-self {
+  display: block; filter: blur(14px) saturate(1.2); transform: scale(1.25);
+}
+/* Image-backed backdrops share the SCRIM SLIDER (data-hero-scrim,
+   0-100%): a flat black veil whose opacity the author sets; the
+   auto-contrast ground follows each stop (image approximated as gray). */
+html[data-hero-bg="cover"] .fk-hero-bg::after,
+html[data-hero-bg="banner"] .fk-hero-bg::after {
+  background: rgb(0 0 0 / var(--hero-scrim, 0.5));
+}
+html[data-hero-bg="cover"] .fk-hero-copy { color: #f5f4f0; }
+html[data-hero-bg="cover"] .fk-hero-lede { color: rgb(245 244 240 / 0.88); }
+html[data-hero-bg="cover"] .fk-hero .fk-kicker { color: rgb(245 244 240 / 0.75); }
+html[data-hero-bg="cover"] .fk-hero .fk-btn-ghost:not(:hover) { color: #f5f4f0; }
+
+
+/* --- the hero ground: each backdrop declares its effective color at the
+       copy corner, and the auto-contrast rule (end of the hero section)
+       derives the copy color from it. CSS can't read image pixels — but
+       text never sits on a raw image, it sits on a veil, and the veil IS
+       the ground. Image-backed grounds approximate the unknown art as
+       gray under their veil's mix. --- */
+html { --hero-ground: var(--bg); }
+html[data-hero-bg="gradient"] { --hero-ground: color-mix(in oklab, var(--accent) 16%, var(--bg)); }
+html[data-hero-bg="scrim"] { --hero-ground: var(--hero-glow); }
+html[data-hero-bg="cover"],
+html[data-hero-bg="banner"] { --hero-ground: var(--hero-scrim-ground, oklch(0.3 0 0)); }
+html[data-hero-scrim="0"] { --hero-scrim: 0; --hero-scrim-ground: oklch(0.60 0 0); }
+html[data-hero-scrim="10"] { --hero-scrim: 0.1; --hero-scrim-ground: oklch(0.54 0 0); }
+html[data-hero-scrim="20"] { --hero-scrim: 0.2; --hero-scrim-ground: oklch(0.48 0 0); }
+html[data-hero-scrim="30"] { --hero-scrim: 0.3; --hero-scrim-ground: oklch(0.42 0 0); }
+html[data-hero-scrim="40"] { --hero-scrim: 0.4; --hero-scrim-ground: oklch(0.36 0 0); }
+html[data-hero-scrim="50"] { --hero-scrim: 0.5; --hero-scrim-ground: oklch(0.30 0 0); }
+html[data-hero-scrim="60"] { --hero-scrim: 0.6; --hero-scrim-ground: oklch(0.24 0 0); }
+html[data-hero-scrim="70"] { --hero-scrim: 0.7; --hero-scrim-ground: oklch(0.18 0 0); }
+html[data-hero-scrim="80"] { --hero-scrim: 0.8; --hero-scrim-ground: oklch(0.12 0 0); }
+html[data-hero-scrim="90"] { --hero-scrim: 0.9; --hero-scrim-ground: oklch(0.06 0 0); }
+html[data-hero-scrim="100"] { --hero-scrim: 1; --hero-scrim-ground: oklch(0.05 0 0); }
+
+
+/* --- data-hero-book: how the one-book structures render the cover --- */
+/* 3d: the featured cover extruded into a standing paperback — CSS only:
+   preserve-3d with two pseudo-faces (page block right, back cover behind).
+   No filter on the book: filters flatten transform-style. (Fan and name
+   hide the single cover entirely, so the axis is inert there.) */
+html[data-hero-book="3d"] .fk-hero-art-cover {
+  --book-depth: 32px;
+  position: relative;
+  width: fit-content;
+  margin-inline: auto;
+  transform-style: preserve-3d;
+  /* perspective() must ride the transform itself: the cover IS the
+     .fk-hero-art element, and the perspective PROPERTY only projects an
+     element's children — without a projecting ancestor, rotateY degrades
+     to a flat horizontal squeeze. */
+  transform: perspective(1100px) rotateY(-20deg);
+}
+html[data-hero-book="3d"] .fk-hero-art-cover img {
+  position: relative;
+  max-width: 19rem;
+  border-radius: 2px 6px 6px 2px;
+  transform: translateZ(calc(var(--book-depth) / 2));
+}
+/* the page block: a striped strip stood up along the right edge */
+html[data-hero-book="3d"] .fk-hero-art-cover::before {
+  content: "";
+  position: absolute;
+  inset-block: 3px;
+  right: 0;
+  width: var(--book-depth);
+  transform: translateX(calc(var(--book-depth) / 2)) rotateY(90deg);
+  background: repeating-linear-gradient(90deg, #f6f2e9 0 3px, #e5dfd2 3px 6px);
+}
+/* back cover, carrying the ground shadow */
+html[data-hero-book="3d"] .fk-hero-art-cover::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateZ(calc(var(--book-depth) / -2));
+  background: color-mix(in oklab, var(--ink) 80%, black);
+  border-radius: 6px 2px 2px 6px;
+  box-shadow: -26px 36px 46px rgb(0 0 0 / 0.4);
+}
+
+
+/* none: copy only, single centered column */
+html[data-hero="none"] .fk-hero-art { display: none; }
+html[data-hero="none"] .fk-hero-inner {
+  grid-template-columns: 1fr; justify-items: center; text-align: center;
+}
+html[data-hero="none"] .fk-hero-actions { justify-content: center; }
+html[data-hero="none"] .fk-hero-lede { margin-inline: auto; }
+
+/* many: overlapping covers instead of the single featured one; the
+   hero_many axis picks fanned (rotated hand, three covers) or staggered
+   (cascading row, up to four, first on top). */
+html[data-hero="many"] .fk-hero-art-cover { display: none; }
+html[data-hero="many"] .fk-hero-art-fan {
+  display: flex; align-items: center; justify-content: center; padding: 0;
+}
+html[data-hero="many"] .fk-hero-art-fan li { max-width: 11rem; position: relative; }
+html[data-hero="many"] .fk-hero-art-fan li:nth-child(1) { transform: rotate(-8deg) translateX(14%); }
+html[data-hero="many"] .fk-hero-art-fan li:nth-child(2) { z-index: 1; transform: scale(1.08); }
+html[data-hero="many"] .fk-hero-art-fan li:nth-child(3) { transform: rotate(8deg) translateX(-14%); }
+html[data-hero="many"] .fk-hero-art-fan img {
+  border-radius: 0.25rem; box-shadow: 0 14px 40px rgb(0 0 0 / 0.45);
+}
+html[data-hero="many"]:not([data-hero-many="staggered"]) .fk-hero-art-fan li:nth-child(4) { display: none; }
+html[data-hero-many="staggered"] .fk-hero-art-fan { justify-content: flex-end; }
+html[data-hero-many="staggered"] .fk-hero-art-fan li { max-width: 10rem; }
+html[data-hero-many="staggered"] .fk-hero-art-fan li + li { margin-left: -3.25rem; }
+html[data-hero-many="staggered"] .fk-hero-art-fan li:nth-child(1) { transform: none; z-index: 4; }
+html[data-hero-many="staggered"] .fk-hero-art-fan li:nth-child(2) { transform: translateY(0.5rem) scale(1); z-index: 3; }
+html[data-hero-many="staggered"] .fk-hero-art-fan li:nth-child(3) { transform: translateY(1rem); z-index: 2; }
+html[data-hero-many="staggered"] .fk-hero-art-fan li:nth-child(4) { transform: translateY(1.5rem); z-index: 1; }
+
+/* --- auto-contrast hero copy: derived from --hero-ground by thresholding
+       its OKLCH lightness. The infinity trick: below L 0.68 the clamp
+       pins near-white (0.96), above it near-black (0.21) — the PALETTE
+       POLICY's ink lightnesses, with a whisper of the ground's hue, so
+       auto copy matches the ink system instead of harsh #fff/#000.
+       The hand-set colors above stay as the fallback for browsers
+       without relative color syntax; this block simply out-cascades
+       them. When contrast-color() is cross-browser it slots in here,
+       fed by the same ground token. --- */
+@supports (color: oklch(from red l c h)) {
+  html[data-hero][data-hero-bg] .fk-hero-copy,
+  /* :not(:hover): the hover fill brings its own accent/accent-ink
+     pairing — the derived color must yield to it. */
+  html[data-hero][data-hero-bg] .fk-hero .fk-btn-ghost:not(:hover) {
+    color: oklch(from var(--hero-ground) clamp(0.21, (0.68 - l) * infinity, 0.96) 0.02 h);
+  }
+  html[data-hero][data-hero-bg] .fk-hero-lede {
+    color: oklch(from var(--hero-ground) clamp(0.24, (0.68 - l) * infinity, 0.93) 0.02 h / 0.92);
+  }
+  html[data-hero][data-hero-bg] .fk-hero .fk-kicker {
+    color: oklch(from var(--hero-ground) clamp(0.28, (0.68 - l) * infinity, 0.9) 0.02 h / 0.85);
+  }
+}

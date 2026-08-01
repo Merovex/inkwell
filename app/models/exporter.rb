@@ -28,6 +28,7 @@ class Exporter
   def export!
     write "site.json",   site_json
     write "author.json", author_json
+    write "authors.json", authors_json
     write "books.json",  books_json
     write "series.json", series_json
     write "collections.json", collections_json
@@ -128,12 +129,22 @@ class Exporter
     # back to the owner's name, matching Authored#byline.
     def author_json
       if author = account.authors.find_by(default: true) || account.authors.first
-        { name: author.name, slug: author.name.parameterize,
+        { name: author.name, slug: author.name.parameterize, tagline: author.tagline,
           bio_html: html(author.bio), avatar: copy_image(author.avatar, "author") }
       else
         { name: account.owner.display_name, slug: account.owner.display_name.parameterize,
-          bio_html: nil, avatar: nil }
+          tagline: nil, bio_html: nil, avatar: nil }
       end
+    end
+
+    # Every current pen name, for the author-grid section (data-authors=yes).
+    # Name-based slug and avatar prefix keep the transport deterministic (§2)
+    # and match the public /authors/<slug>/ pages.
+    def authors_json
+      { authors: account.authors.ordered.map do |author|
+          { name: author.name, slug: author.public_slug, tagline: author.tagline,
+            bio_html: html(author.bio), avatar: copy_image(author.avatar, "author-#{author.public_slug}") }
+        end }
     end
 
     def books_json

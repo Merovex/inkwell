@@ -19,7 +19,7 @@ const BUILT_IN = DEFAULT_LINKS.map(link => link.id)
 const BUILT_IN_PATHS = { books: "/books/", posts: "/posts/", about: "/about/" }
 // The theme's home.sections default order (home.html) — same schema-lab
 // duplication deal as DEFAULT_LINKS.
-const DEFAULT_SECTIONS = ["hero", "books", "posts", "bio", "newsletter"]
+const DEFAULT_SECTIONS = ["hero", "books", "posts", "bio", "authors", "newsletter"]
 
 export default class extends Controller {
   static targets = ["frame", "stage", "status", "preset", "scaleNote", "pane",
@@ -97,7 +97,7 @@ export default class extends Controller {
   change(event) {
     this.design = { ...this.design, ...this.read() }
     // Picking a pairing (or palette) hands control back from the custom
-    // escape valve: the custom override style ships after site.css and wins
+    // escape valve: the custom override style ships after the css modules and wins
     // at equal specificity, so a lingering fonts/colors block would keep
     // overriding every pairing/palette the author picks.
     const axis = event?.target?.name?.match(/^design\[(.+)\]$/)?.[1]

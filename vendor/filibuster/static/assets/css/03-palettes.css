@@ -1,0 +1,275 @@
+/* filibuster stylesheet, split into parallel-loadable modules.
+   Loaded in filename order by layouts/baseof.html; that order IS the
+   cascade order, so keep the numeric prefixes. See 01-reset.css for the
+   axis vocabulary this sheet keys off. */
+
+
+/* ---------- Palettes (theme tokens + mood chrome) ----------
+   Every palette is dual-mode: each color token is a designed light-dark()
+   pair resolved by color-scheme, which the mode axis (data-mode) sets —
+   light / dark pin a side, auto follows the visitor's OS. Accents shift
+   lightness AGAINST the background between modes; backgrounds keep the
+   palette's hue identity at opposite lightness; never swap bg and ink. */
+html[data-mode="light"] { color-scheme: light; }
+html[data-mode="dark"] { color-scheme: dark; }
+html[data-mode="auto"] { color-scheme: light dark; }
+
+/* Cover-corner rounding (data-corners): the author's slider, four stops on
+   the Open Props radius scale (0, radius-1, radius-2, radius-3). Governs
+   book imagery everywhere, overriding the palette's chrome radius. */
+html[data-corners="square"] { --cover-radius: 0; }
+html[data-corners="crisp"]  { --cover-radius: 2px; }
+html[data-corners="soft"]   { --cover-radius: 5px; }
+html[data-corners="round"]  { --cover-radius: 1rem; }
+.fk-series-cover img, .fk-cover-grid img, .fk-book-cover,
+.fk-title-item img, .fk-hero-art img { border-radius: var(--cover-radius, var(--radius)); }
+
+/* Button rounding (data-buttons): the same four-stop slider for .fk-btn,
+   overriding the palette's chrome radius. */
+html[data-buttons="square"] { --btn-radius: 0; }
+html[data-buttons="crisp"]  { --btn-radius: 2px; }
+html[data-buttons="soft"]   { --btn-radius: 5px; }
+html[data-buttons="round"]  { --btn-radius: 1rem; }
+
+/* nebula: space opera: dark, immersive, gold on deep space (light: daylight observatory) */
+:root {
+  --bg: light-dark(#f5f4ef, #0b0f1d);
+  --bg-alt: light-dark(#eae9e5, #111731);
+  --surface: light-dark(#fbfbf9, #161d38);
+  --ink: light-dark(#1c2030, #ece9df);
+  --ink-muted: light-dark(#595b65, #b3b0a4);
+  --accent: light-dark(#8a6a1f, #d9a94a);
+  --accent-ink: light-dark(#f6f3ed, #14100a);
+  --line: light-dark(#d2d2d0, #2a3357);
+  --radius: 0.75rem;
+  --hero-glow: light-dark(#eae9e5, #3c3428);
+  --hero-glow2: light-dark(#eae9e5, #2c2824);
+  --hero-bg: radial-gradient(1200px 600px at 80% -10%, var(--hero-glow) 0%, transparent 60%),
+             radial-gradient(800px 500px at 10% 110%, var(--hero-glow2) 0%, transparent 55%),
+             var(--bg);
+}
+
+/* manuscript: historical: warm cream and oxblood (dark: midnight scriptorium) */
+html[data-palette="manuscript"] {
+  --bg: light-dark(#f7f1e6, #221a14);
+  --bg-alt: light-dark(#efe6d5, #2c241e);
+  --surface: light-dark(#fffdf8, #302822);
+  --ink: light-dark(#2b241c, #f0e8da);
+  --ink-muted: light-dark(#4f4237, #b6aea3);
+  --accent: light-dark(#7c2f2a, #c05a50);
+  --accent-ink: light-dark(#fdf9f2, #261210);
+  --line: light-dark(#d9cdb8, #4b433c);
+  --radius: 0.25rem;
+  --hero-glow: light-dark(#efe6d5, #482922);
+  --hero-bg: var(--bg);
+}
+
+/* mission: modern/professional: cool paper and worker blue (dark: navy slate) */
+html[data-palette="mission"] {
+  --bg: light-dark(#f3f5f8, #10182a);
+  --bg-alt: light-dark(#e8ecf2, #1b2334);
+  --surface: light-dark(#ffffff, #1f2738);
+  --ink: light-dark(#121a26, #e8ecf4);
+  --ink-muted: light-dark(#3d4a5d, #acb1bb);
+  --accent: light-dark(#16459c, #6f96e8);
+  --accent-ink: light-dark(#ffffff, #161e2e);
+  --line: light-dark(#ccd5e1, #3b4252);
+  --radius: 1rem;
+  --hero-glow: light-dark(#e8ecf2, #273658);
+  --hero-bg: linear-gradient(180deg, var(--surface) 0%, var(--bg) 100%);
+}
+
+/* pulp: crime/thriller: stark near-black, pulp red-orange, hard edges (light: newsprint) */
+html[data-palette="pulp"] {
+  --bg: light-dark(#f6f4ef, #111113);
+  --bg-alt: light-dark(#ebe9e5, #19191c);
+  --surface: light-dark(#fbfbf9, #1f1f23);
+  --ink: light-dark(#1b1b1e, #f4f2ec);
+  --ink-muted: light-dark(#585859, #b8b5ac);
+  --accent: light-dark(#b3401f, #ff8b6e);
+  --accent-ink: light-dark(#f9f0ed, #23100a);
+  --line: light-dark(#d3d1ce, #3a3a41);
+  --radius: 0;
+  --hero-glow: light-dark(#ebe9e5, #4a2e29);
+  --hero-bg: linear-gradient(180deg, var(--surface) 0%, var(--bg) 100%);
+}
+
+/* grimoire: dark fantasy: deep forest green, antique brass (light: herbarium) */
+html[data-palette="grimoire"] {
+  --bg: light-dark(#f1f3e9, #101711);
+  --bg-alt: light-dark(#e6e9df, #16211a);
+  --surface: light-dark(#f9faf6, #1b2a20);
+  --ink: light-dark(#1e2a20, #eef0e4);
+  --ink-muted: light-dark(#596258, #b7c2ab);
+  --accent: light-dark(#7c6423, #d9c27a);
+  --accent-ink: light-dark(#f5f3ed, #171207);
+  --line: light-dark(#cfd3c9, #33463a);
+  --radius: 0.25rem;
+  --hero-glow: light-dark(#e6e9df, #40402a);
+  --hero-bg: radial-gradient(900px 500px at 50% -20%, var(--hero-glow) 0%, transparent 60%), var(--bg);
+}
+
+/* pine: the account's own literary look — pine teal over warm mist neutrals (ported from Inkwell's tokens; dark surfaces tint toward pine) */
+html[data-palette="pine"] {
+  --bg: light-dark(#f4f3ef, #1b1a17);
+  --bg-alt: light-dark(#eae9e5, #191d1c);
+  --surface: light-dark(#fbfaf9, #1e2b28);
+  --ink: light-dark(#26251f, #e8e7e1);
+  --ink-muted: light-dark(#605f59, #afaea8);
+  --accent: light-dark(#3d6e65, #a9bcb6);
+  --accent-ink: light-dark(#eff3f3, #222624);
+  --line: light-dark(#d3d2ce, #44433f);
+  --radius: 0.5rem;
+  --hero-glow: light-dark(#eae9e5, #3d413d);
+  --hero-bg: linear-gradient(180deg, var(--surface) 0%, var(--bg) 100%);
+}
+
+/* blush: romance: warm blush paper, raspberry (dark: rosewood) */
+html[data-palette="blush"] {
+  --bg: light-dark(#f7edeb, #241318);
+  --bg-alt: light-dark(#ede3e1, #2e1e23);
+  --surface: light-dark(#fcf8f7, #332227);
+  --ink: light-dark(#33211f, #f6ecee);
+  --ink-muted: light-dark(#6a5a58, #bbafb2);
+  --accent: light-dark(#b23a63, #e07a9a);
+  --accent-ink: light-dark(#f9eff3, #2d181f);
+  --line: light-dark(#d8ccca, #4e3e43);
+  --radius: 0.75rem;
+  --hero-glow: light-dark(#ede3e1, #512c37);
+  --hero-bg: linear-gradient(180deg, var(--surface) 0%, var(--bg) 100%);
+}
+
+/* boudoir: moody romance: wine dark, rose-gold (light: parlor cream) */
+html[data-palette="boudoir"] {
+  --bg: light-dark(#f6eee9, #2a1420);
+  --bg-alt: light-dark(#ece4df, #341f2a);
+  --surface: light-dark(#fbf8f6, #38232e);
+  --ink: light-dark(#33201c, #f5ece9);
+  --ink-muted: light-dark(#6a5a55, #bcb0b1);
+  --accent: light-dark(#9c4a3c, #d98a7a);
+  --accent-ink: light-dark(#f7f1ef, #2b1c18);
+  --line: light-dark(#d7cdc8, #533f48);
+  --radius: 0.5rem;
+  --hero-glow: light-dark(#ece4df, #543036);
+  --hero-bg: radial-gradient(900px 500px at 50% -20%, var(--hero-glow) 0%, transparent 60%), var(--bg);
+}
+
+/* tide: contemporary/beach: sea-glass teal, tinted slate ink */
+html[data-palette="tide"] {
+  --bg: light-dark(#fbfaf7, #0d1e22);
+  --bg-alt: light-dark(#f0f0ee, #18282c);
+  --surface: light-dark(#fdfdfc, #1c2d30);
+  --ink: light-dark(#22384a, #e9f0ee);
+  --ink-muted: light-dark(#5f6e7a, #abb5b5);
+  --accent: light-dark(#2f8f83, #5fbfae);
+  --accent-ink: light-dark(#eef6f5, #132623);
+  --line: light-dark(#d8dbdb, #39484b);
+  --radius: 0.75rem;
+  --hero-glow: light-dark(#f0f0ee, #214544);
+  --hero-bg: linear-gradient(180deg, var(--surface) 0%, var(--bg) 100%);
+}
+
+/* rust: dystopian/industrial: scorched char, rusted steel */
+html[data-palette="rust"] {
+  --bg: light-dark(#f0ebe3, #17130f);
+  --bg-alt: light-dark(#e6e1d9, #221e19);
+  --surface: light-dark(#f9f7f4, #26221d);
+  --ink: light-dark(#241d17, #ece5dc);
+  --ink-muted: light-dark(#5d5750, #b0aaa3);
+  --accent: light-dark(#8c3f1c, #b3552a);
+  --accent-ink: light-dark(#f6f0ed, #241108);
+  --line: light-dark(#cfcac2, #423d38);
+  --radius: 0.25rem;
+  --hero-glow: light-dark(#e6e1d9, #3c2315);
+  --hero-bg: radial-gradient(900px 500px at 50% -20%, var(--hero-glow) 0%, transparent 60%), var(--bg);
+}
+
+/* meadow: cozy: sage cream and clover */
+html[data-palette="meadow"] {
+  --bg: light-dark(#f4f6ee, #151d14);
+  --bg-alt: light-dark(#eaece4, #20281f);
+  --surface: light-dark(#fbfbf8, #242c23);
+  --ink: light-dark(#26301f, #eef2e8);
+  --ink-muted: light-dark(#606759, #b1b6ad);
+  --accent: light-dark(#3f7d44, #7fb884);
+  --accent-ink: light-dark(#f0f5f0, #19251a);
+  --line: light-dark(#d3d6cd, #40483e);
+  --radius: 0.75rem;
+  --hero-glow: light-dark(#eaece4, #2e422f);
+  --hero-bg: linear-gradient(180deg, var(--surface) 0%, var(--bg) 100%);
+}
+
+/* neon: YA/urban fantasy: indigo night, electric violet */
+html[data-palette="neon"] {
+  --bg: light-dark(#f6f5fa, #12101f);
+  --bg-alt: light-dark(#ebeaf0, #1d1b2a);
+  --surface: light-dark(#fbfbfd, #22202e);
+  --ink: light-dark(#1d1730, #f0eefa);
+  --ink-muted: light-dark(#5a5569, #b2b0bd);
+  --accent: light-dark(#5c34b8, #9d7af0);
+  --accent-ink: light-dark(#f2eff9, #1f1830);
+  --line: light-dark(#d3d1da, #3e3c4b);
+  --radius: 0.9rem;
+  --hero-glow: light-dark(#ebeaf0, #332951);
+  --hero-bg: radial-gradient(900px 500px at 50% -20%, var(--hero-glow) 0%, transparent 60%), var(--bg);
+}
+
+/* bone: stark horror: bone field, black accent — two-color in both modes */
+html[data-palette="bone"] {
+  --bg: light-dark(#efece4, #131110);
+  --bg-alt: light-dark(#e4e2da, #1e1c1b);
+  --surface: light-dark(#f9f7f4, #22201f);
+  --ink: light-dark(#1c1a17, #efece4);
+  --ink-muted: light-dark(#575550, #b1afa9);
+  --accent: light-dark(#141210, #e8e4d8);
+  --accent-ink: light-dark(#ececec, #2e2e2b);
+  --line: light-dark(#cdcac3, #3f3d3a);
+  --radius: 0.25rem;
+  --hero-glow: light-dark(#e4e2da, #464440);
+  --hero-bg: var(--bg);
+}
+
+/* lumen: clinical sci-fi: cold white, precise cyan */
+html[data-palette="lumen"] {
+  --bg: light-dark(#f8fafb, #0a1418);
+  --bg-alt: light-dark(#edeff1, #151f23);
+  --surface: light-dark(#fcfdfd, #192327);
+  --ink: light-dark(#16232a, #e6f0f3);
+  --ink-muted: light-dark(#555f65, #a8b2b6);
+  --accent: light-dark(#0e7490, #4dc3dd);
+  --accent-ink: light-dark(#ecf4f6, #0f272c);
+  --line: light-dark(#d4d8da, #364044);
+  --radius: 1rem;
+  --hero-glow: light-dark(#edeff1, #1a3e47);
+  --hero-bg: linear-gradient(180deg, var(--surface) 0%, var(--bg) 100%);
+}
+
+/* sandstone: western: sun-bleached sand, terracotta */
+html[data-palette="sandstone"] {
+  --bg: light-dark(#f2e9da, #1e1610);
+  --bg-alt: light-dark(#e9e0d1, #28201a);
+  --surface: light-dark(#faf6f0, #2d251e);
+  --ink: light-dark(#382b20, #f0e6d8);
+  --ink-muted: light-dark(#6c6054, #b5aca0);
+  --accent: light-dark(#a9603d, #cf8455);
+  --accent-ink: light-dark(#f8f2ef, #291a11);
+  --line: light-dark(#d4cbbc, #484038);
+  --radius: 0.25rem;
+  --hero-glow: light-dark(#e9e0d1, #483021);
+  --hero-bg: radial-gradient(900px 500px at 50% -20%, var(--hero-glow) 0%, transparent 60%), var(--bg);
+}
+
+/* ink: literary/editorial: warm charcoal and muted sage (light: bone paper) */
+html[data-palette="ink"] {
+  --bg: light-dark(#f5f4ef, #111110);
+  --bg-alt: light-dark(#eae9e2, #191917);
+  --surface: light-dark(#fbfbf8, #1e1e1b);
+  --ink: light-dark(#1b1b18, #c4c4c1);
+  --ink-muted: light-dark(#57574f, #8c8c86);
+  --accent: light-dark(#4e5b56, #a2aca9);
+  --accent-ink: light-dark(#f4f5f0, #151614);
+  --line: light-dark(#d6d5cc, #302f2c);
+  --radius: 0.375rem;
+  --hero-glow: light-dark(#e8e7e0, #2b2b26);
+  --hero-bg: linear-gradient(180deg, var(--surface) 0%, var(--bg) 100%);
+}

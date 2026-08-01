@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.2].define(version: 2026_07_31_200001) do
+ActiveRecord::Schema[8.2].define(version: 2026_08_01_000000) do
   create_table "account_users", force: :cascade do |t|
     t.integer "account_id", null: false
     t.integer "user_id", null: false
@@ -127,6 +127,7 @@ ActiveRecord::Schema[8.2].define(version: 2026_07_31_200001) do
     t.string "event", default: "created", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "tagline"
     t.index ["creator_id"], name: "index_authors_on_creator_id"
     t.index ["record_id", "id"], name: "index_authors_on_record_id_and_id"
     t.index ["record_id"], name: "index_authors_on_record_id"

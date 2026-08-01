@@ -35,15 +35,17 @@ class AdminDesignerTest < ActionDispatch::IntegrationTest
     assert_response :success
 
     theme = Theme.current
-    # books + catalog + alternate + hero_book + hero_many + the two
-    # home-visibility axes (hero_home, bio_home) render as switches;
-    # corners, buttons, and hero_scrim (manifest control: "slider") as
-    # sliders — not fieldsets
+    # books + catalog + alternate + hero_book + hero_many + hero_art + the
+    # author-grid toggle (authors) + the two home-visibility axes (hero_home,
+    # bio_home) render as switches; corners, buttons, and hero_scrim (manifest
+    # control: "slider") as sliders — not fieldsets
     sliders = theme.axes.count { it["control"] == "slider" }
-    assert_select ".designer__axis", count: theme.axes.size - 7 - sliders
-    assert_select ".switch__input[data-designer-target=axisToggle]", count: 7
+    assert_select ".designer__axis", count: theme.axes.size - 9 - sliders
+    assert_select ".switch__input[data-designer-target=axisToggle]", count: 9
     assert_select ".switch__input[data-axis=hero_home]", count: 1
     assert_select ".switch__input[data-axis=bio_home]", count: 1
+    assert_select ".switch__input[data-axis=hero_art]", count: 1
+    assert_select ".switch__input[data-axis=authors]", count: 1
     assert_select ".designer__range[data-axis=hero_scrim]", count: 1
     assert_select ".designer__range[data-axis=corners]", count: 1
     assert_select ".designer__range[data-axis=buttons]", count: 1
@@ -61,7 +63,7 @@ class AdminDesignerTest < ActionDispatch::IntegrationTest
     sections = theme.axes.map { it["section"] }.uniq
     styles = theme.axes.count { it["section"] == "styles" }
     assert_select ".designer__pane", count: 3 + styles + (sections - %w[styles palette]).size
-    assert_select ".designer__order-row", count: 5
+    assert_select ".designer__order-row", count: 6
     assert_select ".designer__row[data-designer-pane-param=preset]", count: 1
 
     # Options carrying a manifest wireframe render as inlined-SVG cards.
@@ -257,7 +259,7 @@ class AdminDesignerTest < ActionDispatch::IntegrationTest
     sign_in_as users(:admin)
 
     post admin_designer_preview_path,
-      params: { design: {}, sections: %w[bio hero books posts newsletter] }, as: :json
+      params: { design: {}, sections: %w[bio hero books posts authors newsletter] }, as: :json
     assert_response :no_content
     get admin_designer_preview_file_path(path: nil)
     assert_operator response.body.index("fk-author-band"), :<, response.body.index("fk-hero "),

@@ -50,6 +50,6 @@ class Admin::AuthorsController < Admin::BaseController
     end
 
     def author_params
-      params.expect(author: [ :name, :bio, :default ])
+      params.expect(author: [ :name, :tagline, :bio, :default ])
     end
 end

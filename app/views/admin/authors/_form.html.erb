@@ -8,6 +8,12 @@
   </div>
 
   <div class="field">
+    <%= f.label :tagline, "Tagline", class: "field__label" %>
+    <%= f.text_field :tagline, class: "field__control", maxlength: 140,
+          placeholder: "One line under the name — e.g. Science fiction & fantasy" %>
+  </div>
+
+  <div class="field">
     <%= f.label :bio, "Bio", class: "field__label" %>
     <%= f.rich_textarea :bio, placeholder: "A short bio…", "aria-label": "Bio" %>
   </div>

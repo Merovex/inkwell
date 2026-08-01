@@ -43,8 +43,8 @@
      site.json (home.sections), defaulting to the standard author-site flow.
      Each name maps to layouts/_partials/sections/<name>.html. Sections with
      a home-visibility axis are skipped when it says no. */}}
-{{ $visibility := dict "hero" "hero_home" "books" "books" "bio" "bio_home" }}
-{{ $sections := $site.home.sections | default (slice "hero" "books" "posts" "bio" "newsletter") }}
+{{ $visibility := dict "hero" "hero_home" "books" "books" "bio" "bio_home" "authors" "authors" }}
+{{ $sections := $site.home.sections | default (slice "hero" "books" "posts" "bio" "authors" "newsletter") }}
 {{ range $sections }}
   {{ $shown := true }}
   {{ with index $visibility . }}

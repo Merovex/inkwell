@@ -28,12 +28,18 @@
        all families, but the browser only downloads the faces actually rendered,
        so unused pairings cost one CSS request and zero font bytes. */}}
   <link href="{{ hugo.Data.theme.fonts_url }}" rel="stylesheet">
-  <link rel="stylesheet" href="{{ site.Home.RelPermalink }}assets/css/site.css">
+  {{/* The stylesheet, split into small modules so HTTP/2/3 fetches them in
+       parallel and caches each independently (edit one, the rest stay warm).
+       FILENAME ORDER IS CASCADE ORDER — <link>s apply in DOM order regardless
+       of which finishes downloading first — so keep the numeric prefixes. */}}
+  {{ range slice "01-reset" "02-fonts" "03-palettes" "04-layout" "05-hero" "06-sections" "07-content" "08-chrome" }}
+  <link rel="stylesheet" href="{{ site.Home.RelPermalink }}assets/css/{{ . }}.css">
+  {{ end }}
   {{/* Custom heading/body override (site.json fonts — the designer's escape
        valve past the pairings). Families load at regular weight only:
        variant axes differ per family and one missing variant 400s the whole
        stylesheet; browsers synthesize bold/italic. The style tag follows
-       site.css so it wins the cascade at equal specificity. */}}
+       the modules so it wins the cascade at equal specificity. */}}
   {{/* Custom palette override (site.json colors — the escape valve past
        the palettes): authors pick hues; Rails assigns the stops (the a11y
        policy) and ships resolved light/dark hex pairs per role. Both modes

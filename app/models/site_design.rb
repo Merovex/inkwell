@@ -19,7 +19,7 @@ class SiteDesign
   class Invalid < StandardError; end
 
   HERO_SOURCES = %w[ author featured custom ].freeze
-  HOME_SECTIONS = %w[ hero books posts bio newsletter ].freeze
+  HOME_SECTIONS = %w[ hero books posts bio authors newsletter ].freeze
   HERO_HTML_TAGS = %w[ p br strong em b i a ul ol li blockquote ].freeze
   HERO_HTML_ATTRIBUTES = %w[ href ].freeze
 

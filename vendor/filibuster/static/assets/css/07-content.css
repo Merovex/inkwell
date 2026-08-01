@@ -1,0 +1,122 @@
+/* filibuster stylesheet, split into parallel-loadable modules.
+   Loaded in filename order by layouts/baseof.html; that order IS the
+   cascade order, so keep the numeric prefixes. See 01-reset.css for the
+   axis vocabulary this sheet keys off. */
+
+/* ---------- Blog ---------- */
+.fk-posts-band { background: var(--bg-alt); border-top: 1px solid var(--line); }
+.fk-post-grid {
+  list-style: none; margin: 2rem 0; display: grid; gap: 1.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+}
+.fk-post-grid article {
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--radius); padding: 1.5rem; height: 100%;
+}
+.fk-post-list { list-style: none; margin: 2rem 0 0; display: grid; gap: 2.5rem; max-width: 50rem; }
+.fk-post-title { font-size: 1.3rem; margin-bottom: 0.25em; }
+.fk-post-title a { text-decoration: none; }
+.fk-post-title a:hover { text-decoration: underline; text-decoration-color: var(--accent); text-underline-offset: 6px; }
+.fk-post-meta { color: var(--ink-muted); font-size: 0.9rem; margin-top: 0; }
+/* Blog presentation (data-blog): the home band's post cards as the card
+   grid (default) or a vertical list. (The old data-cards="shelf" coupling
+   graduated into this axis — the author says list, not the book layout.) */
+html[data-blog="list"] .fk-post-grid { grid-template-columns: 1fr; max-width: 44rem; margin-inline: auto; }
+/* the All-posts button rides the same centered column, so it left-aligns
+   with the list entries */
+html[data-blog="list"] .fk-posts-band .fk-shell > p { max-width: 44rem; margin-inline: auto; }
+html[data-blog="list"] .fk-post-grid article { background: transparent; border: 0; border-left: 3px solid var(--accent); border-radius: 0; padding-block: 0.25rem; }
+
+/* ---------- Author grid (data-authors) ---------- */
+.fk-authors-band { padding-block: 3.5rem; border-top: 1px solid var(--line); }
+.fk-author-grid {
+  list-style: none; margin: 2rem 0 0; display: grid; gap: 1.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+}
+.fk-author-card {
+  display: flex; flex-direction: column; align-items: center; text-align: center;
+  gap: 0.75rem; background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--radius); padding: 2rem 1.5rem; height: 100%;
+}
+.fk-author-portrait {
+  width: 7rem; height: 7rem; object-fit: cover; border-radius: 50%;
+  border: 1px solid var(--line); box-shadow: 0 12px 36px rgb(0 0 0 / 0.3);
+}
+.fk-author-name { font-family: var(--font-display); font-size: 1.25rem; margin: 0; }
+.fk-author-tagline { color: var(--ink-muted); margin: 0; }
+
+/* ---------- Author portrait ---------- */
+.fk-portrait {
+  border-radius: var(--radius); border: 1px solid var(--line);
+  box-shadow: 0 12px 36px rgb(0 0 0 / 0.3);
+}
+.fk-author-band { padding-block: 3.5rem; background: var(--bg-alt); }
+.fk-author-inner {
+  display: grid; grid-template-columns: minmax(0, 16rem) 1fr;
+  gap: 2.5rem; align-items: center;
+}
+html[data-palette="grimoire"] .fk-portrait {
+  outline: 1px solid var(--line); outline-offset: 4px;
+}
+
+/* ---------- Biography axes (data-avatar shape × data-avatar-side ×
+   data-bio-band) — the owner's competitor collapse: the single variable is
+   photo treatment (shaped-and-placed / absent / on a band). ---------- */
+/* no photo: pure text, single column */
+html[data-avatar="none"] .fk-portrait-band { display: none; }
+html[data-avatar="none"] .fk-author-inner { grid-template-columns: 1fr; }
+/* the band behind the section: plain page, the color band (default), or
+   the same band with slanted edges */
+html[data-bio-band="none"] .fk-author-band { background: transparent; }
+html[data-bio-band="angled"] .fk-author-band {
+  clip-path: polygon(0 2.5rem, 100% 0, 100% calc(100% - 2.5rem), 0 100%);
+  padding-block: 6rem;
+}
+
+/* default "frame": theme radius + border + shadow, as declared above */
+html[data-avatar="round"] .fk-portrait,
+html[data-avatar="square"] .fk-portrait,
+html[data-avatar="organic"] .fk-portrait {
+  aspect-ratio: 1; object-fit: cover;
+}
+html[data-avatar="round"] .fk-portrait { border-radius: 50%; }
+html[data-avatar="square"] .fk-portrait { border-radius: 0; }
+html[data-avatar="organic"] .fk-portrait {
+  border-radius: 58% 42% 55% 45% / 48% 55% 45% 52%;
+}
+html[data-avatar-side="right"] .fk-author-inner {
+  grid-template-columns: 1fr minmax(0, 16rem);
+}
+html[data-avatar-side="right"] .fk-portrait-band { order: 2; }
+
+@media (max-width: 48rem) {
+  .fk-author-inner,
+  html[data-avatar-side="right"] .fk-author-inner { grid-template-columns: 1fr; }
+  html[data-avatar-side="right"] .fk-portrait-band { order: 0; }
+}
+
+/* ---------- Book & series pages ---------- */
+.fk-breadcrumb ol { list-style: none; display: flex; flex-wrap: wrap; gap: 0.5rem; font-size: 0.9rem; color: var(--ink-muted); margin: 0 0 2rem; }
+.fk-breadcrumb li + li::before { content: "/"; margin-right: 0.5rem; }
+.fk-book-header {
+  display: grid; grid-template-columns: minmax(0, 300px) 1fr; gap: 2.5rem; align-items: start;
+  margin-bottom: 2.5rem;
+}
+.fk-book-header h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); }
+.fk-book-cover { box-shadow: 0 16px 40px rgb(0 0 0 / 0.3); }
+.fk-prose { max-width: 44rem; }
+.fk-titles { margin-top: 3rem; }
+.fk-title-list { list-style: none; margin: 1.5rem 0 0; display: grid; gap: 1rem; }
+.fk-title-item {
+  display: grid; grid-template-columns: auto 1fr; gap: 1.25rem; align-items: center;
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--radius); padding: 1rem 1.25rem;
+}
+.fk-title-item img { width: 72px; }
+.fk-title-item > div:only-child { grid-column: 1 / -1; }
+.fk-title-name { font-family: var(--font-display); font-size: 1.15rem; display: block; text-decoration: none; }
+a.fk-title-name:hover { text-decoration: underline; text-decoration-color: var(--accent); text-underline-offset: 4px; }
+.fk-title-meta { color: var(--ink-muted); font-size: 0.9rem; display: block; }
+.fk-series-pager { display: flex; justify-content: space-between; gap: 1rem; margin-top: 3rem; font-family: var(--font-display); }
+.fk-series-pager a { text-decoration: none; }
+.fk-series-pager a:hover { text-decoration: underline; text-decoration-color: var(--accent); }

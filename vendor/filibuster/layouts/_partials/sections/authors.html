@@ -1,0 +1,25 @@
+{{/* The author grid (data-authors=yes): every pen name from authors.json as
+     a card — round portrait, name, and the one-line tagline. Presses with
+     several personas (Ben Wilson, Troy Buzby…) use it in place of, or
+     alongside, the single-author bio band. Renders nothing when the account
+     has no authors. */}}
+{{ with hugo.Data.authors.authors }}
+<section class="fk-authors-band" aria-labelledby="authors-title">
+  <div class="fk-shell">
+    <h2 id="authors-title" class="fk-section-title">Authors</h2>
+    <ul class="fk-author-grid">
+      {{ range . }}
+      {{ $a := . }}
+      <li class="fk-author-card">
+        {{ with $a.avatar }}
+        <img class="fk-author-portrait" src="{{ site.Home.RelPermalink }}{{ . }}"
+             alt="Portrait of {{ $a.name }}" loading="lazy">
+        {{ end }}
+        <p class="fk-author-name">{{ $a.name }}</p>
+        {{ with $a.tagline }}<p class="fk-author-tagline">{{ . }}</p>{{ end }}
+      </li>
+      {{ end }}
+    </ul>
+  </div>
+</section>
+{{ end }}
