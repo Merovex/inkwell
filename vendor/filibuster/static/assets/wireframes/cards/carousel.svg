@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 110" role="img" aria-label="carousel layout wireframe">
+  <rect width="200" height="110" fill="#f4f4f2"/>
+  <rect x="0" y="26" width="200" height="58" rx="0" fill="#e7e7e3"/>
+  <rect x="14" y="36" width="34" height="38" rx="2" fill="#8b8b87"/>
+  <rect x="60" y="36" width="34" height="38" rx="2" fill="#8b8b87"/>
+  <rect x="106" y="36" width="34" height="38" rx="2" fill="#8b8b87"/>
+  <rect x="152" y="36" width="34" height="38" rx="2" fill="#8b8b87"/>
+  <rect x="198" y="36" width="34" height="38" rx="2" fill="#c2c2be"/>
+</svg>

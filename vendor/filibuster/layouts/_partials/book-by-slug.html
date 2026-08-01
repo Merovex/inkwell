@@ -1,0 +1,4 @@
+{{/* Resolve a book slug against data/books.json. Returns the book dict via
+     partial return. Usage: $book := partial "book-by-slug.html" "some-slug" */}}
+{{- $book := index (where hugo.Data.books.books "slug" .) 0 -}}
+{{- return $book -}}

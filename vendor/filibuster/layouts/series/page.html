@@ -1,0 +1,83 @@
+{{ define "main" }}
+{{ $author := hugo.Data.author }}
+{{ $installments := slice }}
+{{ range .Params.books }}
+  {{ with partial "book-by-slug.html" . }}{{ $installments = $installments | append . }}{{ end }}
+{{ end }}
+{{ $first := index $installments 0 }}
+{{ $parts := slice }}
+{{ range $installments }}
+  {{ $parts = $parts | append (dict
+      "@type" "Book"
+      "name" .title
+      "position" .position
+      "datePublished" .publication_date
+      "image" (absURL .cover)
+      "author" (dict "@type" "Person" "name" $author.name)) }}
+{{ end }}
+{{ $ld := dict
+    "@context" "https://schema.org"
+    "@type" "BookSeries"
+    "name" .Title
+    "url" .Permalink
+    "description" (plainify .Content | replaceRE `\s+` " " | strings.TrimSpace)
+    "author" (dict "@type" "Person" "name" $author.name)
+    "hasPart" $parts
+}}
+<script type="application/ld+json">{{ $ld | jsonify | safeJS }}</script>
+<article class="fk-book-page">
+  <div class="fk-shell">
+    <nav class="fk-breadcrumb" aria-label="Breadcrumb">
+      <ol>
+        <li><a href="{{ site.Home.RelPermalink }}">Home</a></li>
+        <li><a href="{{ site.Home.RelPermalink }}books/">Books</a></li>
+        <li aria-current="page">{{ .Title }}</li>
+      </ol>
+    </nav>
+
+    <header class="fk-book-header">
+      {{ with $first }}<img class="fk-book-cover" src="{{ site.Home.RelPermalink }}{{ .cover }}" alt="Cover of {{ .title }}">{{ end }}
+      <div>
+        <p class="fk-kicker">A series &middot; {{ len $installments }} {{ if eq (len $installments) 1 }}book{{ else }}books{{ end }}</p>
+        <h1>{{ .Title }}</h1>
+        {{ with $first }}
+        <p class="fk-series-actions">
+          <a class="fk-btn fk-btn-primary" href="{{ site.Home.RelPermalink }}books/{{ .slug }}/">Start with {{ .title }}</a>
+        </p>
+        {{ end }}
+      </div>
+    </header>
+
+    <div class="fk-prose">
+      {{ .Content }}
+    </div>
+
+    <section aria-labelledby="titles-heading" class="fk-titles">
+      <h2 id="titles-heading" class="fk-section-title">Books in this series</h2>
+      <ol class="fk-title-list">
+        {{ range $installments }}
+        <li class="fk-title-item">
+          <img src="{{ site.Home.RelPermalink }}{{ .cover }}" alt="Cover of {{ .title }}" loading="lazy">
+          <div>
+            <a class="fk-title-name" href="{{ site.Home.RelPermalink }}books/{{ .slug }}/">{{ .title }}</a>
+            <span class="fk-title-meta">Book {{ .position }} &middot; {{ substr .publication_date 0 4 }}</span>
+          </div>
+        </li>
+        {{ end }}
+      </ol>
+    </section>
+
+    {{/* Prev/next series, in series.json order. */}}
+    {{ $all := hugo.Data.series.series }}
+    {{ $pos := int .Params.order }}
+    <nav class="fk-series-pager" aria-label="More series">
+      {{ if gt $pos 0 }}{{ $prev := index $all (sub $pos 1) }}
+        <a href="{{ site.Home.RelPermalink }}series/{{ $prev.slug }}/" rel="prev">&larr; {{ $prev.title }}</a>
+      {{ end }}
+      {{ if lt (add $pos 1) (len $all) }}{{ $next := index $all (add $pos 1) }}
+        <a href="{{ site.Home.RelPermalink }}series/{{ $next.slug }}/" rel="next">{{ $next.title }} &rarr;</a>
+      {{ end }}
+    </nav>
+  </div>
+</article>
+{{ end }}

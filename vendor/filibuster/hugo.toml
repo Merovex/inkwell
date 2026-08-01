@@ -1,0 +1,20 @@
+# Theme module config. Themes mount only layouts/static/data/assets by
+# default; declaring mounts explicitly lets the theme also ship content
+# adapters (content/**/_content.gotmpl), which materialize pages from the
+# workspace's data/*.json. Declaring any mount drops the defaults, so every
+# directory the theme uses is listed.
+[module]
+  [module.hugoVersion]
+    min = "0.126.0"
+  [[module.mounts]]
+    source = "layouts"
+    target = "layouts"
+  [[module.mounts]]
+    source = "content"
+    target = "content"
+  [[module.mounts]]
+    source = "static"
+    target = "static"
+  [[module.mounts]]
+    source = "data"
+    target = "data"

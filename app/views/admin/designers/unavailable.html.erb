@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Designer unavailable — Inkwell</title>
+  <style>
+    body { margin: 0; min-height: 100vh; display: grid; place-items: center;
+           font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+           background: #f6f6f4; color: #1c1c1a; }
+    .panel { max-width: 30rem; padding: 2.5rem; text-align: center; }
+    h1 { font-size: 1.4rem; margin: 0 0 .75rem; }
+    p { margin: 0 0 1rem; line-height: 1.5; color: #55554f; }
+    a { color: #1c1c1a; font-weight: 600; }
+  </style>
+</head>
+<body>
+  <main class="panel">
+    <h1>The site designer isn’t available right now</h1>
+    <p>Its theme couldn’t be loaded on this server. This is a configuration
+       issue on our end, not anything you did — your site and its content are
+       unaffected.</p>
+    <p><a href="<%= admin_root_path %>">← Back to admin</a></p>
+  </main>
+</body>
+</html>

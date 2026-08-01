@@ -1,0 +1,1104 @@
+/* =========================================================
+   filibuster — author-site permutation engine.
+   Independent design axes, set as data-* attributes on <html>.
+   The axis vocabulary lives in data/theme.json (single source, also read by
+   the SiteDesigner and the Rails exporter's validation); every rule below
+   that keys off html[data-*] is one of the axis-conditional rules:
+     data-palette      15 dual-mode palettes (see data/theme.json)
+     data-mode         light | dark | auto
+     data-books        yes | no (no CSS — home.html omits the section)
+     data-buttons      square | crisp | soft | round (.fk-btn radius)
+     data-cards        spread | shelf | grid | panel | carousel | offset | fan
+     data-catalog      series | books
+     data-alternate    yes | no (row layouts flip even rows)
+     data-corners      square | crisp | soft | round (cover image radius)
+     data-hero         none | centered | right | many (structure only)
+     data-hero-book    straight | 3d (featured-cover rendering)
+     data-hero-many    fan | staggered (many-books cover arrangement)
+     data-hero-bg      page | gradient | scrim | cover | banner
+     data-hero-scrim   0..100 by tens (black veil opacity on cover/banner)
+     data-font         21 genre pairings (13 per verkilo.com/typography + 8 coverage additions)
+     data-avatar       none | frame | round | square | organic
+     data-avatar-side  left | right
+     data-bio-band     none | stripe | angled (band behind the bio)
+     data-blog         grid | list (home post cards)
+     data-newsletter   photo | quiet | envelope | plane | megaphone | mailbox
+     data-nav          split | centered | grand | bare
+   ========================================================= */
+
+/* ---------- Reset ---------- */
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; }
+img { max-width: 100%; height: auto; display: block; }
+ul, ol { padding: 0; }
+
+/* ---------- Font pairings ---------- */
+:root {
+  /* epic (default): Cinzel — inscriptional Roman caps, reads epic —
+     over EB Garamond, the classical roomy SF&F body face. */
+  --font-display: 'Cinzel', 'Times New Roman', serif;
+  --font-body: 'EB Garamond', Georgia, serif;
+  --display-tracking: 0.02em;
+  --display-transform: none;
+  --display-weight: 600;
+}
+html[data-font="classical"] {
+  /* Marcellus + Vollkorn: quieter classical option, warmer color on the page. */
+  --font-display: 'Marcellus', 'Times New Roman', serif;
+  --font-body: 'Vollkorn', Georgia, serif;
+  --display-tracking: 0.04em;
+  --display-weight: 400;
+}
+html[data-font="inscribed"] {
+  /* Spectral SC + Cardo: small-caps display over the roomiest classical body. */
+  --font-display: 'Spectral SC', Georgia, serif;
+  --font-body: 'Cardo', Georgia, serif;
+  --display-tracking: 0.05em;
+  --display-weight: 600;
+}
+
+/* — Crime / Mystery / Thriller: tight and invisible; condensed sans display
+     against a serif body is the category standard. — */
+html[data-font="thriller"] {
+  --font-display: 'Barlow Condensed', 'Arial Narrow', sans-serif;
+  --font-body: 'Source Serif 4', Georgia, serif;
+  --display-tracking: 0.05em;
+  --display-transform: uppercase;
+  --display-weight: 600;
+}
+html[data-font="noir"] {
+  --font-display: 'Oswald', 'Arial Narrow', sans-serif;
+  --font-body: 'Spectral', Georgia, serif;
+  --display-tracking: 0.06em;
+  --display-transform: uppercase;
+  --display-weight: 600;
+}
+html[data-font="procedural"] {
+  --font-display: 'Archivo', Arial, sans-serif;
+  --font-body: 'Faustina', Georgia, serif;
+  --display-tracking: 0.01em;
+  --display-weight: 700;
+}
+
+/* — Romance: warm and high contrast; the page should read soft. — */
+html[data-font="romance"] {
+  --font-display: 'Cormorant Garamond', Georgia, serif;
+  --font-body: 'Crimson Pro', Georgia, serif;
+  --display-tracking: 0.02em;
+  --display-weight: 600;
+}
+html[data-font="commercial"] {
+  --font-display: 'Playfair Display', Georgia, serif;
+  --font-body: 'Alegreya', Georgia, serif;
+  --display-tracking: 0.01em;
+  --display-weight: 600;
+}
+
+/* — Young Adult: larger x-height, open counters, generous leading. — */
+html[data-font="ya-soft"] {
+  --font-display: 'Fraunces', Georgia, serif;
+  --font-body: 'Literata', Georgia, serif;
+  --display-tracking: 0;
+  --display-weight: 600;
+}
+html[data-font="ya-modern"] {
+  --font-display: 'Outfit', Arial, sans-serif;
+  --font-body: 'Newsreader', Georgia, serif;
+  --display-tracking: 0.01em;
+  --display-weight: 600;
+}
+html[data-font="ya-grotesque"] {
+  --font-display: 'Bricolage Grotesque', Arial, sans-serif;
+  --font-body: 'Andada Pro', Georgia, serif;
+  --display-tracking: 0;
+  --display-weight: 600;
+}
+
+/* — Horror: darker color on the page, sharper serifs, slightly cramped. — */
+html[data-font="gothic"] {
+  --font-display: 'IM Fell English SC', Georgia, serif;
+  --font-body: 'Frank Ruhl Libre', Georgia, serif;
+  --display-tracking: 0.03em;
+  --display-weight: 400;
+}
+html[data-font="clinical"] {
+  --font-display: 'Bodoni Moda', 'Didot', serif;
+  --font-body: 'Manuale', Georgia, serif;
+  --display-tracking: 0.04em;
+  --display-transform: uppercase;
+  --display-weight: 600;
+}
+
+/* — Sci-fi beyond the clinic: chrome-edged geometry for space opera. — */
+html[data-font="starfall"] {
+  --font-display: 'Exo 2', 'Arial Narrow', sans-serif;
+  --font-body: 'IBM Plex Serif', Georgia, serif;
+  --display-tracking: 0.05em;
+  --display-transform: uppercase;
+  --display-weight: 800;
+}
+
+/* — Modern horror: stark compressed caps, classic readable text. — */
+html[data-font="dread"] {
+  --font-display: 'Anton', 'Arial Narrow', sans-serif;
+  --font-body: 'Lora', Georgia, serif;
+  --display-tracking: 0.08em;
+  --display-transform: uppercase;
+  --display-weight: 400;
+}
+
+/* — Westerns: wood-type ornament over a sturdy slab text face. — */
+html[data-font="frontier"] {
+  --font-display: 'Rye', Georgia, serif;
+  --font-body: 'Bitter', Georgia, serif;
+  --display-tracking: 0.02em;
+  --display-weight: 400;
+}
+
+/* — Cozy mystery / cottagecore: brush warmth over a friendly serif. — */
+html[data-font="hearth"] {
+  --font-display: 'Berkshire Swash', Georgia, serif;
+  --font-body: 'Gelasio', Georgia, serif;
+  --display-tracking: 0.01em;
+  --display-weight: 400;
+}
+
+/* — Children's / middle grade: round and sturdy, easy-reading text. — */
+html[data-font="storybook"] {
+  --font-display: 'Baloo 2', Verdana, sans-serif;
+  --font-body: 'Andika', Verdana, sans-serif;
+  --display-tracking: 0.01em;
+  --display-weight: 700;
+}
+
+/* — Memoir / faith: plainspoken serif display, gentle humanist text. — */
+html[data-font="testament"] {
+  --font-display: 'DM Serif Text', Georgia, serif;
+  --font-body: 'Mulish', Verdana, sans-serif;
+  --display-tracking: 0.01em;
+  --display-weight: 400;
+}
+
+/* — Big-idea nonfiction: confident grotesk over a neutral text face. — */
+html[data-font="ledger"] {
+  --font-display: 'Space Grotesk', Arial, sans-serif;
+  --font-body: 'Inter', Arial, sans-serif;
+  --display-tracking: 0.01em;
+  --display-weight: 700;
+}
+
+/* — Poetry / literary: hairline elegance over a quiet modern serif. — */
+html[data-font="verse"] {
+  --font-display: 'Italiana', 'Didot', serif;
+  --font-body: 'Petrona', Georgia, serif;
+  --display-tracking: 0.06em;
+  --display-weight: 400;
+}
+
+/* ---------- Palettes (theme tokens + mood chrome) ----------
+   Every palette is dual-mode: each color token is a designed light-dark()
+   pair resolved by color-scheme, which the mode axis (data-mode) sets —
+   light / dark pin a side, auto follows the visitor's OS. Accents shift
+   lightness AGAINST the background between modes; backgrounds keep the
+   palette's hue identity at opposite lightness; never swap bg and ink. */
+html[data-mode="light"] { color-scheme: light; }
+html[data-mode="dark"] { color-scheme: dark; }
+html[data-mode="auto"] { color-scheme: light dark; }
+
+/* Cover-corner rounding (data-corners): the author's slider, four stops on
+   the Open Props radius scale (0, radius-1, radius-2, radius-3). Governs
+   book imagery everywhere, overriding the palette's chrome radius. */
+html[data-corners="square"] { --cover-radius: 0; }
+html[data-corners="crisp"]  { --cover-radius: 2px; }
+html[data-corners="soft"]   { --cover-radius: 5px; }
+html[data-corners="round"]  { --cover-radius: 1rem; }
+.fk-series-cover img, .fk-cover-grid img, .fk-book-cover,
+.fk-title-item img, .fk-hero-art img { border-radius: var(--cover-radius, var(--radius)); }
+
+/* Button rounding (data-buttons): the same four-stop slider for .fk-btn,
+   overriding the palette's chrome radius. */
+html[data-buttons="square"] { --btn-radius: 0; }
+html[data-buttons="crisp"]  { --btn-radius: 2px; }
+html[data-buttons="soft"]   { --btn-radius: 5px; }
+html[data-buttons="round"]  { --btn-radius: 1rem; }
+
+/* nebula: space opera: dark, immersive, gold on deep space (light: daylight observatory) */
+:root {
+  --bg: light-dark(#f5f4ef, #0b0f1d);
+  --bg-alt: light-dark(#eae9e5, #111731);
+  --surface: light-dark(#fbfbf9, #161d38);
+  --ink: light-dark(#1c2030, #ece9df);
+  --ink-muted: light-dark(#595b65, #b3b0a4);
+  --accent: light-dark(#8a6a1f, #d9a94a);
+  --accent-ink: light-dark(#f6f3ed, #14100a);
+  --line: light-dark(#d2d2d0, #2a3357);
+  --radius: 0.75rem;
+  --hero-glow: light-dark(#eae9e5, #3c3428);
+  --hero-glow2: light-dark(#eae9e5, #2c2824);
+  --hero-bg: radial-gradient(1200px 600px at 80% -10%, var(--hero-glow) 0%, transparent 60%),
+             radial-gradient(800px 500px at 10% 110%, var(--hero-glow2) 0%, transparent 55%),
+             var(--bg);
+}
+
+/* manuscript: historical: warm cream and oxblood (dark: midnight scriptorium) */
+html[data-palette="manuscript"] {
+  --bg: light-dark(#f7f1e6, #221a14);
+  --bg-alt: light-dark(#efe6d5, #2c241e);
+  --surface: light-dark(#fffdf8, #302822);
+  --ink: light-dark(#2b241c, #f0e8da);
+  --ink-muted: light-dark(#4f4237, #b6aea3);
+  --accent: light-dark(#7c2f2a, #c05a50);
+  --accent-ink: light-dark(#fdf9f2, #261210);
+  --line: light-dark(#d9cdb8, #4b433c);
+  --radius: 0.25rem;
+  --hero-glow: light-dark(#efe6d5, #482922);
+  --hero-bg: var(--bg);
+}
+
+/* mission: modern/professional: cool paper and worker blue (dark: navy slate) */
+html[data-palette="mission"] {
+  --bg: light-dark(#f3f5f8, #10182a);
+  --bg-alt: light-dark(#e8ecf2, #1b2334);
+  --surface: light-dark(#ffffff, #1f2738);
+  --ink: light-dark(#121a26, #e8ecf4);
+  --ink-muted: light-dark(#3d4a5d, #acb1bb);
+  --accent: light-dark(#16459c, #6f96e8);
+  --accent-ink: light-dark(#ffffff, #161e2e);
+  --line: light-dark(#ccd5e1, #3b4252);
+  --radius: 1rem;
+  --hero-glow: light-dark(#e8ecf2, #273658);
+  --hero-bg: linear-gradient(180deg, var(--surface) 0%, var(--bg) 100%);
+}
+
+/* pulp: crime/thriller: stark near-black, pulp red-orange, hard edges (light: newsprint) */
+html[data-palette="pulp"] {
+  --bg: light-dark(#f6f4ef, #111113);
+  --bg-alt: light-dark(#ebe9e5, #19191c);
+  --surface: light-dark(#fbfbf9, #1f1f23);
+  --ink: light-dark(#1b1b1e, #f4f2ec);
+  --ink-muted: light-dark(#585859, #b8b5ac);
+  --accent: light-dark(#b3401f, #ff8b6e);
+  --accent-ink: light-dark(#f9f0ed, #23100a);
+  --line: light-dark(#d3d1ce, #3a3a41);
+  --radius: 0;
+  --hero-glow: light-dark(#ebe9e5, #4a2e29);
+  --hero-bg: linear-gradient(180deg, var(--surface) 0%, var(--bg) 100%);
+}
+
+/* grimoire: dark fantasy: deep forest green, antique brass (light: herbarium) */
+html[data-palette="grimoire"] {
+  --bg: light-dark(#f1f3e9, #101711);
+  --bg-alt: light-dark(#e6e9df, #16211a);
+  --surface: light-dark(#f9faf6, #1b2a20);
+  --ink: light-dark(#1e2a20, #eef0e4);
+  --ink-muted: light-dark(#596258, #b7c2ab);
+  --accent: light-dark(#7c6423, #d9c27a);
+  --accent-ink: light-dark(#f5f3ed, #171207);
+  --line: light-dark(#cfd3c9, #33463a);
+  --radius: 0.25rem;
+  --hero-glow: light-dark(#e6e9df, #40402a);
+  --hero-bg: radial-gradient(900px 500px at 50% -20%, var(--hero-glow) 0%, transparent 60%), var(--bg);
+}
+
+/* pine: the account's own literary look — pine teal over warm mist neutrals (ported from Inkwell's tokens; dark surfaces tint toward pine) */
+html[data-palette="pine"] {
+  --bg: light-dark(#f4f3ef, #1b1a17);
+  --bg-alt: light-dark(#eae9e5, #191d1c);
+  --surface: light-dark(#fbfaf9, #1e2b28);
+  --ink: light-dark(#26251f, #e8e7e1);
+  --ink-muted: light-dark(#605f59, #afaea8);
+  --accent: light-dark(#3d6e65, #a9bcb6);
+  --accent-ink: light-dark(#eff3f3, #222624);
+  --line: light-dark(#d3d2ce, #44433f);
+  --radius: 0.5rem;
+  --hero-glow: light-dark(#eae9e5, #3d413d);
+  --hero-bg: linear-gradient(180deg, var(--surface) 0%, var(--bg) 100%);
+}
+
+/* blush: romance: warm blush paper, raspberry (dark: rosewood) */
+html[data-palette="blush"] {
+  --bg: light-dark(#f7edeb, #241318);
+  --bg-alt: light-dark(#ede3e1, #2e1e23);
+  --surface: light-dark(#fcf8f7, #332227);
+  --ink: light-dark(#33211f, #f6ecee);
+  --ink-muted: light-dark(#6a5a58, #bbafb2);
+  --accent: light-dark(#b23a63, #e07a9a);
+  --accent-ink: light-dark(#f9eff3, #2d181f);
+  --line: light-dark(#d8ccca, #4e3e43);
+  --radius: 0.75rem;
+  --hero-glow: light-dark(#ede3e1, #512c37);
+  --hero-bg: linear-gradient(180deg, var(--surface) 0%, var(--bg) 100%);
+}
+
+/* boudoir: moody romance: wine dark, rose-gold (light: parlor cream) */
+html[data-palette="boudoir"] {
+  --bg: light-dark(#f6eee9, #2a1420);
+  --bg-alt: light-dark(#ece4df, #341f2a);
+  --surface: light-dark(#fbf8f6, #38232e);
+  --ink: light-dark(#33201c, #f5ece9);
+  --ink-muted: light-dark(#6a5a55, #bcb0b1);
+  --accent: light-dark(#9c4a3c, #d98a7a);
+  --accent-ink: light-dark(#f7f1ef, #2b1c18);
+  --line: light-dark(#d7cdc8, #533f48);
+  --radius: 0.5rem;
+  --hero-glow: light-dark(#ece4df, #543036);
+  --hero-bg: radial-gradient(900px 500px at 50% -20%, var(--hero-glow) 0%, transparent 60%), var(--bg);
+}
+
+/* tide: contemporary/beach: sea-glass teal, tinted slate ink */
+html[data-palette="tide"] {
+  --bg: light-dark(#fbfaf7, #0d1e22);
+  --bg-alt: light-dark(#f0f0ee, #18282c);
+  --surface: light-dark(#fdfdfc, #1c2d30);
+  --ink: light-dark(#22384a, #e9f0ee);
+  --ink-muted: light-dark(#5f6e7a, #abb5b5);
+  --accent: light-dark(#2f8f83, #5fbfae);
+  --accent-ink: light-dark(#eef6f5, #132623);
+  --line: light-dark(#d8dbdb, #39484b);
+  --radius: 0.75rem;
+  --hero-glow: light-dark(#f0f0ee, #214544);
+  --hero-bg: linear-gradient(180deg, var(--surface) 0%, var(--bg) 100%);
+}
+
+/* rust: dystopian/industrial: scorched char, rusted steel */
+html[data-palette="rust"] {
+  --bg: light-dark(#f0ebe3, #17130f);
+  --bg-alt: light-dark(#e6e1d9, #221e19);
+  --surface: light-dark(#f9f7f4, #26221d);
+  --ink: light-dark(#241d17, #ece5dc);
+  --ink-muted: light-dark(#5d5750, #b0aaa3);
+  --accent: light-dark(#8c3f1c, #b3552a);
+  --accent-ink: light-dark(#f6f0ed, #241108);
+  --line: light-dark(#cfcac2, #423d38);
+  --radius: 0.25rem;
+  --hero-glow: light-dark(#e6e1d9, #3c2315);
+  --hero-bg: radial-gradient(900px 500px at 50% -20%, var(--hero-glow) 0%, transparent 60%), var(--bg);
+}
+
+/* meadow: cozy: sage cream and clover */
+html[data-palette="meadow"] {
+  --bg: light-dark(#f4f6ee, #151d14);
+  --bg-alt: light-dark(#eaece4, #20281f);
+  --surface: light-dark(#fbfbf8, #242c23);
+  --ink: light-dark(#26301f, #eef2e8);
+  --ink-muted: light-dark(#606759, #b1b6ad);
+  --accent: light-dark(#3f7d44, #7fb884);
+  --accent-ink: light-dark(#f0f5f0, #19251a);
+  --line: light-dark(#d3d6cd, #40483e);
+  --radius: 0.75rem;
+  --hero-glow: light-dark(#eaece4, #2e422f);
+  --hero-bg: linear-gradient(180deg, var(--surface) 0%, var(--bg) 100%);
+}
+
+/* neon: YA/urban fantasy: indigo night, electric violet */
+html[data-palette="neon"] {
+  --bg: light-dark(#f6f5fa, #12101f);
+  --bg-alt: light-dark(#ebeaf0, #1d1b2a);
+  --surface: light-dark(#fbfbfd, #22202e);
+  --ink: light-dark(#1d1730, #f0eefa);
+  --ink-muted: light-dark(#5a5569, #b2b0bd);
+  --accent: light-dark(#5c34b8, #9d7af0);
+  --accent-ink: light-dark(#f2eff9, #1f1830);
+  --line: light-dark(#d3d1da, #3e3c4b);
+  --radius: 0.9rem;
+  --hero-glow: light-dark(#ebeaf0, #332951);
+  --hero-bg: radial-gradient(900px 500px at 50% -20%, var(--hero-glow) 0%, transparent 60%), var(--bg);
+}
+
+/* bone: stark horror: bone field, black accent — two-color in both modes */
+html[data-palette="bone"] {
+  --bg: light-dark(#efece4, #131110);
+  --bg-alt: light-dark(#e4e2da, #1e1c1b);
+  --surface: light-dark(#f9f7f4, #22201f);
+  --ink: light-dark(#1c1a17, #efece4);
+  --ink-muted: light-dark(#575550, #b1afa9);
+  --accent: light-dark(#141210, #e8e4d8);
+  --accent-ink: light-dark(#ececec, #2e2e2b);
+  --line: light-dark(#cdcac3, #3f3d3a);
+  --radius: 0.25rem;
+  --hero-glow: light-dark(#e4e2da, #464440);
+  --hero-bg: var(--bg);
+}
+
+/* lumen: clinical sci-fi: cold white, precise cyan */
+html[data-palette="lumen"] {
+  --bg: light-dark(#f8fafb, #0a1418);
+  --bg-alt: light-dark(#edeff1, #151f23);
+  --surface: light-dark(#fcfdfd, #192327);
+  --ink: light-dark(#16232a, #e6f0f3);
+  --ink-muted: light-dark(#555f65, #a8b2b6);
+  --accent: light-dark(#0e7490, #4dc3dd);
+  --accent-ink: light-dark(#ecf4f6, #0f272c);
+  --line: light-dark(#d4d8da, #364044);
+  --radius: 1rem;
+  --hero-glow: light-dark(#edeff1, #1a3e47);
+  --hero-bg: linear-gradient(180deg, var(--surface) 0%, var(--bg) 100%);
+}
+
+/* sandstone: western: sun-bleached sand, terracotta */
+html[data-palette="sandstone"] {
+  --bg: light-dark(#f2e9da, #1e1610);
+  --bg-alt: light-dark(#e9e0d1, #28201a);
+  --surface: light-dark(#faf6f0, #2d251e);
+  --ink: light-dark(#382b20, #f0e6d8);
+  --ink-muted: light-dark(#6c6054, #b5aca0);
+  --accent: light-dark(#a9603d, #cf8455);
+  --accent-ink: light-dark(#f8f2ef, #291a11);
+  --line: light-dark(#d4cbbc, #484038);
+  --radius: 0.25rem;
+  --hero-glow: light-dark(#e9e0d1, #483021);
+  --hero-bg: radial-gradient(900px 500px at 50% -20%, var(--hero-glow) 0%, transparent 60%), var(--bg);
+}
+
+/* ---------- Base ---------- */
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { transition: none !important; animation: none !important; }
+}
+body {
+  font-family: var(--font-body);
+  font-size: 1.125rem;
+  line-height: 1.65;
+  color: var(--ink);
+  background: var(--bg);
+}
+h1, h2, h3, .fk-brand {
+  font-family: var(--font-display);
+  font-weight: var(--display-weight);
+  letter-spacing: var(--display-tracking);
+  text-transform: var(--display-transform, none);
+  line-height: 1.15;
+  margin: 0 0 0.5em;
+}
+a { color: inherit; }
+:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+.fk-shell { max-width: 72rem; margin-inline: auto; padding-inline: 1.25rem; }
+
+.fk-visually-hidden {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+.fk-skip {
+  position: absolute; left: 1rem; top: -4rem; z-index: 100;
+  background: var(--accent); color: var(--accent-ink);
+  padding: 0.6rem 1rem; border-radius: 0 0 0.5rem 0.5rem;
+  font-family: var(--font-display); text-decoration: none;
+  transition: top 150ms ease;
+}
+.fk-skip:focus { top: 0; }
+
+/* ---------- Buttons ---------- */
+.fk-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-height: 44px; /* WCAG 2.5.5 target size */
+  padding: 0.65rem 1.35rem; border-radius: var(--btn-radius, var(--radius));
+  font-family: var(--font-display); font-weight: var(--display-weight);
+  letter-spacing: var(--display-tracking); text-transform: var(--display-transform, none);
+  text-decoration: none; font-size: 1rem; border: 2px solid transparent;
+}
+.fk-btn-primary { background: var(--accent); color: var(--accent-ink); }
+.fk-btn-primary:hover { filter: brightness(1.1); }
+.fk-btn-ghost { border-color: var(--accent); color: var(--ink); }
+.fk-btn-ghost:hover { background: var(--accent); color: var(--accent-ink); }
+
+.fk-kicker {
+  font-family: var(--font-display); font-size: 0.85rem; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--ink-muted); margin: 0 0 0.75rem;
+}
+
+/* ---------- Header / nav ---------- */
+.fk-header { background: var(--bg); border-bottom: 1px solid var(--line); }
+.fk-header-inner {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 1rem;
+  justify-content: space-between; padding-block: 1rem;
+}
+.fk-brand {
+  font-size: 1.4rem; text-decoration: none; display: flex; align-items: baseline; gap: 0.5rem;
+}
+.fk-brand-sub {
+  font-size: 0.75rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--ink-muted);
+}
+/* Custom logo: fills the header band; `grand` gives it the marquee size. */
+.fk-brand-logo { display: block; max-height: 3rem; max-width: 60vw; width: auto; }
+html[data-nav="grand"] .fk-brand-logo { max-height: 5.5rem; }
+/* Logo + visible title lockup (nav.title_as_alt false): the name sits right
+   of the logo in split, below it in the centered variants, always in the
+   display face. */
+.fk-brand-name { font-family: var(--font-display); }
+.fk-brand-lockup { align-items: center; }
+html[data-nav="centered"] .fk-brand-lockup,
+html[data-nav="grand"] .fk-brand-lockup { flex-direction: column; gap: 0.35rem; }
+.fk-nav {
+  display: flex; flex-wrap: wrap; gap: 0.25rem 1.4rem; list-style: none; margin: 0;
+  font-family: var(--font-display); font-size: 1rem;
+}
+.fk-nav a { text-decoration: none; display: inline-block; padding-block: 0.6rem; }
+.fk-nav a:hover, .fk-nav a[aria-current="page"] {
+  text-decoration: underline; text-underline-offset: 6px; text-decoration-color: var(--accent);
+  text-decoration-thickness: 2px;
+}
+.fk-nav-cta {
+  color: var(--accent); font-weight: 700;
+}
+
+/* ---------- Header variants (data-nav axis; default "split") ---------- */
+/* The brand is the home link, so the explicit Home item only appears when
+   `bare` hides the brand. */
+.fk-nav-home { display: none; }
+html[data-nav="centered"] .fk-header-inner,
+html[data-nav="grand"] .fk-header-inner {
+  flex-direction: column; justify-content: center; gap: 0.25rem; padding-block: 1.25rem;
+}
+html[data-nav="centered"] .fk-nav,
+html[data-nav="grand"] .fk-nav,
+html[data-nav="bare"] .fk-nav { justify-content: center; }
+html[data-nav="grand"] .fk-brand { font-size: clamp(1.9rem, 4vw, 2.8rem); }
+html[data-nav="bare"] .fk-brand { display: none; }
+html[data-nav="bare"] .fk-nav-home { display: block; }
+html[data-nav="bare"] .fk-header-inner { justify-content: center; }
+
+/* ---------- Hero ---------- */
+.fk-hero {
+  position: relative; overflow: hidden;
+  background: var(--hero-bg);
+}
+.fk-hero-inner {
+  position: relative;
+  display: grid; gap: 2.5rem; align-items: center; padding-block: 4rem;
+  grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+}
+.fk-hero h1 { font-size: clamp(2rem, 4.5vw, 3.4rem); }
+.fk-hero-lede { font-size: 1.25rem; color: var(--ink-muted); max-width: 34em; }
+/* rich custom words: paragraph rhythm inside the lede block */
+.fk-hero-lede p { margin: 0 0 0.75em; }
+.fk-hero-lede p:last-child { margin-bottom: 0; }
+.fk-hero-lede a { text-decoration-color: var(--accent); text-underline-offset: 3px; }
+.fk-hero-actions { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-block: 1.5rem; }
+.fk-hero-art img { box-shadow: 0 20px 60px rgb(0 0 0 / 0.35); }
+
+/* Superset hero markup, three ORTHOGONAL axes (any combination composes):
+     data-hero       the structure — split | centered | duet | fan | name
+     data-hero-book  how the featured cover renders — straight | 3d
+     data-hero-bg    what sits behind the hero — page | scrim | cover
+   Everything variant-specific is hidden by default (split/straight/page).
+   Marquee name is the one exception: it keeps its identity author-photo
+   backdrop and ignores data-hero-bg. */
+.fk-hero-bg,
+.fk-hero-bg-self, .fk-hero-bg-banner,
+.fk-hero-art-fan,
+.fk-hero-kicker-role { display: none; }
+/* author copy-source: the name moved into the headline, so the site name
+   stands alone in the kicker (the template dropped the author span). */
+.fk-kicker-solo { display: inline; }
+.fk-hero-bg { position: absolute; inset: 0; }
+.fk-hero-bg img { width: 100%; height: 100%; object-fit: cover; }
+.fk-hero-bg::after { content: ""; position: absolute; inset: 0; }
+.fk-hero-art-cover img {
+  max-width: 20rem; margin-inline: auto;
+  box-shadow: 0 20px 60px rgb(0 0 0 / 0.35);
+}
+.fk-hero-art-fan { list-style: none; margin: 0; }
+
+/* --- data-hero-bg: the backdrop, for every structure except name --- */
+html[data-hero-bg="gradient"] .fk-hero-bg,
+html[data-hero-bg="scrim"] .fk-hero-bg,
+html[data-hero-bg="cover"] .fk-hero-bg,
+html[data-hero-bg="banner"] .fk-hero-bg { display: block; }
+/* gradient: two levels of ONE hue — the accent's — quiet at the copy
+   corner, deep at the far one. Both stops mix accent into the (near-
+   neutral) ground, so the hue is the accent's at two strengths and the
+   copy side stays ink-legible in both modes. */
+html[data-hero-bg="gradient"] .fk-hero-bg::after {
+  background: linear-gradient(160deg,
+    color-mix(in oklab, var(--accent) 16%, var(--bg)) 0%,
+    color-mix(in oklab, var(--accent) 60%, var(--bg)) 110%);
+}
+/* scrim: a wash drawn from the palette's own ground tokens */
+html[data-hero-bg="scrim"] .fk-hero-bg::after {
+  background: linear-gradient(160deg,
+    var(--hero-glow) 0%,
+    color-mix(in srgb, var(--bg) 40%, transparent) 100%);
+}
+/* banner: the author's own uploaded image under the black scrim */
+html[data-hero-bg="banner"] .fk-hero-bg-banner { display: block; }
+/* cover: the featured cover's own art, blurred, under a MODE-INDEPENDENT
+   dark wash — the copy runs white over it */
+html[data-hero-bg="cover"] .fk-hero-bg-self {
+  display: block; filter: blur(14px) saturate(1.2); transform: scale(1.25);
+}
+/* Image-backed backdrops share the SCRIM SLIDER (data-hero-scrim,
+   0-100%): a flat black veil whose opacity the author sets; the
+   auto-contrast ground follows each stop (image approximated as gray). */
+html[data-hero-bg="cover"] .fk-hero-bg::after,
+html[data-hero-bg="banner"] .fk-hero-bg::after {
+  background: rgb(0 0 0 / var(--hero-scrim, 0.5));
+}
+html[data-hero-bg="cover"] .fk-hero-copy { color: #f5f4f0; }
+html[data-hero-bg="cover"] .fk-hero-lede { color: rgb(245 244 240 / 0.88); }
+html[data-hero-bg="cover"] .fk-hero .fk-kicker { color: rgb(245 244 240 / 0.75); }
+html[data-hero-bg="cover"] .fk-hero .fk-btn-ghost:not(:hover) { color: #f5f4f0; }
+
+
+/* --- the hero ground: each backdrop declares its effective color at the
+       copy corner, and the auto-contrast rule (end of the hero section)
+       derives the copy color from it. CSS can't read image pixels — but
+       text never sits on a raw image, it sits on a veil, and the veil IS
+       the ground. Image-backed grounds approximate the unknown art as
+       gray under their veil's mix. --- */
+html { --hero-ground: var(--bg); }
+html[data-hero-bg="gradient"] { --hero-ground: color-mix(in oklab, var(--accent) 16%, var(--bg)); }
+html[data-hero-bg="scrim"] { --hero-ground: var(--hero-glow); }
+html[data-hero-bg="cover"],
+html[data-hero-bg="banner"] { --hero-ground: var(--hero-scrim-ground, oklch(0.3 0 0)); }
+html[data-hero-scrim="0"] { --hero-scrim: 0; --hero-scrim-ground: oklch(0.60 0 0); }
+html[data-hero-scrim="10"] { --hero-scrim: 0.1; --hero-scrim-ground: oklch(0.54 0 0); }
+html[data-hero-scrim="20"] { --hero-scrim: 0.2; --hero-scrim-ground: oklch(0.48 0 0); }
+html[data-hero-scrim="30"] { --hero-scrim: 0.3; --hero-scrim-ground: oklch(0.42 0 0); }
+html[data-hero-scrim="40"] { --hero-scrim: 0.4; --hero-scrim-ground: oklch(0.36 0 0); }
+html[data-hero-scrim="50"] { --hero-scrim: 0.5; --hero-scrim-ground: oklch(0.30 0 0); }
+html[data-hero-scrim="60"] { --hero-scrim: 0.6; --hero-scrim-ground: oklch(0.24 0 0); }
+html[data-hero-scrim="70"] { --hero-scrim: 0.7; --hero-scrim-ground: oklch(0.18 0 0); }
+html[data-hero-scrim="80"] { --hero-scrim: 0.8; --hero-scrim-ground: oklch(0.12 0 0); }
+html[data-hero-scrim="90"] { --hero-scrim: 0.9; --hero-scrim-ground: oklch(0.06 0 0); }
+html[data-hero-scrim="100"] { --hero-scrim: 1; --hero-scrim-ground: oklch(0.05 0 0); }
+
+
+/* --- data-hero-book: how the one-book structures render the cover --- */
+/* 3d: the featured cover extruded into a standing paperback — CSS only:
+   preserve-3d with two pseudo-faces (page block right, back cover behind).
+   No filter on the book: filters flatten transform-style. (Fan and name
+   hide the single cover entirely, so the axis is inert there.) */
+html[data-hero-book="3d"] .fk-hero-art-cover {
+  --book-depth: 32px;
+  position: relative;
+  width: fit-content;
+  margin-inline: auto;
+  transform-style: preserve-3d;
+  /* perspective() must ride the transform itself: the cover IS the
+     .fk-hero-art element, and the perspective PROPERTY only projects an
+     element's children — without a projecting ancestor, rotateY degrades
+     to a flat horizontal squeeze. */
+  transform: perspective(1100px) rotateY(-20deg);
+}
+html[data-hero-book="3d"] .fk-hero-art-cover img {
+  position: relative;
+  max-width: 19rem;
+  border-radius: 2px 6px 6px 2px;
+  transform: translateZ(calc(var(--book-depth) / 2));
+}
+/* the page block: a striped strip stood up along the right edge */
+html[data-hero-book="3d"] .fk-hero-art-cover::before {
+  content: "";
+  position: absolute;
+  inset-block: 3px;
+  right: 0;
+  width: var(--book-depth);
+  transform: translateX(calc(var(--book-depth) / 2)) rotateY(90deg);
+  background: repeating-linear-gradient(90deg, #f6f2e9 0 3px, #e5dfd2 3px 6px);
+}
+/* back cover, carrying the ground shadow */
+html[data-hero-book="3d"] .fk-hero-art-cover::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateZ(calc(var(--book-depth) / -2));
+  background: color-mix(in oklab, var(--ink) 80%, black);
+  border-radius: 6px 2px 2px 6px;
+  box-shadow: -26px 36px 46px rgb(0 0 0 / 0.4);
+}
+
+
+/* none: copy only, single centered column */
+html[data-hero="none"] .fk-hero-art { display: none; }
+html[data-hero="none"] .fk-hero-inner {
+  grid-template-columns: 1fr; justify-items: center; text-align: center;
+}
+html[data-hero="none"] .fk-hero-actions { justify-content: center; }
+html[data-hero="none"] .fk-hero-lede { margin-inline: auto; }
+
+/* many: overlapping covers instead of the single featured one; the
+   hero_many axis picks fanned (rotated hand, three covers) or staggered
+   (cascading row, up to four, first on top). */
+html[data-hero="many"] .fk-hero-art-cover { display: none; }
+html[data-hero="many"] .fk-hero-art-fan {
+  display: flex; align-items: center; justify-content: center; padding: 0;
+}
+html[data-hero="many"] .fk-hero-art-fan li { max-width: 11rem; position: relative; }
+html[data-hero="many"] .fk-hero-art-fan li:nth-child(1) { transform: rotate(-8deg) translateX(14%); }
+html[data-hero="many"] .fk-hero-art-fan li:nth-child(2) { z-index: 1; transform: scale(1.08); }
+html[data-hero="many"] .fk-hero-art-fan li:nth-child(3) { transform: rotate(8deg) translateX(-14%); }
+html[data-hero="many"] .fk-hero-art-fan img {
+  border-radius: 0.25rem; box-shadow: 0 14px 40px rgb(0 0 0 / 0.45);
+}
+html[data-hero="many"]:not([data-hero-many="staggered"]) .fk-hero-art-fan li:nth-child(4) { display: none; }
+html[data-hero-many="staggered"] .fk-hero-art-fan { justify-content: flex-end; }
+html[data-hero-many="staggered"] .fk-hero-art-fan li { max-width: 10rem; }
+html[data-hero-many="staggered"] .fk-hero-art-fan li + li { margin-left: -3.25rem; }
+html[data-hero-many="staggered"] .fk-hero-art-fan li:nth-child(1) { transform: none; z-index: 4; }
+html[data-hero-many="staggered"] .fk-hero-art-fan li:nth-child(2) { transform: translateY(0.5rem) scale(1); z-index: 3; }
+html[data-hero-many="staggered"] .fk-hero-art-fan li:nth-child(3) { transform: translateY(1rem); z-index: 2; }
+html[data-hero-many="staggered"] .fk-hero-art-fan li:nth-child(4) { transform: translateY(1.5rem); z-index: 1; }
+
+/* --- auto-contrast hero copy: derived from --hero-ground by thresholding
+       its OKLCH lightness. The infinity trick: below L 0.68 the clamp
+       pins near-white (0.96), above it near-black (0.21) — the PALETTE
+       POLICY's ink lightnesses, with a whisper of the ground's hue, so
+       auto copy matches the ink system instead of harsh #fff/#000.
+       The hand-set colors above stay as the fallback for browsers
+       without relative color syntax; this block simply out-cascades
+       them. When contrast-color() is cross-browser it slots in here,
+       fed by the same ground token. --- */
+@supports (color: oklch(from red l c h)) {
+  html[data-hero][data-hero-bg] .fk-hero-copy,
+  /* :not(:hover): the hover fill brings its own accent/accent-ink
+     pairing — the derived color must yield to it. */
+  html[data-hero][data-hero-bg] .fk-hero .fk-btn-ghost:not(:hover) {
+    color: oklch(from var(--hero-ground) clamp(0.21, (0.68 - l) * infinity, 0.96) 0.02 h);
+  }
+  html[data-hero][data-hero-bg] .fk-hero-lede {
+    color: oklch(from var(--hero-ground) clamp(0.24, (0.68 - l) * infinity, 0.93) 0.02 h / 0.92);
+  }
+  html[data-hero][data-hero-bg] .fk-hero .fk-kicker {
+    color: oklch(from var(--hero-ground) clamp(0.28, (0.68 - l) * infinity, 0.9) 0.02 h / 0.85);
+  }
+}
+
+/* ---------- Sections ---------- */
+.fk-section-title { font-size: clamp(1.5rem, 3vw, 2.2rem); }
+.fk-section-lede { color: var(--ink-muted); max-width: 44em; margin-top: 0; }
+.fk-books, .fk-posts-band, .fk-page, .fk-book-page { padding-block: 3.5rem; }
+
+/* ---------- Series list (data-cards axis; default "spread") ---------- */
+.fk-series-list { display: grid; gap: 3rem; margin-top: 2.5rem; }
+.fk-series {
+  display: grid; grid-template-columns: minmax(0, 320px) 1fr; gap: 2rem; align-items: start;
+}
+/* Row alternation is its own axis: the flip applies to the row layouts
+   (spread, shelf, fan, offset) only under data-alternate="yes". */
+html[data-alternate="yes"] .fk-series:nth-child(even) { grid-template-columns: 1fr minmax(0, 320px); }
+html[data-alternate="yes"] .fk-series:nth-child(even) .fk-series-cover { order: 2; }
+.fk-series-cover img { box-shadow: 0 12px 36px rgb(0 0 0 / 0.3); }
+/* Series cards carry EVERY installment's cover (superset markup); every
+   layout but fan shows only the first. */
+.fk-series-cover img:not(:first-child) { display: none; }
+.fk-series-title { font-size: clamp(1.4rem, 2.6vw, 2rem); margin-bottom: 0.25em; }
+.fk-series-title a { text-decoration: none; }
+.fk-series-title a:hover { text-decoration: underline; text-decoration-color: var(--accent); text-underline-offset: 6px; }
+.fk-series-actions { display: flex; flex-wrap: wrap; gap: 0.75rem; }
+
+/* shelf: single quiet column, small cover, ruled dividers */
+/* shelf = spread at library scale: smaller covers, shelf-rule dividers,
+   full prose width — alternation comes from the axis like every row layout. */
+html[data-cards="shelf"] .fk-series-list { gap: 0; }
+html[data-cards="shelf"] .fk-series,
+html[data-cards="shelf"] .fk-series:nth-child(even) {
+  grid-template-columns: minmax(0, 170px) 1fr;
+  border-top: 1px solid var(--line); padding-block: 2.5rem;
+}
+html[data-cards="shelf"] .fk-series:nth-child(even) .fk-series-cover { order: 0; }
+/* shelf honors the alternate axis at its own compact scale */
+html[data-alternate="yes"][data-cards="shelf"] .fk-series:nth-child(even) { grid-template-columns: 1fr minmax(0, 170px); }
+html[data-alternate="yes"][data-cards="shelf"] .fk-series:nth-child(even) .fk-series-cover { order: 2; }
+html[data-cards="shelf"] .fk-series-cover img { box-shadow: 0 6px 18px rgb(0 0 0 / 0.18); }
+
+/* grid: card grid */
+html[data-cards="grid"] .fk-series-list {
+  /* auto-FILL keeps empty tracks so a short catalog doesn't balloon into
+     wall-sized tiles; the cap holds covers at book size regardless. */
+  grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr)); gap: 1.5rem;
+}
+html[data-cards="grid"] .fk-series,
+html[data-cards="grid"] .fk-series:nth-child(even) {
+  grid-template-columns: 1fr; background: var(--surface);
+  border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 1.25rem; gap: 1rem;
+}
+html[data-cards="grid"] .fk-series-cover { max-width: 12rem; margin-inline: auto; }
+html[data-cards="grid"] .fk-series:nth-child(even) .fk-series-cover { order: 0; }
+html[data-cards="grid"] .fk-series-cover img { box-shadow: none; border: 1px solid var(--line); }
+html[data-cards="grid"] .fk-series-excerpt { display: none; }
+
+
+/* panel: framed ceremony panels */
+html[data-cards="panel"] .fk-series,
+html[data-cards="panel"] .fk-series:nth-child(even) {
+  background: var(--surface); border: 1px solid var(--line);
+  outline: 1px solid var(--line); outline-offset: 4px;
+  border-radius: var(--radius); padding: 2rem;
+}
+html[data-cards="panel"] .fk-series-cover img { box-shadow: 0 10px 30px rgb(0 0 0 / 0.5); }
+
+/* carousel: a horizontal scroll band one color-stop off the background.
+   CSS-only — scroll-snap does the work; readers ship no JS. */
+html[data-cards="carousel"] .fk-books { background: var(--bg-alt); }
+html[data-cards="carousel"] .fk-series-list {
+  display: flex; gap: 1.5rem; overflow-x: auto;
+  scroll-snap-type: x mandatory; scroll-padding-inline: 1rem;
+  scrollbar-width: none; /* drag/swipe/wheel are the affordances */
+  cursor: grab;
+  padding-block: 0.75rem;
+}
+html[data-cards="carousel"] .fk-series-list.is-dragging {
+  cursor: grabbing;
+  scroll-snap-type: none; /* free movement while held; snaps on release */
+  user-select: none;
+}
+html[data-cards="carousel"] .fk-series-list img { -webkit-user-drag: none; }
+/* Edge treatment: cards entering/leaving the band fade and shrink.
+   Scroll-driven animation — pure CSS, degrades to no-fade where the
+   timeline isn't supported. */
+@supports (animation-timeline: view()) {
+  html[data-cards="carousel"] .fk-series,
+  html[data-cards="carousel"] .fk-series:nth-child(even) {
+    animation: fk-carousel-edge linear both;
+    animation-timeline: view(inline);
+  }
+  @keyframes fk-carousel-edge {
+    0%, 100% { opacity: 0.3; transform: scale(0.92); }
+    18%, 82% { opacity: 1; transform: scale(1); }
+  }
+}
+html[data-cards="carousel"] .fk-series,
+html[data-cards="carousel"] .fk-series:nth-child(even) {
+  position: relative; /* anchors the stretched card link below */
+  flex: 0 0 15rem; grid-template-columns: 1fr; scroll-snap-align: start;
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--radius); padding: 1.25rem;
+}
+html[data-cards="carousel"] .fk-series:nth-child(even) .fk-series-cover { order: 0; }
+html[data-cards="carousel"] .fk-series-cover { max-width: 100%; }
+html[data-cards="carousel"] .fk-series-excerpt { display: none; }
+/* the whole card is the link (stretched from the title anchor), so the
+   action button is redundant noise in a carousel */
+html[data-cards="carousel"] .fk-series-actions { display: none; }
+html[data-cards="carousel"] .fk-series-title a::after { content: ""; position: absolute; inset: 0; }
+
+/* fan: every installment's cover fanned like a hand of cards (first four;
+   the rest stay hidden). Rotations pivot from the bottom center so the
+   spines converge, mirroring the hero's fan idiom. */
+html[data-cards="fan"] .fk-series-cover {
+  position: relative;
+  aspect-ratio: 1 / 1; /* headroom for rotated corners */
+  overflow: visible;
+}
+html[data-cards="fan"] .fk-series-cover img,
+html[data-cards="fan"] .fk-series-cover img:not(:first-child) {
+  display: block;
+  position: absolute;
+  inset-block-end: 0.5rem;
+  inset-inline-start: 50%;
+  width: 50%;
+  transform-origin: bottom center;
+  box-shadow: 0 10px 28px rgb(0 0 0 / 0.35);
+}
+/* Book one sits IN FRONT (its title reads); sequels fan behind it. The
+   offsets keep the whole hand inside the cover column. */
+html[data-cards="fan"] .fk-series-cover img:nth-child(1) { transform: translateX(-50%) rotate(-8deg) translateX(-12%); z-index: 4; }
+html[data-cards="fan"] .fk-series-cover img:nth-child(2) { transform: translateX(-50%) rotate(-2deg); z-index: 3; }
+html[data-cards="fan"] .fk-series-cover img:nth-child(3) { transform: translateX(-50%) rotate(4deg) translateX(12%); z-index: 2; }
+html[data-cards="fan"] .fk-series-cover img:nth-child(4) { transform: translateX(-50%) rotate(10deg) translateX(24%); z-index: 1; }
+html[data-cards="fan"] .fk-series-cover img:nth-child(n + 5) { display: none; }
+
+/* offset: detail rows with an offset drop-shadow behind each cover — a
+   soft edge so covers float rather than read as printed slabs; the
+   translucent ink mix adapts per palette and mode. */
+html[data-cards="offset"] .fk-series-cover img {
+  border-radius: 0;
+  box-shadow: 0.5rem 0.6rem 0.9rem color-mix(in oklab, var(--ink) 45%, transparent);
+}
+
+/* ---------- Library (/books/): cover grids grouped by series ---------- */
+.fk-library-group { margin-top: 3rem; }
+.fk-library-group:first-of-type { margin-top: 2rem; }
+.fk-library-group .fk-section-title a { text-decoration: none; }
+.fk-library-group .fk-section-title a:hover {
+  text-decoration: underline; text-decoration-color: var(--accent); text-underline-offset: 6px;
+}
+.fk-library-blurb { color: var(--ink-muted); max-width: 44rem; margin: 0.75rem 0 0; }
+.fk-cover-grid {
+  list-style: none; margin: 1.5rem 0 0; padding: 0;
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 1.75rem;
+}
+.fk-cover-grid a { display: block; text-decoration: none; }
+.fk-cover-grid img {
+  width: 100%; aspect-ratio: 2 / 3; object-fit: cover; box-shadow: 0 10px 24px rgb(0 0 0 / 0.25);
+  transition: transform 120ms ease;
+}
+.fk-cover-grid a:hover img { transform: translateY(-4px); }
+.fk-cover-title { font-family: var(--font-display); display: block; margin-top: 0.6rem; line-height: 1.3; }
+.fk-cover-meta { color: var(--ink-muted); font-size: 0.85rem; display: block; margin-top: 0.15rem; }
+
+/* ---------- Hero variants (data-hero axis; default "split") ---------- */
+html[data-hero="centered"] .fk-hero-inner {
+  grid-template-columns: 1fr; text-align: center; justify-items: center;
+}
+html[data-hero="centered"] .fk-hero-lede { margin-inline: auto; }
+html[data-hero="centered"] .fk-hero-actions { justify-content: center; }
+html[data-hero="centered"] .fk-hero-art { max-width: 34rem; }
+
+/* ---------- Palette mood chrome ---------- */
+/* pulp: hard edges, heavy accent rules */
+html[data-palette="pulp"] .fk-hero-art img { box-shadow: none; border: 2px solid var(--line); }
+
+/* grimoire: ruled section titles */
+html[data-palette="grimoire"] .fk-section-title::after {
+  content: ""; display: block; width: 4rem; margin-top: 0.5rem;
+  border-bottom: 2px solid var(--accent);
+}
+
+/* ---------- Blog ---------- */
+.fk-posts-band { background: var(--bg-alt); border-top: 1px solid var(--line); }
+.fk-post-grid {
+  list-style: none; margin: 2rem 0; display: grid; gap: 1.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+}
+.fk-post-grid article {
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--radius); padding: 1.5rem; height: 100%;
+}
+.fk-post-list { list-style: none; margin: 2rem 0 0; display: grid; gap: 2.5rem; max-width: 50rem; }
+.fk-post-title { font-size: 1.3rem; margin-bottom: 0.25em; }
+.fk-post-title a { text-decoration: none; }
+.fk-post-title a:hover { text-decoration: underline; text-decoration-color: var(--accent); text-underline-offset: 6px; }
+.fk-post-meta { color: var(--ink-muted); font-size: 0.9rem; margin-top: 0; }
+/* Blog presentation (data-blog): the home band's post cards as the card
+   grid (default) or a vertical list. (The old data-cards="shelf" coupling
+   graduated into this axis — the author says list, not the book layout.) */
+html[data-blog="list"] .fk-post-grid { grid-template-columns: 1fr; max-width: 44rem; margin-inline: auto; }
+/* the All-posts button rides the same centered column, so it left-aligns
+   with the list entries */
+html[data-blog="list"] .fk-posts-band .fk-shell > p { max-width: 44rem; margin-inline: auto; }
+html[data-blog="list"] .fk-post-grid article { background: transparent; border: 0; border-left: 3px solid var(--accent); border-radius: 0; padding-block: 0.25rem; }
+
+/* ---------- Author portrait ---------- */
+.fk-portrait {
+  border-radius: var(--radius); border: 1px solid var(--line);
+  box-shadow: 0 12px 36px rgb(0 0 0 / 0.3);
+}
+.fk-author-band { padding-block: 3.5rem; background: var(--bg-alt); }
+.fk-author-inner {
+  display: grid; grid-template-columns: minmax(0, 16rem) 1fr;
+  gap: 2.5rem; align-items: center;
+}
+html[data-palette="grimoire"] .fk-portrait {
+  outline: 1px solid var(--line); outline-offset: 4px;
+}
+
+/* ---------- Biography axes (data-avatar shape × data-avatar-side ×
+   data-bio-band) — the owner's competitor collapse: the single variable is
+   photo treatment (shaped-and-placed / absent / on a band). ---------- */
+/* no photo: pure text, single column */
+html[data-avatar="none"] .fk-portrait-band { display: none; }
+html[data-avatar="none"] .fk-author-inner { grid-template-columns: 1fr; }
+/* the band behind the section: plain page, the color band (default), or
+   the same band with slanted edges */
+html[data-bio-band="none"] .fk-author-band { background: transparent; }
+html[data-bio-band="angled"] .fk-author-band {
+  clip-path: polygon(0 2.5rem, 100% 0, 100% calc(100% - 2.5rem), 0 100%);
+  padding-block: 6rem;
+}
+
+/* default "frame": theme radius + border + shadow, as declared above */
+html[data-avatar="round"] .fk-portrait,
+html[data-avatar="square"] .fk-portrait,
+html[data-avatar="organic"] .fk-portrait {
+  aspect-ratio: 1; object-fit: cover;
+}
+html[data-avatar="round"] .fk-portrait { border-radius: 50%; }
+html[data-avatar="square"] .fk-portrait { border-radius: 0; }
+html[data-avatar="organic"] .fk-portrait {
+  border-radius: 58% 42% 55% 45% / 48% 55% 45% 52%;
+}
+html[data-avatar-side="right"] .fk-author-inner {
+  grid-template-columns: 1fr minmax(0, 16rem);
+}
+html[data-avatar-side="right"] .fk-portrait-band { order: 2; }
+
+@media (max-width: 48rem) {
+  .fk-author-inner,
+  html[data-avatar-side="right"] .fk-author-inner { grid-template-columns: 1fr; }
+  html[data-avatar-side="right"] .fk-portrait-band { order: 0; }
+}
+
+/* ---------- Book & series pages ---------- */
+.fk-breadcrumb ol { list-style: none; display: flex; flex-wrap: wrap; gap: 0.5rem; font-size: 0.9rem; color: var(--ink-muted); margin: 0 0 2rem; }
+.fk-breadcrumb li + li::before { content: "/"; margin-right: 0.5rem; }
+.fk-book-header {
+  display: grid; grid-template-columns: minmax(0, 300px) 1fr; gap: 2.5rem; align-items: start;
+  margin-bottom: 2.5rem;
+}
+.fk-book-header h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); }
+.fk-book-cover { box-shadow: 0 16px 40px rgb(0 0 0 / 0.3); }
+.fk-prose { max-width: 44rem; }
+.fk-titles { margin-top: 3rem; }
+.fk-title-list { list-style: none; margin: 1.5rem 0 0; display: grid; gap: 1rem; }
+.fk-title-item {
+  display: grid; grid-template-columns: auto 1fr; gap: 1.25rem; align-items: center;
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--radius); padding: 1rem 1.25rem;
+}
+.fk-title-item img { width: 72px; }
+.fk-title-item > div:only-child { grid-column: 1 / -1; }
+.fk-title-name { font-family: var(--font-display); font-size: 1.15rem; display: block; text-decoration: none; }
+a.fk-title-name:hover { text-decoration: underline; text-decoration-color: var(--accent); text-underline-offset: 4px; }
+.fk-title-meta { color: var(--ink-muted); font-size: 0.9rem; display: block; }
+.fk-series-pager { display: flex; justify-content: space-between; gap: 1rem; margin-top: 3rem; font-family: var(--font-display); }
+.fk-series-pager a { text-decoration: none; }
+.fk-series-pager a:hover { text-decoration: underline; text-decoration-color: var(--accent); }
+
+/* ---------- Newsletter band (data-newsletter axis) ---------- */
+.fk-newsletter-band {
+  position: relative; overflow: hidden; padding-block: 4rem;
+  background: var(--bg-alt); border-top: 1px solid var(--line);
+}
+.fk-newsletter-bg { position: absolute; inset: 0; }
+.fk-newsletter-bg img { width: 100%; height: 100%; object-fit: cover; }
+.fk-newsletter-bg::after {
+  content: ""; position: absolute; inset: 0;
+  background: color-mix(in srgb, var(--bg) 68%, transparent);
+}
+.fk-newsletter-card {
+  position: relative; max-width: 36rem; margin-inline: auto; text-align: center;
+  padding: 2rem; border: 1px solid var(--line); border-radius: var(--radius);
+  background: color-mix(in srgb, var(--surface) 90%, transparent);
+  backdrop-filter: blur(8px);
+}
+.fk-newsletter-card h2 { font-size: clamp(1.5rem, 3vw, 2rem); }
+html[data-newsletter="quiet"] .fk-newsletter-bg { display: none; }
+html[data-newsletter="quiet"] .fk-newsletter-card {
+  background: var(--surface); backdrop-filter: none;
+}
+/* icon variants: the quiet band's chrome plus a big accent line
+   illustration beside the copy (superset icons; the match reveals) */
+.fk-newsletter-icon { display: none; color: var(--accent); flex: none; }
+.fk-newsletter-icon svg { display: block; inline-size: 5.5rem; block-size: 5.5rem; }
+html:is([data-newsletter="envelope"],[data-newsletter="plane"],[data-newsletter="megaphone"],[data-newsletter="mailbox"]) .fk-newsletter-bg { display: none; }
+html:is([data-newsletter="envelope"],[data-newsletter="plane"],[data-newsletter="megaphone"],[data-newsletter="mailbox"]) .fk-newsletter-card {
+  background: var(--surface); backdrop-filter: none;
+  display: flex; align-items: center; gap: 2rem; text-align: start; max-width: 42rem;
+}
+html[data-newsletter="envelope"] .fk-newsletter-icon-envelope,
+html[data-newsletter="plane"] .fk-newsletter-icon-plane,
+html[data-newsletter="megaphone"] .fk-newsletter-icon-megaphone,
+html[data-newsletter="mailbox"] .fk-newsletter-icon-mailbox { display: block; }
+
+/* ---------- Footer ---------- */
+.fk-footer { border-top: 1px solid var(--line); background: var(--bg-alt); padding-block: 2rem; }
+.fk-footer-meta { text-align: center; color: var(--ink-muted); font-size: 0.9rem; }
+.fk-footer-meta a { color: inherit; }
+
+/* ---------- Small screens ---------- */
+@media (max-width: 48rem) {
+  .fk-hero-inner, .fk-book-header,
+  .fk-series, .fk-series:nth-child(even) { grid-template-columns: 1fr; }
+  .fk-series:nth-child(even) .fk-series-cover { order: 0; }
+  .fk-series-cover { max-width: 16rem; }
+  .fk-hero-inner { padding-block: 2.5rem; }
+  html[data-hero="many"] .fk-hero-art-fan li { max-width: 7.5rem; }
+  .fk-hero-art-cover img { max-width: 14rem; }
+}

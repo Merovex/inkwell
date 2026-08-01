@@ -11,6 +11,23 @@ class AdminDesignerTest < ActionDispatch::IntegrationTest
     assert_response :not_found
   end
 
+  test "the designer degrades to a 503 notice when the theme manifest is missing" do
+    sign_in_as users(:admin)
+
+    # Production without a provisioned theme (THEME_PATH unset → missing tree):
+    # the rail can't be built, so the page must not 500 in Theme#axes.
+    original = Theme.method(:current)
+    Theme.define_singleton_method(:current) { new("/nonexistent-theme-path") }
+    begin
+      get admin_designer_path
+    ensure
+      Theme.singleton_class.send(:define_method, :current, original)
+    end
+
+    assert_response :service_unavailable
+    assert_match(/isn.t available/, response.body)
+  end
+
   test "the rail is generated from the theme manifest" do
     sign_in_as users(:admin)
 

@@ -1,0 +1,13 @@
+{{ define "main" }}
+<article class="fk-page">
+  <div class="fk-shell">
+    <header class="fk-page-header">
+      <h1>{{ .Title }}</h1>
+      <p class="fk-post-meta">{{ with .Params.byline }}{{ . }} &middot; {{ end }}{{ .Date.Format "January 2, 2006" }}</p>
+    </header>
+    <div class="fk-prose">
+      {{ .Content }}
+    </div>
+  </div>
+</article>
+{{ end }}

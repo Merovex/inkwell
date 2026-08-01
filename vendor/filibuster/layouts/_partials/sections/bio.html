@@ -1,0 +1,14 @@
+{{ $author := hugo.Data.author }}
+<section class="fk-author-band" aria-labelledby="author-title">
+  <div class="fk-shell fk-author-inner">
+    {{ with $author.avatar }}
+    <img class="fk-portrait fk-portrait-band" src="{{ site.Home.RelPermalink }}{{ . }}"
+         alt="Portrait of {{ $author.name }}" loading="lazy">
+    {{ end }}
+    <div>
+      <h2 id="author-title" class="fk-section-title">{{ $author.name }}</h2>
+      <div class="fk-section-lede">{{ $author.bio_html | safeHTML }}</div>
+      <p><a class="fk-btn fk-btn-ghost" href="{{ site.Home.RelPermalink }}about/">More about {{ hugo.Data.site.name }}</a></p>
+    </div>
+  </div>
+</section>

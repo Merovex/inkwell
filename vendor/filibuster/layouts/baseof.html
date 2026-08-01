@@ -1,0 +1,167 @@
+{{ $site := hugo.Data.site }}
+{{ $author := hugo.Data.author }}
+{{ $theme := hugo.Data.theme }}
+{{ $design := $site.design | default dict }}
+{{/* Validate the tenant's design axes against the theme's vocabulary
+     (data/theme.json). The exporter validates too, but CSS attribute
+     selectors fail silently, so the theme also refuses unknown values. */}}
+{{ range $theme.axes }}
+  {{ $axis := . }}
+  {{ with index $design $axis.key }}
+    {{ if not (where $axis.options "id" .) }}
+      {{ errorf "design.%s: %q is not in theme %q vocabulary" $axis.key . $theme.name }}
+    {{ end }}
+  {{ end }}
+{{ end }}
+<!DOCTYPE html>
+<html lang="en"{{ range $theme.axes }} {{ printf `%s="%s"` .attr ((index $design .key) | default .default) | safeHTMLAttr }}{{ end }}>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  {{/* Emits <title>, meta description, canonical, Open Graph, Twitter card,
+       and WebSite JSON-LD. */}}
+  {{ partial "seo.html" . }}
+  <meta name="theme-color" content="#0b0f1d">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  {{/* Every genre pairing from verkilo.com/typography. Google Fonts CSS declares
+       all families, but the browser only downloads the faces actually rendered,
+       so unused pairings cost one CSS request and zero font bytes. */}}
+  <link href="{{ hugo.Data.theme.fonts_url }}" rel="stylesheet">
+  <link rel="stylesheet" href="{{ site.Home.RelPermalink }}assets/css/site.css">
+  {{/* Custom heading/body override (site.json fonts — the designer's escape
+       valve past the pairings). Families load at regular weight only:
+       variant axes differ per family and one missing variant 400s the whole
+       stylesheet; browsers synthesize bold/italic. The style tag follows
+       site.css so it wins the cascade at equal specificity. */}}
+  {{/* Custom palette override (site.json colors — the escape valve past
+       the palettes): authors pick hues; Rails assigns the stops (the a11y
+       policy) and ships resolved light/dark hex pairs per role. Both modes
+       derive here via color-mix with the same recipe as the built-in
+       palettes, so custom palettes are dual-mode and the mode axis (incl.
+       auto) applies as usual. */}}
+  {{ with $site.colors }}
+  {{ $bl := .bg.light }}{{ $bd := .bg.dark }}
+  {{ $al := .accent.light }}{{ $ad := .accent.dark }}
+  {{ $il := .ink.light }}{{ $id := .ink.dark }}
+  <style>
+    html[data-palette] {
+      {{ printf "--bg: light-dark(%s, %s);" $bl $bd | safeCSS }}
+      {{ printf "--accent: light-dark(%s, %s);" $al $ad | safeCSS }}
+      {{ printf "--ink: light-dark(%s, %s);" $il $id | safeCSS }}
+      {{ printf "--bg-alt: light-dark(color-mix(in oklab, %s, %s 5%%), color-mix(in oklab, %s, %s 5%%));" $bl $il $bd $id | safeCSS }}
+      {{ printf "--surface: light-dark(color-mix(in oklab, %s, white 60%%), color-mix(in oklab, %s, %s 7%%));" $bl $bd $id | safeCSS }}
+      {{ printf "--ink-muted: light-dark(color-mix(in oklab, %s, %s 28%%), color-mix(in oklab, %s, %s 28%%));" $il $bl $id $bd | safeCSS }}
+      {{ printf "--accent-ink: light-dark(color-mix(in oklab, white, %s 8%%), color-mix(in oklab, black, %s 20%%));" $al $ad | safeCSS }}
+      {{ printf "--line: light-dark(color-mix(in oklab, %s, %s 16%%), color-mix(in oklab, %s, %s 20%%));" $bl $il $bd $id | safeCSS }}
+      {{ printf "--hero-glow: light-dark(color-mix(in oklab, %s, %s 5%%), color-mix(in oklab, %s, %s 24%%));" $bl $il $bd $ad | safeCSS }}
+      --hero-bg: linear-gradient(180deg, var(--surface) 0%, var(--bg) 100%);
+    }
+  </style>
+  {{ end }}
+  {{ with $site.fonts }}
+  {{/* No hand-encoding: Hugo's contextual escaper URL-encodes the family
+       name itself (space → %20, which the css2 API accepts). Pre-replacing
+       spaces with "+" gets double-escaped into a literal %2b and 400s the
+       whole stylesheet. */}}
+  <link href="https://fonts.googleapis.com/css2?{{ with .display }}family={{ . }}&amp;{{ end }}{{ with .body }}family={{ . }}&amp;{{ end }}display=swap" rel="stylesheet">
+  <style>
+    html[data-font] {
+      {{ with .display }}{{ printf "--font-display: '%s', serif;" . | safeCSS }}{{ end }}
+      {{ with .body }}{{ printf "--font-body: '%s', serif;" . | safeCSS }}{{ end }}
+      {{/* A custom display face resets the PAIRING's display personality —
+           otherwise data-font's weight/tracking/transform (e.g. noir's
+           uppercase) leak into the custom face. Weight pins to 400: custom
+           families load regular only, so anything heavier is synthesized. */}}
+      {{ with .display }}
+      --display-weight: 400;
+      --display-tracking: 0;
+      --display-transform: none;
+      {{ end }}
+    }
+  </style>
+  {{ end }}
+</head>
+<body>
+  <a class="fk-skip" href="#main">Skip to main content</a>
+
+  {{/* Header links come from site.json's nav block when present (written by
+       the SiteDesigner's links editor); the default slice mirrors the fixed
+       v1 nav. Built-in ids map to theme paths; custom links carry their own
+       url. data-nav variants restyle this superset markup — `bare` hides
+       the brand and reveals the Home link. */}}
+  {{ $nav := $site.nav | default dict }}
+  {{ $links := $nav.links | default (slice
+      (dict "id" "books" "label" "Books")
+      (dict "id" "posts" "label" "Posts")
+      (dict "id" "about" "label" "About")) }}
+  {{ $paths := dict "books" "books/" "posts" "posts/" "about" "about/" }}
+  {{ $button := $nav.button | default dict }}
+  <header class="fk-header">
+    <div class="fk-shell fk-header-inner">
+      {{/* A custom logo replaces the text brand. nav.title_as_alt (default
+           true) keeps the site name as the image's alt only; false shows
+           the name beside the logo (right of it in split, below it in the
+           centered variants — the lockup class) with an empty alt so
+           assistive tech doesn't hear the name twice. */}}
+      {{ $titleAsAlt := ne $nav.title_as_alt false }}
+      <a class="fk-brand{{ if and $site.logo (not $titleAsAlt) }} fk-brand-lockup{{ end }}" href="{{ site.Home.RelPermalink }}">
+        {{- with $site.logo -}}
+        <img class="fk-brand-logo" src="{{ site.Home.RelPermalink }}{{ . }}" alt="{{ if $titleAsAlt }}{{ $site.name }}{{ end }}">
+        {{- if not $titleAsAlt }}<span class="fk-brand-name">{{ $site.name }}</span>{{ end -}}
+        {{- else -}}
+        {{ $site.name }}<span class="fk-brand-sub">{{ $author.name }}</span>
+        {{- end -}}
+      </a>
+      <nav aria-label="Primary">
+        <ul class="fk-nav">
+          <li class="fk-nav-home"><a href="{{ site.Home.RelPermalink }}"{{ if $.IsHome }} aria-current="page"{{ end }}>Home</a></li>
+          {{ range $links }}{{ if ne .visible false }}
+            {{ $current := false }}
+            {{ if eq .id "books" }}{{ $current = or (eq $.Section "books") (eq $.Section "series") }}
+            {{ else if eq .id "posts" }}{{ $current = eq $.Section "posts" }}
+            {{ else if eq .id "about" }}{{ $current = eq $.RelPermalink ("about/" | relURL) }}{{ end }}
+          <li><a href="{{ with .url }}{{ . }}{{ else }}{{ site.Home.RelPermalink }}{{ index $paths .id }}{{ end }}"{{ if $current }} aria-current="page"{{ end }}>{{ .label }}</a></li>
+          {{ end }}{{ end }}
+          {{/* button.visible false = no CTA at all; custom label+url
+               overrides; otherwise the newsletter default. */}}
+          {{ if ne $button.visible false }}
+          <li>
+            {{ if and $button.label $button.url }}
+            <a class="fk-nav-cta" href="{{ $button.url }}"{{ if $button.new_tab }} target="_blank" rel="noopener"{{ end }}>{{ $button.label }}</a>
+            {{ else }}
+            <a class="fk-nav-cta" href="mailto:{{ $site.contact_email }}?subject=Newsletter%20signup">Get updates</a>
+            {{ end }}
+          </li>
+          {{ end }}
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    {{ block "main" . }}{{ end }}
+  </main>
+
+  {{/* Home renders the newsletter via its sections list; every
+       other page gets the band just before the footer (BookBub convention). */}}
+  {{ if not .IsHome }}{{ partial "sections/newsletter.html" . }}{{ end }}
+
+  <footer class="fk-footer">
+    <div class="fk-shell">
+      <div class="fk-footer-meta">
+        <p>&copy; {{ now.Year }} {{ $site.name }}. All rights reserved.</p>
+        <p>{{ $site.tagline }}</p>
+      </div>
+    </div>
+  </footer>
+
+  {{/* The theme's one reader-side script, shipped ONLY when the carousel
+       layout is chosen (drag-to-scroll needs pointer capture; CSS can't).
+       Every other design stays zero-JS. */}}
+  {{ $cardsAxis := index (where $theme.axes "key" "cards") 0 }}
+  {{ if eq ((index $design "cards") | default $cardsAxis.default) "carousel" }}
+  <script src="{{ site.Home.RelPermalink }}assets/js/carousel.js" defer></script>
+  {{ end }}
+</body>
+</html>

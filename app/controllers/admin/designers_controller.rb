@@ -8,6 +8,10 @@ class Admin::DesignersController < Admin::BaseController
 
   def show
     @theme = Theme.current
+    # Without a provisioned theme manifest there's no option rail to render;
+    # degrade to a clear notice instead of 500ing deep in the view (Theme#axes).
+    return render :unavailable, layout: false, status: :service_unavailable unless @theme.available?
+
     # The hero content editor's featured-book picker: same published scope
     # the exporter snapshots, so the picker offers exactly what can render.
     @books = Current.account.books.published.feed_ordered

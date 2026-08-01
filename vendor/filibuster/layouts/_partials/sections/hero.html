@@ -1,0 +1,105 @@
+{{/* Hero with superset markup across three orthogonal axes:
+       data-hero (structure): none — copy only, centered; centered — single
+         centered column, cover below; right — copy left, featured cover
+         right (default); many — three overlapping covers
+       data-hero-book: straight | 3d (how the featured cover renders)
+       data-hero-bg: page | gradient | scrim | cover (blurred own art) |
+         banner (site.json banner — the author's uploaded image)
+     CSS in site.css shows/hides the pieces; hidden images are loading="lazy"
+     so unused variants cost nothing until selected. Everything renders from
+     the contract: site.json, author.json, books.json. */}}
+{{ $site := hugo.Data.site }}
+{{ $author := hugo.Data.author }}
+{{/* The hero content block (site.json hero — the SiteDesigner's element
+     editor). hero.source picks what the copy says:
+       author (default) — the author's name & bio excerpt
+       featured         — the featured book's title & description
+       custom           — the author's own headline & text (hero.headline /
+                          hero.lede; blank halves fall back to tagline/bio)
+     hero.book picks the featured cover by slug. The action buttons render
+     regardless of source. */}}
+{{ $hero := $site.hero | default dict }}
+{{ $featured := partial "featured-book.html" . }}
+{{/* The many-books covers: the featured book's own SERIES (in series
+     order) when it belongs to one, else the newest releases. Four feed the
+     markup (fan shows three, staggered all four), and the featured book is
+     pinned to the arrangement's place of honor — CENTER of the fan, FRONT
+     of the stagger — reordered BEFORE truncation so a late installment
+     still makes the cut. */}}
+{{ $design := $site.design | default dict }}
+{{ $pool := sort hugo.Data.books.books "publication_date" "desc" }}
+{{ with $featured }}
+  {{ with .series_slug }}
+    {{ with index (where hugo.Data.series.series "slug" .) 0 }}
+      {{ $seriesBooks := slice }}
+      {{ range .books }}
+        {{ with partial "book-by-slug.html" . }}{{ $seriesBooks = $seriesBooks | append . }}{{ end }}
+      {{ end }}
+      {{ with $seriesBooks }}{{ $pool = . }}{{ end }}
+    {{ end }}
+  {{ end }}
+{{ end }}
+{{ $feat := false }}{{ $rest := slice }}
+{{ range $pool }}
+  {{ if and $featured (eq .slug $featured.slug) }}{{ $feat = . }}{{ else }}{{ $rest = $rest | append . }}{{ end }}
+{{ end }}
+{{ $fan := first 4 $pool }}
+{{ if $feat }}
+  {{ $ordered := slice }}
+  {{ if eq ((index $design "hero_many") | default "fan") "staggered" }}
+    {{ $ordered = slice $feat }}
+    {{ range $rest }}{{ $ordered = $ordered | append . }}{{ end }}
+  {{ else }}
+    {{ if gt (len $rest) 0 }}{{ $ordered = $ordered | append (index $rest 0) }}{{ end }}
+    {{ $ordered = $ordered | append $feat }}
+    {{ range $i, $b := $rest }}{{ if gt $i 0 }}{{ $ordered = $ordered | append $b }}{{ end }}{{ end }}
+  {{ end }}
+  {{ $fan = first 4 $ordered }}
+{{ end }}
+{{ $source := $hero.source | default "author" }}
+{{ $bioLede := plainify $author.bio_html | truncate 200 }}
+{{ $headline := $author.name }}{{ $lede := $bioLede }}
+{{ if eq $source "featured" }}
+  {{ with $featured }}
+    {{ $headline = .title }}
+    {{ $lede = plainify .description_html | truncate 200 }}
+  {{ end }}{{/* no published books: fall back to author copy */}}
+{{ else if eq $source "custom" }}
+  {{ $headline = or $hero.headline $site.tagline }}
+  {{ $lede = or $hero.lede $bioLede }}
+{{ end }}
+{{/* Custom words may arrive as rich text: hero.lede_html is SANITIZED by
+     the exporter (ActionText allowlist, prose tags only) — the contract's
+     pre-rendered-HTML pattern, same trust as body_html. */}}
+{{ $ledeHtml := "" }}
+{{ if eq $source "custom" }}{{ with $hero.lede_html }}{{ $ledeHtml = . }}{{ end }}{{ end }}
+<section class="fk-hero" aria-labelledby="hero-title">
+  <div class="fk-hero-bg" aria-hidden="true">
+    {{ with $featured }}<img class="fk-hero-bg-self" src="{{ site.Home.RelPermalink }}{{ .cover }}" alt="" loading="lazy">{{ end }}
+    {{ with $site.banner }}<img class="fk-hero-bg-banner" src="{{ site.Home.RelPermalink }}{{ . }}" alt="" loading="lazy">{{ end }}
+  </div>
+  <div class="fk-shell fk-hero-inner">
+    <div class="fk-hero-copy">
+      {{/* author source puts the name in the headline, so the kicker drops
+           its author span (no doubled name) and shows the site name solo. */}}
+      <p class="fk-kicker">{{ if ne $source "author" }}<span class="fk-hero-kicker-genre">{{ $author.name }}</span>{{ end }}<span class="fk-hero-kicker-role{{ if eq $source "author" }} fk-kicker-solo{{ end }}">{{ $site.name }}</span></p>
+      <h1 id="hero-title"><span class="fk-hero-h-title">{{ $headline }}</span></h1>
+      {{ if $ledeHtml }}<div class="fk-hero-lede">{{ $ledeHtml | safeHTML }}</div>
+      {{ else }}<p class="fk-hero-lede">{{ $lede }}</p>{{ end }}
+      <p class="fk-hero-actions">
+        <a class="fk-btn fk-btn-primary" href="mailto:{{ $site.contact_email }}?subject=Newsletter%20signup">Get updates</a>
+        <a class="fk-btn fk-btn-ghost" href="{{ site.Home.RelPermalink }}#books">Browse the books</a>
+      </p>
+    </div>
+    {{ with $featured }}
+    <div class="fk-hero-art fk-hero-art-cover">
+      <img src="{{ site.Home.RelPermalink }}{{ .cover }}" alt="Cover of {{ .title }}" loading="eager">
+    </div>
+    {{ end }}
+    <ul class="fk-hero-art fk-hero-art-fan">
+      {{ range $fan }}
+      <li><img src="{{ site.Home.RelPermalink }}{{ .cover }}" alt="Cover of {{ .title }}" loading="lazy"></li>
+      {{ end }}
+    </ul>
+  </div>
+</section>

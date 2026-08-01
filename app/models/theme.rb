@@ -17,6 +17,16 @@ class Theme
     @path = Pathname(path)
   end
 
+  # Whether the manifest is present and well-formed enough to drive the
+  # designer. Production must provision the theme (THEME_PATH → the vendored
+  # copy, see bin/vendor-theme); when it hasn't, the designer degrades to an
+  # "unavailable" notice rather than 500ing on every axes read.
+  def available?
+    manifest.fetch("axes").present?
+  rescue Errno::ENOENT, JSON::ParserError, KeyError
+    false
+  end
+
   def name = manifest.fetch("name")
   def version = manifest.fetch("version")
   def contract_version = manifest.fetch("contract_version")

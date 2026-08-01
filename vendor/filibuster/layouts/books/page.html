@@ -1,0 +1,79 @@
+{{ define "main" }}
+{{ $site := hugo.Data.site }}
+{{ $author := hugo.Data.author }}
+{{ $series := index (where hugo.Data.series.series "slug" .Params.series_slug) 0 }}
+{{ $ldBook := dict
+    "@context" "https://schema.org"
+    "@type" "Book"
+    "name" .Title
+    "url" .Permalink
+    "image" (absURL .Params.cover)
+    "datePublished" .Params.publication_date
+    "description" (plainify .Content | replaceRE `\s+` " " | strings.TrimSpace)
+    "author" (dict "@type" "Person" "name" $author.name)
+}}
+{{ with $series }}{{ $ldBook = merge $ldBook (dict "isPartOf" (dict "@type" "BookSeries" "name" .title "url" (absURL (printf "series/%s/" .slug)))) }}{{ end }}
+<script type="application/ld+json">{{ $ldBook | jsonify | safeJS }}</script>
+{{/* Standalone books (no series) crumb through the library instead. */}}
+{{ $crumbName := "Books" }}
+{{ $crumbURL := absURL "books/" }}
+{{ with $series }}
+  {{ $crumbName = .title }}
+  {{ $crumbURL = absURL (printf "series/%s/" .slug) }}
+{{ end }}
+{{ $breadcrumbs := dict
+    "@context" "https://schema.org"
+    "@type" "BreadcrumbList"
+    "itemListElement" (slice
+      (dict "@type" "ListItem" "position" 1 "name" "Home" "item" site.BaseURL)
+      (dict "@type" "ListItem" "position" 2 "name" $crumbName "item" $crumbURL)
+      (dict "@type" "ListItem" "position" 3 "name" .Title "item" .Permalink))
+}}
+<script type="application/ld+json">{{ $breadcrumbs | jsonify | safeJS }}</script>
+<article class="fk-book-page">
+  <div class="fk-shell">
+    <nav class="fk-breadcrumb" aria-label="Breadcrumb">
+      <ol>
+        <li><a href="{{ site.Home.RelPermalink }}">Home</a></li>
+        {{ with $series }}<li><a href="{{ site.Home.RelPermalink }}series/{{ .slug }}/">{{ .title }}</a></li>{{ else }}<li><a href="{{ site.Home.RelPermalink }}books/">Books</a></li>{{ end }}
+        <li aria-current="page">{{ .Title }}</li>
+      </ol>
+    </nav>
+
+    <header class="fk-book-header">
+      <img class="fk-book-cover" src="{{ site.Home.RelPermalink }}{{ .Params.cover }}" alt="Cover of {{ .Title }}">
+      <div>
+        <p class="fk-kicker">{{ with $series }}{{ .title }} &middot; {{ end }}Book {{ .Params.position }} &middot; {{ substr .Params.publication_date 0 4 }}</p>
+        <h1>{{ .Title }}</h1>
+        {{ with .Params.distributors }}
+        <p class="fk-series-actions">
+          {{ range . }}
+          <a class="fk-btn fk-btn-primary" href="{{ partial "dist-url.html" . }}" target="_blank" rel="noopener">Buy on {{ .name }}<span class="fk-visually-hidden"> (opens in new tab)</span></a>
+          {{ end }}
+        </p>
+        {{ end }}
+      </div>
+    </header>
+
+    <div class="fk-prose">
+      {{ .Content }}
+    </div>
+
+    {{/* Prev/next within the series, in the series.json book order. */}}
+    {{ with $series }}
+    {{ $slugs := .books }}
+    {{ $cur := $.Params.slug }}
+    {{ $pos := 0 }}
+    {{ range $i, $s := $slugs }}{{ if eq $s $cur }}{{ $pos = $i }}{{ end }}{{ end }}
+    <nav class="fk-series-pager" aria-label="More in this series">
+      {{ if gt $pos 0 }}{{ $prev := partial "book-by-slug.html" (index $slugs (sub $pos 1)) }}
+        <a href="{{ site.Home.RelPermalink }}books/{{ $prev.slug }}/" rel="prev">&larr; {{ $prev.title }}</a>
+      {{ end }}
+      {{ if lt (add $pos 1) (len $slugs) }}{{ $next := partial "book-by-slug.html" (index $slugs (add $pos 1)) }}
+        <a href="{{ site.Home.RelPermalink }}books/{{ $next.slug }}/" rel="next">{{ $next.title }} &rarr;</a>
+      {{ end }}
+    </nav>
+    {{ end }}
+  </div>
+</article>
+{{ end }}

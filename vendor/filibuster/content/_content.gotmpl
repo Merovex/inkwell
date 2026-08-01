@@ -1,0 +1,10 @@
+{{/* About page from site.json's description_html. */}}
+{{ $data := hugo.Data.site }}
+{{ if ne (int ($data.contract_version | default 0)) (int hugo.Data.theme.contract_version) }}
+  {{ errorf "site.json: theme expects contract_version %v, got %v" hugo.Data.theme.contract_version $data.contract_version }}
+{{ end }}
+{{ $.AddPage (dict
+    "path" "about"
+    "title" (printf "About %s" $data.name)
+    "content" (dict "mediaType" "text/html" "value" $data.description_html)
+) }}
