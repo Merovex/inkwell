@@ -202,9 +202,16 @@
           </label>
         </div>
         <%= render "axis", axis: hero_axes.find { it["key"] == "hero_bg" } %>
-        <%# The black-veil opacity over image backdrops (cover art, banner). %>
+        <%# The veil over image backdrops (cover art, banner): the slider sets
+            its opacity, the color input its tint (black by default). %>
         <div data-designer-target="heroScrimWrap">
           <%= render "slider", axis: hero_axes.find { it["key"] == "hero_scrim" } %>
+          <div class="field">
+            <label class="field__label" for="designer-hero-scrim-color">Scrim color</label>
+            <input type="color" id="designer-hero-scrim-color" class="field__control field__control--color"
+                   value="#000000"
+                   data-designer-target="heroScrimColor" data-action="input->designer#heroEdited">
+          </div>
         </div>
         <%= render "banner" %>
       </div>

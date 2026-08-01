@@ -29,7 +29,7 @@ export default class extends Controller {
     "colorSlot", "colorChip", "assigning", "hexInput", "axisToggle", "axisSlider",
     "customFontCard", "customFontName", "customFontFamilies",
     "heroHeadline", "heroLede", "heroBook", "heroSource", "heroCustomFields", "heroBookWrap",
-    "heroLedeCount", "heroManyWrap", "heroScrimWrap",
+    "heroLedeCount", "heroManyWrap", "heroScrimWrap", "heroScrimColor",
     "nlHeadline", "nlBlurb", "nlButton", "orderList", "orderSummary"]
   static values = {
     buildUrl: String, frameUrl: String, storageKey: String, defaults: Object,
@@ -423,6 +423,12 @@ export default class extends Controller {
     const ledeHtml = this.heroLedeTarget.value || ""
     if (this.heroPlainText(ledeHtml)) hero.lede_html = ledeHtml
     if (this.heroBookTarget.value) hero.book = this.heroBookTarget.value
+    // Scrim tint over image backdrops; black is the built-in default, so we
+    // only carry an explicit, non-black pick (keeps the block override-only).
+    if (this.hasHeroScrimColorTarget) {
+      const color = this.heroScrimColorTarget.value
+      if (color && color.toLowerCase() !== "#000000") hero.scrim_color = color
+    }
     this.hero = Object.keys(hero).length ? hero : null
     this.heroCustomFieldsTarget.hidden = source !== "custom"
     this.updateHeroCount()
@@ -443,6 +449,7 @@ export default class extends Controller {
     this.heroHeadlineTarget.value = this.hero?.headline || ""
     this.heroLedeTarget.value = this.hero?.lede_html || ""
     this.heroBookTarget.value = this.hero?.book || ""
+    if (this.hasHeroScrimColorTarget) this.heroScrimColorTarget.value = this.hero?.scrim_color || "#000000"
     this.updateHeroCount()
   }
 
@@ -461,7 +468,7 @@ export default class extends Controller {
 
   validHero(hero) {
     if (!hero || typeof hero !== "object") return null
-    const filled = ["source", "headline", "lede", "lede_html", "book"].some(key => typeof hero[key] === "string" && hero[key])
+    const filled = ["source", "headline", "lede", "lede_html", "book", "scrim_color"].some(key => typeof hero[key] === "string" && hero[key])
     return filled ? hero : null
   }
 

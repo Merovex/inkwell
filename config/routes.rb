@@ -228,6 +228,9 @@ Rails.application.routes.draw do
         # — the same well as the user's own avatar.
         scope module: :authors do
           resource :avatar, only: %i[update destroy]
+          # The hero portrait is a second image resource, same auto-submitting
+          # well: used for the hero when set, otherwise the avatar stands in.
+          resource :hero_image, only: %i[update destroy]
         end
       end
 

@@ -97,9 +97,10 @@
     </div>
     {{ end }}
     {{/* data-hero-art=portrait swaps the featured cover for the author's own
-         photo (CSS shows one or the other). Rendered only when there's an
-         avatar; falls back to the cover otherwise. */}}
-    {{ with $author.avatar }}
+         photo (CSS shows one or the other). Prefers the dedicated hero image,
+         falling back to the bio avatar; rendered only when one exists, else
+         the cover stands in. */}}
+    {{ with or $author.hero_image $author.avatar }}
     <div class="fk-hero-art fk-hero-art-portrait">
       <img src="{{ site.Home.RelPermalink }}{{ . }}" alt="Portrait of {{ $author.name }}" loading="eager">
     </div>

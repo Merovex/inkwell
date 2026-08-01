@@ -12,12 +12,17 @@ class Author < ApplicationRecord
   has_one_attached :avatar do |attachable|
     attachable.variant :thumb, resize_to_fill: [ 200, 200 ]
   end
+  # A dedicated hero portrait, distinct from the bio avatar: the hero shows
+  # this when set (data-hero-art=portrait) and falls back to the avatar, so a
+  # small headshot can stay the bio photo while the hero runs a bigger image.
+  has_one_attached :hero_image
 
   validates :name, presence: true
   # A one-line hook shown under the name in the author grid — kept short so
   # it reads as a tagline, not a second bio.
   validates :tagline, length: { maximum: 140 }, allow_blank: true
   validate :acceptable_avatar
+  validate :acceptable_hero_image
 
   before_create :become_default_if_first
   after_save :demote_other_defaults, if: -> { default? && saved_change_to_default? }
@@ -42,12 +47,13 @@ class Author < ApplicationRecord
   # resolves legacy id-first public links and 301s them to this.
   def public_slug = name.parameterize
 
-  # Carry the bio + avatar forward on action-only versions (trash/restore) so a
+  # Carry the bio + images forward on action-only versions (trash/restore) so a
   # restored persona doesn't come back blank — the same trick Comment uses.
   def build_successor(event:, creator:, **changes)
     super.tap do |version|
       version.bio = bio.body unless changes.key?(:bio)
       version.avatar.attach(avatar.blob) if avatar.attached? && !changes.key?(:avatar)
+      version.hero_image.attach(hero_image.blob) if hero_image.attached? && !changes.key?(:hero_image)
     end
   end
 
@@ -67,14 +73,19 @@ class Author < ApplicationRecord
       record&.account || Current.account
     end
 
-    def acceptable_avatar
-      return unless avatar.attached?
+    def acceptable_avatar = acceptable_image(:avatar)
+    def acceptable_hero_image = acceptable_image(:hero_image)
 
-      unless avatar.blob.content_type.in?(AVATAR_CONTENT_TYPES)
-        errors.add(:avatar, "must be a JPG, PNG, AVIF, or WebP image")
+    # Same content-type/size gate for both the avatar and the hero image.
+    def acceptable_image(field)
+      attachment = public_send(field)
+      return unless attachment.attached?
+
+      unless attachment.blob.content_type.in?(AVATAR_CONTENT_TYPES)
+        errors.add(field, "must be a JPG, PNG, AVIF, or WebP image")
       end
-      if avatar.blob.byte_size > AVATAR_MAX_SIZE
-        errors.add(:avatar, "must be smaller than #{AVATAR_MAX_SIZE / 1.megabyte} MB")
+      if attachment.blob.byte_size > AVATAR_MAX_SIZE
+        errors.add(field, "must be smaller than #{AVATAR_MAX_SIZE / 1.megabyte} MB")
       end
     end
 end

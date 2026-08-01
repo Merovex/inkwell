@@ -87,6 +87,12 @@
     }
   </style>
   {{ end }}
+  {{/* Hero scrim tint (site.json hero.scrim_color — the escape valve past the
+       black default veil over image backdrops). Opacity stays with the
+       hero_scrim slider; this only recolors the veil. */}}
+  {{ with $site.hero }}{{ with .scrim_color }}
+  <style>html { {{ printf "--hero-scrim-color: %s;" . | safeCSS }} }</style>
+  {{ end }}{{ end }}
 </head>
 <body>
   <a class="fk-skip" href="#main">Skip to main content</a>

@@ -99,9 +99,14 @@ class SiteDesign
       hero = @params[:hero]
       return nil unless hero.is_a?(ActionController::Parameters)
 
-      hero.permit(:source, :headline, :lede, :lede_html, :book).to_h.compact_blank.tap do |block|
+      hero.permit(:source, :headline, :lede, :lede_html, :book, :scrim_color).to_h.compact_blank.tap do |block|
         if block["source"] && !block["source"].in?(HERO_SOURCES)
           raise Invalid, "#{block["source"].inspect} is not a hero copy source"
+        end
+        # The scrim tint over image backdrops — a raw #rrggbb like the palette
+        # escape valve; opacity still comes from the hero_scrim slider.
+        if block["scrim_color"] && !PaletteColor.valid?(block["scrim_color"])
+          raise Invalid, "#{block["scrim_color"].inspect} is not a #rrggbb color"
         end
         block["lede_html"] = sanitize_lede(block["lede_html"]) if block["lede_html"]
       end.presence

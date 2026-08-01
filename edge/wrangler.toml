@@ -1,0 +1,12 @@
+name = "kindredquill-edge"
+main = "src/index.js"
+compatibility_date = "2026-08-01"
+workers_dev = false
+
+[[r2_buckets]]
+binding = "SITES"
+bucket_name = "kindredquill-sites"
+
+[[kv_namespaces]]
+binding = "HOSTNAMES"
+id = "31cc38518280423694f78a0ae0726878"

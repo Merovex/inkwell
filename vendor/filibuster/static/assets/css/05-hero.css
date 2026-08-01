@@ -86,11 +86,13 @@ html[data-hero-bg="cover"] .fk-hero-bg-self {
   display: block; filter: blur(14px) saturate(1.2); transform: scale(1.25);
 }
 /* Image-backed backdrops share the SCRIM SLIDER (data-hero-scrim,
-   0-100%): a flat black veil whose opacity the author sets; the
-   auto-contrast ground follows each stop (image approximated as gray). */
+   0-100%): a flat veil whose opacity the author sets; the auto-contrast
+   ground follows each stop (image approximated as gray). The veil color is
+   black by default, overridable via site.json hero.scrim_color (baseof sets
+   --hero-scrim-color) — relative-color syntax keeps the slider's opacity. */
 html[data-hero-bg="cover"] .fk-hero-bg::after,
 html[data-hero-bg="banner"] .fk-hero-bg::after {
-  background: rgb(0 0 0 / var(--hero-scrim, 0.5));
+  background: rgb(from var(--hero-scrim-color, #000) r g b / var(--hero-scrim, 0.5));
 }
 html[data-hero-bg="cover"] .fk-hero-copy { color: #f5f4f0; }
 html[data-hero-bg="cover"] .fk-hero-lede { color: rgb(245 244 240 / 0.88); }

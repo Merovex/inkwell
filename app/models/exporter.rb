@@ -130,10 +130,11 @@ class Exporter
     def author_json
       if author = account.authors.find_by(default: true) || account.authors.first
         { name: author.name, slug: author.name.parameterize, tagline: author.tagline,
-          bio_html: html(author.bio), avatar: copy_image(author.avatar, "author") }
+          bio_html: html(author.bio), avatar: copy_image(author.avatar, "author"),
+          hero_image: copy_image(author.hero_image, "author-hero") }
       else
         { name: account.owner.display_name, slug: account.owner.display_name.parameterize,
-          tagline: nil, bio_html: nil, avatar: nil }
+          tagline: nil, bio_html: nil, avatar: nil, hero_image: nil }
       end
     end
 
