@@ -107,6 +107,9 @@ html[data-avatar-side="right"] .fk-portrait-band { order: 2; }
 .fk-book-header h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); }
 .fk-book-cover { box-shadow: 0 16px 40px rgb(0 0 0 / 0.3); }
 .fk-prose { max-width: 44rem; margin-inline: auto; }
+/* Centered content column for the index/section pages (posts list, library),
+   so their heading and content sit centered like the show pages' prose. */
+.fk-page-body { max-width: 52rem; margin-inline: auto; }
 .fk-titles { margin-top: 3rem; }
 .fk-title-list { list-style: none; margin: 1.5rem 0 0; display: grid; gap: 1rem; }
 .fk-title-item {

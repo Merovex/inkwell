@@ -4,32 +4,34 @@
      fallback below only serves sections the theme doesn't know yet. */}}
 <article class="fk-page">
   <div class="fk-shell">
-    <header class="fk-page-header">
-      <h1>{{ .Title | humanize }}</h1>
-    </header>
-    {{ if eq .Section "posts" }}
-    <ul class="fk-post-list">
-      {{ range .Pages.ByDate.Reverse }}
-      <li>
-        <h2 class="fk-post-title"><a href="{{ .RelPermalink }}">{{ .Title }}</a></h2>
-        <p class="fk-post-meta">{{ with .Params.byline }}{{ . }} &middot; {{ end }}{{ .Date.Format "January 2, 2006" }}</p>
-        {{ with .Params.excerpt }}<p>{{ . }}</p>{{ end }}
-      </li>
+    <div class="fk-page-body">
+      <header class="fk-page-header">
+        <h1>{{ .Title | humanize }}</h1>
+      </header>
+      {{ if eq .Section "posts" }}
+      <ul class="fk-post-list">
+        {{ range .Pages.ByDate.Reverse }}
+        <li>
+          <h2 class="fk-post-title"><a href="{{ .RelPermalink }}">{{ .Title }}</a></h2>
+          <p class="fk-post-meta">{{ with .Params.byline }}{{ . }} &middot; {{ end }}{{ with .Params.published_at }}{{ (time .).Format "January 2, 2006" }}{{ end }}</p>
+          {{ with .Params.excerpt }}<p>{{ . }}</p>{{ end }}
+        </li>
+        {{ end }}
+      </ul>
+      {{ else }}
+      <ol class="fk-title-list">
+        {{ range .Pages.ByDate.Reverse }}
+        <li class="fk-title-item">
+          {{ with .Params.cover }}<img src="{{ site.Home.RelPermalink }}{{ . }}" alt="Cover of {{ $.Title }}" loading="lazy">{{ end }}
+          <div>
+            <a class="fk-title-name" href="{{ .RelPermalink }}">{{ .Title }}</a>
+            <span class="fk-title-meta">{{ with .Params.publication_date }}{{ substr . 0 4 }}{{ end }}</span>
+          </div>
+        </li>
+        {{ end }}
+      </ol>
       {{ end }}
-    </ul>
-    {{ else }}
-    <ol class="fk-title-list">
-      {{ range .Pages.ByDate.Reverse }}
-      <li class="fk-title-item">
-        {{ with .Params.cover }}<img src="{{ site.Home.RelPermalink }}{{ . }}" alt="Cover of {{ $.Title }}" loading="lazy">{{ end }}
-        <div>
-          <a class="fk-title-name" href="{{ .RelPermalink }}">{{ .Title }}</a>
-          <span class="fk-title-meta">{{ .Date.Format "January 2006" }}</span>
-        </div>
-      </li>
-      {{ end }}
-    </ol>
-    {{ end }}
+    </div>
   </div>
 </article>
 {{ end }}

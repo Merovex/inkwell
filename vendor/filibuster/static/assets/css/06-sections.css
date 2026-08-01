@@ -157,7 +157,11 @@ html[data-cards="offset"] .fk-series-cover img {
 .fk-library-blurb { color: var(--ink-muted); max-width: 44rem; margin: 0.75rem 0 0; }
 .fk-cover-grid {
   list-style: none; margin: 1.5rem 0 0; padding: 0;
-  display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 1.75rem;
+  /* auto-fit + capped width + centered: a short group (2-3 covers) stays a
+     reasonable size and centers, instead of clinging left with empty tracks
+     trailing off to the right. */
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 200px)); gap: 1.75rem;
+  justify-content: center;
 }
 .fk-cover-grid a { display: block; text-decoration: none; }
 .fk-cover-grid img {
