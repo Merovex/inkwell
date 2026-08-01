@@ -113,15 +113,16 @@ html[data-avatar-side="right"] .fk-portrait-band { order: 2; }
 .fk-titles { margin-top: 3rem; }
 .fk-title-list { list-style: none; margin: 1.5rem 0 0; display: grid; gap: 1rem; }
 .fk-title-item {
-  display: grid; grid-template-columns: auto 1fr; gap: 1.25rem; align-items: center;
+  display: grid; grid-template-columns: auto 1fr; gap: 1.5rem; align-items: start;
   background: var(--surface); border: 1px solid var(--line);
-  border-radius: var(--radius); padding: 1rem 1.25rem;
+  border-radius: var(--radius); padding: 1.25rem 1.5rem;
 }
-.fk-title-item img { width: 72px; }
+.fk-title-item img { width: 96px; }
 .fk-title-item > div:only-child { grid-column: 1 / -1; }
 .fk-title-name { font-family: var(--font-display); font-size: 1.15rem; display: block; text-decoration: none; }
 a.fk-title-name:hover { text-decoration: underline; text-decoration-color: var(--accent); text-underline-offset: 4px; }
-.fk-title-meta { color: var(--ink-muted); font-size: 0.9rem; display: block; }
+.fk-title-meta { color: var(--ink-muted); font-size: 0.9rem; display: block; margin-top: 0.15rem; }
+.fk-title-desc { color: var(--ink-muted); margin: 0.6rem 0 0; line-height: 1.55; }
 .fk-series-pager { display: flex; justify-content: space-between; gap: 1rem; margin-top: 3rem; font-family: var(--font-display); }
 .fk-series-pager a { text-decoration: none; }
 .fk-series-pager a:hover { text-decoration: underline; text-decoration-color: var(--accent); }

@@ -61,6 +61,7 @@
           <div>
             <a class="fk-title-name" href="{{ site.Home.RelPermalink }}books/{{ .slug }}/">{{ .title }}</a>
             <span class="fk-title-meta">Book {{ .position }} &middot; {{ substr .publication_date 0 4 }}</span>
+            {{ with .description_html }}<p class="fk-title-desc">{{ plainify . | truncate 260 }}</p>{{ end }}
           </div>
         </li>
         {{ end }}
