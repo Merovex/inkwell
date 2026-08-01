@@ -172,11 +172,12 @@ Rails.application.routes.draw do
 
       # The SiteDesigner (ADR 0022, docs/site-designer.md): the author designs
       # the public site against a live preview. The working design lives in
-      # localStorage while the schema settles — the preview endpoint is
-      # stateless: POST builds the posted design + current published content
-      # through the real exporter/Hugo pipeline; GET serves the built files
-      # into the editor's iframe.
-      resource :designer, only: :show
+      # localStorage until Save (PATCH designer) graduates it to the account,
+      # where the next real build reads it. The preview endpoint is stateless:
+      # POST builds the posted design + current published content through the
+      # real exporter/Hugo pipeline; GET serves the built files into the
+      # editor's iframe.
+      resource :designer, only: %i[show update]
       scope path: "designer", module: :designers, as: :designer do
         resource :preview, only: :create
         # Declared before the wildcard so "version" isn't swallowed as a file path.

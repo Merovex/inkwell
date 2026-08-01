@@ -1,0 +1,25 @@
+<%# The designer's help modal — the user guide's essentials, in-place.
+    Full copy lives in docs/site-designer-user-guide.md. %>
+<span data-controller="dialog">
+  <button type="button" class="button button--ghost" data-action="dialog#open">Help</button>
+  <dialog class="modal designer__help" data-dialog-target="modal" data-action="click->dialog#backdrop"
+          aria-labelledby="designer-help-title">
+    <div class="modal__header">
+      <span class="modal__title" id="designer-help-title">How the designer works</span>
+      <button type="button" class="button button--icon button--ghost" data-action="dialog#close" aria-label="Close">
+        <%= inline_svg_tag "lucide/x.svg", class: "lucide", size: "20px" %>
+      </button>
+    </div>
+    <div class="modal__body u-flow">
+      <p><strong>The preview is your real site.</strong> Every change rebuilds it against your actual books, posts, and bio in a couple of seconds. Use Desktop/Mobile to check widths and Light/Dark to peek at both renditions &mdash; the peek never changes your design's Mode setting.</p>
+      <p><strong>Nothing changes your live site while you work.</strong> Your choices live in this browser until you <em>Save</em>, which stores the design to your account for the next publish. <em>Discard changes</em> reverts this browser's edits.</p>
+      <p><strong>Presets restyle everything at once</strong> &mdash; palette, fonts, section layouts, corners, buttons. Applying one replaces any custom fonts or colors you've picked (your custom pairing stays remembered as the Custom card in Font pairing). Everything a preset sets can be changed afterward, piece by piece.</p>
+      <p><strong>Custom fonts and colors are escape valves.</strong> They override the pairing or palette until you pick a pairing or palette again, which hands control back.</p>
+      <p><strong>Three things save immediately:</strong> the logo, the hero banner, and the signup backdrop &mdash; images can't wait in the browser, so they go straight to your account.</p>
+      <p><strong>Content vs. design:</strong> the hero's words, header links, and signup copy travel with the design you're drafting; your books, posts, and bio always come from what you've published.</p>
+    </div>
+    <div class="modal__footer">
+      <button type="button" class="button button--primary" data-action="dialog#close">Got it</button>
+    </div>
+  </dialog>
+</span>

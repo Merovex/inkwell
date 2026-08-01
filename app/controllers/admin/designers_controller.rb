@@ -12,4 +12,16 @@ class Admin::DesignersController < Admin::BaseController
     # the exporter snapshots, so the picker offers exactly what can render.
     @books = Current.account.books.published.feed_ordered
   end
+
+  # Save-to-account: the working design graduates from the browser to the
+  # account, where the next real build reads it. Validated by the same
+  # SiteDesign the preview uses — a design that wouldn't preview can't be
+  # saved. Save is deliberate (never autosave): idle edits must not
+  # republish a live site.
+  def update
+    Current.account.update!(design: SiteDesign.new(params).to_h)
+    head :no_content
+  rescue SiteDesign::Invalid => error
+    render json: { error: error.message }, status: :unprocessable_entity
+  end
 end

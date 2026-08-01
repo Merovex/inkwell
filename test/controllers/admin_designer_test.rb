@@ -32,7 +32,10 @@ class AdminDesignerTest < ActionDispatch::IntegrationTest
     assert_select ".designer__range[data-axis=buttons]", count: 1
     assert_select ".design-option__input[name='design[palette]']",
       count: theme.axes.find { it["key"] == "palette" }["options"].size
+    # Preset cards: swatch dots + name/tagline in the preset's own faces,
+    # grouped under the genre headings.
     assert_select ".designer__preset", count: theme.presets.size
+    assert_select ".designer__preset .designer__preset-tagline", count: theme.presets.size
 
     # Root menu + one sub-pane per style axis, page section, hero, preset,
     # and the section-order pane — grouping comes from the manifest's
@@ -62,8 +65,10 @@ class AdminDesignerTest < ActionDispatch::IntegrationTest
     assert_select "select[data-designer-target=heroBook]", count: 1
     hero_options = theme.axes.find { it["key"] == "hero" }["options"].size
     assert_select ".designer__featured-thumb[data-chip-for=hero] svg", count: hero_options
-    # The canvas bar carries the preview-only Light/Dark peek.
+    # The canvas bar carries the preview-only Light/Dark peek; the top bar
+    # carries the Help modal.
     assert_select ".designer__preview-mode", count: 2
+    assert_select "dialog.designer__help", count: 1
   end
 
   test "the preview carries the posted header links and button through the build" do
@@ -246,6 +251,28 @@ class AdminDesignerTest < ActionDispatch::IntegrationTest
     post admin_designer_preview_path, params: { design: {}, sections: %w[hero books] }, as: :json
     assert_response :unprocessable_entity
     assert_match(/ordering of/, response.parsed_body["error"])
+  end
+
+  test "saving graduates the design to the account and validates like the preview" do
+    sign_in_as users(:admin)
+
+    patch admin_designer_path,
+      params: { design: { palette: "pine", font: "verse" }, fonts: { display: "Lobster" },
+                colors: { bg: "#0ea5e9", accent: "#f59e0b", ink: "#dc2626" } }, as: :json
+    assert_response :no_content
+
+    saved = accounts(:merovex).reload.design
+    assert_equal "pine", saved["design"]["palette"]
+    assert_equal "Lobster", saved["fonts"]["display"]
+    # Colors are stored RAW — the exporter resolves them per build.
+    assert_equal "#0ea5e9", saved["colors"]["bg"]
+
+    # Same gates as the preview: an unknown axis value is refused, and a bad
+    # save leaves the previously-saved design untouched.
+    patch admin_designer_path, params: { design: { palette: "vantablack" } }, as: :json
+    assert_response :unprocessable_entity
+    assert_match(/not in theme/, response.parsed_body["error"])
+    assert_equal "pine", accounts(:merovex).reload.design["design"]["palette"]
   end
 
   test "an unknown design value fails the build loudly" do

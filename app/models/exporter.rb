@@ -7,23 +7,18 @@
 class Exporter
   CONTRACT_VERSION = 1
 
-  # design overrides the theme manifest's per-axis defaults and is validated
-  # against its vocabulary (§6.1) — an unknown value fails the export, before
-  # Hugo runs. nav is the header-content block (links, button) the
-  # SiteDesigner edits; absent, the theme renders its default nav. base_url
-  # lets a preview build render under the admin's preview path prefix;
-  # preview gates designer-facing affordances only (ADR 0022 — no build
-  # mode ever varies the design).
-  def initialize(account, design: {}, nav: nil, fonts: nil, colors: nil, hero: nil, newsletter: nil, sections: nil, base_url: "/", preview: false)
+  # design is the full SiteDesign bundle (axes + content blocks + escape
+  # valves), raw as the author saved it — defaults to the account's persisted
+  # design, which a preview build overrides with the live, unsaved payload.
+  # The axes are re-checked against the theme vocabulary here as the last gate
+  # before Hugo (§6.1); custom colors resolve to per-role shades at this
+  # point. base_url lets a preview render under the admin's preview path
+  # prefix; preview gates designer-facing affordances only (ADR 0022 — no
+  # build mode ever varies the design).
+  def initialize(account, design: account.design, base_url: "/", preview: false)
     @account = account
     @theme = Theme.current
-    @design = @theme.permit!(design)
-    @nav = nav
-    @fonts = fonts
-    @colors = colors
-    @hero = hero
-    @newsletter = newsletter
-    @sections = sections
+    @design = (design || {}).with_indifferent_access
     @base_url = base_url
     @preview = preview
   end
@@ -103,13 +98,29 @@ class Exporter
         logo: copy_image(site.logo, "logo"),
         banner: copy_image(site.banner, "banner"),
         newsletter_photo: copy_image(site.newsletter_photo, "newsletter"),
-        design: theme.defaults.merge(@design)
-      }.merge(@nav.present? ? { nav: @nav } : {})
-        .merge(@fonts.present? ? { fonts: @fonts } : {})
-        .merge(@colors.present? ? { colors: @colors } : {})
-        .merge(@hero.present? ? { hero: @hero } : {})
-        .merge(@newsletter.present? ? { newsletter: @newsletter } : {})
-        .merge(@sections.present? ? { home: { sections: @sections } } : {})
+        design: theme.defaults.merge(theme.permit!(@design[:design]))
+      }.merge(content_blocks)
+    end
+
+    # The content blocks and escape valves the SiteDesigner edits — carried
+    # only when set, so the theme falls back to its own defaults otherwise.
+    # Colors are the exception: stored raw, resolved to per-role/mode shades
+    # here (PaletteColor owns the a11y policy).
+    def content_blocks
+      {
+        nav: @design[:nav],
+        fonts: @design[:fonts],
+        colors: resolve_colors(@design[:colors]),
+        hero: @design[:hero],
+        newsletter: @design[:newsletter],
+        home: @design[:sections].present? ? { sections: @design[:sections] } : nil
+      }.compact_blank
+    end
+
+    def resolve_colors(colors)
+      return nil if colors.blank?
+
+      colors.to_h { |role, hex| [ role, PaletteColor.resolve(role, hex) ] }
     end
 
     # The default pen-name persona; an account that never created one falls

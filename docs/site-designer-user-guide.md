@@ -94,6 +94,22 @@ stale when you publish something new.
   label and link (optionally opening in a new tab), or switch it off
   entirely.
 
+## Presets
+
+**Presets** dress the whole site at once — fifteen designed combinations,
+two or three per shelf, each card drawn in its own palette and faces:
+Saga's stone and gold, Noir's hard shadows, Hearthside's tea-cozy warmth,
+Nebula's deep-space gold with a standing 3D paperback. A preset is a
+starting point, not a cage; everything it sets can be changed after.
+
+## Saving your design
+
+Your changes stay in this browser while you work — nothing touches your
+live site until you press **Save**, which stores the design to your
+account for the next publish. **Discard changes** reverts this browser's
+edits. Save is deliberate on purpose: idle experimenting never republishes
+your site out from under you.
+
 ## Color palettes and light/dark mode
 
 Fifteen palettes, named and grouped by the shelf they suit — from Nebula's

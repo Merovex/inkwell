@@ -82,6 +82,28 @@
   .designer__scale-note { margin: 0; font-size: var(--font-size-0); }
   .designer__canvas-controls { display: flex; gap: calc(var(--u-pad) / 2); }
   .designer__count { margin: 0.25rem 0 0; font-size: var(--font-size-0); text-align: end; }
+  /* Preset cards: swatches + name in the preset's own faces. */
+  .designer__preset {
+    display: grid;
+    gap: 0.35rem;
+    width: 100%;
+    padding: calc(var(--u-pad) / 1.5);
+    border: var(--border-size-1) solid var(--line);
+    border-radius: var(--radius-ui);
+    background: var(--canvas);
+    font: inherit;
+    text-align: start;
+    cursor: pointer;
+  }
+  .designer__preset:hover { border-color: var(--accent); }
+  .designer__preset-swatches { display: flex; gap: 0.25rem; }
+  .designer__preset-swatches .designer__swatch {
+    inline-size: 1.4rem; block-size: 1.4rem; border-radius: 50%;
+    border: var(--border-size-1) solid var(--line);
+  }
+  .designer__preset-name { font-size: var(--font-size-2); }
+  .designer__preset-tagline { color: var(--ink-muted); font-size: var(--font-size-0); }
+
   .designer__order { list-style: none; margin: 0; padding: 0; display: grid; gap: calc(var(--u-pad) / 4); }
   .designer__order-row {
     display: flex; align-items: center; justify-content: space-between; gap: var(--u-pad);
@@ -378,6 +400,7 @@
     background: repeating-conic-gradient(var(--line) 0% 25%, var(--canvas) 0% 50%) 50% / 0.5rem 0.5rem;
   }
   /* The custom-palette modal: narrower than standard, content centered. */
+  .designer__help { inline-size: min(34rem, calc(100% - 2rem)); }
   .designer__colors-modal { inline-size: min(27rem, calc(100% - 2rem)); }
   .designer__colors-modal .modal__body { text-align: center; }
   .designer__colors-modal .designer__color-slots { justify-content: center; }

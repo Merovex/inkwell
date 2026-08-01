@@ -20,6 +20,11 @@ class Account < ApplicationRecord
 
   validates :name, presence: true, uniqueness: { case_sensitive: false }
 
+  # The public site's saved design (the SiteDesigner's working payload —
+  # axes + content blocks + escape valves). Validated at the controller by
+  # SiteDesign before it lands here; the exporter reads it for real builds.
+  serialize :design, coder: JSON
+
   # Account-scoped counterparts of each content type's `.current` scope —
   # the sanctioned starting point for every content query (ADR 0017):
   # current versions of this account's live records, written out plainly,

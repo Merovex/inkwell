@@ -33,6 +33,7 @@ export default class extends Controller {
     "nlHeadline", "nlBlurb", "nlButton", "orderList", "orderSummary"]
   static values = {
     buildUrl: String, frameUrl: String, storageKey: String, defaults: Object,
+    saveUrl: String,
     // Image-slot endpoint template; __SLOT__ is replaced per upload.
     imagesUrl: String,
     // Development live reload: poll versionUrl every watch ms and rebuild
@@ -464,6 +465,25 @@ export default class extends Controller {
     return filled ? hero : null
   }
 
+  // --- save (graduate the working design from the browser to the account,
+  //     where the next real build reads it; deliberate, never autosave \u2014 an
+  //     idle drag must not republish a live site)
+
+  async save() {
+    this.statusTarget.textContent = "Saving\u2026"
+    const response = await fetch(this.saveUrlValue, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json", "X-CSRF-Token": this.csrf },
+      body: JSON.stringify(this.payload())
+    })
+    if (response.ok) {
+      this.statusTarget.textContent = `Saved ${new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`
+    } else {
+      const failure = await response.json().catch(() => ({}))
+      this.statusTarget.textContent = failure.error || "Couldn't save the design"
+    }
+  }
+
   // --- home section order (the home.sections contract field; Up/Down rows
   //     reorder the DOM, and the DOM is the state)
 
@@ -795,7 +815,7 @@ export default class extends Controller {
       const axes = JSON.parse(button.dataset.designerAxesParam)
       return Object.entries(axes).every(([key, value]) => this.design[key] === value)
     })
-    this.presetTarget.textContent = match ? match.textContent.trim() : "Custom"
+    this.presetTarget.textContent = match ? (match.dataset.label || match.textContent.trim()) : "Custom"
   }
 
   scheduleBuild() {
@@ -814,13 +834,19 @@ export default class extends Controller {
     this.themeVersion = version
   }
 
+  // The working design, as the preview build and the save both post it.
+  payload() {
+    return { design: this.design, nav: this.nav, fonts: this.fonts, colors: this.colors,
+      hero: this.hero, newsletter: this.newsletter, sections: this.sections }
+  }
+
   async build() {
     this.building = true
     this.statusTarget.textContent = "Building preview…"
     const response = await fetch(this.buildUrlValue, {
       method: "POST",
       headers: { "Content-Type": "application/json", "X-CSRF-Token": this.csrf },
-      body: JSON.stringify({ design: this.design, nav: this.nav, fonts: this.fonts, colors: this.colors, hero: this.hero, newsletter: this.newsletter, sections: this.sections })
+      body: JSON.stringify(this.payload())
     })
 
     if (response.ok) {
