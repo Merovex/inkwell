@@ -17,6 +17,10 @@ class Account < ApplicationRecord
   has_many :categories
   has_many :broadcasts, through: :records
   has_many :ahoy_visits, class_name: "Ahoy::Visit"
+  # Connected custom hostnames (apex + www rows) on the Cloudflare-for-SaaS
+  # path. Destroying an account drops its rows; the KV keys and Cloudflare
+  # custom hostnames are torn down by the disconnect flow, not this cascade.
+  has_many :custom_domains, dependent: :destroy
 
   validates :name, presence: true, uniqueness: { case_sensitive: false }
 

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.2].define(version: 2026_08_01_000000) do
+ActiveRecord::Schema[8.2].define(version: 2026_08_01_010000) do
   create_table "account_users", force: :cascade do |t|
     t.integer "account_id", null: false
     t.integer "user_id", null: false
@@ -251,6 +251,22 @@ ActiveRecord::Schema[8.2].define(version: 2026_08_01_000000) do
     t.datetime "updated_at", null: false
     t.index ["creator_id"], name: "index_comments_on_creator_id"
     t.index ["record_id", "id"], name: "index_comments_on_record_id_and_id"
+  end
+
+  create_table "custom_domains", force: :cascade do |t|
+    t.integer "account_id", null: false
+    t.string "hostname", null: false
+    t.boolean "canonical", default: false, null: false
+    t.string "status", default: "pending", null: false
+    t.string "cloudflare_id"
+    t.string "ssl_status"
+    t.string "txt_name"
+    t.string "txt_value"
+    t.datetime "last_checked_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id"], name: "index_custom_domains_on_account_id"
+    t.index ["hostname"], name: "index_custom_domains_on_hostname", unique: true
   end
 
   create_table "depictions", force: :cascade do |t|
@@ -534,6 +550,7 @@ ActiveRecord::Schema[8.2].define(version: 2026_08_01_000000) do
   add_foreign_key "broadcast_deliveries", "broadcasts"
   add_foreign_key "broadcast_deliveries", "subscribers"
   add_foreign_key "categories", "accounts"
+  add_foreign_key "custom_domains", "accounts"
   add_foreign_key "drop_deliveries", "records", column: "drop_record_id"
   add_foreign_key "drop_deliveries", "streams"
   add_foreign_key "drop_deliveries", "subscribers"

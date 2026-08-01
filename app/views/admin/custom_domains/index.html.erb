@@ -1,0 +1,69 @@
+<% content_for :title, "Custom domain — Inkwell" %>
+
+<%= render "admin/shared/canvas_head", crumbs: [["Settings", admin_settings_path], ["Custom domain", nil]] %>
+
+<header class="perma-header">
+  <h1 class="perma-header__title">Custom domain</h1>
+</header>
+
+<div class="settings u-center u-center-narrow">
+  <% if @domains.any? %>
+    <% canonical = @domains.find(&:canonical?) || @domains.first %>
+    <% apex = canonical.hostname.delete_prefix("www.") %>
+
+    <section class="settings__section" aria-label="Connected domain">
+      <h2 class="settings__section-title"><%= apex %></h2>
+      <ul class="settings__list">
+        <% @domains.each do |domain| %>
+          <li>
+            <code><%= domain.hostname %></code>
+            <span class="badge badge--<%= domain.live? ? "ok" : "pending" %>"><%= domain.status %></span>
+            <% unless domain.live? %><span class="u-text-muted">SSL: <%= domain.ssl_status || "pending" %></span><% end %>
+          </li>
+        <% end %>
+      </ul>
+
+      <% unless @domains.all?(&:live?) %>
+        <div class="settings__callout">
+          <h3>Add these DNS records at your registrar</h3>
+          <p class="u-text-muted">Type, name, value — that's what every registrar's form asks for.</p>
+
+          <p><strong>Record 1</strong> — Type: <code>CNAME</code> · Name: <code>www</code> ·
+             Target: <code><%= @cname_target %></code></p>
+
+          <% @domains.each do |domain| %>
+            <% next if domain.txt_name.blank? %>
+            <p><strong>TXT for <%= domain.hostname %></strong> — Type: <code>TXT</code> ·
+               Name: <code><%= domain.txt_name %></code> ·
+               Value: <code><%= domain.txt_value %></code></p>
+          <% end %>
+
+          <p class="u-text-muted">
+            The bare <code><%= apex %></code> (no <code>www</code>) can't be a plain CNAME at most
+            registrars — point <code>www</code> as above and set up an apex → <code>www</code> redirect,
+            or use your registrar's ALIAS/flattening if it has one. We'll email you when the certificate
+            is live (usually within an hour).
+          </p>
+        </div>
+      <% end %>
+
+      <%= button_to "Disconnect this domain", admin_custom_domain_path(canonical), method: :delete, class: "button",
+            data: { turbo_confirm: "Disconnect #{apex}? Your site stops serving there until you reconnect." } %>
+    </section>
+  <% end %>
+
+  <section class="settings__section" aria-label="Connect a domain">
+    <h2 class="settings__section-title"><%= @domains.any? ? "Connect a different domain" : "Connect your domain" %></h2>
+    <p class="u-text-muted">Enter the domain you own (e.g. <code>merovex.press</code>). We register it and its
+       <code>www</code>, and give you the DNS records to add.</p>
+
+    <%= form_with url: admin_custom_domains_path, method: :post, class: "settings" do |f| %>
+      <div class="field">
+        <%= f.label :hostname, "Domain", class: "field__label" %>
+        <%= f.text_field :hostname, class: "field__control", placeholder: "merovex.press",
+              autocapitalize: "off", autocorrect: "off", spellcheck: "false" %>
+      </div>
+      <%= f.submit "Connect domain", class: "button button--primary" %>
+    <% end %>
+  </section>
+</div>

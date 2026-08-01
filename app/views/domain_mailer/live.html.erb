@@ -1,0 +1,11 @@
+<h1>Your custom domain is live</h1>
+
+<p><strong><%= @account.name %></strong> is now serving at
+   <a href="https://<%= @domain.hostname %>/">https://<%= @domain.hostname %>/</a>
+   (and <a href="https://<%= @apex %>/">https://<%= @apex %>/</a>).</p>
+
+<p>The certificate is deployed and traffic is flowing through Cloudflare. You can
+   delete the temporary <code>_cf-custom-hostname</code> TXT record from your DNS
+   now if you like — it was only needed to prove you control the domain.</p>
+
+<p>— Kindred Quill</p>

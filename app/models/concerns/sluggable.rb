@@ -109,9 +109,12 @@ module Sluggable
     end
 
     # Never issue a slug that collides with a first path segment the app host
-    # serves unprefixed (see AccountHost::Extractor). Only words of exactly
-    # SLUG_LENGTH Crockford characters can collide; "assets" qualifies.
-    RESERVED_SLUGS = %w[ ASSETS ].freeze
+    # serves unprefixed (see AccountHost::Extractor), nor with a system host
+    # label on kindredquill.com (sites, origin, app, www, connect, pm-bounces —
+    # the edge target, fallback origin, app host, and mail bounce sender). Most
+    # can't be generated (wrong length or non-Crockford letters), but reserving
+    # them keeps the list honest if slugs ever become user-chosen.
+    RESERVED_SLUGS = %w[ ASSETS SITES ORIGIN APP WWW CONNECT ].freeze
 
     def generate_unique_slug
       loop do

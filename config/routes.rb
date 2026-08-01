@@ -183,6 +183,12 @@ Rails.application.routes.draw do
       # from the personal user settings; this shapes the account's public identity.
       resource :settings, only: %i[show update]
 
+      # Connect-your-domain (Cloudflare for SaaS, docs/custom-domain-onboarding.md):
+      # index shows status + the form and the author's DNS instructions; create
+      # provisions the custom hostnames + KV; destroy tears the whole connection
+      # down (KV keys and custom hostnames both, freeing the allowance).
+      resources :custom_domains, only: %i[index create destroy]
+
       # The SiteDesigner (ADR 0022, docs/site-designer.md): the author designs
       # the public site against a live preview. The working design lives in
       # localStorage until Save (PATCH designer) graduates it to the account,

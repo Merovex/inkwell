@@ -45,6 +45,15 @@ module Inkwell
     # tracking is live — otherwise everyone looks cold (ADR 0014).
     config.x.newsletter.sunset_enabled = ENV["NEWSLETTER_SUNSET"] == "true"
 
+    # Cloudflare for SaaS: the kindredquill.com zone, the account, the HOSTNAMES
+    # KV namespace, and the CNAME target authors point their www at. These IDs
+    # are not secret (ENV-overridable, with the provisioned values as defaults);
+    # the API token IS secret and lives in credentials (cloudflare.api_token).
+    config.x.cloudflare.zone_id = ENV.fetch("CF_ZONE_ID", "1eb37a3d7c529846411c5030707a0d5f")
+    config.x.cloudflare.account_id = ENV.fetch("CF_ACCOUNT_ID", "a65cb156b161e9bcd5107601fcc6255a")
+    config.x.cloudflare.kv_namespace_id = ENV.fetch("CF_KV_NAMESPACE_ID", "31cc38518280423694f78a0ae0726878")
+    config.x.cloudflare.cname_target = ENV.fetch("CF_CNAME_TARGET", "sites.kindredquill.com")
+
     # Mail rendered by deliver_later must carry the enqueuing request's
     # account, like every other job (see ApplicationMailDeliveryJob).
     config.action_mailer.delivery_job = "ApplicationMailDeliveryJob"

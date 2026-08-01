@@ -1,0 +1,12 @@
+Your custom domain is live.
+
+<%= @account.name %> is now serving at:
+
+  https://<%= @domain.hostname %>/
+  https://<%= @apex %>/
+
+The certificate is deployed and traffic is flowing through Cloudflare. You can
+delete the temporary _cf-custom-hostname TXT record from your DNS now if you'd
+like — it was only needed to prove you control the domain.
+
+— Kindred Quill
