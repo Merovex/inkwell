@@ -420,6 +420,10 @@
         {
           "id": "portrait",
           "label": "Author portrait"
+        },
+        {
+          "id": "image",
+          "label": "Custom image"
         }
       ]
     },

@@ -27,6 +27,11 @@ class Site < ApplicationRecord
   # absent, that background option just shows its legibility wash.
   has_one_attached :banner
 
+  # The hero's foreground image for the "Custom image" hero art (data-hero-art=
+  # image): the author's own picture beside the copy, instead of a book cover
+  # or the author portrait. Uploaded in the designer's hero pane.
+  has_one_attached :hero_image
+
   # The signup band's own backdrop (the newsletter Photo presentation);
   # absent, the band falls back to the author photo.
   has_one_attached :newsletter_photo
@@ -44,7 +49,7 @@ class Site < ApplicationRecord
 
   private
     def acceptable_images
-      %i[ logo banner newsletter_photo ].each { |name| acceptable_image(name) }
+      %i[ logo banner hero_image newsletter_photo ].each { |name| acceptable_image(name) }
     end
 
     def acceptable_image(name)

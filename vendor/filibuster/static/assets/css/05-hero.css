@@ -33,6 +33,7 @@
 .fk-hero-bg-self, .fk-hero-bg-banner,
 .fk-hero-art-fan,
 .fk-hero-art-portrait,
+.fk-hero-art-image,
 .fk-hero-kicker-role { display: none; }
 /* author copy-source: the name moved into the headline, so the site name
    stands alone in the kicker (the template dropped the author span). */
@@ -46,15 +47,24 @@
 }
 .fk-hero-art-fan { list-style: none; margin: 0; }
 
-/* --- data-hero-art: swap the featured cover for a round author portrait.
-   Applies to the one-book structures (right/centered); the many-covers
-   structure keeps its fan. The 50% radius wins over the cover-radius rule
+/* --- data-hero-art: swap the featured cover for a round author portrait or a
+   custom uploaded image. Applies to the one-book structures (right/centered);
+   the many-covers structure keeps its fan. Whenever the art isn't the cover,
+   hide the cover. The portrait's 50% radius wins over the cover-radius rule
    above by coming later at equal specificity. --- */
-html[data-hero-art="portrait"]:not([data-hero="many"]) .fk-hero-art-cover { display: none; }
+html[data-hero-art="portrait"]:not([data-hero="many"]) .fk-hero-art-cover,
+html[data-hero-art="image"]:not([data-hero="many"]) .fk-hero-art-cover { display: none; }
 html[data-hero-art="portrait"]:not([data-hero="many"]) .fk-hero-art-portrait { display: block; }
+html[data-hero-art="image"]:not([data-hero="many"]) .fk-hero-art-image { display: block; }
 .fk-hero-art-portrait img {
   width: 100%; max-width: 22rem; margin-inline: auto; aspect-ratio: 1;
   object-fit: cover; border-radius: 50%;
+  box-shadow: 0 20px 60px rgb(0 0 0 / 0.35);
+}
+/* the custom image reads as a framed picture (not a round portrait): it keeps
+   the palette's cover-radius and just gets sized and lifted off the page. */
+.fk-hero-art-image img {
+  width: 100%; max-width: 24rem; margin-inline: auto;
   box-shadow: 0 20px 60px rgb(0 0 0 / 0.35);
 }
 

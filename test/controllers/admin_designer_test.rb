@@ -35,16 +35,17 @@ class AdminDesignerTest < ActionDispatch::IntegrationTest
     assert_response :success
 
     theme = Theme.current
-    # books + catalog + alternate + hero_book + hero_many + hero_art + the
-    # author-grid toggle (authors) + the two home-visibility axes (hero_home,
-    # bio_home) render as switches; corners, buttons, and hero_scrim (manifest
-    # control: "slider") as sliders — not fieldsets
+    # books + catalog + alternate + hero_book + hero_many + the author-grid
+    # toggle (authors) + the two home-visibility axes (hero_home, bio_home)
+    # render as switches; corners, buttons, and hero_scrim (manifest control:
+    # "slider") as sliders — not fieldsets. hero_art is a 3-way choice, so it
+    # renders as an option-card fieldset like the other multi-value axes.
     sliders = theme.axes.count { it["control"] == "slider" }
-    assert_select ".designer__axis", count: theme.axes.size - 9 - sliders
-    assert_select ".switch__input[data-designer-target=axisToggle]", count: 9
+    assert_select ".designer__axis", count: theme.axes.size - 8 - sliders
+    assert_select ".switch__input[data-designer-target=axisToggle]", count: 8
     assert_select ".switch__input[data-axis=hero_home]", count: 1
     assert_select ".switch__input[data-axis=bio_home]", count: 1
-    assert_select ".switch__input[data-axis=hero_art]", count: 1
+    assert_select ".design-option__input[name='design[hero_art]']", count: 3
     assert_select ".switch__input[data-axis=authors]", count: 1
     assert_select ".designer__range[data-axis=hero_scrim]", count: 1
     assert_select ".designer__range[data-axis=corners]", count: 1

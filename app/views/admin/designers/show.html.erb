@@ -170,17 +170,15 @@
             says, then how it's arranged and dressed. %>
         <%= render "hero_content" %>
         <%= render "axis", axis: hero_axes.find { it["key"] == "hero" } %>
-        <%# hero_book and hero_art both dress the one-book layouts (right/
-            centered), so they share the wrap the controller toggles. %>
+        <%# hero_art and hero_book both dress the one-book layouts (right/
+            centered), so they share the wrap the controller toggles. hero_art
+            is the book-cover / author-portrait / custom-image choice; the
+            custom image is uploaded in the slot just below. %>
         <div data-designer-target="heroBookWrap">
-          <label class="switch">
-            <input class="switch__input" type="checkbox"
-                   data-designer-target="axisToggle" data-axis="hero_art"
-                   data-on="portrait" data-off="cover"
-                   data-on-label="Author portrait" data-off-label="Book cover"
-                   data-action="designer#axisToggled">
-            Show the author's portrait instead of a book
-          </label>
+          <%= render "axis", axis: hero_axes.find { it["key"] == "hero_art" } %>
+          <%= render "image_slot", slot: :hero_image, heading: "Custom hero image",
+                upload_label: "Upload hero image",
+                hint: "Shows when the hero image is set to Custom image." %>
           <label class="switch">
             <input class="switch__input" type="checkbox"
                    data-designer-target="axisToggle" data-axis="hero_book"

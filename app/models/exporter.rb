@@ -99,6 +99,7 @@ class Exporter
         description_html: html(site.description),
         logo: copy_image(site.logo, "logo"),
         banner: copy_image(site.banner, "banner"),
+        hero_image: copy_image(site.hero_image, "hero"),
         newsletter_photo: copy_image(site.newsletter_photo, "newsletter"),
         design: theme.defaults.merge(theme.permit!(@design[:design]))
       }.merge(content_blocks)

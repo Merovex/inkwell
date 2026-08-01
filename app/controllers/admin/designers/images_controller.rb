@@ -3,7 +3,7 @@
 # localStorage schema lab, so uploads persist to the Site immediately and
 # the model enforces type and size. The logo doubles as System settings'.
 class Admin::Designers::ImagesController < Admin::BaseController
-  SLOTS = %w[ logo banner newsletter_photo ].freeze
+  SLOTS = %w[ logo banner hero_image newsletter_photo ].freeze
 
   before_action :set_slot
 

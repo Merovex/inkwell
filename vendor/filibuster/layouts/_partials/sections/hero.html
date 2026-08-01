@@ -97,12 +97,18 @@
     </div>
     {{ end }}
     {{/* data-hero-art=portrait swaps the featured cover for the author's own
-         photo (CSS shows one or the other). Prefers the dedicated hero image,
-         falling back to the bio avatar; rendered only when one exists, else
-         the cover stands in. */}}
+         photo (round). Prefers the author's dedicated hero image, else the bio
+         avatar; rendered only when one exists, else the cover stands in. */}}
     {{ with or $author.hero_image $author.avatar }}
     <div class="fk-hero-art fk-hero-art-portrait">
       <img src="{{ site.Home.RelPermalink }}{{ . }}" alt="Portrait of {{ $author.name }}" loading="eager">
+    </div>
+    {{ end }}
+    {{/* data-hero-art=image shows a custom picture the author uploaded in the
+         designer's hero pane (site.hero_image) — neither book nor portrait. */}}
+    {{ with $site.hero_image }}
+    <div class="fk-hero-art fk-hero-art-image">
+      <img src="{{ site.Home.RelPermalink }}{{ . }}" alt="{{ $site.name }}" loading="eager">
     </div>
     {{ end }}
     <ul class="fk-hero-art fk-hero-art-fan">
