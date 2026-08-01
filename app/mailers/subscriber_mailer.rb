@@ -8,9 +8,13 @@ class SubscriberMailer < ApplicationMailer
   # transactional config set (no open/click tracking). The From still comes from
   # the news.merovex.press identity, so newsletter reputation stays isolated;
   # only the broadcast issues (PostBroadcastMailer) use the tracked marketing set.
-  default delivery_method_options: {
-    configuration_set_name: Rails.application.credentials.dig(:ses, :transactional_config_set)
-  }
+  # Transactional on Postmark — the confirm and "keep subscribed" links ride the
+  # default `outbound` stream, never the bulk Broadcast stream, so they're not
+  # click-rewritten. (SES config set kept alongside for an easy revert.)
+  default message_stream: "outbound",
+    delivery_method_options: {
+      configuration_set_name: Rails.application.credentials.dig(:ses, :transactional_config_set)
+    }
 
   def confirmation(subscriber, token)
     setting = subscriber.account.site

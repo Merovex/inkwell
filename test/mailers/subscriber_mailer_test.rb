@@ -41,5 +41,7 @@ class SubscriberMailerTest < ActionMailer::TestCase
     assert_equal [ "press@example.com" ], email.reply_to
     assert_not_equal [ "press@example.com" ], email.from
     assert_equal [ "newsletter@merovex.press" ], email.from
+    # Transactional stream, never the bulk Broadcast stream.
+    assert_equal "outbound", email["message-stream"].value
   end
 end
