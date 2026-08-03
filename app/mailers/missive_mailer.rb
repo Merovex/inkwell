@@ -23,7 +23,7 @@ class MissiveMailer < ApplicationMailer
   def confirmation(missive, token)
     setting = missive.account.site
     @site_name = setting.site_name
-    @confirm_url = confirm_contact_url(token: token)
+    @confirm_url = confirm_contact_url(token: token, **public_url_options(missive.account))
 
     options = { to: missive.email_address, subject: "Confirm your message to #{@site_name}" }
     options[:reply_to] = setting.contact_email if setting.contact_email.present?

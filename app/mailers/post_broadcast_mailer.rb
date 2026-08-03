@@ -7,12 +7,16 @@
 class PostBroadcastMailer < ApplicationMailer
   def issue(broadcast, subscriber)
     @post = broadcast.post
-    setting = broadcast.record.bucket.site
+    account = broadcast.record.bucket
+    setting = account.site
     @site_name = setting.site_name
-    @web_url = blog_post_url(broadcast.record.to_slug)
+    # Reader-facing links live on the press's public address (custom domain or
+    # apex slug path), never the app host.
+    url_options = public_url_options(account)
+    @web_url = blog_post_url(broadcast.record.to_slug, **url_options)
     # Carry the broadcast so an unsubscribe from *this* issue attributes to it on
     # the dashboard (metrics only — see SubscriptionsController#unsubscribe).
-    @unsubscribe_url = unsubscribe_newsletter_url(token: subscriber.generate_token_for(:unsubscribe), broadcast: broadcast.id)
+    @unsubscribe_url = unsubscribe_newsletter_url(token: subscriber.generate_token_for(:unsubscribe), broadcast: broadcast.id, **url_options)
 
     headers["List-Unsubscribe"] = "<#{@unsubscribe_url}>"
     headers["List-Unsubscribe-Post"] = "List-Unsubscribe=One-Click"

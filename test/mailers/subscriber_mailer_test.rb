@@ -16,6 +16,19 @@ class SubscriberMailerTest < ActionMailer::TestCase
     end
   end
 
+  test "a domain-less account's links land on the apex slug path, not the app host" do
+    Rails.configuration.x.app_host = "app.kindredquill.example"
+    account = Account.create_with_owner(name: "Slugonly Press", owner: users(:bob))
+    subscriber = Current.with_account(account) { Subscriber.create!(email_address: "reader@example.com") }
+    token = subscriber.generate_token_for(:confirmation)
+
+    email = SubscriberMailer.confirmation(subscriber, token)
+
+    assert_match %r{https://kindredquill\.example/#{account.slug}/newsletter/confirm/}, email.text_part.decoded
+  ensure
+    Rails.configuration.x.app_host = nil
+  end
+
   test "re_engagement carries the keep and unsubscribe links" do
     subscriber = Subscriber.create!(email_address: "reader@example.com", status: :confirmed)
     token = subscriber.generate_token_for(:unsubscribe)

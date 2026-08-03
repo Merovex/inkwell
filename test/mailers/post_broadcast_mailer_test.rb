@@ -14,6 +14,19 @@ class PostBroadcastMailerTest < ActionMailer::TestCase
     assert_match "List-Unsubscribe=One-Click", email["List-Unsubscribe-Post"].to_s
   end
 
+  test "issue's reader-facing links land on the account's own domain, never the app host" do
+    subscriber = Subscriber.create!(email_address: "reader@example.com", status: :confirmed)
+    broadcast = records(:kickoff).create_broadcast!
+
+    email = PostBroadcastMailer.issue(broadcast, subscriber)
+
+    # The merovex fixture carries domain: merovex.press — every public link
+    # (view-in-browser, unsubscribe, one-click header) must ride it.
+    assert_match %r{https://merovex\.press/.*#{records(:kickoff).to_slug}}, email.text_part.decoded
+    assert_match %r{https://merovex\.press/newsletter/unsubscribe/}, email.text_part.decoded
+    assert_match %r{\Ahttps://merovex\.press/}, email["List-Unsubscribe"].to_s.delete_prefix("<")
+  end
+
   test "issue rides Postmark's broadcast stream with tracking and id metadata" do
     subscriber = Subscriber.create!(email_address: "reader@example.com", status: :confirmed)
     broadcast = records(:kickoff).create_broadcast!

@@ -19,8 +19,9 @@ class SubscriberMailer < ApplicationMailer
   def confirmation(subscriber, token)
     setting = subscriber.account.site
     @site_name = setting.site_name
-    @confirm_url = confirm_newsletter_url(token: token)
-    @unsubscribe_url = unsubscribe_newsletter_url(token: subscriber.generate_token_for(:unsubscribe))
+    url_options = public_url_options(subscriber.account)
+    @confirm_url = confirm_newsletter_url(token: token, **url_options)
+    @unsubscribe_url = unsubscribe_newsletter_url(token: subscriber.generate_token_for(:unsubscribe), **url_options)
 
     options = { to: subscriber.email_address, subject: "Confirm your #{@site_name} subscription", from: marketing_from(setting) }
     options[:reply_to] = setting.contact_email if setting.contact_email.present?
@@ -34,8 +35,9 @@ class SubscriberMailer < ApplicationMailer
   def re_engagement(subscriber, token)
     setting = subscriber.account.site
     @site_name = setting.site_name
-    @keep_url = keep_newsletter_url(token: token)
-    @unsubscribe_url = unsubscribe_newsletter_url(token: token)
+    url_options = public_url_options(subscriber.account)
+    @keep_url = keep_newsletter_url(token: token, **url_options)
+    @unsubscribe_url = unsubscribe_newsletter_url(token: token, **url_options)
 
     options = { to: subscriber.email_address, subject: "Still want emails from #{@site_name}?", from: marketing_from(setting) }
     options[:reply_to] = setting.contact_email if setting.contact_email.present?

@@ -12,7 +12,8 @@ class DropMailer < ApplicationMailer
     subscriber = stream.subscriber
     setting = subscriber.account.site
     @site_name = setting.site_name
-    @unsubscribe_url = unsubscribe_newsletter_url(token: subscriber.generate_token_for(:unsubscribe))
+    @unsubscribe_url = unsubscribe_newsletter_url(token: subscriber.generate_token_for(:unsubscribe),
+      **public_url_options(subscriber.account))
 
     headers["List-Unsubscribe"] = "<#{@unsubscribe_url}>"
     headers["List-Unsubscribe-Post"] = "List-Unsubscribe=One-Click"
