@@ -49,6 +49,14 @@ Rails.application.routes.draw do
       # Rotate your invite code (inviters only — see User#can_invite?).
       resource :join_code, only: :update
     end
+
+    # Author circles — cross-press accountability groups a user belongs to,
+    # independent of any press, so they live on the app host at the top level
+    # (not under a /{SLUG}/admin). A circle's home is its message board (show);
+    # posting to the board is the nested resource.
+    resources :circles, only: %i[show] do
+      resources :messages, only: %i[create], module: :circles
+    end
   end
 
   # Inkwell — the admin backend. Everything the author uses to write, publish,

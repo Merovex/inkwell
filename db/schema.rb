@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.2].define(version: 2026_08_01_010000) do
+ActiveRecord::Schema[8.2].define(version: 2026_08_03_000200) do
   create_table "account_users", force: :cascade do |t|
     t.integer "account_id", null: false
     t.integer "user_id", null: false
@@ -223,6 +223,38 @@ ActiveRecord::Schema[8.2].define(version: 2026_08_01_010000) do
     t.index ["record_id", "id"], name: "index_chat_lines_on_record_id_and_id"
   end
 
+  create_table "circle_memberships", force: :cascade do |t|
+    t.integer "circle_id", null: false
+    t.integer "user_id", null: false
+    t.string "role", default: "member", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["circle_id", "user_id"], name: "index_circle_memberships_on_circle_id_and_user_id", unique: true
+    t.index ["user_id"], name: "index_circle_memberships_on_user_id"
+  end
+
+  create_table "circle_messages", force: :cascade do |t|
+    t.integer "record_id", null: false
+    t.integer "creator_id", null: false
+    t.string "event", default: "created", null: false
+    t.string "title"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["creator_id"], name: "index_circle_messages_on_creator_id"
+    t.index ["record_id", "id"], name: "index_circle_messages_on_record_id_and_id"
+  end
+
+  create_table "circles", force: :cascade do |t|
+    t.string "name", null: false
+    t.string "slug", null: false
+    t.integer "owner_id", null: false
+    t.integer "member_limit"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["owner_id"], name: "index_circles_on_owner_id"
+    t.index ["slug"], name: "index_circles_on_slug", unique: true
+  end
+
   create_table "collections", force: :cascade do |t|
     t.string "title", null: false
     t.string "status", default: "drafted", null: false
@@ -426,8 +458,9 @@ ActiveRecord::Schema[8.2].define(version: 2026_08_01_010000) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.datetime "purge_after"
-    t.integer "account_id", null: false
-    t.index ["account_id", "recordable_type"], name: "index_records_on_account_id_and_recordable_type"
+    t.string "bucket_type", null: false
+    t.integer "bucket_id", null: false
+    t.index ["bucket_type", "bucket_id", "recordable_type"], name: "index_records_on_bucket_and_recordable_type"
     t.index ["creator_id"], name: "index_records_on_creator_id"
     t.index ["parent_id"], name: "index_records_on_parent_id"
     t.index ["purge_after"], name: "index_records_on_purge_after"
@@ -563,7 +596,6 @@ ActiveRecord::Schema[8.2].define(version: 2026_08_01_010000) do
   add_foreign_key "posts", "bodies"
   add_foreign_key "posts", "records"
   add_foreign_key "posts", "users", column: "creator_id"
-  add_foreign_key "records", "accounts"
   add_foreign_key "records", "records", column: "parent_id"
   add_foreign_key "records", "users", column: "creator_id"
   add_foreign_key "sessions", "users"

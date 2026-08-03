@@ -70,7 +70,7 @@ class Author < ApplicationRecord
     end
 
     def owning_account
-      record&.account || Current.account
+      record&.bucket || Current.account
     end
 
     def acceptable_avatar = acceptable_image(:avatar)

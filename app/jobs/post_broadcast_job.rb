@@ -8,7 +8,7 @@ class PostBroadcastJob < ApplicationJob
   discard_on ActiveJob::DeserializationError
 
   def perform(broadcast)
-    broadcast.record.account.subscribers.confirmed.find_each do |subscriber|
+    broadcast.record.bucket.subscribers.confirmed.find_each do |subscriber|
       delivery = broadcast.deliveries.create_or_find_by!(subscriber: subscriber)
       next if delivery.sent_at
 

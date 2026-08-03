@@ -1,0 +1,5 @@
+board_kickoff:
+  record: board_kickoff
+  creator: alice
+  event: created
+  title: Welcome to the circle

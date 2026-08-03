@@ -10,7 +10,7 @@ class InstallmentTest < ActiveSupport::TestCase
   test "a cross-account pairing is invalid" do
     series_record, book_record = originate_series_and_book
     other = Account.create!(name: "Other Press", owner: users(:bob))
-    book_record.update_column(:account_id, other.id)
+    book_record.update_column(:bucket_id, other.id)
 
     installment = Installment.new(container_record: series_record, book_record: book_record.reload)
     assert_not installment.valid?

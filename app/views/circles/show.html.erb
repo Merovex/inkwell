@@ -1,0 +1,33 @@
+<% content_for :title, "#{@circle.name} — Circle" %>
+
+<div class="card">
+  <header class="card__header"><span class="card__title"><%= @circle.name %></span></header>
+
+  <div class="card__body u-stack">
+    <%= form_with url: circle_messages_path(@circle), scope: :circle_message do |form| %>
+      <div class="u-stack">
+        <%= form.text_field :title, placeholder: "Title (optional)", class: "input" %>
+        <%= form.text_area :content, placeholder: "Post to the board…", rows: 4, class: "input" %>
+        <%= form.submit "Post", class: "button button--primary" %>
+      </div>
+    <% end %>
+
+    <% if @messages.any? %>
+      <ul class="board u-stack">
+        <% @messages.each do |message| %>
+          <li id="circle_message_<%= message.record_id %>" class="board__post">
+            <% if message.title.present? %>
+              <h3 class="board__title"><%= message.title %></h3>
+            <% end %>
+            <div class="board__body trix-content"><%= message.content %></div>
+            <p class="board__meta u-text-muted">
+              <%= message.creator.name %> · <%= message.created_at.to_fs(:long) %>
+            </p>
+          </li>
+        <% end %>
+      </ul>
+    <% else %>
+      <p class="u-text-muted">No posts yet. Start the board.</p>
+    <% end %>
+  </div>
+</div>

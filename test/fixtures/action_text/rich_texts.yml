@@ -22,3 +22,8 @@ welcome_comment_content:
   record: welcome_comment (Comment)
   name: content
   body: <p>Hello from the first reply.</p>
+
+board_kickoff_content:
+  record: board_kickoff (CircleMessage)
+  name: content
+  body: <p>Welcome — introduce yourself and your current project.</p>

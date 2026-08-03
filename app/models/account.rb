@@ -11,7 +11,10 @@ class Account < ApplicationRecord
 
   has_many :account_users, dependent: :destroy
   has_many :users, through: :account_users
-  has_many :records
+  # The press owns its content as a bucket on the spine (the other bucket kind
+  # is a Circle). Every Current.account.records… query keeps working through
+  # this association — it just carries a bucket_type of "Account" now.
+  has_many :records, as: :bucket
   has_many :missives
   has_many :subscribers
   has_many :categories

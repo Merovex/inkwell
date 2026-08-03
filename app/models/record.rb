@@ -7,13 +7,15 @@ class Record < ApplicationRecord
   include Boostable
 
   # Content types that may live in the envelope; grows as recordables are added.
-  RECORDABLE_TYPES = %w[ Post Comment ChatLine Message Book Series Collection Author Drip Drop Site ]
+  RECORDABLE_TYPES = %w[ Post Comment ChatLine Message Book Series Collection Author Drip Drop Site CircleMessage ]
 
   delegated_type :recordable, types: RECORDABLE_TYPES, optional: true
   belongs_to :creator, class_name: "User", default: -> { Current.user }
-  # Tenancy is stamped at birth and never changes; every write path carries
-  # a resolved Current.account (middleware, jobs, or the test harness).
-  belongs_to :account, default: -> { Current.account }
+  # Tenancy is stamped at birth and never changes: the bucket that owns this
+  # record — an Account (the press) or a Circle. The active bucket is whichever
+  # namespace set Current.bucket; account space leaves it unset, so we fall back
+  # to Current.account (the press is always the default owner).
+  belongs_to :bucket, polymorphic: true, default: -> { Current.bucket || Current.account }
 
   # Self-referential threading: a comment's record will parent to the record it
   # comments on; same mechanism for any future child content.

@@ -86,6 +86,18 @@ class TenantIsolationTest < ActionDispatch::IntegrationTest
     assert_select ".analytics__number", text: "1", count: 0
   end
 
+  test "a circle's board messages belong to the circle, never to any account" do
+    circle = Circle.create_with_owner(name: "Swap Circle", owner: @rival_owner)
+    Current.with_bucket(circle) do
+      Record.originate(CircleMessage.new(title: "Circle only", content: "swap terms", creator: @rival_owner))
+    end
+
+    # The spine is bucket-scoped: neither press owns the circle's record.
+    assert_equal 0, @merovex.records.where(recordable_type: "CircleMessage").count
+    assert_equal 0, @rival.records.where(recordable_type: "CircleMessage").count
+    assert_equal 1, circle.records.where(recordable_type: "CircleMessage").count
+  end
+
   test "each domain serves only its own public site" do
     host! @rival.domain
     get "/blog"

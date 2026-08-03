@@ -8,7 +8,7 @@ class RecordTest < ActiveSupport::TestCase
       Record.originate(Post.new(title: "Elsewhere", creator: users(:alice), body: Body.create!))
     end
 
-    assert_equal other, record.account
+    assert_equal other, record.bucket
   end
 
   test "a record cannot be born without an account in context" do

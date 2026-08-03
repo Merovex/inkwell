@@ -17,6 +17,6 @@ class Message < ApplicationRecord
   private
     def category_shares_account
       return unless category
-      errors.add(:category, "must exist") if category.account_id != (record&.account_id || Current.account&.id)
+      errors.add(:category, "must exist") if category.account_id != (record&.bucket_id || Current.account&.id)
     end
 end

@@ -14,7 +14,7 @@ class Installment < ApplicationRecord
 
   private
     def records_share_account
-      return if container_record&.account_id == book_record&.account_id
+      return if container_record&.bucket_id == book_record&.bucket_id
       errors.add(:base, "Container and book must belong to the same account")
     end
 end

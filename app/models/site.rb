@@ -43,7 +43,9 @@ class Site < ApplicationRecord
 
   def mutable? = true
 
-  def account = record&.account
+  # A Site is only ever an Account's (the press's public identity), so its
+  # bucket is that Account.
+  def account = record&.bucket
 
   def title = site_name
 

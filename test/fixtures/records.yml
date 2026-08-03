@@ -1,36 +1,41 @@
 kickoff:
   recordable: kickoff (Post)
   creator: alice
-  account: merovex
+  bucket: merovex (Account)
 
 typography:
   recordable: typography (Post)
   creator: alice
-  account: merovex
+  bucket: merovex (Account)
 
 kickoff_comment:
   recordable: kickoff_comment (Comment)
   creator: alice
-  account: merovex
+  bucket: merovex (Account)
   parent: kickoff
 
 hello_line:
   recordable: hello_line (ChatLine)
   creator: alice
-  account: merovex
+  bucket: merovex (Account)
 
 welcome:
   recordable: welcome (Message)
   creator: alice
-  account: merovex
+  bucket: merovex (Account)
 
 roadmap:
   recordable: roadmap (Message)
   creator: alice
-  account: merovex
+  bucket: merovex (Account)
 
 welcome_comment:
   recordable: welcome_comment (Comment)
   creator: alice
-  account: merovex
+  bucket: merovex (Account)
   parent: welcome
+
+board_kickoff:
+  recordable: board_kickoff (CircleMessage)
+  creator: alice
+  bucket: writers (Circle)
