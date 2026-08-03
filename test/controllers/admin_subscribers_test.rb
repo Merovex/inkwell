@@ -33,6 +33,17 @@ class AdminSubscribersTest < ActionDispatch::IntegrationTest
     assert_select ".list__title", text: "don•••@example.com", count: 0
   end
 
+  test "the byline shows updated_at when the row changed after joining" do
+    subscriber = Subscriber.opt_in(email_address: "gone@example.com")
+    subscriber.confirm!
+    subscriber.update_column(:created_at, 2.weeks.ago)  # joined earlier; bounce touches updated_at today
+    subscriber.mark_bounced!(source: "postmark")
+    sign_in_as users(:admin)
+
+    get admin_subscribers_path(state: "bounced")
+    assert_select ".list__byline", text: /updated #{Time.current.strftime("%b %-d, %Y")}/
+  end
+
   test "export gives the current state as CSV" do
     Subscriber.opt_in(email_address: "reader@example.com", source: "hero").confirm!
     sign_in_as users(:admin)

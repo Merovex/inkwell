@@ -34,7 +34,7 @@
           </span>
           <span class="list__meta">
             <span class="list__byline">
-              <%= "via #{subscriber.source} · " if subscriber.source.present? %>joined <%= subscriber.created_at.strftime("%b %-d, %Y") %><%= " · last opened #{subscriber.last_engaged_at.strftime('%b %-d, %Y')}" if subscriber.last_engaged_at %>
+              <%= "via #{subscriber.source} · " if subscriber.source.present? %>joined <%= subscriber.created_at.strftime("%b %-d, %Y") %><%= " · updated #{subscriber.updated_at.strftime('%b %-d, %Y')}" if subscriber.updated_at.to_date != subscriber.created_at.to_date %><%= " · last opened #{subscriber.last_engaged_at.strftime('%b %-d, %Y')}" if subscriber.last_engaged_at %>
             </span>
           </span>
         </span>
