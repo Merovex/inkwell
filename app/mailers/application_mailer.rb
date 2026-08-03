@@ -14,20 +14,12 @@ class ApplicationMailer < ActionMailer::Base
   private
     # URL options for links that live on the account's PUBLIC site — the post's
     # web page, newsletter confirm/keep/unsubscribe, contact confirm. The reader
-    # belongs to the press, so links must land on the press's own address: the
-    # custom domain when connected, else the apex slug path (mirrors
-    # Account#public_address). Without either (legacy single-tenant, dev/test)
-    # this returns {} and the global default_url_options host applies — the old
-    # behavior. Every subscriber-facing link passes through here; a bare *_url
-    # helper would emit the app host instead.
+    # belongs to the press, so links must land on the press's own address. Every
+    # subscriber-facing link passes through here; a bare *_url helper would emit
+    # the app host instead. Shared with the admin's share-link banner via
+    # AccountHost.public_url_options.
     def public_url_options(account)
-      if account&.domain.present?
-        { host: account.domain, protocol: "https" }
-      elsif account && AccountHost.apex_host
-        { host: AccountHost.apex_host, script_name: "/#{account.slug}", protocol: "https" }
-      else
-        {}
-      end
+      AccountHost.public_url_options(account)
     end
 
     # Newsletter mail sends under Ben Wilson's name from the Postmark-verified

@@ -5,9 +5,10 @@
 <% broadcast = @record.broadcast %>
 <% if @post.published? || @post.scheduled? %>
   <aside class="broadcast-banner<%= " broadcast-banner--sent" if broadcast&.sent? %>">
-    <%# The public URL. While scheduled, to_slug carries the HMAC preview key, so %>
-    <%# this link (and the one in the email) resolves early; the bare id 404s. %>
-    <% url = blog_post_url(@record.to_slug) %>
+    <%# The public URL, on the site's own address (custom domain when connected). %>
+    <%# While scheduled, to_slug carries the HMAC preview key, so this link (and %>
+    <%# the one in the email) resolves early; the bare id 404s. %>
+    <% url = blog_post_url(@record.to_slug, **AccountHost.public_url_options(Current.account)) %>
     <% if @post.published? %>
       <p class="broadcast-banner__lead">
         <strong>This post is

@@ -29,6 +29,23 @@ module AccountHost
   # merovex.press and www.merovex.press are the same tenant.
   def self.canonical_host(host) = host.to_s.downcase.delete_prefix("www.")
 
+  # URL options for a link on the account's PUBLIC site (reader-facing: the
+  # blog permalink, newsletter confirm/unsubscribe): the custom domain when
+  # connected, else the apex slug path — mirrors Account#public_address. The
+  # explicit script_name matters both ways: it must carry the slug on the apex
+  # and must clear the admin's mounted /{SLUG} prefix on a custom domain.
+  # Without either (legacy single-tenant, dev/test) this returns {} and links
+  # fall back to the request/default host — the old behavior.
+  def self.public_url_options(account)
+    if account&.domain.present?
+      { host: account.domain, protocol: "https", script_name: "" }
+    elsif account && apex_host
+      { host: apex_host, script_name: "/#{account.slug}", protocol: "https" }
+    else
+      {}
+    end
+  end
+
   class Extractor
     # One path segment shaped like a slug (length must match
     # Sluggable::SLUG_LENGTH; literal because this file loads before Zeitwerk).
