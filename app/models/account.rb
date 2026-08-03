@@ -1,4 +1,4 @@
-# The operational tenant: the press or pen name everything else belongs to.
+# The operational tenant: the site or pen name everything else belongs to.
 # Plain table, not a recordable — accounts own the spine; they don't live on
 # it. The slug is the account's only public identifier (support tickets, R2
 # prefixes, Stripe metadata); the primary key never leaves the database.
@@ -11,7 +11,7 @@ class Account < ApplicationRecord
 
   has_many :account_users, dependent: :destroy
   has_many :users, through: :account_users
-  # The press owns its content as a bucket on the spine (the other bucket kind
+  # The site owns its content as a bucket on the spine (the other bucket kind
   # is a Circle). Every Current.account.records… query keeps working through
   # this association — it just carries a bucket_type of "Account" now.
   has_many :records, as: :bucket
@@ -52,7 +52,7 @@ class Account < ApplicationRecord
     @site ||= Site.where(id: records.active.where(recordable_type: "Site").select(:recordable_id)).first || create_site
   end
 
-  # Birth of an account: the press plus its owner's membership, atomically.
+  # Birth of an account: the site plus its owner's membership, atomically.
   # The owner's superuser authority is the owner_id itself (User#administers?);
   # ownership transfers are a console operation, never UI. Returns the account,
   # unsaved with errors when invalid (name taken, blank).
@@ -64,7 +64,7 @@ class Account < ApplicationRecord
     account
   end
 
-  # Where this press's admin lives on the app host (script_name-mounted).
+  # Where this site's admin lives on the app host (script_name-mounted).
   def admin_path
     "/#{slug}/admin"
   end

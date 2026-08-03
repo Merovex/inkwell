@@ -12,9 +12,9 @@ class Record < ApplicationRecord
   delegated_type :recordable, types: RECORDABLE_TYPES, optional: true
   belongs_to :creator, class_name: "User", default: -> { Current.user }
   # Tenancy is stamped at birth and never changes: the bucket that owns this
-  # record — an Account (the press) or a Circle. The active bucket is whichever
+  # record — an Account (the site) or a Circle. The active bucket is whichever
   # namespace set Current.bucket; account space leaves it unset, so we fall back
-  # to Current.account (the press is always the default owner).
+  # to Current.account (the site is always the default owner).
   belongs_to :bucket, polymorphic: true, default: -> { Current.bucket || Current.account }
 
   # Self-referential threading: a comment's record will parent to the record it

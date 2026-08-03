@@ -9,6 +9,12 @@ class SubscriptionsController < PublicController
   rate_limit to: 10, within: 3.minutes, only: :create,
     with: -> { redirect_to newsletter_path, alert: "Too many attempts. Try again later." }
 
+  # The token-landing and interstitial pages render in the minimal layout, which
+  # loads no ahoy.js — so a confirm/unsubscribe/keep hit (the signed token sits
+  # in the URL) is never recorded as an Ahoy visit or page view. Everything else
+  # keeps the tracked "public" layout inherited from PublicController.
+  layout "public_minimal", only: %i[sent confirm unsubscribe keep]
+
   def new
   end
 
@@ -19,7 +25,6 @@ class SubscriptionsController < PublicController
 
   # The "check your inbox" page — a single centered card, no site chrome.
   def sent
-    render layout: "public_minimal"
   end
 
   def confirm

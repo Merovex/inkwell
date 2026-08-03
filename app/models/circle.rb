@@ -1,8 +1,8 @@
-# A bucket for authors, not presses: an accountability circle with a message
+# A bucket for authors, not sites: an accountability circle with a message
 # board (and, later, a running chat and newsletter-swap coordination). Owned by
 # a User — like a Facebook group, size-capped — and it owns Records on the spine
 # just as an Account does, through the polymorphic :bucket association. Its slug
-# is its own (under /circles), unrelated to any press slug.
+# is its own (under /circles), unrelated to any site slug.
 class Circle < ApplicationRecord
   include Sluggable
   self.slug_param_only = true

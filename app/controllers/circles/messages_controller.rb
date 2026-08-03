@@ -1,6 +1,6 @@
 # Posting to a circle's board. Create is the only action for the stub: the
 # message is originated on the spine with the circle as its bucket (set by the
-# base controller), so it lives in the circle, never a press. Board posts are
+# base controller), so it lives in the circle, never a site. Board posts are
 # never mutable — an edit would land as a tracked version, like a chat line.
 module Circles
   class MessagesController < BaseController
