@@ -5,7 +5,7 @@ require "csv"
 # CSV export is the bridge to an external sender until one is wired (ADR 0011).
 class Admin::SubscribersController < Admin::BaseController
   # The roster is one state at a time; the header links between them.
-  STATES = %w[ confirmed pending unsubscribed ].freeze
+  STATES = %w[ confirmed pending unsubscribed bounced ].freeze
 
   before_action :set_subscriber, only: %i[ unsubscribe resend ]
 

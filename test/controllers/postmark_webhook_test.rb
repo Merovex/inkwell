@@ -38,11 +38,14 @@ class PostmarkWebhookTest < ActionDispatch::IntegrationTest
     assert_equal 1, @broadcast.reload.clicked_count
   end
 
-  test "a hard bounce stamps bounced" do
+  test "a hard bounce stamps bounced and suppresses the subscriber" do
     post_event("Bounce", extra: { "Type" => "HardBounce" })
 
     assert @delivery.reload.bounced_at
     assert_equal 1, @broadcast.reload.bounced_count
+    assert @subscriber.reload.bounced?
+    assert_equal [ "bounced" ], @subscriber.events.pluck(:action)
+    assert_equal "postmark", @subscriber.events.last.source
   end
 
   test "a soft bounce is ignored — Postmark keeps retrying" do
@@ -50,6 +53,21 @@ class PostmarkWebhookTest < ActionDispatch::IntegrationTest
 
     assert_nil @delivery.reload.bounced_at
     assert_equal 0, @broadcast.reload.bounced_count
+    assert @subscriber.reload.confirmed?
+  end
+
+  test "a hard bounce never downgrades an explicit unsubscribe" do
+    @subscriber.unsubscribe!(source: "reader")
+    post_event("Bounce", extra: { "Type" => "HardBounce" })
+
+    assert @delivery.reload.bounced_at
+    assert @subscriber.reload.unsubscribed?
+  end
+
+  test "a bounced subscriber is excluded from future fan-outs" do
+    post_event("Bounce", extra: { "Type" => "HardBounce" })
+
+    assert_not_includes Subscriber.confirmed, @subscriber
   end
 
   test "a spam complaint records and drops the subscriber from the list" do

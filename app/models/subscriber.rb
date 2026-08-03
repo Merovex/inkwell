@@ -18,7 +18,7 @@ class Subscriber < ApplicationRecord
   has_many :broadcast_deliveries, dependent: :destroy
   has_many :streams, dependent: :destroy
 
-  enum :status, %w[ pending confirmed unsubscribed ].index_by(&:itself), default: "pending"
+  enum :status, %w[ pending confirmed unsubscribed bounced ].index_by(&:itself), default: "pending"
 
   # Engagement-based sunset thresholds (ADR 0014). "Engagement" is any open or
   # click; any of them resets the clock. Ask ("still want these?") at the later
@@ -60,7 +60,7 @@ class Subscriber < ApplicationRecord
 
       action =
         if record.confirmed?      then nil
-        elsif record.persisted? && record.unsubscribed? then "resubscribed"
+        elsif record.persisted? && (record.unsubscribed? || record.bounced?) then "resubscribed"
         else "subscribed"
         end
 
@@ -109,6 +109,22 @@ class Subscriber < ApplicationRecord
     end
 
     streams.active.find_each { |stream| stream.end!("unsubscribed") }
+  end
+
+  # A permanent delivery failure (hard bounce): suppress like an unsubscribe —
+  # the row is kept, no more sends — but as its own status so the roster can
+  # tell "address is dead" from "asked to leave". An explicit opt-out outranks
+  # it (never downgrade unsubscribed). A later opt-in revives the row through
+  # the normal pending → double-opt-in path, which proves the mailbox works again.
+  def mark_bounced!(source: nil)
+    return if bounced? || unsubscribed?
+
+    transaction do
+      update!(status: :bounced)
+      log_event!("bounced", source:)
+    end
+
+    streams.active.find_each { |stream| stream.end!("bounced") }
   end
 
   # Append one immutable event to the consent log.

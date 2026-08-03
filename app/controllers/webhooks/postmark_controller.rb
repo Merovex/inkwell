@@ -61,11 +61,17 @@ class Webhooks::PostmarkController < ActionController::Base
 
       first_time = delivery.record_event!(internal)
 
-      # A spam complaint is a "mark as spam" — drop them from the list, logged in
-      # the consent trail like any other opt-out. (Postmark has no unsubscribe
-      # event on these streams; suppression-list changes arrive as SubscriptionChange.)
-      if first_time && internal == "complained"
-        delivery.subscriber.unsubscribe!(source: "postmark")
+      # Suppress the subscriber on the events that mean "stop sending": a spam
+      # complaint is a "mark as spam" — drop them like any other opt-out; a hard
+      # bounce means the address is permanently dead — flag it bounced so future
+      # fan-outs (confirmed-only) skip it. Both land in the consent trail.
+      # (Postmark has no unsubscribe event on these streams; suppression-list
+      # changes arrive as SubscriptionChange.)
+      if first_time
+        case internal
+        when "complained" then delivery.subscriber.unsubscribe!(source: "postmark")
+        when "bounced"    then delivery.subscriber.mark_bounced!(source: "postmark")
+        end
       end
     end
 

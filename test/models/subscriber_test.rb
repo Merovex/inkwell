@@ -50,6 +50,18 @@ class SubscriberTest < ActiveSupport::TestCase
     assert_equal %w[subscribed confirmed unsubscribed resubscribed], revived.events.pluck(:action)
   end
 
+  test "re-subscribing after a hard bounce revives the row through double opt-in" do
+    subscriber = Subscriber.opt_in(email_address: "reader@example.com")
+    subscriber.confirm!
+    subscriber.mark_bounced!(source: "postmark")
+
+    revived = Subscriber.opt_in(email_address: "reader@example.com")
+
+    assert_equal subscriber.id, revived.id
+    assert revived.pending?, "a bounced address must re-prove deliverability via double opt-in"
+    assert_equal %w[subscribed confirmed bounced resubscribed], revived.events.pluck(:action)
+  end
+
   test "confirmation and unsubscribe tokens resolve back to the subscriber" do
     subscriber = Subscriber.opt_in(email_address: "reader@example.com")
 
