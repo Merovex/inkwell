@@ -5,6 +5,12 @@ class ApplicationMailer < ActionMailer::Base
   default from: "support@kindredquill.com"
   layout "mailer"
 
+  # Mailers don't include app helpers by default, but the Action Text blob
+  # partial (active_storage/blobs/_blob) is shared with the web and calls
+  # ApplicationHelper#attachment_variation — needed whenever a broadcast post
+  # embeds an image.
+  helper :application
+
   private
     # URL options for links that live on the account's PUBLIC site — the post's
     # web page, newsletter confirm/keep/unsubscribe, contact confirm. The reader

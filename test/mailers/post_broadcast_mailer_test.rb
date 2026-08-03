@@ -14,6 +14,22 @@ class PostBroadcastMailerTest < ActionMailer::TestCase
     assert_match "List-Unsubscribe=One-Click", email["List-Unsubscribe-Post"].to_s
   end
 
+  # Regression: the Action Text blob partial calls ApplicationHelper#attachment_variation,
+  # which mailers don't get unless ApplicationMailer pulls it in — the first
+  # broadcast with an embedded image 500'd in production without it.
+  test "issue renders a post with an embedded image attachment" do
+    subscriber = Subscriber.create!(email_address: "reader@example.com", status: :confirmed)
+    blob = ActiveStorage::Blob.create_and_upload!(
+      io: file_fixture("avatar.png").open, filename: "avatar.png", content_type: "image/png"
+    )
+    posts(:kickoff).update!(content: %(<action-text-attachment sgid="#{blob.attachable_sgid}"></action-text-attachment>))
+    broadcast = records(:kickoff).create_broadcast!
+
+    email = PostBroadcastMailer.issue(broadcast, subscriber)
+
+    assert_match "<img", email.html_part.decoded
+  end
+
   test "issue's reader-facing links land on the account's own domain, never the app host" do
     subscriber = Subscriber.create!(email_address: "reader@example.com", status: :confirmed)
     broadcast = records(:kickoff).create_broadcast!
