@@ -32,6 +32,9 @@ class DropMailerTest < ActionMailer::TestCase
     assert_match %r{/newsletter/unsubscribe/}, email["List-Unsubscribe"].to_s
     assert_equal "List-Unsubscribe=One-Click", email["List-Unsubscribe-Post"].to_s
     assert_equal "broadcast", email["message-stream"].value
+    assert_equal "true", email.track_opens
+    assert_equal "HtmlAndText", email.track_links
+    assert_equal @drop.record_id.to_s, email.metadata["drop_record_id"]
   end
 
   test "tags the message with the marketing config set and drop/subscriber tags" do

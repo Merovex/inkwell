@@ -14,13 +14,19 @@ class PostBroadcastMailerTest < ActionMailer::TestCase
     assert_match "List-Unsubscribe=One-Click", email["List-Unsubscribe-Post"].to_s
   end
 
-  test "issue rides Postmark's broadcast stream, not the transactional one" do
+  test "issue rides Postmark's broadcast stream with tracking and id metadata" do
     subscriber = Subscriber.create!(email_address: "reader@example.com", status: :confirmed)
     broadcast = records(:kickoff).create_broadcast!
 
     email = PostBroadcastMailer.issue(broadcast, subscriber)
 
     assert_equal "broadcast", email["message-stream"].value
+    # Open/link tracking on so Postmark emits Open/Click events; the ids ride as
+    # Metadata so Webhooks::PostmarkController can map events back to this delivery.
+    assert_equal "true", email.track_opens
+    assert_equal "HtmlAndText", email.track_links
+    assert_equal broadcast.id.to_s, email.metadata["broadcast_id"]
+    assert_equal subscriber.id.to_s, email.metadata["subscriber_id"]
   end
 
   test "issue tags the message with the SES config set and message tags for event mapping" do

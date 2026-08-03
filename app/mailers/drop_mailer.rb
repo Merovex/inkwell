@@ -33,6 +33,15 @@ class DropMailer < ApplicationMailer
       }
     }
     options[:reply_to] = setting.contact_email if setting.contact_email.present?
-    mail(options)
+    message = mail(options)
+
+    # Postmark open/link tracking, plus the ids echoed back on every event so
+    # Webhooks::PostmarkController can map the event to this DropDelivery. Postmark
+    # ignores the SES email_tags above, so Metadata is the mapping key here. Link
+    # tracking never touches the List-Unsubscribe header, so one-click stays clean.
+    message.track_opens = true
+    message.track_links = :html_and_text
+    message.metadata = { "drop_record_id" => drop.record_id.to_s, "subscriber_id" => subscriber.id.to_s }
+    message
   end
 end

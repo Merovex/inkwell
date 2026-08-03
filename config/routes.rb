@@ -274,6 +274,11 @@ Rails.application.routes.draw do
   # the SNS subscription points at the tenant domain and stays put (ADR 0018).
   post "webhooks/ses" => "webhooks/ses#create"
 
+  # Postmark event webhooks (delivered/opened/clicked/bounced/complained) →
+  # broadcast metrics. Authenticity is HTTP Basic Auth verified in the controller.
+  # Deliberately unconstrained, like the SES hook (ADR 0018).
+  post "webhooks/postmark" => "webhooks/postmark#create"
+
   # The public site — everything below resolves per-tenant by domain.
   constraints(public_routes) do
     # Public blog. The index lists published posts only; :id on the article page
