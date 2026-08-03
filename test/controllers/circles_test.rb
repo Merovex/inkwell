@@ -1,6 +1,14 @@
 require "test_helper"
 
 class CirclesTest < ActionDispatch::IntegrationTest
+  test "the circles index lists the circles you're in" do
+    sign_in_as users(:bob)
+
+    get circles_path
+    assert_response :success
+    assert_match "Writers Circle", response.body
+  end
+
   test "a member sees the circle board" do
     sign_in_as users(:bob)
 

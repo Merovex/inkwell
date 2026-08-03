@@ -1,7 +1,7 @@
-<%# locals: (record:) %>
+<%# locals: (record:, heading: true) %>
 <%# The manageable distributors block for a book/series show page. %>
 <section class="distributors u-flow">
-  <h2 class="subhead">Distributors</h2>
+  <% if heading %><h2 class="subhead">Distributors</h2><% end %>
   <%= render "admin/distributors/form", record: record %>
   <ul class="mrows" id="record_distributors">
     <% record.distributors.order(:platform).each do |distributor| %>

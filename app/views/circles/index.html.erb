@@ -1,0 +1,21 @@
+<% content_for :title, "Your circles — Inkwell" %>
+
+<div class="card">
+  <header class="card__header"><span class="card__title">Your circles</span></header>
+  <div class="card__body u-stack">
+    <% if @circles.any? %>
+      <ul class="account-picker">
+        <% @circles.each do |circle| %>
+          <li>
+            <%= link_to circle_path(circle), class: "account-picker__card" do %>
+              <span class="account-picker__name"><%= circle.name %></span>
+              <span class="account-picker__meta"><%= pluralize(circle.circle_memberships.count, "member") %></span>
+            <% end %>
+          </li>
+        <% end %>
+      </ul>
+    <% else %>
+      <p class="u-text-muted">You're not in any circles yet.</p>
+    <% end %>
+  </div>
+</div>

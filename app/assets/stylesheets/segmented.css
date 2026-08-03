@@ -1,0 +1,51 @@
+/*
+ * .segmented — an Apple-style segmented control: a rounded track with the
+ * selected segment floating on a raised surface. Behaviour comes from the
+ * shared `tabs` Stimulus controller (data-tabs-target="tab"); this is only the
+ * skin, so it pairs with .tabs__panel for the panels.
+ */
+@layer components {
+  .segmented {
+    display: flex;
+    width: fit-content;
+    margin-inline: auto;           /* centered as a page-level tab switcher */
+    gap: 2px;
+    padding: 3px;
+    border-radius: var(--radius-round);  /* full pill */
+    /* The track: a faint inset tone, theme-aware. */
+    background: color-mix(in oklab, var(--ink) 8%, var(--canvas));
+    /* The selected segment's surface: white in light, a lighter grey than the
+       track in dark (the shadow can't carry it on a dark background). */
+    --seg-active: var(--canvas);
+  }
+  [data-theme="dark"] .segmented { --seg-active: var(--color-mountain-mist-600); }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .segmented { --seg-active: var(--color-mountain-mist-600); }
+  }
+
+  .segmented__seg {
+    appearance: none;
+    border: 0;
+    background: transparent;
+    padding: var(--size-1) var(--size-4);
+    border-radius: var(--radius-round);
+    color: var(--ink-muted);
+    font: inherit;
+    font-weight: 600;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: color 0.15s ease;
+  }
+  .segmented__seg:hover { color: var(--ink); }
+  .segmented__seg[aria-selected="true"] {
+    color: var(--ink);
+    background: var(--seg-active);
+    box-shadow: 0 1px 3px rgb(0 0 0 / 0.14), 0 1px 1px rgb(0 0 0 / 0.06);
+  }
+  .segmented__seg:focus-visible { outline: var(--border-size-2) solid var(--accent); outline-offset: 2px; }
+
+  /* On narrow screens the control scrolls horizontally rather than wrapping. */
+  @media (max-width: 40rem) {
+    .segmented { max-width: 100%; overflow-x: auto; }
+  }
+}

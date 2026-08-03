@@ -9,7 +9,10 @@
     Inkwell
     <%= inline_svg_tag "lucide/chevron-down.svg", class: "lucide app-menu-trigger__chevron", size: "16px" %>
   </button>
-  <%= render "layouts/app_menu" %>
+  <%# Candidate menus (same trigger, id="app-menu"): "app_menu_switcher" (container %>
+  <%# switcher — destination cards), "app_menu_hub" (Author Hub w/ full site nav), %>
+  <%# "app_menu" (cards), "app_menu_classic" (jump-sheet). %>
+  <%= render "layouts/app_menu_switcher" %>
   <div class="bar__spacer"></div>
 
   <% if authenticated? %>

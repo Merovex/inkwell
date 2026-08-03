@@ -28,7 +28,9 @@
 
   <body class="<%= "hotwire-native" if hotwire_native? %>">
     <%= render "layouts/header" %>
-    <main class="canvas"><%= yield %></main>
+    <%# CANDIDATE: the Site's workspace sub-header (Basecamp page-sheet nav). %>
+    <%= render "layouts/site_subnav" unless hotwire_native? %>
+    <main class="canvas <%= yield(:canvas_class) %>"><%= yield %></main>
     <%= render "layouts/toasts" %>
   </body>
 </html>

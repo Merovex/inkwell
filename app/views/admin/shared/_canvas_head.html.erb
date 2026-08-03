@@ -6,7 +6,13 @@
 <%# edit_href puts an Edit link beside the menu — the most common action, %>
 <%# pulled out of the popover (Basecamp-style). %>
 <div class="canvas__head">
-  <nav class="breadcrumb" aria-label="Breadcrumb">
+  <div class="canvas__head-start">
+    <% if Current.account %>
+      <%# The site name, far left, as the home link (back to the site's admin). %>
+      <%= link_to Current.account.name, Current.account.admin_path, class: "canvas__home" %>
+      <span class="canvas__home-sep" aria-hidden="true">/</span>
+    <% end %>
+    <nav class="breadcrumb" aria-label="Breadcrumb">
     <%# No home crumb — the app header's house (top left) already covers it. %>
     <% crumbs.each_with_index do |(label, href), index| %>
       <% if index.positive? %><span class="breadcrumb__sep" aria-hidden="true">/</span><% end %>
@@ -16,7 +22,8 @@
         <span class="breadcrumb__item breadcrumb__item--current" aria-current="page"><%= label %></span>
       <% end %>
     <% end %>
-  </nav>
+    </nav>
+  </div>
 
   <%# No block content = breadcrumb only (list views — the context menu is for individual records). %>
   <% actions = block_given? ? capture { yield } : nil %>

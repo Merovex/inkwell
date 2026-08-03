@@ -13,6 +13,9 @@
     margin-block-start: var(--u-pad);
   }
 
+  /* System settings sits at a comfortable ~900px, not the narrow prose column. */
+  .settings--wide { --u-center-max: 56rem; }
+
   .settings__section {
     display: grid;
     gap: var(--u-pad);
@@ -45,11 +48,43 @@
     flex-shrink: 0;
   }
 
-  /* System-settings logo preview: bounded so a large upload doesn't blow out
-     the form; the field below it swaps the file. */
-  .settings__logo-preview {
-    max-block-size: 4rem;
-    max-inline-size: 12rem;
+  /* Roomier gaps between fields inside a settings tab panel (:not([hidden]) so
+     the grid display doesn't override the hidden panels' display:none). */
+  .settings .tabs__panel:not([hidden]) {
+    display: grid;
+    gap: calc(var(--u-pad) * 1.5);
+    justify-items: stretch;
+  }
+
+  /* Logo upload — a centered preview + a styled "Change…" button, mirroring the
+     user-avatar control (no raw file input, no redundant "Logo" label). */
+  .logo-upload {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: var(--u-pad);
+  }
+  .logo-upload__preview {
+    max-block-size: 5rem;
+    max-inline-size: 14rem;
     object-fit: contain;
+  }
+  .logo-upload__placeholder {
+    display: inline-grid;
+    place-items: center;
+    inline-size: 9rem;
+    block-size: 4rem;
+    border-radius: var(--radius-ui);
+    background: color-mix(in oklab, var(--ink) 6%, var(--canvas));
+    color: var(--ink-muted);
+  }
+  .logo-upload__remove {
+    display: inline-flex;
+    align-items: center;
+    gap: calc(var(--u-pad) / 3);
+    color: var(--ink-muted);
+    font-size: var(--font-size-0);
+    cursor: pointer;
   }
 }

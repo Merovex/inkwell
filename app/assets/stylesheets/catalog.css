@@ -5,6 +5,11 @@
   /* subsection blocks on the book/series pages */
   .series-books, .book-series, .distributors { margin-block-start: 2rem; }
 
+  /* Breathing room after the "Search books to add…" field before the book
+     list below it (both sit at margin:0). Shared by the series and collection
+     "Books in this …" sections. */
+  .series-books .combobox { margin-block-end: var(--u-pad); }
+
   .series-books__head {
     display: flex;
     align-items: center;

@@ -50,11 +50,12 @@ Rails.application.routes.draw do
       resource :join_code, only: :update
     end
 
-    # Author circles — cross-press accountability groups a user belongs to,
-    # independent of any press, so they live on the app host at the top level
-    # (not under a /{SLUG}/admin). A circle's home is its message board (show);
-    # posting to the board is the nested resource.
-    resources :circles, only: %i[show] do
+    # Author circles — cross-site accountability groups a user belongs to,
+    # independent of any one site, so they live on the app host at the top level
+    # (not under a /{SLUG}/admin) — their URLs never carry a site slug. index is
+    # the door from the app menu (a person is in several); show is a circle's
+    # board; posting to the board is the nested resource.
+    resources :circles, only: %i[index show] do
       resources :messages, only: %i[create], module: :circles
     end
   end

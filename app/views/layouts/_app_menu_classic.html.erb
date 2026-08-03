@@ -1,23 +1,29 @@
-<%# The app menu — your site's sections as HEY-style cards, plus a single door %>
-<%# to your Circles. A person has one site (so its sections lead) but is in many %>
-<%# circles (so Circles is one door to their index, not a card each). The Circles %>
-<%# link drops the site slug from SCRIPT_NAME (script_name: "") — a circle URL %>
-<%# never carries a site slug. Account items live in the avatar menu on the %>
-<%# right. The pre-Circles jump-sheet is preserved in _app_menu_classic. %>
-<div class="app-menu" id="app-menu" popover role="menu" aria-label="Navigation menu">
+<%# CLASSIC app menu (pre-Circles), kept for A/B comparison. Render this from %>
+<%# layouts/_header instead of "layouts/app_menu" to see the old jump-sheet. %>
+<%# The app menu: a jump-to sheet over the admin's sections and recent records. %>
+<%# The native Popover API supplies the disclosure — Esc + click-outside dismiss, %>
+<%# top-layer rendering, and a ::backdrop scrim. The app-menu controller adds %>
+<%# type-to-filter and ↑/↓/Enter keyboard nav over the rendered rows. %>
+<div class="app-menu" id="app-menu" popover role="dialog" aria-label="Navigation menu"
+     data-controller="app-menu" data-action="toggle->app-menu#toggled">
   <div class="app-menu__panel">
     <nav class="app-menu__grid" aria-label="Quick navigation">
       <%= app_menu_card "Posts", admin_posts_path, "file-text" %>
       <%= app_menu_card "Books", admin_books_path, "book" %>
       <%= app_menu_card "Series", admin_series_index_path, "library" %>
       <%= app_menu_card "Collections", admin_collections_path, "layers" %>
-      <%= app_menu_card "Circles", circles_path(script_name: ""), "message-square" %>
     </nav>
 
-    <div class="app-menu__results">
+    <input type="search" class="app-menu__search" placeholder="Search or jump to…"
+           role="combobox" aria-controls="app-menu-results" aria-expanded="true"
+           aria-autocomplete="list" autocomplete="off" autofocus
+           data-app-menu-target="input"
+           data-action="input->app-menu#filter keydown->app-menu#keydown">
+
+    <div class="app-menu__results" id="app-menu-results" role="listbox" data-app-menu-target="results">
       <% recents = app_menu_recents %>
       <% if recents.any? %>
-        <section class="app-menu__group">
+        <section class="app-menu__group" data-app-menu-target="group">
           <h3 class="app-menu__header u-microcaps">Recent</h3>
           <% recents.each do |record| %>
             <%= app_menu_link app_menu_record_label(record), app_menu_record_path(record),
@@ -26,7 +32,7 @@
         </section>
       <% end %>
 
-      <section class="app-menu__group">
+      <section class="app-menu__group" data-app-menu-target="group">
         <h3 class="app-menu__header u-microcaps">Go to</h3>
         <%= app_menu_link "Public site", root_path %>
         <% if Current.user&.administers?(Current.account) %>
@@ -39,6 +45,8 @@
           <%= app_menu_link "System settings", admin_settings_path %>
         <% end %>
       </section>
+
+      <p class="app-menu__empty" data-app-menu-target="empty" hidden>No matches</p>
     </div>
   </div>
 </div>

@@ -12,8 +12,8 @@
   <%= f.text_field :title, class: "composer__title", placeholder: "Post title",
         "aria-label": "Title", required: true, autofocus: true %>
 
-  <%= f.rich_textarea :content, placeholder: "Write away…", "aria-label": "Body" %>
-
+  <%# Metadata (summary + byline) rides above the body so the body can be the
+      last element and grow to fill the viewport. %>
   <%# Optional plain-text summary for the blog list + search results; falls back %>
   <%# to a truncation of the body when blank (Post#summary). The counter nudges %>
   <%# toward the 50–160 search-snippet sweet spot. %>
@@ -29,4 +29,6 @@
   </div>
 
   <%= render "admin/shared/author_select", f: f, resource: post %>
+
+  <%= f.rich_textarea :content, placeholder: "Write away…", "aria-label": "Body" %>
 <% end %>

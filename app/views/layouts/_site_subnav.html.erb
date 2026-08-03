@@ -1,0 +1,45 @@
+<%# CANDIDATE: the Site's workspace sub-header (Basecamp "page sheet" nav). The %>
+<%# global header answers "which container?"; this answers "which page inside the %>
+<%# Site?". No left rail — a centered identity line plus grouped section tabs, so %>
+<%# the content area keeps full width. The deep sections fold into 3 buckets, each %>
+<%# a native <details> disclosure (name="subnav" makes them mutually exclusive). %>
+<%# Rendered under the header in the application (admin) layout only. %>
+<% if Current.account %>
+  <% admin = Current.user&.administers?(Current.account) %>
+  <div class="subnav">
+    <div class="subnav__inner">
+      <nav class="subnav__tabs" aria-label="Site sections">
+        <details class="subnav__group" name="subnav">
+          <summary class="subnav__tab">Publish</summary>
+          <div class="subnav__menu">
+            <%= link_to "Posts", admin_posts_path %>
+            <%= link_to "Books", admin_books_path %>
+            <%= link_to "Series", admin_series_index_path %>
+            <%= link_to "Collections", admin_collections_path %>
+          </div>
+        </details>
+
+        <% if admin %>
+          <details class="subnav__group" name="subnav">
+            <summary class="subnav__tab">Audience</summary>
+            <div class="subnav__menu">
+              <%= link_to "Subscribers", admin_subscribers_path %>
+              <%= link_to "Broadcasts", admin_broadcasts_path %>
+              <%= link_to "Drips", admin_drips_path %>
+              <%= link_to "Missives", admin_missives_path %>
+            </div>
+          </details>
+
+          <details class="subnav__group" name="subnav">
+            <summary class="subnav__tab">Site &amp; Settings</summary>
+            <div class="subnav__menu">
+              <%= link_to "Settings", admin_settings_path %>
+              <%= link_to "Authors", admin_authors_path %>
+              <%= link_to "Site design", admin_designer_path %>
+            </div>
+          </details>
+        <% end %>
+      </nav>
+    </div>
+  </div>
+<% end %>

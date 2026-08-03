@@ -42,6 +42,26 @@
     border-start-end-radius: var(--radius-2);
   }
 
+  /* Editor pages (composer): let the canvas be a flex column so the composer —
+     and its Lexxy body — can grow to fill exactly the space down to the viewport
+     bottom, then push the page taller only once the prose overflows. */
+  .canvas--fill { display: flex; flex-direction: column; }
+
+  /* Site name at the far left of the head, doubling as the "home" link. */
+  .canvas__head-start {
+    display: flex;
+    align-items: center;
+    gap: var(--size-1);
+    min-width: 0;
+  }
+  .canvas__home {
+    font-weight: 700;
+    color: var(--ink);
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .canvas__home-sep { color: var(--ink-muted); }
+
   /* Right-side group on menu pages: keeps Edit snug against the ... trigger
      (the head is space-between, so they must share one flex child). Half a
      pad of air from the canvas edge; the popover compensates to stay flush

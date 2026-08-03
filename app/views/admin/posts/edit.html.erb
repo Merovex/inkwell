@@ -1,4 +1,5 @@
 <% content_for :title, "#{@post.title} — Inkwell" %>
+<% content_for :canvas_class, "canvas--fill" %>
 
 <%= render "admin/shared/canvas_head", crumbs: [["Posts", admin_posts_path], [@post.title, nil]], menu: false do %>
   <%= render "composer_actions", post: @post %>

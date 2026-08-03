@@ -9,7 +9,10 @@
   /* Background lives on html too (not just body) so the document canvas behind a
      view transition matches — otherwise the browser default (white) flashes
      through during the cross-fade in dark mode. */
-  html { -webkit-text-size-adjust: 100%; background: var(--site-bg); }
+  /* Always reserve the scrollbar gutter so centered layouts don't jump
+     sideways when a short page (no scrollbar) swaps to a long one (scrollbar) —
+     e.g. tabbing between a short and a long settings panel. */
+  html { -webkit-text-size-adjust: 100%; background: var(--site-bg); scrollbar-gutter: stable; }
 
   body {
     display: flex;

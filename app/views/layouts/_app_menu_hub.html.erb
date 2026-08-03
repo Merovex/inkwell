@@ -1,0 +1,110 @@
+<%# CANDIDATE: the "Author Hub" — a person-first overlay (HEY pattern). Navigation %>
+<%# is anchored to the Author, not a workspace, so the panel is CONSTANT wherever %>
+<%# it's opened. Two zones: the one (0..1) Site with its nav grouped by feature, %>
+<%# and the many (0..N) Circles as a scalable list. Person/account items stay in %>
+<%# the avatar menu on the right (not duplicated here). The site and each circle %>
+<%# share one "container row" style so the two columns read as siblings. Circle %>
+<%# links drop the site slug from SCRIPT_NAME (script_name: ""). Opened by the same %>
+<%# brand trigger (id="app-menu"). Other candidates: _app_menu, _app_menu_classic. %>
+<div class="author-hub" id="app-menu" popover role="dialog" aria-label="Author menu">
+  <% if Current.user %>
+    <% sites   = Current.user.accounts.order(:name) %>
+    <% site    = Current.account || sites.first %>
+    <% circles = Current.user.circles.order(:name) %>
+    <% admin   = Current.user.administers?(Current.account) %>
+
+    <header class="author-hub__head">
+      <span class="author-hub__whoami">
+        <span class="avatar"><%= avatar_content(Current.user) %></span>
+        <span class="author-hub__name"><%= Current.user.display_name %></span>
+      </span>
+      <button type="button" class="author-hub__close" popovertarget="app-menu"
+              popovertargetaction="hide" aria-label="Close">
+        <%= inline_svg_tag "lucide/circle-x.svg", class: "lucide", size: "20px" %>
+      </button>
+    </header>
+
+    <div class="author-hub__top">
+      <%# ── Zone 1: the one publishing site (0..1), grouped by feature ────── %>
+      <section class="author-hub__zone author-hub__site">
+        <h3 class="author-hub__label u-microcaps">My publishing site</h3>
+        <% if site %>
+          <%= link_to site.admin_path, class: "author-hub__container" do %>
+            <%= inline_svg_tag "lucide/house.svg", class: "lucide", size: "18px" %>
+            <span><%= site.name %></span>
+          <% end %>
+
+          <div class="author-hub__group">
+            <h4 class="author-hub__sublabel u-microcaps">Publish</h4>
+            <nav class="author-hub__links author-hub__links--grid" aria-label="Publishing">
+              <%= link_to "Posts", admin_posts_path, class: "author-hub__link" %>
+              <%= link_to "Books", admin_books_path, class: "author-hub__link" %>
+              <%= link_to "Series", admin_series_index_path, class: "author-hub__link" %>
+              <%= link_to "Collections", admin_collections_path, class: "author-hub__link" %>
+            </nav>
+          </div>
+
+          <% if admin %>
+            <div class="author-hub__group">
+              <h4 class="author-hub__sublabel u-microcaps">Audience</h4>
+              <nav class="author-hub__links author-hub__links--grid" aria-label="Audience">
+                <%= link_to "Subscribers", admin_subscribers_path, class: "author-hub__link" %>
+                <%= link_to "Broadcasts", admin_broadcasts_path, class: "author-hub__link" %>
+                <%= link_to "Drips", admin_drips_path, class: "author-hub__link" %>
+                <%= link_to "Missives", admin_missives_path, class: "author-hub__link" %>
+              </nav>
+            </div>
+
+            <div class="author-hub__group">
+              <h4 class="author-hub__sublabel u-microcaps">Manage</h4>
+              <nav class="author-hub__links author-hub__links--grid" aria-label="Manage">
+                <%= link_to "Authors", admin_authors_path, class: "author-hub__link" %>
+                <%= link_to "Site design", admin_designer_path, class: "author-hub__link" %>
+                <%= link_to "Settings", admin_settings_path, class: "author-hub__link" %>
+              </nav>
+            </div>
+          <% end %>
+
+          <%= link_to "View public site ↗", root_path, class: "author-hub__more" %>
+
+          <% if sites.many? %>
+            <div class="author-hub__switch">
+              <span class="u-microcaps">Switch site</span>
+              <% sites.where.not(id: site.id).each do |other| %>
+                <%= link_to other.name, other.admin_path, class: "author-hub__link author-hub__link--sm" %>
+              <% end %>
+            </div>
+          <% end %>
+        <% else %>
+          <%= link_to new_account_path(script_name: ""), class: "author-hub__invite" do %>
+            <strong>Ready to publish publicly?</strong>
+            <span>Create your site →</span>
+          <% end %>
+        <% end %>
+      </section>
+
+      <%# ── Zone 2: the many circles (0..N) ──────────────────────────────── %>
+      <section class="author-hub__zone author-hub__circles">
+        <div class="author-hub__zone-head">
+          <h3 class="author-hub__label u-microcaps">My circles<%= " (#{circles.size})" if circles.any? %></h3>
+          <span class="author-hub__soon" title="Not wired yet">+ New circle</span>
+        </div>
+        <% if circles.any? %>
+          <nav class="author-hub__links" aria-label="Circles">
+            <% circles.first(5).each do |circle| %>
+              <%= link_to circle_path(circle, script_name: ""), class: "author-hub__container" do %>
+                <%= inline_svg_tag "lucide/message-square.svg", class: "lucide", size: "18px" %>
+                <span><%= circle.name %></span>
+              <% end %>
+            <% end %>
+          </nav>
+          <% if circles.size > 5 %>
+            <%= link_to "View all circles…", circles_path(script_name: ""), class: "author-hub__more" %>
+          <% end %>
+        <% else %>
+          <p class="author-hub__empty">You're not in any circles yet.</p>
+        <% end %>
+      </section>
+    </div>
+  <% end %>
+</div>

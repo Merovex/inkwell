@@ -1,0 +1,73 @@
+/* Site sub-header: the Basecamp "page sheet" workspace nav that sits under the
+   global header. Centered identity + grouped section tabs (native <details>
+   disclosures), no left rail — the content area keeps full width. */
+@layer components {
+  .subnav__inner {
+    display: flex;
+    justify-content: center;
+    padding: var(--size-2) var(--u-pad);
+  }
+  .subnav__tabs {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--size-1);
+  }
+  .subnav__group { position: relative; }
+  /* The tab is the <summary>; kill the default disclosure triangle. */
+  .subnav__tab {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--size-1);
+    padding: var(--size-1) var(--size-3);
+    border-radius: var(--radius-round);
+    color: var(--ink);
+    font-weight: 600;
+    cursor: pointer;
+    list-style: none;
+  }
+  .subnav__tab::-webkit-details-marker { display: none; }
+  .subnav__tab::after {
+    content: "▾";
+    display: inline-block;
+    color: var(--ink-muted);
+    font-size: 0.7em;
+    transition: transform 0.15s ease;
+  }
+  .subnav__group[open] .subnav__tab::after { transform: rotate(180deg); }
+
+  .subnav__menu {
+    position: absolute;
+    top: calc(100% + var(--size-1));
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 20;
+    display: flex;
+    flex-direction: column;
+    min-width: 12rem;
+    padding: var(--size-1);
+    /* Raised surface so the flyout reads as elevated in dark mode without a
+       border (a --canvas panel would vanish against the dark canvas). */
+    --surface: var(--canvas);
+    background: var(--surface);
+    border-radius: var(--radius-ui);
+    box-shadow:
+      0 14px 34px -12px rgb(0 0 0 / 0.34),
+      0 3px 10px -4px rgb(0 0 0 / 0.20);
+  }
+  [data-theme="dark"] .subnav__menu { --surface: var(--color-mountain-mist-700); }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .subnav__menu { --surface: var(--color-mountain-mist-700); }
+  }
+  .subnav__menu a {
+    padding: var(--size-2);
+    border-radius: var(--radius-ui);
+    color: var(--ink);
+    text-decoration: none;
+  }
+  .subnav__menu a:hover { background: color-mix(in oklab, var(--ink) 4%, transparent); }
+
+  @media (max-width: 40rem) {
+    .subnav__inner { justify-content: flex-start; }
+  }
+}

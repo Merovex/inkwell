@@ -63,9 +63,14 @@
 </div>
 
 <% if can_manage %>
-  <%= render "admin/books/series_membership", record: @record, book: @book %>
-  <%= render "admin/books/collection_membership", record: @record, book: @book %>
-  <%= render "admin/distributors/section", record: @record %>
+  <%= segmented_tabs [
+        { id: "series", label: "Series", narrow: true,
+          panel: render("admin/books/series_membership", record: @record, book: @book, heading: false) },
+        { id: "collections", label: "Collections", narrow: true,
+          panel: render("admin/books/collection_membership", record: @record, book: @book, heading: false) },
+        { id: "distributors", label: "Distributors",
+          panel: render("admin/distributors/section", record: @record, heading: false) },
+      ] %>
 <% else %>
   <% book_series = @book.series %>
   <% if book_series.any? %>

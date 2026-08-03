@@ -26,4 +26,10 @@
 
   .tabs__panel { padding-block-start: var(--u-pad); }
   .tabs__panel[hidden] { display: none; }
+
+  /* Narrow variant: short-content panels (lists) sit centered at ~60% on
+     desktop; left full-width on mobile so they don't get cramped. */
+  @media (min-width: 40rem) {
+    .tabs__panel--narrow { max-inline-size: 60%; margin-inline: auto; }
+  }
 }

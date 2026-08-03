@@ -13,6 +13,8 @@ class Admin::SettingsController < Admin::BaseController
     saved = Site.transaction { @site.update(site_params) && @site.account.save! }
 
     if saved
+      # "Remove logo and use the wordmark" — purge only once the save sticks.
+      @site.logo.purge if params.dig(:site, :remove_logo) == "1"
       redirect_to admin_settings_path, notice: "Settings saved."
     else
       render :show, status: :unprocessable_entity

@@ -9,6 +9,9 @@ class User < ApplicationRecord
   # Accounts this user belongs to; drives the post-sign-in landing (ADR 0018).
   has_many :account_users, dependent: :destroy
   has_many :accounts, through: :account_users
+  # Circles this user belongs to (the other bucket kind) — the /circles doors.
+  has_many :circle_memberships, dependent: :destroy
+  has_many :circles, through: :circle_memberships
   # The rotatable invite code this user hands out (root-only until open beta),
   # and who vouched for this user at signup — the abuse-tracing referral chain.
   has_one :join_code, dependent: :destroy
