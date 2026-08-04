@@ -22,24 +22,11 @@
 </header>
 
 <% if @subscribers.any? %>
-  <ul class="list">
+  <div class="list">
     <% @subscribers.each do |subscriber| %>
-      <li class="list__item">
-        <span class="list__body">
-          <span class="list__titlerow">
-            <span class="list__title"><%= redacted_email(subscriber.email_address) %></span>
-            <% if subscriber.confirmed? && subscriber.re_engagement_sent_at %>
-              <span class="badge badge--warning">Nudged</span>
-            <% end %>
-          </span>
-          <span class="list__meta">
-            <span class="list__byline">
-              <%= "via #{subscriber.source} · " if subscriber.source.present? %>joined <%= subscriber.created_at.strftime("%b %-d, %Y") %><%= " · updated #{subscriber.updated_at.strftime('%b %-d, %Y')}" if subscriber.updated_at.to_date != subscriber.created_at.to_date %><%= " · last opened #{subscriber.last_engaged_at.strftime('%b %-d, %Y')}" if subscriber.last_engaged_at %>
-            </span>
-          </span>
-        </span>
+      <% actions = capture do %>
         <% if subscriber.pending? %>
-          <%= button_to resend_admin_subscriber_path(subscriber), method: :post, form_class: "list__action",
+          <%= button_to resend_admin_subscriber_path(subscriber), method: :post,
                 class: "button button--icon button--ghost", title: "Resend confirmation",
                 "aria-label": "Resend confirmation to #{redacted_email(subscriber.email_address)}",
                 form: { data: { turbo_confirm: "Resend the confirmation email to #{redacted_email(subscriber.email_address)}?" } } do %>
@@ -47,16 +34,23 @@
           <% end %>
         <% end %>
         <% unless subscriber.unsubscribed? || subscriber.bounced? %>
-          <%= button_to unsubscribe_admin_subscriber_path(subscriber), method: :patch, form_class: "list__action",
+          <%= button_to unsubscribe_admin_subscriber_path(subscriber), method: :patch,
                 class: "button button--icon button--ghost", title: "Unsubscribe",
                 "aria-label": "Unsubscribe #{redacted_email(subscriber.email_address)}",
                 form: { data: { turbo_confirm: "Unsubscribe #{redacted_email(subscriber.email_address)}?" } } do %>
             <%= inline_svg_tag "lucide/circle-x.svg", class: "lucide", size: "16px" %>
           <% end %>
         <% end %>
-      </li>
+      <% end %>
+      <%= render "shared/list_item",
+            title: redacted_email(subscriber.email_address),
+            avatar: false,
+            badge: ("Nudged" if subscriber.confirmed? && subscriber.re_engagement_sent_at),
+            badge_variant: "warning",
+            author: "#{"via #{subscriber.source} · " if subscriber.source.present?}joined #{subscriber.created_at.strftime("%b %-d, %Y")}#{" · updated #{subscriber.updated_at.strftime('%b %-d, %Y')}" if subscriber.updated_at.to_date != subscriber.created_at.to_date}#{" · last opened #{subscriber.last_engaged_at.strftime('%b %-d, %Y')}" if subscriber.last_engaged_at}",
+            actions: actions %>
     <% end %>
-  </ul>
+  </div>
 <% else %>
   <div class="empty">
     <span class="empty__icon"><%= inline_svg_tag "lucide/inbox.svg", class: "lucide", size: "40px" %></span>

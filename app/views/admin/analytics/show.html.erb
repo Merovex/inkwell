@@ -35,24 +35,21 @@
            data-geo-map-data-value="<%= (us_focused ? @us_states : @geo_map).to_json %>"></div>
       <div class="analytics-geo__lists">
         <h3 class="analytics-geo__heading u-microcaps u-text-muted">Countries</h3>
-        <ul class="list list--compact">
+        <div class="list list--compact">
           <% @countries.each do |country, count| %>
-            <li class="list__item">
-              <span class="list__body"><span class="list__title"><%= country %></span></span>
-              <span class="badge"><%= count %></span>
-            </li>
+            <%= render "shared/list_item", title: country, title_tag: "span", avatar: false,
+                  actions: tag.span(count, class: "badge") %>
           <% end %>
-        </ul>
+        </div>
         <% if @regions.any? %>
           <h3 class="analytics-geo__heading u-microcaps u-text-muted">Regions</h3>
-          <ul class="list list--compact">
+          <div class="list list--compact">
             <% @regions.each do |(region, country), count| %>
-              <li class="list__item">
-                <span class="list__body"><span class="list__title"><%= region %> <span class="u-text-muted">· <%= country %></span></span></span>
-                <span class="badge"><%= count %></span>
-              </li>
+              <%= render "shared/list_item", title_tag: "span", avatar: false,
+                    title: safe_join([ region, " ", tag.span("· #{country}", class: "u-text-muted") ]),
+                    actions: tag.span(count, class: "badge") %>
             <% end %>
-          </ul>
+          </div>
         <% end %>
       </div>
     </div>
@@ -64,14 +61,12 @@
 <section class="analytics-section">
   <h2 class="analytics-section__title">Top landing pages</h2>
   <% if @landing_pages.any? %>
-    <ul class="list list--compact">
+    <div class="list list--compact">
       <% @landing_pages.each do |page, count| %>
-        <li class="list__item">
-          <span class="list__body"><span class="list__title"><%= url_path(page) %></span></span>
-          <span class="badge"><%= count %></span>
-        </li>
+        <%= render "shared/list_item", title: url_path(page), title_tag: "span", avatar: false,
+              actions: tag.span(count, class: "badge") %>
       <% end %>
-    </ul>
+    </div>
   <% else %>
     <p class="u-text-muted">No visits yet.</p>
   <% end %>
@@ -80,14 +75,12 @@
 <section class="analytics-section">
   <h2 class="analytics-section__title">Top referrers</h2>
   <% if @referrers.any? %>
-    <ul class="list list--compact">
+    <div class="list list--compact">
       <% @referrers.each do |domain, count| %>
-        <li class="list__item">
-          <span class="list__body"><span class="list__title"><%= domain %></span></span>
-          <span class="badge"><%= count %></span>
-        </li>
+        <%= render "shared/list_item", title: domain, title_tag: "span", avatar: false,
+              actions: tag.span(count, class: "badge") %>
       <% end %>
-    </ul>
+    </div>
   <% else %>
     <p class="u-text-muted">No referrers yet — mostly direct traffic.</p>
   <% end %>

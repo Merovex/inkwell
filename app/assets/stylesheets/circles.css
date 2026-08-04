@@ -53,6 +53,11 @@
   .circles-toolbar { display: flex; justify-content: flex-end; margin-block-end: var(--u-pad); }
   .circles-toolbar .segmented { margin-inline: 0; }
 
+  /* Circle home: the stacked sections (Pulse check, Discussions, …) need room
+     to breathe, with the heading set well off from its divider and rows. */
+  .circle-section { margin-block-start: calc(var(--u-pad) * 3.5); }
+  .circle-section .section-head { margin-block: 0 calc(var(--u-pad) * 1.75); }
+
   /* An in-page section heading with its primary action pinned far right —
      "Discussions … New message". */
   .section-head {

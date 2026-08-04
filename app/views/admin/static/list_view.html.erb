@@ -53,14 +53,14 @@
   </div>
 </header>
 
-<ul class="list">
-  <%= render "admin/shared/list_item", href: admin_item_view_path, title: "Kickoff notes for the winter issue",
+<div class="list">
+  <%= render "shared/list_item", href: admin_item_view_path, title: "Kickoff notes for the winter issue",
         author: "Ada Lovelace", date: "Jun 27",
         excerpt: "Pulling together the themes we landed on last week — the long-form essay, two shorter pieces, and the interview.",
         client_visible: true, comment_count: 3 %>
-  <%= render "admin/shared/list_item", href: admin_item_view_path, title: "Notes on typography",
+  <%= render "shared/list_item", href: admin_item_view_path, title: "Notes on typography",
         author: "Grace Hopper", date: "Jun 26",
         excerpt: "A pass on the type scale and measure for the reading view; draft values attached for review." %>
-  <%= render "admin/shared/list_item", href: admin_item_view_path, title: "Reminder: submissions close Friday",
+  <%= render "shared/list_item", href: admin_item_view_path, title: "Reminder: submissions close Friday",
         author: "Alan Turing", date: "Jun 25", excerpt: "Last call for the winter issue.", comment_count: 12 %>
-</ul>
+</div>

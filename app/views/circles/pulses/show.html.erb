@@ -41,17 +41,17 @@
   <section id="beats" aria-label="Answers">
     <% if @beats.any? %>
       <h2 class="comments__heading"><%= pluralize(@beats.size, "answer") %></h2>
-      <ul class="list">
+      <div class="list">
         <% @beats.each do |b| %>
-          <li class="list__item comment">
+          <article class="list__item comment">
             <span class="avatar list__avatar" aria-hidden="true"><%= avatar_content(b.creator) %></span>
             <div class="comment__content">
               <%= byline b.creator, b.record.created_at, edited: b.event_updated? %>
               <div class="comment__body u-flow"><%= b.content %></div>
             </div>
-          </li>
+          </article>
         <% end %>
-      </ul>
+      </div>
     <% else %>
       <p class="u-text-muted">No answers yet.</p>
     <% end %>

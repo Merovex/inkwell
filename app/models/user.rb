@@ -38,8 +38,15 @@ class User < ApplicationRecord
   # a duplicate to a user (setup can't dup, signup reuses), so no validation here.
   validates :email_address, presence: true, format: { with: URI::MailTo::EMAIL_REGEXP }
 
-  # What we call the user everywhere: their name, or their email until
-  # they've set one.
+  # The name is a handle: unique across users (case-insensitively), assigned
+  # from the email at creation (see Registration#generate_handle) and editable
+  # in settings. allow_blank keeps pre-handle records loadable; the create
+  # callback means no new user is ever blank.
+  normalizes :name, with: -> { it.strip }
+  validates :name, uniqueness: { case_sensitive: false }, allow_blank: true
+
+  # What we call the user everywhere: their handle (never blank — assigned at
+  # creation), with the email as a belt-and-braces fallback for legacy rows.
   def display_name
     name.presence || email_address
   end

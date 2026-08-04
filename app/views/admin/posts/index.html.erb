@@ -21,19 +21,19 @@
 <% end %>
 
 <% if @posts.any? %>
-  <ul class="list">
+  <div class="list">
     <% @posts.each do |post| %>
-      <%= render "admin/shared/list_item",
+      <%= render "shared/list_item",
             href: admin_post_path(post.record),
             title: post.title,
             author: post.record.creator.display_name,
             avatar_user: post.record.creator,
             date: l(post.published_at.to_date, format: :short),
-            excerpt: post.content.to_plain_text.to_s.truncate(140),
+            excerpt: plain_excerpt(post.content),
             comment_count: @comment_counts[post.record_id].to_i,
             pinned: post.pinned_at.present? %>
     <% end %>
-  </ul>
+  </div>
 <% else %>
   <div class="empty">
     <span class="empty__icon"><%= inline_svg_tag "lucide/inbox.svg", class: "lucide", size: "40px" %></span>

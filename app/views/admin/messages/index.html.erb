@@ -24,19 +24,19 @@
 <% end %>
 
 <% if @messages.any? %>
-  <ul class="list">
+  <div class="list">
     <% @messages.each do |message| %>
-      <%= render "admin/shared/list_item",
+      <%= render "shared/list_item",
             href: admin_message_path(message.record),
             title: message.title,
             author: message_author_line(message),
             avatar_user: message.record.creator,
             date: l(message.published_at.to_date, format: :short),
-            excerpt: message.content.to_plain_text.to_s.truncate(140),
+            excerpt: plain_excerpt(message.content),
             comment_count: @comment_counts[message.record_id].to_i,
             pinned: message.pinned_at.present? %>
     <% end %>
-  </ul>
+  </div>
 <% else %>
   <div class="empty">
     <span class="empty__icon"><%= inline_svg_tag "lucide/inbox.svg", class: "lucide", size: "40px" %></span>

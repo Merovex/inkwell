@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.2].define(version: 2026_08_04_163828) do
+ActiveRecord::Schema[8.2].define(version: 2026_08_04_170000) do
   create_table "account_users", force: :cascade do |t|
     t.integer "account_id", null: false
     t.integer "user_id", null: false
@@ -597,6 +597,7 @@ ActiveRecord::Schema[8.2].define(version: 2026_08_04_163828) do
     t.integer "inviter_id"
     t.index ["email_address"], name: "index_users_on_email_address", unique: true
     t.index ["inviter_id"], name: "index_users_on_inviter_id"
+    t.index ["name"], name: "index_users_on_name", unique: true
   end
 
   add_foreign_key "account_users", "accounts"

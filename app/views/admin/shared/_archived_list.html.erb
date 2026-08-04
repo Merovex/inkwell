@@ -3,17 +3,17 @@
 <%# its own page to be restored. Rows reuse the standard list_item; the href
 <%# resolves per type via record_show_path, so this stays parent-agnostic. %>
 <% if records.any? %>
-  <ul class="list">
+  <div class="list">
     <% records.each do |recordable| %>
-      <%= render "admin/shared/list_item",
+      <%= render "shared/list_item",
             href: record_show_path(recordable.record),
             title: recordable.try(:title).presence || "Untitled",
             author: recordable.record.creator.display_name,
             avatar_user: recordable.record.creator,
             date: l((recordable.try(:published_at) || recordable.created_at).to_date, format: :short),
-            excerpt: (recordable.content.to_plain_text.to_s.truncate(140) if recordable.respond_to?(:content)) %>
+            excerpt: (plain_excerpt(recordable.content) if recordable.respond_to?(:content)) %>
     <% end %>
-  </ul>
+  </div>
 <% else %>
   <div class="empty">
     <span class="empty__icon"><%= inline_svg_tag "lucide/inbox.svg", class: "lucide", size: "40px" %></span>

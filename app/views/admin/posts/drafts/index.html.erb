@@ -14,20 +14,20 @@
 </header>
 
 <% if @posts.any? %>
-  <ul class="list">
+  <div class="list">
     <% @posts.each do |post| %>
-      <%= render "admin/shared/list_item",
+      <%= render "shared/list_item",
             href: edit_admin_post_path(post.record),
             title: post.title,
             author: post.record.creator.display_name,
             avatar_user: post.record.creator,
             date: post.scheduled? ? "Scheduled" : "Draft",
-            excerpt: post.content.to_plain_text.to_s.truncate(140),
+            excerpt: plain_excerpt(post.content),
             scheduled_at: (post.published_at if post.scheduled?),
             discard_path: admin_draft_path(post.record),
             discard_confirm: post.ever_published? ? "Move this once-published post to the trash?" : "Delete this draft forever? There's no undo." %>
     <% end %>
-  </ul>
+  </div>
 <% else %>
   <div class="empty">
     <span class="empty__icon"><%= inline_svg_tag "lucide/inbox.svg", class: "lucide", size: "40px" %></span>

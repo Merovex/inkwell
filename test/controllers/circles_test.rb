@@ -41,7 +41,7 @@ class CirclesTest < ActionDispatch::IntegrationTest
     # latest discussion as a list row linking to its own page.
     assert_select ".section-head h2", text: "Discussions"
     assert_select ".section-head a[href=?]", new_circle_message_path(circles(:writers)), text: /New message/
-    assert_select "ul.list .list__title", text: "Welcome to the circle"
+    assert_select ".list .list__title", text: "Welcome to the circle"
   end
 
   test "the circle home links to all discussions once past the preview count" do
@@ -56,7 +56,7 @@ class CirclesTest < ActionDispatch::IntegrationTest
     end
 
     get circle_path(circle)
-    assert_select "ul.list .list__item", count: CirclesController::PREVIEW_COUNT
+    assert_select ".list .list__item", count: CirclesController::PREVIEW_COUNT
     assert_select "a[href=?]", circle_messages_path(circle), text: /See all \d+ discussions/
   end
 

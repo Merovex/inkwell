@@ -14,19 +14,19 @@
 </header>
 
 <% if @collections.any? %>
-  <ul class="list">
+  <div class="list">
     <% @collections.each do |collection| %>
-      <%= render "admin/shared/list_item",
+      <%= render "shared/list_item",
             href: admin_collection_path(collection.record),
             title: collection.title,
             author: collection.record.creator.display_name,
             avatar_user: collection.record.creator,
             date: l((collection.published_at || collection.created_at).to_date, format: :short),
-            excerpt: collection.content.to_plain_text.to_s.truncate(140),
+            excerpt: plain_excerpt(collection.content),
             scheduled_at: (collection.published_at if collection.scheduled?),
             pinned: collection.pinned_at.present? %>
     <% end %>
-  </ul>
+  </div>
 <% else %>
   <div class="empty">
     <span class="empty__icon"><%= inline_svg_tag "lucide/inbox.svg", class: "lucide", size: "40px" %></span>

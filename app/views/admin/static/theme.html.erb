@@ -281,18 +281,18 @@
     <%# ---- List ---- %>
     <section class="sg-section">
       <p class="sg-h">List (summary rows)</p>
-      <ul class="list">
-        <%= render "admin/shared/list_item", href: "#", title: "Kickoff notes for the winter issue",
+      <div class="list">
+        <%= render "shared/list_item", href: "#", title: "Kickoff notes for the winter issue",
               author: "Ada Lovelace", date: "Jun 27",
               excerpt: "Pulling together the themes we landed on last week — the long-form essay, two shorter pieces, and the interview. Draft outline attached.",
               client_visible: true, comment_count: 3 %>
-        <%= render "admin/shared/list_item", href: "#",
+        <%= render "shared/list_item", href: "#",
               title: "A very long subject line that should truncate cleanly with an ellipsis when it runs past the available row width",
               author: "Grace Hopper", date: "Jun 26",
               excerpt: "Second row with no badges and a two-line excerpt that clamps once it exceeds the height of two lines of text in this row." %>
-        <%= render "admin/shared/list_item", href: "#", title: "Reminder", author: "Alan Turing", date: "Jun 25",
+        <%= render "shared/list_item", href: "#", title: "Reminder", author: "Alan Turing", date: "Jun 25",
               excerpt: "Short one.", comment_count: 12 %>
-      </ul>
+      </div>
     </section>
 
     <%# ---- Alerts ---- %>

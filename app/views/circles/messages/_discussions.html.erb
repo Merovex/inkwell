@@ -4,16 +4,16 @@
 <%# "Posts on…" flag; a far-right count marks how many comments each has. %>
 <% comment_counts = circle.records.active.comments
      .where(parent_id: discussions.map(&:record_id)).group(:parent_id).count %>
-<ul class="list list--count-top">
+<div class="list list--count-top">
   <% discussions.each do |discussion| %>
-    <%= render "admin/shared/list_item",
+    <%= render "shared/list_item",
           href: circle_message_path(circle, discussion.record),
           title: discussion.title,
           author: discussion.creator.display_name,
           avatar_user: discussion.creator,
           date: l(discussion.created_at.to_date, format: :short),
-          excerpt: discussion.content.to_plain_text.to_s.truncate(140),
+          excerpt: plain_excerpt(discussion.content),
           scheduled_at: (discussion.published_at if discussion.scheduled?),
           comment_count: comment_counts[discussion.record_id].to_i %>
   <% end %>
-</ul>
+</div>

@@ -15,28 +15,20 @@
 </header>
 
 <% if @drips.any? %>
-  <ul class="list">
+  <div class="list">
     <% @drips.each do |drip| %>
-      <li class="list__item">
-        <%= link_to admin_drip_path(drip.record), class: "list__body" do %>
-          <span class="list__titlerow">
-            <span class="list__title"><%= drip.title %></span>
-            <% if drip.active? %>
-              <span class="badge badge--accent">Active</span>
-            <% else %>
-              <span class="badge">Inactive</span>
-            <% end %>
-          </span>
-        <% end %>
-        <%= button_to admin_drip_path(drip.record), method: :delete, form_class: "list__action",
-              class: "button button--icon button--ghost", title: "Trash",
-              "aria-label": "Move #{drip.title} to trash",
-              form: { data: { turbo_confirm: "Move “#{drip.title}” to trash?" } } do %>
-          <%= inline_svg_tag "lucide/trash-2.svg", class: "lucide", size: "16px" %>
-        <% end %>
-      </li>
+      <%= render "shared/list_item",
+            href: admin_drip_path(drip.record),
+            title: drip.title,
+            avatar: false,
+            badge: drip.active? ? "Active" : "Inactive",
+            badge_variant: ("accent" if drip.active?),
+            discard_path: admin_drip_path(drip.record),
+            discard_title: "Trash",
+            discard_aria: "Move #{drip.title} to trash",
+            discard_confirm: "Move “#{drip.title}” to trash?" %>
     <% end %>
-  </ul>
+  </div>
 <% else %>
   <div class="empty">
     <span class="empty__icon"><%= inline_svg_tag "lucide/inbox.svg", class: "lucide", size: "40px" %></span>

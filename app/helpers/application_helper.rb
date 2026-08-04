@@ -29,6 +29,12 @@ module ApplicationHelper
   # app/assets/images (e.g. app/assets/images/lucide/*.svg). Never hand-write
   # icon path data here.
 
+  # List-row excerpt from rich text (or any to_plain_text-able), truncated at a
+  # word boundary so rows never end mid-wor…
+  def plain_excerpt(content, length: 140)
+    content.to_plain_text.to_s.truncate(length, separator: " ")
+  end
+
   # What goes inside an .avatar: the uploaded picture when there is one,
   # otherwise the monogram.
   def avatar_content(user)
