@@ -39,6 +39,9 @@
     background: color-mix(in oklab, var(--brand-strong), black 15%);
     border-color: color-mix(in oklab, var(--brand-strong), black 15%);
   }
+  /* Muted inline text (e.g. a "(5)" count) inherits the dark --ink-muted, which
+     is near-invisible on the filled teal. Dim the button's own white instead. */
+  .button--primary .u-text-muted { color: color-mix(in oklab, #fff, transparent 30%); }
 
   .button--ghost {
     background: transparent;
