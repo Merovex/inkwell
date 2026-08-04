@@ -17,15 +17,27 @@ class Circle < ApplicationRecord
 
   validates :name, presence: true
 
-  # The board: current versions of this circle's live CircleMessages, newest
-  # first (a board reads most-recent-first). The account-scoped `.messages`
-  # counterpart for a circle; the query anchors on records.bucket_id, so it
-  # satisfies the tenancy guard.
+  # The discussions: current versions of this circle's Messages, newest first
+  # (a board reads most-recent-first). The bucket-owned twin of
+  # Account#messages; the query anchors on records.bucket_id, so it satisfies
+  # the tenancy guard. `listed` hides archived discussions; #archived_messages
+  # surfaces them.
   def messages
-    CircleMessage
-      .where(id: records.active.where(recordable_type: "CircleMessage").select(:recordable_id))
-      .includes(:rich_text_content, creator: { avatar_attachment: :blob }, record: :boosts)
-      .order(record_id: :desc)
+    discussions_from(records.listed)
+  end
+
+  def archived_messages
+    discussions_from(records.archived)
+  end
+
+  # The discussions a given member may see: published ones for everyone, plus
+  # unpublished (draft/scheduled) ones only for their author — and the circle
+  # owner sees every unpublished one, the circle-flavored twin of
+  # RecordPolicy's "creator or admin".
+  def discussions_visible_to(user, scope: messages)
+    return scope if user && owner_id == user.id
+
+    scope.where(status: :published).or(scope.where(creator_id: user&.id))
   end
 
   # Birth of a circle: the circle plus its owner's membership, atomically —
@@ -51,4 +63,12 @@ class Circle < ApplicationRecord
   end
 
   def to_s = name
+
+  private
+    def discussions_from(record_scope)
+      Message
+        .where(id: record_scope.where(recordable_type: "Message").select(:recordable_id))
+        .includes(:record, creator: { avatar_attachment: :blob }, body: :rich_text_content)
+        .order(record_id: :desc)
+    end
 end

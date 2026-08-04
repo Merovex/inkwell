@@ -19,6 +19,33 @@ class PostsControllerTest < ActionDispatch::IntegrationTest
     assert_select ".list__title", text: posts(:kickoff).title, count: 0
   end
 
+  test "archiving sets a post aside: out of the main feed, into the archived view, reversible" do
+    post admin_record_archive_path(records(:kickoff))
+    assert records(:kickoff).reload.archived?
+
+    # Gone from the main feed…
+    get admin_posts_path
+    assert_select ".list__title", text: posts(:kickoff).title, count: 0
+    assert_select "a[href=?]", archived_admin_posts_path, text: /View 1 archived post/
+
+    # …but present (and still openable) in the archived view.
+    get archived_admin_posts_path
+    assert_select ".list__title", text: posts(:kickoff).title
+
+    # Unarchive restores it.
+    delete admin_record_archive_path(records(:kickoff))
+    assert_not records(:kickoff).reload.archived?
+    get admin_posts_path
+    assert_select ".list__title", text: posts(:kickoff).title
+  end
+
+  test "archiving is manage-only" do
+    sign_in_as users(:bob) # not the creator, not admin
+    post admin_record_archive_path(records(:kickoff))
+    assert_response :not_found
+    assert_not records(:kickoff).reload.archived?
+  end
+
   test "show is keyed by the record id and renders the current version" do
     get admin_post_path(records(:kickoff))
     assert_response :success

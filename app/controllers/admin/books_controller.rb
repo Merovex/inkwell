@@ -1,12 +1,19 @@
 class Admin::BooksController < Admin::BaseController
   include BookScoped, Publishing
-  skip_before_action :set_record, only: %i[index new create search]
+  skip_before_action :set_record, only: %i[index archived new create search]
   before_action -> { authorize! @record, to: :view }, only: :show
   before_action -> { authorize! @record, to: :manage }, only: %i[edit update destroy]
 
   def index
-    books = Current.account.books.includes(:record, :creator, :depiction, body: :rich_text_content).feed_ordered
+    books = Current.account.books.listed.includes(:record, :creator, :depiction, body: :rich_text_content).feed_ordered
     @sections = sections_for(books)
+    @archived_count = Current.account.books.archived.count
+  end
+
+  # Set-aside books — permanent but out of the catalog. Open one to restore it.
+  def archived
+    @books = Current.account.books.archived
+      .includes(:record, :creator, :depiction, body: :rich_text_content).feed_ordered
   end
 
   def show

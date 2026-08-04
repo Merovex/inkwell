@@ -21,6 +21,10 @@
     </div>
   </header>
 
+  <% if @archived_count.positive? %>
+    <p class="u-margin-block-end"><%= link_to "View #{pluralize(@archived_count, "archived book")}", archived_admin_books_path %></p>
+  <% end %>
+
   <% if @sections.any? %>
     <% @sections.each do |section_title, books| %>
       <section class="book-shelf" data-filter-target="section">

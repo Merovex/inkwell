@@ -7,7 +7,7 @@ class Record < ApplicationRecord
   include Boostable
 
   # Content types that may live in the envelope; grows as recordables are added.
-  RECORDABLE_TYPES = %w[ Post Comment ChatLine Message Book Series Collection Author Drip Drop Site CircleMessage ]
+  RECORDABLE_TYPES = %w[ Post Comment ChatLine Message Book Series Collection Author Drip Drop Site ]
 
   delegated_type :recordable, types: RECORDABLE_TYPES, optional: true
   belongs_to :creator, class_name: "User", default: -> { Current.user }
@@ -34,6 +34,11 @@ class Record < ApplicationRecord
   scope :active,  -> { where(trashed_at: nil) }
   scope :trashed, -> { where.not(trashed_at: nil) }
   scope :purgeable, -> { trashed.where(purge_after: ..Time.current) }
+  # Archive is a separate axis from trash: a permanent, reversible set-aside
+  # (no purge). `listed` is what the default lists show — neither trashed nor
+  # archived; `archived` is the set-aside, still active so it can be reopened.
+  scope :listed,   -> { active.where(archived_at: nil) }
+  scope :archived, -> { active.where.not(archived_at: nil) }
   scope :posts, -> { where(recordable_type: "Post") }
   scope :comments, -> { where(recordable_type: "Comment") }
   scope :chat_lines, -> { where(recordable_type: "ChatLine") }
@@ -133,6 +138,24 @@ class Record < ApplicationRecord
   end
 
   def trashed? = trashed_at.present?
+  def archived? = archived_at.present?
+
+  # Set aside without deleting: a tracked event, kept indefinitely (no purge
+  # deadline), reversible via #unarchive. Orthogonal to trash — the default
+  # lists (Record.listed) hide archived content; the archived view surfaces it.
+  def archive
+    transaction do
+      revise(event: :archived)
+      update! archived_at: Time.current
+    end
+  end
+
+  def unarchive
+    transaction do
+      revise(event: :unarchived)
+      update! archived_at: nil
+    end
+  end
 
   # Staged deletion, always on the history regardless of draft/published.
   # Recoverable until the purge deadline: the recordable's retention_period

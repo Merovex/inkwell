@@ -54,9 +54,16 @@ Rails.application.routes.draw do
     # independent of any one site, so they live on the app host at the top level
     # (not under a /{SLUG}/admin) — their URLs never carry a site slug. index is
     # the door from the app menu (a person is in several); show is a circle's
-    # board; posting to the board is the nested resource.
-    resources :circles, only: %i[index show] do
-      resources :messages, only: %i[create], module: :circles
+    # home (a preview of its discussions). The nested messages are the circle's
+    # discussions: index lists them all, new is the composer, create posts one.
+    resources :circles, only: %i[index show edit update] do
+      resources :messages, only: %i[index show new create edit update destroy], module: :circles do
+        collection { get :archived }
+        member do
+          patch :archive
+          patch :unarchive
+        end
+      end
     end
   end
 
@@ -83,6 +90,7 @@ Rails.application.routes.draw do
       # Blog posts — the first recordable on the Record/Recordable spine.
       # :id here is always the Record id (the stable identity), never a version id.
       resources :posts do
+        collection { get :archived }
         scope module: :posts do
           # State transitions as resources (Fizzy style): POST does, DELETE undoes.
           resource :publish, only: %i[create destroy]
@@ -110,6 +118,7 @@ Rails.application.routes.draw do
       # index IS the tool page. Messages mirror posts on the spine (:id is the
       # Record id), with the same transition/history/comment sub-resources.
       resources :messages, path: "forum" do
+        collection { get :archived }
         scope module: :messages do
           resource :publish, only: %i[create destroy]
           resource :pin, only: %i[create destroy]
@@ -140,6 +149,9 @@ Rails.application.routes.draw do
       resources :records, only: [] do
         scope module: :records do
           resources :boosts, only: :create
+          # Archive/unarchive any recordable — one shared controller keyed by the
+          # Record id (like boosts and comment member actions), no per-type copies.
+          resource :archive, only: %i[create destroy]
         end
       end
       resources :boosts, only: :destroy
@@ -158,6 +170,7 @@ Rails.application.routes.draw do
       # is managed with the typeahead (Installments), not the book form.
       resources :books do
         get :search, on: :collection
+        get :archived, on: :collection
         scope module: :books do
           resource :publish, only: %i[create destroy]
           resource :depiction, only: %i[create destroy]

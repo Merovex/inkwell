@@ -1,0 +1,37 @@
+<% content_for :title, "Discussions — #{@circle.name}" %>
+
+<%= render "admin/shared/canvas_head",
+      crumbs: [["Circles", circles_path], [@circle.name, circle_path(@circle)], ["Discussions", nil]] %>
+
+<header class="perma-header">
+  <h1 class="perma-header__title">Discussions</h1>
+  <div class="perma-header__content">
+    <nav class="perma-header__toolbar" aria-label="Actions">
+      <%= link_to new_circle_message_path(@circle), class: "button button--primary button--small" do %>
+        <%= inline_svg_tag "lucide/plus.svg", class: "lucide", size: "16px" %> New message
+      <% end %>
+    </nav>
+  </div>
+</header>
+
+<% if params[:scheduled] %>
+  <p class="u-margin-block-end"><%= link_to "← All discussions", circle_messages_path(@circle) %></p>
+<% else %>
+  <% filters = [] %>
+  <% filters << link_to(pluralize(@scheduled_count, "scheduled discussion"), circle_messages_path(@circle, scheduled: 1)) if @scheduled_count.positive? %>
+  <% filters << link_to(pluralize(@archived_count, "archived discussion"), archived_circle_messages_path(@circle)) if @archived_count.positive? %>
+  <% if filters.any? %>
+    <p class="u-margin-block-end"><%= safe_join(filters, " · ") %></p>
+  <% end %>
+<% end %>
+
+<% if @discussions.any? %>
+  <%= render "discussions", circle: @circle, discussions: @discussions %>
+<% else %>
+  <div class="empty">
+    <span class="empty__icon"><%= inline_svg_tag "lucide/inbox.svg", class: "lucide", size: "40px" %></span>
+    <p class="empty__title">No discussions yet</p>
+    <p class="empty__text">Start the first discussion and it will show up here.</p>
+    <div class="empty__actions"><%= link_to "New message", new_circle_message_path(@circle), class: "button button--primary" %></div>
+  </div>
+<% end %>

@@ -23,7 +23,7 @@ welcome_comment_content:
   name: content
   body: <p>Hello from the first reply.</p>
 
-board_kickoff_content:
-  record: board_kickoff (CircleMessage)
+circle_welcome_content:
+  record: circle_welcome_body (Body)
   name: content
   body: <p>Welcome — introduce yourself and your current project.</p>

@@ -16,3 +16,14 @@ roadmap:
   title: Roadmap questions
   status: drafted
   category: question
+
+# A circle discussion — a Message owned by a Circle bucket (see records.yml),
+# no category. Same class as the forum messages above.
+circle_welcome:
+  record: circle_welcome
+  creator: alice
+  body: circle_welcome_body
+  event: created
+  title: Welcome to the circle
+  status: published
+  published_at: <%= 2.days.ago %>

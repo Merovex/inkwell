@@ -23,6 +23,7 @@
     <%= link_to "View History", admin_message_events_path(@record), class: "menu__item", role: "menuitem" %>
     <% if can_manage %>
       <hr class="menu__separator">
+      <%= render "admin/shared/archive_menu_item", record: @record %>
       <%= button_to "Move to trash", admin_message_path(@record), method: :delete, class: "menu__item", role: "menuitem" %>
     <% end %>
   <% end %>

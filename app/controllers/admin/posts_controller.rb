@@ -1,13 +1,14 @@
 class Admin::PostsController < Admin::BaseController
   include PostScoped, Publishing
-  skip_before_action :set_record, only: %i[index new create]
+  skip_before_action :set_record, only: %i[index archived new create]
   before_action -> { authorize! @record, to: :view }, only: :show
   before_action -> { authorize! @record, to: :manage }, only: %i[edit update destroy]
 
   # The default view is the published feed; unpublished work (drafts +
-  # scheduled) lives behind the counted link to posts/drafts.
+  # scheduled) lives behind the counted link to posts/drafts, and archived
+  # posts behind posts/archived.
   def index
-    @posts = Current.account.posts.published
+    @posts = Current.account.posts.listed.published
       .includes(:record, :creator, body: :rich_text_content).feed_ordered
 
     @comment_counts = Current.account.records.active.comments
@@ -17,6 +18,13 @@ class Admin::PostsController < Admin::BaseController
       .group(:status).count
     @drafts_count = unpublished["drafted"].to_i
     @scheduled_count = unpublished["scheduled"].to_i
+    @archived_count = Current.account.posts.archived.count
+  end
+
+  # Set-aside posts — permanent but out of the main feed. Open one to restore it.
+  def archived
+    @posts = Current.account.posts.archived
+      .includes(:record, :creator, body: :rich_text_content).feed_ordered
   end
 
   def show

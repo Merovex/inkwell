@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.2].define(version: 2026_08_03_000200) do
+ActiveRecord::Schema[8.2].define(version: 2026_08_04_152125) do
   create_table "account_users", force: :cascade do |t|
     t.integer "account_id", null: false
     t.integer "user_id", null: false
@@ -233,17 +233,6 @@ ActiveRecord::Schema[8.2].define(version: 2026_08_03_000200) do
     t.index ["user_id"], name: "index_circle_memberships_on_user_id"
   end
 
-  create_table "circle_messages", force: :cascade do |t|
-    t.integer "record_id", null: false
-    t.integer "creator_id", null: false
-    t.string "event", default: "created", null: false
-    t.string "title"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["creator_id"], name: "index_circle_messages_on_creator_id"
-    t.index ["record_id", "id"], name: "index_circle_messages_on_record_id_and_id"
-  end
-
   create_table "circles", force: :cascade do |t|
     t.string "name", null: false
     t.string "slug", null: false
@@ -251,6 +240,7 @@ ActiveRecord::Schema[8.2].define(version: 2026_08_03_000200) do
     t.integer "member_limit"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.text "description"
     t.index ["owner_id"], name: "index_circles_on_owner_id"
     t.index ["slug"], name: "index_circles_on_slug", unique: true
   end
@@ -460,6 +450,7 @@ ActiveRecord::Schema[8.2].define(version: 2026_08_03_000200) do
     t.datetime "purge_after"
     t.string "bucket_type", null: false
     t.integer "bucket_id", null: false
+    t.datetime "archived_at"
     t.index ["bucket_type", "bucket_id", "recordable_type"], name: "index_records_on_bucket_and_recordable_type"
     t.index ["creator_id"], name: "index_records_on_creator_id"
     t.index ["parent_id"], name: "index_records_on_parent_id"

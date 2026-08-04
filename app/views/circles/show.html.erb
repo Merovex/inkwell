@@ -1,33 +1,36 @@
 <% content_for :title, "#{@circle.name} — Circle" %>
 
-<div class="card">
-  <header class="card__header"><span class="card__title"><%= @circle.name %></span></header>
+<%= render "admin/shared/canvas_head", crumbs: [["Circles", circles_path], [@circle.name, nil]],
+      edit_href: (edit_circle_path(@circle) if allowed_to?(:manage, @circle)) %>
 
-  <div class="card__body u-stack">
-    <%= form_with url: circle_messages_path(@circle), scope: :circle_message do |form| %>
-      <div class="u-stack">
-        <%= form.text_field :title, placeholder: "Title (optional)", class: "input" %>
-        <%= form.text_area :content, placeholder: "Post to the board…", rows: 4, class: "input" %>
-        <%= form.submit "Post", class: "button button--primary" %>
-      </div>
-    <% end %>
+<header class="perma-header">
+  <h1 class="perma-header__title"><%= @circle.name %></h1>
+  <p class="perma-header__content u-text-muted">
+    <span class="u-text-strong"><%= @circle.owner.display_name %></span>
+    · <%= pluralize(@circle.circle_memberships.count, "member") %>
+  </p>
+  <% if @circle.description.present? %>
+    <p class="perma-header__content"><%= @circle.description %></p>
+  <% end %>
+</header>
 
-    <% if @messages.any? %>
-      <ul class="board u-stack">
-        <% @messages.each do |message| %>
-          <li id="circle_message_<%= message.record_id %>" class="board__post">
-            <% if message.title.present? %>
-              <h3 class="board__title"><%= message.title %></h3>
-            <% end %>
-            <div class="board__body trix-content"><%= message.content %></div>
-            <p class="board__meta u-text-muted">
-              <%= message.creator.name %> · <%= message.created_at.to_fs(:long) %>
-            </p>
-          </li>
-        <% end %>
-      </ul>
-    <% else %>
-      <p class="u-text-muted">No posts yet. Start the board.</p>
+<section aria-labelledby="discussions-heading">
+  <div class="section-head">
+    <h2 class="section-head__title" id="discussions-heading">Discussions</h2>
+    <%= link_to new_circle_message_path(@circle), class: "button button--primary button--small" do %>
+      <%= inline_svg_tag "lucide/plus.svg", class: "lucide", size: "16px" %> New message
     <% end %>
   </div>
-</div>
+
+  <% if @discussions.any? %>
+    <%= render "circles/messages/discussions", circle: @circle, discussions: @discussions %>
+
+    <% if @discussions_count > CirclesController::PREVIEW_COUNT %>
+      <p class="section-more">
+        <%= link_to "See all #{pluralize(@discussions_count, "discussion")}", circle_messages_path(@circle) %>
+      </p>
+    <% end %>
+  <% else %>
+    <p class="u-text-muted">No discussions yet. Start the first one.</p>
+  <% end %>
+</section>

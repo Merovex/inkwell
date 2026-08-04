@@ -1,21 +1,42 @@
 <% content_for :title, "Your circles — Inkwell" %>
 
-<div class="card">
-  <header class="card__header"><span class="card__title">Your circles</span></header>
-  <div class="card__body u-stack">
-    <% if @circles.any? %>
-      <ul class="account-picker">
-        <% @circles.each do |circle| %>
-          <li>
-            <%= link_to circle_path(circle), class: "account-picker__card" do %>
-              <span class="account-picker__name"><%= circle.name %></span>
-              <span class="account-picker__meta"><%= pluralize(circle.circle_memberships.count, "member") %></span>
-            <% end %>
-          </li>
-        <% end %>
-      </ul>
-    <% else %>
-      <p class="u-text-muted">You're not in any circles yet.</p>
-    <% end %>
+<%= render "admin/shared/canvas_head", crumbs: [["Circles", nil]] %>
+
+<header class="perma-header">
+  <h1 class="perma-header__title">Your circles</h1>
+  <p class="perma-header__content u-text-muted">Accountability groups you're a part of.</p>
+</header>
+
+<% if @circles.any? %>
+  <%# Persisted list ⇄ cards choice (cookie); default to list. %>
+  <% view = %w[list cards].include?(cookies[:circles_view]) ? cookies[:circles_view] : "list" %>
+  <div data-controller="view-toggle" data-view-toggle-name-value="circles_view">
+    <div class="circles-toolbar">
+      <div class="segmented" role="group" aria-label="Layout">
+        <button type="button" class="segmented__seg" data-view="list"
+                data-action="view-toggle#set" data-view-toggle-target="button"
+                aria-selected="<%= view == "list" %>">List</button>
+        <button type="button" class="segmented__seg" data-view="cards"
+                data-action="view-toggle#set" data-view-toggle-target="button"
+                aria-selected="<%= view == "cards" %>">Cards</button>
+      </div>
+    </div>
+
+    <ul class="circles" data-view="<%= view %>" data-view-toggle-target="collection">
+      <% @circles.each do |circle| %>
+        <li>
+          <%= link_to circle_path(circle), class: "circles__card" do %>
+            <span class="circles__name"><%= circle.name %></span>
+            <span class="circles__meta"><%= pluralize(circle.circle_memberships.count, "member") %></span>
+          <% end %>
+        </li>
+      <% end %>
+    </ul>
   </div>
-</div>
+<% else %>
+  <div class="empty">
+    <span class="empty__icon"><%= inline_svg_tag "lucide/inbox.svg", class: "lucide", size: "40px" %></span>
+    <p class="empty__title">No circles yet</p>
+    <p class="empty__text">You're not in any circles yet.</p>
+  </div>
+<% end %>

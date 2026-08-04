@@ -35,7 +35,7 @@ welcome_comment:
   bucket: merovex (Account)
   parent: welcome
 
-board_kickoff:
-  recordable: board_kickoff (CircleMessage)
+circle_welcome:
+  recordable: circle_welcome (Message)
   creator: alice
   bucket: writers (Circle)

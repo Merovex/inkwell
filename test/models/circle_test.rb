@@ -26,8 +26,14 @@ class CircleTest < ActiveSupport::TestCase
     assert_match(/full/i, membership.errors.full_messages.to_sentence)
   end
 
-  test "a circle owns its board messages; an account owns none of them" do
-    assert_includes circles(:writers).messages.map(&:title), "Welcome to the circle"
-    assert_equal 0, accounts(:merovex).records.where(recordable_type: "CircleMessage").count
+  test "a circle's discussions are Messages owned by the circle, isolated from any account" do
+    circle = circles(:writers)
+
+    # The circle's discussions are Messages, scoped to the circle bucket.
+    assert_includes circle.messages.map(&:title), "Welcome to the circle"
+    # Bucket isolation both ways: the forum's Messages aren't the circle's, and
+    # the circle's discussion isn't the account's.
+    assert_not_includes circle.messages.map(&:title), messages(:welcome).title
+    assert_not_includes accounts(:merovex).messages.map(&:title), "Welcome to the circle"
   end
 end

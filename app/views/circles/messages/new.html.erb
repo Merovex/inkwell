@@ -1,0 +1,10 @@
+<% content_for :title, "New message — #{@circle.name}" %>
+
+<%= render "admin/shared/canvas_head",
+      crumbs: [["Circles", circles_path], [@circle.name, circle_path(@circle)],
+               ["Discussions", circle_messages_path(@circle)], ["New message", nil]],
+      menu: false do %>
+  <%= render "composer_actions", circle: @circle, message: @message %>
+<% end %>
+
+<%= render "form", message: @message, url: circle_messages_path(@circle) %>

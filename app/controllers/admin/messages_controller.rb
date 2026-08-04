@@ -3,14 +3,15 @@
 # PostsController — messages share the whole publishable regime.
 class Admin::MessagesController < Admin::BaseController
   include MessageScoped, Publishing
-  skip_before_action :set_record, only: %i[index new create]
+  skip_before_action :set_record, only: %i[index archived new create]
   before_action -> { authorize! @record, to: :view }, only: :show
   before_action -> { authorize! @record, to: :manage }, only: %i[edit update destroy]
 
   # The board: published messages, pinned first; unpublished work (drafts +
-  # scheduled) lives behind the counted link to forum/drafts.
+  # scheduled) lives behind the counted link to forum/drafts, archived ones
+  # behind forum/archived.
   def index
-    @messages = Current.account.messages.published
+    @messages = Current.account.messages.listed.published
       .includes(:record, :creator, :category, body: :rich_text_content).feed_ordered
 
     @comment_counts = Current.account.records.active.comments
@@ -20,6 +21,13 @@ class Admin::MessagesController < Admin::BaseController
       .group(:status).count
     @drafts_count = unpublished["drafted"].to_i
     @scheduled_count = unpublished["scheduled"].to_i
+    @archived_count = Current.account.messages.archived.count
+  end
+
+  # Set-aside messages — permanent but out of the board. Open one to restore it.
+  def archived
+    @messages = Current.account.messages.archived
+      .includes(:record, :creator, :category, body: :rich_text_content).feed_ordered
   end
 
   def show

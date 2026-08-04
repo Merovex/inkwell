@@ -47,6 +47,8 @@ class MessageTest < ActiveSupport::TestCase
     pinned = messages(:roadmap)
     pinned.update!(pinned_at: Time.current)
 
-    assert_equal [ pinned, messages(:welcome) ], Message.feed_ordered.to_a
+    # Scope to the forum's account — Messages now also back circle discussions,
+    # which live under a different bucket and aren't part of this feed.
+    assert_equal [ pinned, messages(:welcome) ], accounts(:merovex).messages.feed_ordered.to_a
   end
 end

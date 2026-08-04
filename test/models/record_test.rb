@@ -86,6 +86,24 @@ class RecordTest < ActiveSupport::TestCase
     assert draft.versions.last.event_restored?
   end
 
+  test "archive sets a record aside — reversible, a tracked event, separate from trash" do
+    record = records(:kickoff)
+
+    record.archive
+    assert record.reload.archived?
+    assert record.versions.last.event_archived?
+    assert_not record.trashed?, "archive is its own axis, not a trash"
+    # Still findable/active (so it can be reopened), but out of the listed set.
+    assert_includes Record.active, record
+    assert_not_includes Record.listed, record
+    assert_includes Record.archived, record
+
+    record.unarchive
+    assert_not record.reload.archived?
+    assert record.versions.last.event_unarchived?
+    assert_includes Record.listed, record
+  end
+
   test "destroying a record destroys all versions and orphaned bodies" do
     record = records(:kickoff)
     record.revise(event: :updated, creator: users(:alice), content: "<p>v2</p>")

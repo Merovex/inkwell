@@ -19,6 +19,9 @@
 <% if (@drafts_count + @scheduled_count).positive? %>
   <p class="u-margin-block-end"><%= link_to unpublished_work_label(@drafts_count, @scheduled_count, noun: "message"), admin_message_drafts_path %></p>
 <% end %>
+<% if @archived_count.positive? %>
+  <p class="u-margin-block-end"><%= link_to "View #{pluralize(@archived_count, "archived message")}", archived_admin_messages_path %></p>
+<% end %>
 
 <% if @messages.any? %>
   <ul class="list">

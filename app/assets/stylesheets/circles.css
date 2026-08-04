@@ -1,0 +1,69 @@
+/*
+ * .circles — the "Your circles" collection, switchable between a list of
+ * full-width rows and a grid of portrait cards (3 abreast, 3:5). The
+ * `view-toggle` Stimulus controller flips data-view; this is only the skin.
+ */
+@layer components {
+  .circles {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: var(--u-pad);
+  }
+
+  /* List: one full-width row per circle (the default). */
+  .circles[data-view="list"] { grid-template-columns: 1fr; }
+
+  /* Cards: three abreast, each a 5:3 landscape with its label pinned to the
+     bottom. Collapses to two, then one, as the canvas narrows. */
+  .circles[data-view="cards"] { grid-template-columns: repeat(3, 1fr); }
+  .circles[data-view="cards"] .circles__card {
+    aspect-ratio: 5 / 3;
+    justify-content: flex-end;
+  }
+  @media (max-width: 60rem) {
+    .circles[data-view="cards"] { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 34rem) {
+    .circles[data-view="cards"] { grid-template-columns: 1fr; }
+    .circles[data-view="cards"] .circles__card { aspect-ratio: auto; }
+  }
+
+  .circles__card {
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--u-pad) / 4);
+    padding: var(--u-pad);
+    border: var(--border-size-1) solid var(--line);
+    border-radius: var(--radius-ui);
+    color: inherit;
+    text-decoration: none;
+  }
+  .circles__card:hover,
+  .circles__card:focus-visible {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+  }
+
+  .circles__name { font-weight: var(--font-weight-6); }
+  .circles__meta { color: var(--ink-muted); font-size: var(--font-size-0); }
+
+  /* The list/cards switch sits in the header toolbar, not centered. */
+  .circles-toolbar { display: flex; justify-content: flex-end; margin-block-end: var(--u-pad); }
+  .circles-toolbar .segmented { margin-inline: 0; }
+
+  /* An in-page section heading with its primary action pinned far right —
+     "Discussions … New message". */
+  .section-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--u-pad);
+    margin-block: var(--u-pad) calc(var(--u-pad) / 2);
+  }
+  .section-head__title { margin: 0; }
+
+  /* The "see all N discussions" line under the preview list. */
+  .section-more { margin-block-start: calc(var(--u-pad) / 2); }
+}

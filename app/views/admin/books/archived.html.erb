@@ -1,0 +1,11 @@
+<% content_for :title, "Archived books — Inkwell" %>
+
+<%= render "admin/shared/canvas_head", crumbs: [["Books", admin_books_path], ["Archived", nil]] %>
+
+<header class="perma-header">
+  <h1 class="perma-header__title">Archived books</h1>
+  <p class="perma-header__content u-text-muted">Set aside, but kept — open one to restore it.</p>
+</header>
+
+<%= render "admin/shared/archived_list", records: @books,
+      empty_text: "Archived books are set aside here, out of the catalog." %>
