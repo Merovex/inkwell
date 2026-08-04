@@ -30,6 +30,15 @@ class Circle < ApplicationRecord
     discussions_from(records.archived)
   end
 
+  # This circle's check-ins (recurring questions). A circle has one active Pulse
+  # in practice, but the spine allows more; #pulse is the current one for the home.
+  def pulses
+    Pulse.where(id: records.active.where(recordable_type: "Pulse").select(:recordable_id))
+      .order(record_id: :desc)
+  end
+
+  def pulse = pulses.live.first
+
   # The discussions a given member may see: published ones for everyone, plus
   # unpublished (draft/scheduled) ones only for their author — and the circle
   # owner sees every unpublished one, the circle-flavored twin of

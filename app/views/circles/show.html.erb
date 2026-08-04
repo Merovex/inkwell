@@ -14,6 +14,30 @@
   <% end %>
 </header>
 
+<section aria-labelledby="pulse-heading">
+  <div class="section-head">
+    <h2 class="section-head__title" id="pulse-heading">Pulse check</h2>
+    <% if @pulse.nil? && allowed_to?(:manage, @circle) %>
+      <%= link_to new_circle_pulse_path(@circle), class: "button button--primary button--small" do %>
+        <%= inline_svg_tag "lucide/plus.svg", class: "lucide", size: "16px" %> Set up a Pulse check
+      <% end %>
+    <% end %>
+  </div>
+
+  <% if @pulse %>
+    <ul class="list">
+      <li class="list__item">
+        <a href="<%= circle_pulse_path(@circle, @pulse.record) %>" class="list__body">
+          <span class="list__titlerow"><span class="list__title"><%= @pulse.question %></span></span>
+          <span class="list__meta"><span class="list__byline">Asked <%= @pulse.schedule_summary %> at <%= @pulse.ask_at %></span></span>
+        </a>
+      </li>
+    </ul>
+  <% else %>
+    <p class="u-text-muted">No Pulse check yet.</p>
+  <% end %>
+</section>
+
 <section aria-labelledby="discussions-heading">
   <div class="section-head">
     <h2 class="section-head__title" id="discussions-heading">Discussions</h2>

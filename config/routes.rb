@@ -71,6 +71,16 @@ Rails.application.routes.draw do
         resources :comments, only: %i[new create], module: :circles
       end
       resources :comments, only: %i[edit update destroy], module: :circles
+
+      # Pulse — the circle's recurring check-in. Owner sets it up; members
+      # subscribe/unsubscribe and post a Beat (their answer).
+      resources :pulses, only: %i[new create show edit update destroy], module: :circles do
+        member do
+          post :subscribe
+          delete :unsubscribe
+        end
+        resources :beats, only: :create
+      end
     end
   end
 

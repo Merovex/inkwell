@@ -22,6 +22,7 @@ class CirclesController < Circles::BaseController
   end
 
   def show
+    @pulse = @circle.pulse
     # Scheduled discussions wait in their own view; the home previews the
     # conversation as it stands (posted + in-progress).
     visible = @circle.discussions_visible_to(Current.user).where.not(status: :scheduled)

@@ -1,0 +1,59 @@
+<% content_for :title, "Pulse check — #{@circle.name}" %>
+<% can_manage = allowed_to?(:manage, @circle) %>
+
+<%= render "admin/shared/canvas_head",
+      crumbs: [["Circles", circles_path], [@circle.name, circle_path(@circle)], ["Pulse check", nil]],
+      edit_href: (edit_circle_pulse_path(@circle, @record) if can_manage) do %>
+  <% if @pulse.subscribed?(Current.user) %>
+    <%= button_to "Leave this Pulse check", unsubscribe_circle_pulse_path(@circle, @record), method: :delete, class: "menu__item", role: "menuitem" %>
+  <% else %>
+    <%= button_to "Join this Pulse check", subscribe_circle_pulse_path(@circle, @record), method: :post, class: "menu__item", role: "menuitem" %>
+  <% end %>
+  <% if can_manage %>
+    <hr class="menu__separator">
+    <%= button_to "Move to trash", circle_pulse_path(@circle, @record), method: :delete, class: "menu__item", role: "menuitem",
+          form: { data: { turbo_confirm: "Remove this Pulse check?" } } %>
+  <% end %>
+<% end %>
+
+<header class="perma-header discussion-body">
+  <h1 class="perma-header__title"><%= @pulse.question %></h1>
+  <p class="perma-header__content u-text-muted">
+    Asked <%= @pulse.schedule_summary %> at <%= @pulse.ask_at %>
+    <% unless @pulse.active? %> · <span class="badge">Paused</span><% end %>
+  </p>
+</header>
+
+<div class="discussion-body u-flow">
+  <% if @pulse.subscribed?(Current.user) %>
+    <% beat = @my_beat || Beat.new %>
+    <%= form_with model: beat, url: circle_pulse_beats_path(@circle, @record), method: :post,
+          class: "lexxy-compact" do |f| %>
+      <%= f.rich_textarea :content, placeholder: "Share your answer…", "aria-label": "Your answer" %>
+      <%= f.submit(@my_beat ? "Update my answer" : "Share my answer", class: "button button--primary u-margin-block-start") %>
+    <% end %>
+  <% else %>
+    <p class="u-text-muted">You're not in this Pulse check.
+      <%= button_to "Join it", subscribe_circle_pulse_path(@circle, @record), method: :post, class: "u-unbutton u-link" %>
+      to be asked and answer.</p>
+  <% end %>
+
+  <section id="beats" aria-label="Answers">
+    <% if @beats.any? %>
+      <h2 class="comments__heading"><%= pluralize(@beats.size, "answer") %></h2>
+      <ul class="list">
+        <% @beats.each do |b| %>
+          <li class="list__item comment">
+            <span class="avatar list__avatar" aria-hidden="true"><%= avatar_content(b.creator) %></span>
+            <div class="comment__content">
+              <%= byline b.creator, b.record.created_at, edited: b.event_updated? %>
+              <div class="comment__body u-flow"><%= b.content %></div>
+            </div>
+          </li>
+        <% end %>
+      </ul>
+    <% else %>
+      <p class="u-text-muted">No answers yet.</p>
+    <% end %>
+  </section>
+</div>

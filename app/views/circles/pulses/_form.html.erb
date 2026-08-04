@@ -1,0 +1,58 @@
+<%# locals: (pulse:, url:) %>
+<%= render "admin/shared/error_summary", model: pulse %>
+
+<% weekdays_hint = "Used for daily, weekly, and every-other-week." %>
+
+<%= form_with model: pulse, url: url, class: "u-stack" do |f| %>
+  <div class="field">
+    <%= f.label :question, "What question do you want to ask?", class: "field__label" %>
+    <%= f.text_field :question, class: "field__control", required: true,
+          placeholder: "What did you work on today?" %>
+  </div>
+
+  <div class="pulse-schedule" data-controller="pulse-schedule"
+       data-pulse-schedule-weekdays-hint-value="<%= weekdays_hint %>">
+    <div class="field">
+      <%= f.label :cadence, "How often?", class: "field__label" %>
+      <span class="field__select">
+        <%= f.select :cadence, Pulse::CADENCES.map { |c| [c.capitalize, c] }, {},
+              class: "field__control", data: { pulse_schedule_target: "cadence", action: "change->pulse-schedule#update" } %>
+        <%= inline_svg_tag "lucide/chevron-down.svg", class: "lucide", size: "16px" %>
+      </span>
+    </div>
+
+    <div class="field">
+      <span class="field__label">On which days?</span>
+      <div class="day-pills" data-pulse-schedule-target="days">
+        <% Pulse::WEEKDAYS.each_with_index do |name, wday| %>
+          <label class="day-pill">
+            <%= check_box_tag "pulse[weekdays][]", wday, pulse.days_of_week.anybits?(1 << wday),
+                  class: "day-pill__input", id: "pulse-wd-#{wday}",
+                  data: { action: "change->pulse-schedule#dayToggled", day_name: name } %>
+            <%= inline_svg_tag "lucide/check.svg", class: "lucide day-pill__check", size: "14px" %>
+            <span><%= name.first(2) %></span>
+          </label>
+        <% end %>
+      </div>
+      <p class="field__hint u-text-muted" data-pulse-schedule-target="hint"><%= weekdays_hint %></p>
+    </div>
+
+    <div class="field">
+      <%= f.label :ask_at_minutes, "What time?", class: "field__label" %>
+      <span class="field__select">
+        <%= f.select :ask_at_minutes, (0..1410).step(30).map { |m| [Pulse.time_label(m), m] }, {}, class: "field__control" %>
+        <%= inline_svg_tag "lucide/chevron-down.svg", class: "lucide", size: "16px" %>
+      </span>
+    </div>
+  </div>
+
+  <label class="choice">
+    <%= f.check_box :active, class: "choice__input" %>
+    <span>Active — send it on schedule</span>
+  </label>
+
+  <div class="u-cluster">
+    <%= f.submit "Save Pulse check", class: "button button--primary" %>
+    <%= link_to "Cancel", circle_path(@circle), class: "button" %>
+  </div>
+<% end %>

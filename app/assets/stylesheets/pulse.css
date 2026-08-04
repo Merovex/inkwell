@@ -1,0 +1,65 @@
+/*
+ * Pulse (circle check-in) UI. The setup form puts cadence, weekdays, and time
+ * on one row — the weekday pills get double the width — and the pills are
+ * native checkboxes styled as toggles (green with a check when selected).
+ */
+@layer components {
+  /* The setup form runs wider than a reading column so the schedule row's three
+     controls (and all seven day pills) sit on one line. */
+  .pulse-setup { max-inline-size: 56rem; margin-inline: auto; }
+
+  .pulse-schedule {
+    display: grid;
+    grid-template-columns: 1fr 2fr 1fr;   /* cadence · days (2×) · time */
+    gap: var(--u-pad);
+    align-items: start;
+  }
+  @media (max-width: 44rem) {
+    .pulse-schedule { grid-template-columns: 1fr; }
+  }
+
+  .day-pills {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    /* Match a field control's height (line + block padding + borders) so the
+       pills sit vertically centered alongside the cadence/time dropdowns. */
+    min-block-size: calc(1lh + var(--u-pad) + var(--border-size-1) * 2);
+    gap: calc(var(--u-pad) / 3);
+  }
+  /* The days column's help text is centered under the pills. */
+  .pulse-schedule .field__hint { text-align: center; }
+
+  .day-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding-block: calc(var(--u-pad) / 3);
+    padding-inline: calc(var(--u-pad) / 1.5);
+    border: var(--border-size-1) solid var(--line);
+    border-radius: var(--radius-round);
+    font-size: var(--font-size-0);
+    font-weight: var(--font-weight-6);
+    cursor: pointer;
+    user-select: none;
+  }
+  /* The native checkbox drives state but isn't drawn — the pill is the control. */
+  .day-pill__input {
+    position: absolute;
+    inline-size: 1px; block-size: 1px;
+    opacity: 0; pointer-events: none;
+  }
+  .day-pill:has(.day-pill__input:checked) {
+    background: var(--brand-strong);        /* teal-800 — white text is AAA */
+    border-color: var(--brand-strong);
+    color: #fff;
+  }
+  .day-pill:has(.day-pill__input:focus-visible) {
+    outline: var(--border-size-2) solid var(--accent);
+    outline-offset: 2px;
+  }
+  /* The check leads the label only when the pill is on. */
+  .day-pill__check { display: none; }
+  .day-pill:has(.day-pill__input:checked) .day-pill__check { display: inline-flex; }
+}

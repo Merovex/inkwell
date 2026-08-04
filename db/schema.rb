@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.2].define(version: 2026_08_04_152125) do
+ActiveRecord::Schema[8.2].define(version: 2026_08_04_163828) do
   create_table "account_users", force: :cascade do |t|
     t.integer "account_id", null: false
     t.integer "user_id", null: false
@@ -131,6 +131,17 @@ ActiveRecord::Schema[8.2].define(version: 2026_08_04_152125) do
     t.index ["creator_id"], name: "index_authors_on_creator_id"
     t.index ["record_id", "id"], name: "index_authors_on_record_id_and_id"
     t.index ["record_id"], name: "index_authors_on_record_id"
+  end
+
+  create_table "beats", force: :cascade do |t|
+    t.integer "record_id", null: false
+    t.integer "creator_id", null: false
+    t.string "event", default: "created", null: false
+    t.date "asked_on", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["creator_id"], name: "index_beats_on_creator_id"
+    t.index ["record_id", "id"], name: "index_beats_on_record_id_and_id"
   end
 
   create_table "bodies", force: :cascade do |t|
@@ -438,6 +449,31 @@ ActiveRecord::Schema[8.2].define(version: 2026_08_04_152125) do
     t.index ["status", "published_at"], name: "index_posts_on_status_and_published_at"
   end
 
+  create_table "pulse_subscriptions", force: :cascade do |t|
+    t.integer "pulse_record_id", null: false
+    t.integer "user_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["pulse_record_id", "user_id"], name: "index_pulse_subscriptions_on_pulse_record_id_and_user_id", unique: true
+    t.index ["user_id"], name: "index_pulse_subscriptions_on_user_id"
+  end
+
+  create_table "pulses", force: :cascade do |t|
+    t.integer "record_id", null: false
+    t.integer "creator_id", null: false
+    t.string "event", default: "created", null: false
+    t.text "question", null: false
+    t.string "cadence", default: "weekly", null: false
+    t.integer "days_of_week", default: 0, null: false
+    t.integer "ask_at_minutes", default: 540, null: false
+    t.boolean "active", default: true, null: false
+    t.date "last_asked_on"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["creator_id"], name: "index_pulses_on_creator_id"
+    t.index ["record_id", "id"], name: "index_pulses_on_record_id_and_id"
+  end
+
   create_table "records", force: :cascade do |t|
     t.string "recordable_type", null: false
     t.bigint "recordable_id"
@@ -587,6 +623,7 @@ ActiveRecord::Schema[8.2].define(version: 2026_08_04_152125) do
   add_foreign_key "posts", "bodies"
   add_foreign_key "posts", "records"
   add_foreign_key "posts", "users", column: "creator_id"
+  add_foreign_key "pulse_subscriptions", "users"
   add_foreign_key "records", "records", column: "parent_id"
   add_foreign_key "records", "users", column: "creator_id"
   add_foreign_key "sessions", "users"

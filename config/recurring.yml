@@ -49,3 +49,9 @@ production:
   missive_purge:
     class: MissivePurgeJob
     schedule: at 4am every day
+
+  # Circle check-ins: every 30 minutes, fire any pulse whose cadence lands today
+  # and whose ask time has passed (30-min granularity matches the UI). Idempotent.
+  pulse_tick:
+    class: PulseTickJob
+    schedule: every 30 minutes
