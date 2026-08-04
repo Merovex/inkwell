@@ -26,7 +26,11 @@ module Inkwell
     # These settings can be overridden in specific environments using the files
     # in config/environments, which are processed later.
     #
-    # config.time_zone = "Central Time (US & Canada)"
+    # Wall-clock times entered in the UI (e.g. a pulse's "ask at 2:00 PM",
+    # stored as bare minutes-past-midnight) are interpreted in this zone by the
+    # schedulers (PulseTickJob's Time.zone.now). Storage stays UTC. If circles
+    # ever span operators in other zones, this becomes a per-circle setting.
+    config.time_zone = "Eastern Time (US & Canada)"
     # config.eager_load_paths << Rails.root.join("extras")
 
     # Who may hand out join codes (Signup's gate). false = only root users
