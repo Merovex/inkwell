@@ -41,6 +41,9 @@ Rails.application.routes.draw do
     resource :signup, only: %i[new create]
     # Create a press: any signed-in user; lands in the new account's admin.
     resources :accounts, only: %i[new create]
+    # Solid Queue dashboard — platform staff only (Admin::JobsBaseController
+    # gates on root); app host only, so tenant domains never even route it.
+    mount MissionControl::Jobs::Engine, at: "/jobs"
     # Personal settings — always Current.user, no id in the URL. The avatar is its
     # own resource so picking/dropping a picture can auto-submit.
     namespace :user do

@@ -45,6 +45,12 @@ module Inkwell
     # lock the admin out (ADR 0018).
     config.x.app_host = ENV["APP_HOST"]
 
+    # The Solid Queue dashboard rides the app's own authentication instead of
+    # its default HTTP basic auth: sign-in via ApplicationController, root-only
+    # via Admin::JobsBaseController. Mounted at /jobs on the app host (routes).
+    config.mission_control.jobs.base_controller_class = "Admin::JobsBaseController"
+    config.mission_control.jobs.http_basic_auth_enabled = false
+
     # Turn the weekly newsletter sunset sweep on only once SES open/click
     # tracking is live — otherwise everyone looks cold (ADR 0014).
     config.x.newsletter.sunset_enabled = ENV["NEWSLETTER_SUNSET"] == "true"

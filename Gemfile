@@ -32,6 +32,10 @@ gem "solid_cache"
 gem "solid_queue"
 gem "solid_cable"
 
+# Solid Queue dashboard (queues, failed jobs, recurring schedule, workers) at
+# /jobs on the app host — root-only via Admin::JobsBaseController.
+gem "mission_control-jobs"
+
 # Reduces boot times through caching; required in config/boot.rb
 gem "bootsnap", require: false
 
