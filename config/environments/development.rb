@@ -37,8 +37,10 @@ Rails.application.configure do
   # Make template changes take effect immediately.
   config.action_mailer.perform_caching = false
 
-  # Set localhost to be used by links generated in mailer templates.
-  config.action_mailer.default_url_options = { host: "localhost", port: 3020 }
+  # Mailer links must land on the app host (host-role enforcement is on in dev
+  # too — config.x.app_host defaults to app.localhost): circles, sign-in, and
+  # settings only route there. Bare localhost 404s them.
+  config.action_mailer.default_url_options = { host: "app.localhost", port: 3020 }
 
   # Open sent mail (e.g. magic-link sign in) in the browser instead of delivering it.
   config.action_mailer.delivery_method = :letter_opener

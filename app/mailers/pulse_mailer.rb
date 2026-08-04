@@ -6,8 +6,9 @@ class PulseMailer < ApplicationMailer
     @pulse = pulse
     @circle = pulse.record.bucket
     @asked_on = asked_on
-    # The answer page lives on the app host (the circle area), not a press site.
-    @answer_url = circle_pulse_url(@circle, pulse.record)
+    # The answer page lives on the app host (the circle area), not a press site
+    # — app_url_options pins the host once enforcement is on (ADR 0018).
+    @answer_url = circle_pulse_url(@circle, pulse.record, **app_url_options)
 
     # The question is the subject (the circle is named in the body/from context).
     mail(to: user.email_address, subject: @pulse.question.truncate(120))

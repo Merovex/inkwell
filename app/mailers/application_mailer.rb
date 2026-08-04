@@ -12,6 +12,15 @@ class ApplicationMailer < ActionMailer::Base
   helper :application
 
   private
+    # URL options for links that live on the APP host — sign-in, circles,
+    # settings. Once host-role enforcement is on, those routes exist only
+    # there; the default mailer host (a tenant domain) would 404 them
+    # (ADR 0018). Empty when unenforced — links fall back to the default host,
+    # the legacy single-tenant behavior.
+    def app_url_options
+      AccountHost.enforced? ? { host: AccountHost.app_host } : {}
+    end
+
     # URL options for links that live on the account's PUBLIC site — the post's
     # web page, newsletter confirm/keep/unsubscribe, contact confirm. The reader
     # belongs to the press, so links must land on the press's own address. Every
