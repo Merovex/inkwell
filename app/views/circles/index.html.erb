@@ -4,7 +4,16 @@
 
 <header class="perma-header">
   <h1 class="perma-header__title">Your circles</h1>
-  <p class="perma-header__content u-text-muted">Accountability groups you're a part of.</p>
+  <div class="perma-header__content">
+    <p class="u-text-muted">Accountability groups you're a part of.</p>
+    <% if can_create_circle? %>
+      <nav class="perma-header__toolbar" aria-label="Actions">
+        <%= link_to new_circle_path, class: "button button--primary button--small" do %>
+          <%= inline_svg_tag "lucide/plus.svg", class: "lucide", size: "16px" %> New circle
+        <% end %>
+      </nav>
+    <% end %>
+  </div>
 </header>
 
 <% if @circles.any? %>
@@ -37,6 +46,9 @@
   <div class="empty">
     <span class="empty__icon"><%= inline_svg_tag "lucide/inbox.svg", class: "lucide", size: "40px" %></span>
     <p class="empty__title">No circles yet</p>
-    <p class="empty__text">You're not in any circles yet.</p>
+    <p class="empty__text">Start your own accountability group, or wait to be invited to one.</p>
+    <% if can_create_circle? %>
+      <div class="empty__actions"><%= link_to "New circle", new_circle_path, class: "button button--primary" %></div>
+    <% end %>
   </div>
 <% end %>

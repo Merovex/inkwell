@@ -2,9 +2,9 @@
 # circle itself (name, description). Membership and the active bucket are set by
 # the base controller.
 class CirclesController < Circles::BaseController
-  # index is the door from the app menu — it lists every circle you're in, so
-  # it can't load a single circle or set a bucket.
-  skip_before_action :set_circle, only: :index
+  # index/new/create don't operate on an existing circle, so they can't load one
+  # or set a bucket. Anyone signed in can start a circle (they become its owner).
+  skip_before_action :set_circle, only: %i[index new create]
 
   # Only the owner edits the circle's name/description.
   before_action -> { authorize! @circle, to: :manage }, only: %i[edit update]
@@ -17,8 +17,31 @@ class CirclesController < Circles::BaseController
   # How many discussions the circle home previews before the "see all" link.
   PREVIEW_COUNT = 5
 
+  # Everyone gets one circle of their own; platform admins (root) are uncapped.
+  CIRCLE_LIMIT_ALERT = "You can only create one circle."
+
   def index
     @circles = Current.user.circles.order(:name)
+  end
+
+  helper_method :can_create_circle?
+
+  def new
+    return redirect_to circles_path, alert: CIRCLE_LIMIT_ALERT unless can_create_circle?
+    @circle = Circle.new
+  end
+
+  def create
+    return redirect_to circles_path, alert: CIRCLE_LIMIT_ALERT unless can_create_circle?
+
+    @circle = Circle.create_with_owner(name: circle_params[:name], owner: Current.user,
+      description: circle_params[:description])
+
+    if @circle.persisted?
+      redirect_to circle_path(@circle), notice: "Circle created."
+    else
+      render :new, status: :unprocessable_entity
+    end
   end
 
   def show
@@ -42,6 +65,11 @@ class CirclesController < Circles::BaseController
   end
 
   private
+    # A member may own a single circle; admins (root) are unlimited.
+    def can_create_circle?
+      Current.user.root? || Circle.where(owner_id: Current.user.id).none?
+    end
+
     def circle_params
       params.expect(circle: [ :name, :description ])
     end

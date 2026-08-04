@@ -270,6 +270,42 @@ class CirclesTest < ActionDispatch::IntegrationTest
     assert_response :not_found
   end
 
+  # ── Creating circles ───────────────────────────────────────────────────────
+
+  test "a member can create one circle and becomes its owner" do
+    carol = User.create!(email_address: "carol@example.com", role: :member)
+    sign_in_as carol
+
+    assert_difference -> { Circle.count }, 1 do
+      post circles_path, params: { circle: { name: "Carol's Circle", description: "Ours." } }
+    end
+    circle = Circle.find_by(name: "Carol's Circle")
+    assert_redirected_to circle_path(circle)
+    assert_equal carol, circle.owner
+    assert circle.member?(carol)
+  end
+
+  test "a member is capped at one circle; an admin is not" do
+    carol = User.create!(email_address: "carol@example.com", role: :member)
+    Circle.create_with_owner(name: "First", owner: carol)
+    sign_in_as carol
+
+    # Second circle is blocked, and the New-circle affordance is gone.
+    get circles_path
+    assert_select "a[href=?]", new_circle_path, count: 0
+    assert_no_difference -> { Circle.count } do
+      post circles_path, params: { circle: { name: "Second" } }
+    end
+    assert_redirected_to circles_path
+
+    # Admins (root) are uncapped.
+    Circle.create_with_owner(name: "Admin one", owner: users(:admin))
+    sign_in_as users(:admin)
+    assert_difference -> { Circle.count }, 1 do
+      post circles_path, params: { circle: { name: "Admin two" } }
+    end
+  end
+
   # ── Comments on discussions ────────────────────────────────────────────────
 
   test "a member comments on a discussion and it shows chronologically" do

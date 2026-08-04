@@ -56,7 +56,7 @@ Rails.application.routes.draw do
     # the door from the app menu (a person is in several); show is a circle's
     # home (a preview of its discussions). The nested messages are the circle's
     # discussions: index lists them all, new is the composer, create posts one.
-    resources :circles, only: %i[index show edit update] do
+    resources :circles, only: %i[index new create show edit update] do
       resources :messages, only: %i[index show new create edit update destroy], module: :circles do
         collection { get :archived }
         member do

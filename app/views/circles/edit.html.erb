@@ -7,24 +7,4 @@
   <h1 class="perma-header__title">Edit circle</h1>
 </header>
 
-<%= render "admin/shared/error_summary", model: @circle %>
-
-<%= form_with model: @circle, url: circle_path(@circle) do |f| %>
-  <div class="u-stack">
-    <label class="field">
-      <span class="field__label">Name</span>
-      <%= f.text_field :name, class: "input", required: true %>
-    </label>
-
-    <label class="field">
-      <span class="field__label">Description</span>
-      <%= f.text_area :description, class: "input", rows: 4,
-            placeholder: "What's this circle for?" %>
-    </label>
-
-    <div class="u-cluster">
-      <%= f.submit "Save", class: "button button--primary" %>
-      <%= link_to "Cancel", circle_path(@circle), class: "button" %>
-    </div>
-  </div>
-<% end %>
+<%= render "form", circle: @circle, url: circle_path(@circle), submit: "Save" %>
