@@ -1,8 +1,10 @@
 <%# locals: (circle:, discussions:) %>
-<%# A list of discussion rows (shared by the index and the archived view), each
-<%# linking to its own page. Scheduled rows carry the built-in "Posts on…" flag
-<%# (they're only visible to their author and the circle owner anyway). %>
-<ul class="list">
+<%# A list of discussion rows (shared by the home preview, index, and archived
+<%# view), each linking to its own page. Scheduled rows carry the built-in
+<%# "Posts on…" flag; a far-right count marks how many comments each has. %>
+<% comment_counts = circle.records.active.comments
+     .where(parent_id: discussions.map(&:record_id)).group(:parent_id).count %>
+<ul class="list list--count-top">
   <% discussions.each do |discussion| %>
     <%= render "admin/shared/list_item",
           href: circle_message_path(circle, discussion.record),
@@ -11,6 +13,7 @@
           avatar_user: discussion.creator,
           date: l(discussion.created_at.to_date, format: :short),
           excerpt: discussion.content.to_plain_text.to_s.truncate(140),
-          scheduled_at: (discussion.published_at if discussion.scheduled?) %>
+          scheduled_at: (discussion.published_at if discussion.scheduled?),
+          comment_count: comment_counts[discussion.record_id].to_i %>
   <% end %>
 </ul>

@@ -27,6 +27,11 @@ class Account < ApplicationRecord
 
   validates :name, presence: true, uniqueness: { case_sensitive: false }
 
+  # The moderation override for records in this bucket: an account admin. The
+  # bucket-owner interface Record#moderatable_by? leans on (Circle answers this
+  # with its owner).
+  def moderated_by?(user) = user&.administers?(self)
+
   # The public site's saved design (the SiteDesigner's working payload —
   # axes + content blocks + escape valves). Validated at the controller by
   # SiteDesign before it lands here; the exporter reads it for real builds.

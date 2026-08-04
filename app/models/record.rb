@@ -140,6 +140,13 @@ class Record < ApplicationRecord
   def trashed? = trashed_at.present?
   def archived? = archived_at.present?
 
+  # Who may change vs. moderate this record, bucket-agnostically. Editing (the
+  # words) is the author's alone; moderating (archive, trash) is the author OR
+  # the bucket's owner — the circle owner, or an account admin. So a bucket
+  # owner always has a moderation override, whatever the content type.
+  def editable_by?(user) = user.present? && creator_id == user.id
+  def moderatable_by?(user) = editable_by?(user) || bucket&.moderated_by?(user)
+
   # Set aside without deleting: a tracked event, kept indefinitely (no purge
   # deadline), reversible via #unarchive. Orthogonal to trash — the default
   # lists (Record.listed) hide archived content; the archived view surfaces it.

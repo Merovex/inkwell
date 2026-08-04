@@ -8,7 +8,7 @@
 
   <%# Autosaved to localStorage, keyed to the record being commented on — a %>
   <%# draft survives "Never mind" and reappears when the composer reopens. %>
-  <%= form_with model: Comment.new, url: commentable_comments_path(record), class: "comment__content comment__form",
+  <%= form_with model: Comment.new, url: commentable_comments_path(record), class: "comment__content comment__form lexxy-compact",
         data: { turbo_frame: "_top",
                 controller: "autosave",
                 autosave_key_value: "Record/#{record.id}/comment" } do |f| %>

@@ -11,7 +11,7 @@
     <%= render "admin/shared/error_summary", model: @comment %>
     <%# Autosaved to localStorage; the revision guard drops the draft if the %>
     <%# comment was edited elsewhere since it was typed. %>
-    <%= form_with model: @comment, url: admin_comment_path(@record), class: "comment__form",
+    <%= form_with model: @comment, url: comment_member_path(@record), class: "comment__form lexxy-compact",
           data: { controller: "autosave",
                   autosave_key_value: "Record/#{@record.id}/edit",
                   autosave_revision_value: @record.recordable_id } do |f| %>

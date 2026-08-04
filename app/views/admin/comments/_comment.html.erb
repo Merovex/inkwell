@@ -9,7 +9,10 @@
   <div class="comment__content">
     <%= byline comment.creator, comment.record.created_at, edited: comment.event_updated? %>
     <div class="comment__body u-flow"><%= comment.content %></div>
-    <%= render "admin/boosts/boosts", record: comment.record %>
+    <%# Boosts are an account-side affordance for now (their routes are admin). %>
+    <% unless comment.record.bucket.is_a?(Circle) %>
+      <%= render "admin/boosts/boosts", record: comment.record %>
+    <% end %>
   </div>
 
   <div class="list__action comment__actions">
@@ -24,14 +27,16 @@
               data-controller="clipboard" data-action="clipboard#copy"
               data-clipboard-text-value="<%= commentable_url(comment.record.parent, anchor: "comment_#{comment.record_id}") %>"
               popovertarget="comment-menu-<%= comment.record_id %>" popovertargetaction="hide">Copy link</button>
-      <%# Edit and trash are yours-only, like chat lines — the controller %>
-      <%# scopes by creator, so hiding them here is just honesty. %>
-      <% if comment.record.creator == Current.user %>
-        <%= link_to "Edit", edit_admin_comment_path(comment.record), class: "menu__item", role: "menuitem" %>
+      <%# Editing the words is the author's alone; trashing (moderation) is the %>
+      <%# author OR the bucket's owner — an account admin or the circle owner. %>
+      <% if comment.record.editable_by?(Current.user) %>
+        <%= link_to "Edit", comment_edit_path(comment.record), class: "menu__item", role: "menuitem" %>
+      <% end %>
+      <% if comment.record.moderatable_by?(Current.user) %>
         <hr class="menu__separator">
         <%# Break out of the comment frame: after a trash the comment is gone %>
         <%# from the page, so the response has no matching frame to extract. %>
-        <%= button_to "Move to trash", admin_comment_path(comment.record), method: :delete, class: "menu__item", role: "menuitem",
+        <%= button_to "Move to trash", comment_member_path(comment.record), method: :delete, class: "menu__item", role: "menuitem",
               form: { data: { turbo_confirm: "Move this comment to trash?", turbo_frame: "_top" } } %>
       <% end %>
     </div>

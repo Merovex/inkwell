@@ -51,3 +51,13 @@
   --lexxy-font-base: var(--font-body);
   --lexxy-radius: var(--radius-ui);
 }
+
+/*
+ * Compact toolbar — a shorter editor chrome for inline composers (comments,
+ * chat). The toolbar height derives from the button size, so shrinking that
+ * one variable on an ancestor cascades down to the toolbar inside.
+ */
+.lexxy-compact {
+  --lexxy-toolbar-button-size: 1.5lh;
+  --lexxy-toolbar-padding: 1px;
+}

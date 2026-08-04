@@ -1,0 +1,5 @@
+<%# Swapped into the discussion page's prompt frame: the prompt row becomes the
+<%# composer row. Reuses the shared composer form via the bucket-aware helpers. %>
+<%= turbo_frame_tag "new_comment" do %>
+  <%= render "admin/comments/form", record: @record %>
+<% end %>

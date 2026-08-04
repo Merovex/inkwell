@@ -56,6 +56,11 @@ class Circle < ApplicationRecord
     circle_memberships.exists?(user_id: user.id)
   end
 
+  # The moderation override for records in this bucket: the circle's owner. The
+  # bucket-owner interface Record#moderatable_by? leans on (Account answers this
+  # with account-admin).
+  def moderated_by?(user) = user.present? && owner_id == user.id
+
   # At capacity? nil member_limit means uncapped. Counts every seat, owner
   # included.
   def full?

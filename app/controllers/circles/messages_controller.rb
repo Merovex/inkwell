@@ -11,9 +11,12 @@ module Circles
     layout "application"
 
     before_action :set_message, only: %i[show edit update destroy archive unarchive]
-    before_action :require_management, only: %i[edit update destroy archive unarchive]
+    # Editing the words is the author's alone; moderating (archive, trash) is the
+    # author or the circle owner.
+    before_action -> { require_edit }, only: %i[edit update]
+    before_action -> { require_moderate }, only: %i[destroy archive unarchive]
 
-    helper_method :manageable?
+    helper_method :editable?, :moderatable?
 
     # The discussions this member may see (published to all; drafts/scheduled to
     # their author and the circle owner), newest first — the full list behind the
@@ -101,15 +104,18 @@ module Circles
         @message = @record.recordable
       end
 
-      # The circle owner or the message's author may manage it; anyone else gets
-      # the same 404 as a missing record (what exists is nobody else's business).
-      def require_management
-        raise ActiveRecord::RecordNotFound unless manageable?
+      # Anyone not permitted gets the same 404 as a missing record — what exists
+      # is nobody else's business.
+      def require_edit
+        raise ActiveRecord::RecordNotFound unless editable?
       end
 
-      def manageable?(record = @record)
-        Current.user && (@circle.owner_id == Current.user.id || record.creator_id == Current.user.id)
+      def require_moderate
+        raise ActiveRecord::RecordNotFound unless moderatable?
       end
+
+      def editable?(record = @record) = record.editable_by?(Current.user)
+      def moderatable?(record = @record) = record.moderatable_by?(Current.user)
 
       def message_params
         params.expect(message: [ :title, :content ])

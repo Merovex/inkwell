@@ -66,4 +66,8 @@
 
   /* The "see all N discussions" line under the preview list. */
   .section-more { margin-block-start: calc(var(--u-pad) / 2); }
+
+  /* A discussion's body caps at a comfortable reading measure (~70 characters)
+     rather than running the full canvas width, centered in the canvas. */
+  .discussion-body { max-inline-size: 70ch; margin-inline: auto; }
 }

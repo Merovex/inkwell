@@ -112,4 +112,7 @@
     font-weight: var(--font-weight-8);
     line-height: 1;
   }
+  /* …but on a .list--count-top list the count rides the title's line, not the
+     row's vertical center. */
+  .list--count-top .list__count { align-self: start; }
 }

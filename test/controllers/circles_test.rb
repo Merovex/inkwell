@@ -77,6 +77,8 @@ class CirclesTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select ".perma-header__title", text: "Welcome to the circle"
     assert_match "introduce yourself", response.body
+    # Copy-link is available to any viewer.
+    assert_select ".canvas__head button[data-clipboard-text-value*=?]", "/messages/", text: "Copy link"
   end
 
   test "the new message page renders the rich-text composer with publish controls" do
@@ -268,7 +270,68 @@ class CirclesTest < ActionDispatch::IntegrationTest
     assert_response :not_found
   end
 
+  # ── Comments on discussions ────────────────────────────────────────────────
+
+  test "a member comments on a discussion and it shows chronologically" do
+    discussion = create_discussion(creator: users(:alice), title: "Talk")
+    sign_in_as users(:bob)
+
+    assert_difference -> { discussion.record.comments.count }, 1 do
+      post circle_record_comments_path(circles(:writers), discussion.record),
+        params: { comment: { content: "<p>First reply</p>" } }
+    end
+
+    get circle_message_path(circles(:writers), discussion.record)
+    assert_response :success
+    assert_select "#comments .comment__body", text: /First reply/
+    # The comment lives in the circle, not an account.
+    assert_equal "Circle", discussion.record.comments.first.record.bucket_type
+
+    # The discussions list marks the comment count in the row's far corner.
+    get circle_messages_path(circles(:writers))
+    assert_select ".list__item .list__count", text: "1"
+  end
+
+  test "only the comment's author can edit it" do
+    discussion = create_discussion(creator: users(:alice), title: "Talk")
+    comment = comment_on(discussion, author: users(:bob), body: "mine")
+
+    sign_in_as users(:bob) # author
+    get edit_circle_comment_path(circles(:writers), comment.record)
+    assert_response :success
+
+    sign_in_as users(:alice) # circle owner, but not the author — no edit
+    get edit_circle_comment_path(circles(:writers), comment.record)
+    assert_response :not_found
+  end
+
+  test "the circle owner can trash any comment (moderation override), a stranger cannot" do
+    discussion = create_discussion(creator: users(:alice), title: "Talk")
+    comment = comment_on(discussion, author: users(:bob), body: "moderate me")
+
+    # A third member who isn't the author or owner can't trash it.
+    carol = User.create!(email_address: "carol@example.com", role: :member)
+    circles(:writers).circle_memberships.create!(user: carol)
+    sign_in_as carol
+    delete circle_comment_path(circles(:writers), comment.record)
+    assert_response :not_found
+    assert_not comment.record.reload.trashed?
+
+    # The circle owner (not the author) may — the override.
+    sign_in_as users(:alice)
+    delete circle_comment_path(circles(:writers), comment.record)
+    assert comment.record.reload.trashed?
+  end
+
   private
+    def comment_on(discussion, author:, body:)
+      Current.with_bucket(circles(:writers)) do
+        comment = Comment.new(content: body, creator: author)
+        Record.originate(comment, parent: discussion.record)
+        comment
+      end
+    end
+
     def create_discussion(creator:, title:, status: :published)
       circle = circles(:writers)
       Current.with_bucket(circle) do

@@ -64,6 +64,13 @@ Rails.application.routes.draw do
           patch :unarchive
         end
       end
+      # Comments hang off any circle record (a Message today, more later), so
+      # create nests under the generic record; member actions are keyed by the
+      # comment's own Record id.
+      resources :records, only: [] do
+        resources :comments, only: %i[new create], module: :circles
+      end
+      resources :comments, only: %i[edit update destroy], module: :circles
     end
   end
 
