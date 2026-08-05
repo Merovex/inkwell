@@ -23,7 +23,8 @@
     color: var(--ink);
   }
 
-  .broadcast-banner__lead { margin: 0; max-inline-size: 40rem; }
+  /* no max-inline-size: the banner itself is capped at --measure-prose, narrower than the old 40rem cap ever was */
+  .broadcast-banner__lead { margin: 0; }
 
   .broadcast-banner__permalink {
     color: var(--accent);
@@ -37,7 +38,7 @@
     position: relative;
     display: flex;
     align-items: stretch;
-    inline-size: min(100%, 34rem);
+    inline-size: 100%; /* the --measure-prose banner is already narrower than the old 34rem cap */
     overflow: hidden;
   }
 
@@ -59,7 +60,7 @@
     padding-inline: var(--u-pad);
     border: none;
     background: var(--brand-strong);
-    color: #fff;
+    color: var(--on-brand);
     font-weight: var(--font-weight-6);
     cursor: pointer;
   }
@@ -73,11 +74,11 @@
     align-items: center;
     justify-content: center;
     background: var(--brand-strong);
-    color: #fff;
+    color: var(--on-brand);
     font-weight: var(--font-weight-6);
     opacity: 0;
     pointer-events: none;
-    transition: opacity 0.15s var(--ease-3);
+    transition: opacity var(--speed-quick) var(--ease-3);
   }
   .broadcast-banner__field.is-copied .broadcast-banner__copied { opacity: 1; }
 

@@ -54,7 +54,7 @@
 
   .book-card__link {
     display: grid;
-    grid-template-columns: 8rem 1fr;
+    grid-template-columns: var(--size-11) 1fr;
     gap: calc(var(--u-pad) * 1.5);
     padding: var(--u-pad);
     color: inherit;
@@ -109,8 +109,8 @@
     font-size: var(--font-size-0);
   }
 
-  @media (max-width: 40rem) {
-    .book-card__link { grid-template-columns: 5rem 1fr; }
+  @media (max-width: 48em) { /* --breakpoint-md */
+    .book-card__link { grid-template-columns: var(--size-10) 1fr; }
     .book-card__excerpt { -webkit-line-clamp: 4; }
   }
 }

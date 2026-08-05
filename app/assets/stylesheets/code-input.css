@@ -8,7 +8,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: clamp(0.25rem, 1.5vw, 0.5rem);
+    gap: clamp(var(--size-1), 1.5vw, var(--size-2));
   }
 
   .code-input__box {
@@ -16,8 +16,8 @@
        keeps them from ballooning on wide screens. */
     flex: 1 1 0;
     min-inline-size: 0;
-    max-inline-size: 2.75rem;
-    block-size: clamp(2.5rem, 11vw, 3.25rem);
+    max-inline-size: calc(var(--u-pad) * 2.75);
+    block-size: clamp(calc(var(--u-pad) * 2.5), 11vw, calc(var(--u-pad) * 3.25));
     padding: 0;
     text-align: center;
     font-family: var(--font-mono);
@@ -28,7 +28,7 @@
     background: var(--canvas);
     border: var(--border-size-1) solid var(--line);
     border-radius: var(--radius-ui);
-    transition: border-color 0.12s var(--ease-3), box-shadow 0.12s var(--ease-3);
+    transition: border-color var(--speed-quick) var(--ease-3), box-shadow var(--speed-quick) var(--ease-3);
   }
 
   .code-input__box:focus-visible {

@@ -22,14 +22,14 @@
   }
   .tabs__tab:hover { color: var(--ink); }
   .tabs__tab[aria-selected="true"] { color: var(--ink); border-block-end-color: var(--accent); }
-  .tabs__tab:focus-visible { outline: var(--border-size-2) solid var(--accent); outline-offset: 2px; }
+  .tabs__tab:focus-visible { outline: var(--border-size-2) solid var(--accent); outline-offset: var(--border-size-2); }
 
   .tabs__panel { padding-block-start: var(--u-pad); }
   .tabs__panel[hidden] { display: none; }
 
   /* Narrow variant: short-content panels (lists) sit centered at ~60% on
      desktop; left full-width on mobile so they don't get cramped. */
-  @media (min-width: 40rem) {
+  @media (min-width: 48em) {
     .tabs__panel--narrow { max-inline-size: 60%; margin-inline: auto; }
   }
 }

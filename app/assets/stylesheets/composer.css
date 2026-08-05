@@ -57,7 +57,7 @@
 
   /* Category picker (messages): a quarter of the composer, not a full-width
      bar; the floor keeps the prompt readable on narrow screens. */
-  .composer__category { inline-size: clamp(13rem, 25%, 100%); }
+  .composer__category { inline-size: clamp(var(--size-13), 25%, 100%); }
 
   /* Editor frame-stripping lives in lexxy-theme.css — it must be UNLAYERED to
      beat the gem's unlayered frame (CLAUDE.md cascade hazards). Only the
@@ -69,6 +69,6 @@
 
   /* Optically align the first toolbar icon with the title/body text. */
   .composer lexxy-toolbar {
-    padding-inline: calc(var(--u-pad) - 2px);
+    padding-inline: calc(var(--u-pad) - var(--size-1) / 2);
   }
 }

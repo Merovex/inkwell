@@ -1,9 +1,9 @@
 /* The Scroll Container */
 .overflow-scroller {
     display: grid;
-    gap: 1rem;
+    gap: var(--u-pad);
     grid-auto-flow: column;
-    grid-auto-columns: 200px;
+    grid-auto-columns: var(--measure-cover);
     overflow-x: scroll;
     scroll-snap-type: x mandatory;
     /* Lets the children query whether the shelf actually overflows (below). */
@@ -11,21 +11,21 @@
     /* "safe" falls back to start-aligned when the shelf overflows, so the
        leftmost covers stay reachable; centered only when everything fits. */
     justify-content: safe center;
-    margin-block: 1em;
-    padding-block: 1em;
+    margin-block: var(--u-pad);
+    padding-block: var(--u-pad);
 }
 /* Scrollbar — thin rounded thumb on an invisible track (Chromium/Safari).
    Setting scrollbar-color/-width would disable these pseudo-elements in
    Chromium, so the standard properties live only in the Firefox guard below. */
 .overflow-scroller::-webkit-scrollbar {
-    height: 8px;
+    height: var(--size-2);
 }
 .overflow-scroller::-webkit-scrollbar-track {
     background: transparent;
 }
 .overflow-scroller::-webkit-scrollbar-thumb {
     background: var(--border-2);
-    border-radius: 4px;
+    border-radius: var(--radius-round);
 }
 .overflow-scroller::-webkit-scrollbar-thumb:hover {
     background: var(--text-3);

@@ -30,9 +30,9 @@
     font-size: var(--font-size-1);
     font-weight: var(--font-weight-5); /* 500 — the app's standard text weight */
     line-height: 1.65;
-    letter-spacing: 0.015em;
+    letter-spacing: var(--font-letterspacing-1);
     -webkit-font-smoothing: antialiased;
-    transition: background-color 0.2s var(--ease-3), color 0.2s var(--ease-3);
+    transition: background-color var(--speed-gentle) var(--ease-3), color var(--speed-gentle) var(--ease-3);
   }
 
   /* app shell: header / .canvas / footer stack in the body column.
@@ -46,7 +46,7 @@
 
   /* Mobile: step headings down one notch on the type scale. Body stays 1rem —
      inputs inherit it, and anything under 16px triggers iOS zoom-on-focus. */
-  @media (max-width: 640px) {
+  @media (max-width: 48em) {
     h1 { font-size: var(--font-size-5); }
     h2 { font-size: var(--font-size-3); }
     h3 { font-size: var(--font-size-2); }
@@ -67,5 +67,5 @@
 
   hr { border: none; border-block-start: var(--border-size-1) solid var(--line); }
 
-  :focus-visible { outline: var(--border-size-2) solid var(--accent); outline-offset: 2px; }
+  :focus-visible { outline: var(--border-size-2) solid var(--accent); outline-offset: var(--border-size-2); }
 }

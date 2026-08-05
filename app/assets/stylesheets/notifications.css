@@ -10,10 +10,10 @@
   .notifications__bell { position: relative; }
   .notifications__dot {
     position: absolute;
-    inset-block-start: 0.3rem;
-    inset-inline-end: 0.3rem;
-    inline-size: 0.5rem;
-    block-size: 0.5rem;
+    inset-block-start: var(--size-1);
+    inset-inline-end: var(--size-1);
+    inline-size: var(--size-2);
+    block-size: var(--size-2);
     border-radius: var(--radius-round);
     background: transparent;
   }
@@ -22,12 +22,12 @@
      animation replays each time something new lands. */
   .notifications__dot--on {
     background: var(--danger-solid);
-    animation: notification-ping 1.2s var(--ease-3);
+    animation: notification-ping var(--speed-slow) var(--ease-3);
   }
   @keyframes notification-ping {
     0%   { box-shadow: 0 0 0 0 color-mix(in oklab, var(--danger-solid) 60%, transparent); transform: scale(0.6); }
     40%  { transform: scale(1.25); }
-    100% { box-shadow: 0 0 0 0.7rem transparent; transform: scale(1); }
+    100% { box-shadow: 0 0 0 calc(var(--u-pad) * 0.7) transparent; transform: scale(1); }
   }
   @media (prefers-reduced-motion: reduce) {
     .notifications__dot--on { animation: none; }
@@ -36,27 +36,20 @@
   .notifications__panel {
     position: fixed;
     inset: auto;
-    top: 3.5rem;
-    inset-inline-end: 1rem;
-    width: min(24rem, 94vw);
-    max-height: calc(100vh - 5rem);
+    top: calc(var(--u-pad) * 3.5); /* clears the app header, like .switcher */
+    inset-inline-end: var(--u-pad);
+    width: min(var(--measure-flyout), 94vw);
+    max-height: calc(100vh - var(--size-10));
     margin: 0;
     padding: 0;
     border: 0;
-    --surface: var(--canvas);
-    background: var(--surface);
+    background: var(--surface-raised); /* elevated in dark mode without a border */
     color: var(--ink);
     border-radius: var(--radius-card);
-    box-shadow:
-      0 18px 44px -12px rgb(0 0 0 / 0.38),
-      0 4px 12px -4px rgb(0 0 0 / 0.22);
+    box-shadow: var(--elevation-flyout);
     overflow: hidden auto;
   }
   .notifications__panel::backdrop { background: transparent; }
-  [data-theme="dark"] .notifications__panel { --surface: var(--color-mountain-mist-700); }
-  @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) .notifications__panel { --surface: var(--color-mountain-mist-700); }
-  }
 
   .notifications__head {
     position: sticky;
@@ -66,7 +59,7 @@
     align-items: center;
     justify-content: space-between;
     padding: calc(var(--u-pad) / 2) var(--u-pad);
-    background: var(--surface);
+    background: var(--surface-raised);
   }
   .notifications__title { font-weight: var(--font-weight-8); }
 
@@ -79,7 +72,7 @@
     text-decoration: none;
   }
   .notifications__row:hover { background: color-mix(in oklab, var(--ink) 4%, transparent); }
-  .notifications__avatar { --avatar-size: 2rem; flex-shrink: 0; }
+  .notifications__avatar { --avatar-size: var(--size-7); flex-shrink: 0; }
   .notifications__text { flex: 1; min-inline-size: 0; font-size: var(--font-size-0); }
   .notifications__time { flex-shrink: 0; font-size: var(--font-size-0); color: var(--ink-muted); }
 
@@ -88,7 +81,7 @@
   .notifications__all {
     display: block;
     padding: calc(var(--u-pad) / 2) var(--u-pad);
-    background: color-mix(in oklab, var(--ink) 4%, var(--surface));
+    background: color-mix(in oklab, var(--ink) 4%, var(--surface-raised));
     color: var(--ink);
     font-weight: var(--font-weight-6);
     font-size: var(--font-size-0);
@@ -103,7 +96,7 @@
   .notifications__list:has(.notifications__row) + .notifications__empty { display: none; }
 
   /* Phone: the flyout becomes a full sheet, like the switcher. */
-  @media (max-width: 40rem) {
+  @media (max-width: 48em) { /* --breakpoint-md */
     .notifications__panel {
       inset: 0;
       top: 0;

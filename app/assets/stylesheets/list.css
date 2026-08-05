@@ -26,9 +26,9 @@
      last, so a list never butts a hairline against its heading. */
   .list__item + .list__item { border-block-start: var(--border-size-1) solid var(--line); }
 
-  .list__avatar { --avatar-size: 2.8125rem; flex-shrink: 0; } /* 45px, on the .avatar */
+  .list__avatar { --avatar-size: var(--size-8); flex-shrink: 0; }
   /* A row with no avatar keeps the same indent — reserves the avatar column. */
-  .list__avatar-spacer { inline-size: 2.8125rem; flex-shrink: 0; }
+  .list__avatar-spacer { inline-size: var(--size-8); flex-shrink: 0; }
 
   /* stat/ranking rows (analytics): tighter rhythm, body-size type */
   .list--compact .list__item { padding-block: calc(var(--u-pad) / 2); align-items: center; }
@@ -51,8 +51,8 @@
   /* far-right row action (e.g. delete draft) — lifted above the stretched
      link, and the link overlay stops short of the action zone entirely so
      the trashcan can never be covered */
-  .list__action { position: relative; z-index: 1; display: flex; gap: 0.25rem; align-items: center; }
-  .list__item:has(.list__action) a.list__body::after { inset-inline-end: 3.5rem; }
+  .list__action { position: relative; z-index: 1; display: flex; gap: var(--size-1); align-items: center; }
+  .list__item:has(.list__action) a.list__body::after { inset-inline-end: calc(var(--u-pad) * 3.5); }
 
   .list__titlerow {
     display: flex;
@@ -98,7 +98,7 @@
     border-radius: var(--radius-round);
     font-size: var(--font-size-0);
     background: var(--brand-strong);
-    color: #fff;
+    color: var(--on-brand);
   }
 
   /* activity: the staleness line under the excerpt — "3 comments · 2 hours
@@ -119,12 +119,12 @@
     pointer-events: none;          /* indicator only — clicks fall through to the row link */
     display: grid;
     place-items: center;
-    min-inline-size: 1.375rem;      /* 22px */
-    block-size: 1.375rem;
-    padding-inline: 0.25rem;
+    min-inline-size: var(--size-5);
+    block-size: var(--size-5);
+    padding-inline: var(--size-1);
     border-radius: var(--radius-round);
     background: var(--brand-strong); /* teal-800 — white text hits 7.6:1 (AAA) */
-    color: #fff;
+    color: var(--on-brand);
     font-size: var(--font-size-0);
     font-weight: var(--font-weight-8);
     line-height: 1;

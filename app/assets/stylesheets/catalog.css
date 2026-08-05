@@ -3,20 +3,14 @@
  * sections space children with u-flow. */
 @layer components {
   /* subsection blocks on the book/series pages */
-  .series-books, .book-series, .distributors { margin-block-start: 2rem; }
+  .series-books, .book-series, .distributors { margin-block-start: var(--size-7); }
 
   /* Breathing room after the "Search books to add…" field before the book
      list below it (both sit at margin:0). Shared by the series and collection
      "Books in this …" sections. */
   .series-books .combobox { margin-block-end: var(--u-pad); }
 
-  .series-books__head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
-    margin-block-end: var(--u-pad);
-  }
+  /* the head row composes u-cluster u-cluster-between u-margin-block-end */
 
   /* --- membership / distributor rows (one bordered row per item) --- */
   .mrows { list-style: none; margin: var(--u-pad) 0 0; padding: 0; display: flex; flex-direction: column; gap: var(--size-2); }
@@ -27,23 +21,23 @@
     padding: var(--size-2) var(--u-pad);
   }
   .mrow__label { flex: 1; }
-  .mrow__platform { font-weight: 600; min-width: 9rem; }
+  .mrow__platform { font-weight: var(--font-weight-6); min-width: var(--size-12); }
 
   /* trash buttons on membership + sortable rows (button_to wraps a form) */
   .mrow > form, .sortable__item > form { display: contents; }
   .mrow__remove {
     display: inline-flex; align-items: center; justify-content: center;
-    margin-inline-start: auto; padding: 2px;
+    margin-inline-start: auto; padding: calc(var(--size-1) / 2);
     color: var(--ink-muted); border-radius: var(--radius-1);
   }
   .mrow__remove:hover { color: var(--danger-ink); background: var(--danger-surface); }
 
-  /* --- drag-sortable book list (series page): an .mrow that drags --- */
-  .sortable { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--size-2); }
+  /* --- drag-sortable book list (series page): an .mrow that drags. The list
+     composes .mrows in the markup (same reset + rhythm). --- */
   .sortable__item { cursor: grab; }
   .sortable__item.is-dragging { opacity: 0.5; }
   .sortable__handle { color: var(--ink-muted); display: inline-flex; }
-  .sortable__cover { width: 32px; height: 48px; object-fit: cover; border-radius: var(--radius-1); flex: none; }
+  .sortable__cover { width: var(--size-7); height: var(--size-8); object-fit: cover; border-radius: var(--radius-1); flex: none; }
   .sortable__cover--empty { background: var(--fill-subtle); }
   .sortable__label { flex: 1; }
 
@@ -51,37 +45,37 @@
   .cover-drop { display: flex; flex-direction: column; gap: var(--size-2); flex: none; align-items: flex-start; }
   .cover-drop__form { margin: 0; }
   .cover-drop__label {
-    width: 200px; aspect-ratio: 2 / 3;
+    width: var(--measure-cover); aspect-ratio: 2 / 3;
     border: var(--border-size-1) solid var(--line); border-radius: var(--radius-card);
     overflow: hidden; cursor: pointer; background: var(--fill-subtle); color: var(--ink-muted);
-    transition: border-color 150ms ease, background-color 150ms ease;
+    transition: border-color var(--speed-quick) var(--ease-3), background-color var(--speed-quick) var(--ease-3);
   }
   .cover-drop__label:hover { border-color: var(--accent); }
   .cover-drop--dragover .cover-drop__label { border: var(--border-size-2) dashed var(--accent); background: var(--accent-soft); }
   .cover-drop__image { width: 100%; height: 100%; object-fit: cover; }
-  .cover-drop__hint { text-align: center; font-size: 0.85rem; line-height: 1.4; padding: var(--u-pad); }
+  .cover-drop__hint { text-align: center; font-size: var(--font-size-0); line-height: 1.4; padding: var(--u-pad); }
 
   /* --- book detail (show) --- */
-  .book-detail { display: flex; gap: var(--u-pad-double, 2rem); align-items: flex-start; flex-wrap: wrap; }
+  .book-detail { display: flex; gap: calc(var(--u-pad) * 2); align-items: flex-start; flex-wrap: wrap; }
   .book-detail__cover {
-    width: 200px; height: auto; flex: none;
+    width: var(--measure-cover); height: auto; flex: none;
     border: var(--border-size-1) solid var(--line); border-radius: var(--radius-card);
   }
   .book-detail__cover--empty {
     aspect-ratio: 2 / 3;
     background: var(--fill-subtle); color: var(--ink-muted);
-    border-style: dashed; font-size: 0.875rem;
+    border-style: dashed; font-size: var(--font-size-0);
   }
-  .book-detail .u-flow { flex: 1; min-width: 16rem; }
+  .book-detail .u-flow { flex: 1; min-width: var(--size-13); }
 
   /* --- typeahead combobox (series↔book membership) --- */
-  .combobox { position: relative; max-width: 24rem; }
+  .combobox { position: relative; max-width: var(--size-14); }
   .combobox__input { width: 100%; }
   .combobox__list {
-    position: absolute; z-index: 20; inset-inline: 0; top: calc(100% + 4px);
+    position: absolute; z-index: 20; inset-inline: 0; top: calc(100% + var(--size-1));
     margin: 0; padding: var(--size-1); list-style: none;
     box-shadow: var(--elevation-card);
-    max-height: 16rem; overflow-y: auto;
+    max-height: var(--size-13); overflow-y: auto;
   }
   .combobox__option { padding: var(--size-2) var(--u-pad); border-radius: var(--radius-1); cursor: pointer; }
   .combobox__option.is-active { background: var(--accent-soft); color: var(--ink-on-soft); }
@@ -90,5 +84,5 @@
   /* --- buy links (distributors) --- */
   .distributor-form { display: flex; gap: var(--size-2); align-items: center; }
   .distributor-form .field__control { flex: 1; }
-  .distributor-form__error { margin: var(--size-2) 0 0; color: var(--danger-ink); font-size: 0.875rem; }
+  .distributor-form__error { margin: var(--size-2) 0 0; color: var(--danger-ink); font-size: var(--font-size-0); }
 }

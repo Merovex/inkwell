@@ -7,8 +7,8 @@
   .modal {
     margin: auto;                 /* centered in the viewport */
     padding: 0;
-    inline-size: min(32rem, calc(100% - 2rem));
-    max-block-size: calc(100dvh - 2rem);
+    inline-size: min(var(--size-15), calc(100% - var(--size-7)));
+    max-block-size: calc(100dvh - var(--size-7));
     background: var(--canvas);
     color: var(--ink);
     border: var(--border-size-1) solid var(--line);
@@ -40,14 +40,14 @@
   /* open/close animation — allow-discrete keeps it in the top layer while closing */
   .modal, .modal::backdrop {
     opacity: 0;
-    transition: opacity 0.15s var(--ease-3), translate 0.15s var(--ease-3),
-                overlay 0.15s allow-discrete, display 0.15s allow-discrete;
+    transition: opacity var(--speed-quick) var(--ease-3), translate var(--speed-quick) var(--ease-3),
+                overlay var(--speed-quick) allow-discrete, display var(--speed-quick) allow-discrete;
   }
-  .modal { translate: 0 0.5rem; }
+  .modal { translate: 0 var(--size-2); }
   .modal[open] { opacity: 1; translate: 0 0; }
   .modal[open]::backdrop { opacity: 1; }
   @starting-style {
-    .modal[open] { opacity: 0; translate: 0 0.5rem; }
+    .modal[open] { opacity: 0; translate: 0 var(--size-2); }
     .modal[open]::backdrop { opacity: 0; }
   }
   @media (prefers-reduced-motion: reduce) {

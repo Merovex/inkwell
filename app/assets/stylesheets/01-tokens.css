@@ -29,6 +29,7 @@
   /* --- motion durations (Open Props has no duration scale) --- */
   --speed-quick: 120ms;  /* hover/open micro-transitions (menus, chevrons) */
   --speed-gentle: 180ms; /* entrances/exits (toasts) */
+  --speed-slow: 1.2s;    /* long one-shot announcements (notification ping) */
 
   /* --- type / radius / elevation aliases (Open Props) --- */
   --font-body: var(--font-sans, system-ui, sans-serif);
@@ -53,6 +54,7 @@
   --measure-card: 28rem;      /* centered auth card */
   --measure-form-wide: 56rem; /* wide form surfaces: pulse setup, wide settings */
   --measure-rail: 22rem;      /* the site designer's fixed options rail */
+  --measure-cover: 12.5rem;   /* 200px — book cover display width (2:3 ratio) */
   --frame-phone: 24.375rem;   /* 390px — phone-width preview frame (designer stage) */
 
   /* text on brand-strong fills (buttons, selected pills) — AAA on teal-800 */

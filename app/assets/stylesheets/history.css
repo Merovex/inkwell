@@ -22,7 +22,7 @@
     inline-size: 50%;
   }
 
-  @media (width < 48rem) {
+  @media (width < 48em) {
     .history { inline-size: 100%; }
   }
 

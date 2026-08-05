@@ -17,6 +17,6 @@
     block-size: 1.1em;
     flex-shrink: 0;
   }
-  .choice__input:focus-visible { outline: var(--border-size-2) solid var(--accent); outline-offset: 2px; }
+  .choice__input:focus-visible { outline: var(--border-size-2) solid var(--accent); outline-offset: var(--border-size-2); }
   .choice:has(.choice__input:disabled) { color: var(--ink-muted); cursor: not-allowed; }
 }

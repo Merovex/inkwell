@@ -22,8 +22,8 @@
     text-decoration: none;
     cursor: pointer;
     user-select: none;
-    transition: background-color 0.12s var(--ease-3), border-color 0.12s var(--ease-3),
-                transform 0.06s var(--ease-3);
+    transition: background-color var(--speed-quick) var(--ease-3), border-color var(--speed-quick) var(--ease-3),
+                transform calc(var(--speed-quick) / 2) var(--ease-3);
   }
   .button:hover { background: color-mix(in oklab, var(--canvas), var(--ink) 6%); }
   .button:active { transform: translateY(1px); }
@@ -33,7 +33,7 @@
   .button--primary {
     background: var(--brand-strong);  /* teal-800 + white text = 7.6:1 (AAA) */
     border-color: var(--brand-strong);
-    color: #fff;
+    color: var(--on-brand);
   }
   .button--primary:hover {
     background: color-mix(in oklab, var(--brand-strong), black 15%);
@@ -41,7 +41,7 @@
   }
   /* Muted inline text (e.g. a "(5)" count) inherits the dark --ink-muted, which
      is near-invisible on the filled teal. Dim the button's own white instead. */
-  .button--primary .u-text-muted { color: color-mix(in oklab, #fff, transparent 30%); }
+  .button--primary .u-text-muted { color: color-mix(in oklab, var(--on-brand), transparent 30%); }
 
   .button--ghost {
     background: transparent;
@@ -54,7 +54,7 @@
     border-color: var(--danger-ink);
     color: var(--danger-ink);
   }
-  .button--danger:hover { background: var(--danger-solid); color: #fff; }
+  .button--danger:hover { background: var(--danger-solid); color: var(--on-brand); }
 
   .button--small { padding-block: calc(var(--u-pad) / 3); padding-inline: calc(var(--u-pad) / 1.5); font-size: var(--font-size-0); }
   .button--large { padding-block: calc(var(--u-pad) / 1.5); padding-inline: calc(var(--u-pad) * 1.25); font-size: var(--font-size-2); }

@@ -28,7 +28,7 @@
     color: var(--ink);
     border: var(--border-size-1) solid var(--line);
     border-radius: var(--radius-ui);
-    transition: border-color 0.12s var(--ease-3), box-shadow 0.12s var(--ease-3);
+    transition: border-color var(--speed-quick) var(--ease-3), box-shadow var(--speed-quick) var(--ease-3);
   }
   .field__control::placeholder { color: var(--ink-muted); }
   .field__control:focus-visible {
@@ -42,7 +42,7 @@
     cursor: not-allowed;
   }
 
-  textarea.field__control { min-block-size: 5rem; resize: vertical; }
+  textarea.field__control { min-block-size: var(--size-10); resize: vertical; }
 
   .field__control--small { padding-block: calc(var(--u-pad) / 3); padding-inline: calc(var(--u-pad) / 2); font-size: var(--font-size-0); }
   .field__control--large { padding-block: calc(var(--u-pad) / 1.5); font-size: var(--font-size-2); }

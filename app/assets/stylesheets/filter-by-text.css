@@ -5,12 +5,12 @@
  * Structure: .filter-by-text > input.filter-by-text__input + label.filter-by-text__hotkey > kbd
  */
 @layer components {
-  .filter-by-text { display: grid; inline-size: 9.5rem; }
+  .filter-by-text { display: grid; inline-size: var(--size-12); }
   .filter-by-text > * { grid-area: 1 / 1; } /* overlap input + label */
 
   .filter-by-text__input {
     inline-size: 100%;
-    block-size: 2rem;
+    block-size: var(--size-7);
     padding-inline: calc(var(--u-pad) / 2);
     background: var(--canvas);
     color: var(--ink);

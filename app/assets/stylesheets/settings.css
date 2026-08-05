@@ -66,15 +66,15 @@
     gap: var(--u-pad);
   }
   .logo-upload__preview {
-    max-block-size: 5rem;
-    max-inline-size: 14rem;
+    max-block-size: var(--size-10);
+    max-inline-size: var(--size-13);
     object-fit: contain;
   }
   .logo-upload__placeholder {
     display: inline-grid;
     place-items: center;
-    inline-size: 9rem;
-    block-size: 4rem;
+    inline-size: var(--size-12);
+    block-size: var(--size-9);
     border-radius: var(--radius-ui);
     background: color-mix(in oklab, var(--ink) 6%, var(--canvas));
     color: var(--ink-muted);

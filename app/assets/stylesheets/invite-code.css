@@ -24,7 +24,7 @@
     font-family: var(--font-mono, ui-monospace, monospace);
     font-size: var(--font-size-3);
     font-weight: var(--font-weight-6);
-    letter-spacing: 0.08em;
+    letter-spacing: var(--font-letterspacing-3);
     color: var(--ink);
   }
 
@@ -42,10 +42,10 @@
     align-items: center;
     justify-content: center;
     background: var(--brand-strong);
-    color: #fff;
+    color: var(--on-brand);
     font-weight: var(--font-weight-6);
     opacity: 0;
-    transition: opacity 0.15s ease;
+    transition: opacity var(--speed-quick) var(--ease-3);
     pointer-events: none;
   }
 
