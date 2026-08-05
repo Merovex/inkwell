@@ -13,7 +13,7 @@
   <div class="list">
     <% @goals.each do |goal| %>
       <% restore = capture do %>
-        <%= button_to "Restore", unarchive_goal_path(goal.record), method: :patch, class: "button button--small" %>
+        <%= button_to "Restore", goal_archive_path(goal.record), method: :delete, class: "button button--small" %>
       <% end %>
       <%= render "shared/list_item",
             href: goal_path(goal.record),

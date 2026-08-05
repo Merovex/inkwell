@@ -8,9 +8,4 @@ class NotificationsController < ApplicationController
       .includes(actor: { avatar_attachment: :blob })
     Current.user.notifications.unread.update_all(read_at: Time.current)
   end
-
-  def read_all
-    Current.user.notifications.unread.update_all(read_at: Time.current)
-    head :no_content
-  end
 end

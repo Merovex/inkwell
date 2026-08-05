@@ -52,10 +52,15 @@ for canonical naming.
 | [0020](decisions/0020-join-code-signup-and-root-role.md) | Join-code signup, owner_id authority, and the root role | accepted | 2026-07-28 |
 | [0021](decisions/0021-hugo-static-site-generator.md) | Hugo renders the public sites — templates leave Rails | accepted | 2026-07-29 |
 | [0022](decisions/0022-sitedesigner-design-json-sovereignty.md) | SiteDesigner + design.json sovereignty — the switcher is retired | accepted | 2026-07-31 |
+| [0023](decisions/0023-circles-cross-account-buckets.md) | Circles — cross-account buckets; invite-only invariant; bucket goes polymorphic | accepted | 2026-08-05 |
+| [0024](decisions/0024-notifications-stamped-copy-digests.md) | Notifications — stamped copy, bell + tiered email digests | accepted | 2026-08-05 |
 
 ## Concepts
 
-- [domain-vocabulary](concepts/domain-vocabulary.md) — canonical names: Person / User / Account
+- [domain-vocabulary](concepts/domain-vocabulary.md) — canonical names as shipped: User (global login) / Account ("site") / polymorphic bucket / Circle / Person (reader)
+- [circles](concepts/circles.md) — invite-only author groups: membership, pulses/beats, boosts, @mentions (incl. the Lexxy attachment-chip mechanics)
+- [notifications](concepts/notifications.md) — kinds table, bell + digest channels, URL stamping
+- [goals](concepts/goals.md) — Goals & Tallies on the User bucket; rate vs project; display-card sets
 - [merovex-press-public-site](concepts/merovex-press-public-site.md) — the public front-of-house (public layout, `press.css`, `PublicController`)
 - [app-menu](concepts/app-menu.md) — the Basecamp-style jump menu (native popover + type-to-filter)
 - [theme-background-colors](concepts/theme-background-colors.md) — site/canvas backgrounds + tints; **rethemed 2026-07-08 to the Merovex palette**

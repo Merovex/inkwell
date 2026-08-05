@@ -5,9 +5,9 @@
       crumbs: [["Circles", circles_path], [@circle.name, circle_path(@circle)], ["Pulse check", nil]],
       edit_href: (edit_circle_pulse_path(@circle, @record) if can_manage) do %>
   <% if @pulse.subscribed?(Current.user) %>
-    <%= button_to "Leave this Pulse check", unsubscribe_circle_pulse_path(@circle, @record), method: :delete, class: "menu__item", role: "menuitem" %>
+    <%= button_to "Leave this Pulse check", circle_pulse_subscription_path(@circle, @record), method: :delete, class: "menu__item", role: "menuitem" %>
   <% else %>
-    <%= button_to "Join this Pulse check", subscribe_circle_pulse_path(@circle, @record), method: :post, class: "menu__item", role: "menuitem" %>
+    <%= button_to "Join this Pulse check", circle_pulse_subscription_path(@circle, @record), method: :post, class: "menu__item", role: "menuitem" %>
   <% end %>
   <% if can_manage %>
     <hr class="menu__separator">
@@ -37,7 +37,7 @@
     <% end %>
   <% else %>
     <p class="u-text-muted">You're not in this Pulse check.
-      <%= button_to "Join it", subscribe_circle_pulse_path(@circle, @record), method: :post, class: "u-unbutton u-link" %>
+      <%= button_to "Join it", circle_pulse_subscription_path(@circle, @record), method: :post, class: "u-unbutton u-link" %>
       to be asked and answer.</p>
   <% end %>
 

@@ -26,7 +26,7 @@
         </button>
         <%= link_to "Edit goal", edit_goal_path(goal.record), class: "menu__item", role: "menuitem" %>
         <hr class="menu__separator">
-        <%= button_to "Archive goal", archive_goal_path(goal.record), method: :patch,
+        <%= button_to "Archive goal", goal_archive_path(goal.record), method: :post,
               class: "menu__item", role: "menuitem" %>
       </div>
     </div>

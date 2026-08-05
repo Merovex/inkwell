@@ -1,29 +1,22 @@
-# The goal status tiles and their mini charts (inline SVG — no chart library),
-# fed by real per-day tally aggregates (what the goal observes).
+# The goal status tiles and their mini charts (inline SVG — no chart library).
+# Drawing only: the data lives on Goal (#daily_series, #completion_percent).
 module GoalsHelper
   # Weeks run Monday-first, matching Date#beginning_of_week.
   WEEKDAY_LABELS = %w[ Mon Tue Wed Thu Fri Sat Sun ].freeze
 
-  # Per-day sums over a date range, zero-filled — the raw series behind every
-  # tile and strip.
-  def goal_daily_series(goal, range)
-    sums = goal.observed_tallies.where(logged_on: range).group(:logged_on).sum(:amount)
-    range.to_a.map { |date| sums[date] || 0 }
-  end
-
   def goal_week_series(goal, reference = Time.zone.today)
-    goal_daily_series(goal, reference.beginning_of_week..reference.end_of_week)
+    goal.daily_series(reference.beginning_of_week..reference.end_of_week)
   end
 
   def goal_rolling_series(goal, days: 90)
-    rolling_average(goal_daily_series(goal, (Time.zone.today - (days - 1))..Time.zone.today))
+    rolling_average(goal.daily_series((Time.zone.today - (days - 1))..Time.zone.today))
   end
 
   # The GitHub-style contribution strip, over any date range (default: the
   # trailing 365 days). Three intensity stops; invisible pad cells align the
   # first column to a week boundary, GH-style.
   def goal_heat_cells(goal, range: (Time.zone.today - 364)..Time.zone.today)
-    series = goal_daily_series(goal, range)
+    series = goal.daily_series(range)
     max = series.max
     # GH-parity: heat weeks run Sunday-first (so Mon/Wed/Fri land on rows 2/4/6).
     pad = (range.first - range.first.beginning_of_week(:sunday)).to_i
@@ -47,24 +40,6 @@ module GoalsHelper
       first_of_month = Date.new(week_end.year, week_end.month, 1)
       [ week, first_of_month.strftime("%b") ] if first_of_month.between?(week_start, week_end)
     end
-  end
-
-  # Calendar years before this one that hold tallies — each earns its own
-  # heat strip on the heatmap card, GH-style.
-  def goal_heat_years(goal)
-    first = goal.observed_tallies.minimum(:logged_on)
-    return [] unless first && first.year < Time.zone.today.year
-
-    (first.year...Time.zone.today.year).to_a.reverse.select do |year|
-      goal.observed_tallies.where(logged_on: Date.new(year, 1, 1)..Date.new(year, 12, 31)).exists?
-    end
-  end
-
-  # Progress toward the goal's target, capped at 100 (overshooting stays "done").
-  # Projects measure lifetime total; rates measure the current period.
-  def goal_completion_percent(goal)
-    logged = goal.rate? ? goal.period_total : goal.total
-    ((logged.to_f / goal.target) * 100).clamp(0, 100).round
   end
 
   # The views a goal actually stacks: its chosen set, or the shape's natural
@@ -101,7 +76,7 @@ module GoalsHelper
   # a tally (750words-style — history as a quiet fact, no streak counting).
   def goal_month_cells(goal)
     range = Time.zone.today.beginning_of_month..Time.zone.today.end_of_month
-    series = goal_daily_series(goal, range)
+    series = goal.daily_series(range)
     safe_join(range.to_a.zip(series).map do |date, amount|
       tag.span date.day, class: "goal-history__day#{" goal-history__day--logged" if amount.positive?}",
                title: "#{date.iso8601} — #{number_with_delimiter(amount)}"

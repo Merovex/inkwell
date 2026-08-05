@@ -16,7 +16,9 @@ class NotificationDigestJob < ApplicationJob
       Notification.where(id: batch.map(&:id)).update_all(emailed_at: Time.current)
     end
 
-    # Read before we got here — mark covered so the scope stays small.
-    Notification.where.not(read_at: nil).where(emailed_at: nil).update_all(emailed_at: Time.current)
+    # Read before we got here — mark covered so the scope stays small. Only
+    # email-worthy kinds: emailed_at should keep meaning what it says.
+    Notification.where.not(read_at: nil)
+      .where(emailed_at: nil, kind: Notification::EMAILED).update_all(emailed_at: Time.current)
   end
 end

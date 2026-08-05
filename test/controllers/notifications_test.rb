@@ -1,7 +1,7 @@
 require "test_helper"
 
 # The bell: notifications are born only through Notification.deliver, die with
-# their sources, email per their kind's class, and clear on one read_all.
+# their sources, email per their kind's class, and clear on one reading.
 class NotificationsTest < ActionDispatch::IntegrationTest
   setup { @circle = circles(:writers) }
 
@@ -40,7 +40,7 @@ class NotificationsTest < ActionDispatch::IntegrationTest
 
     sign_in_as users(:admin)
     assert_no_enqueued_jobs only: ApplicationMailDeliveryJob do
-      post accept_circle_invitation_path(@circle, invitation)
+      post circle_invitation_acceptance_path(@circle, invitation)
     end
     # The announcement OUTLIVES the accepted invitation — its copy is stamped.
     invited = users(:admin).notifications.last
@@ -61,7 +61,7 @@ class NotificationsTest < ActionDispatch::IntegrationTest
       to: users(:admin), kind: "invited")
     sign_in_as users(:admin)
 
-    post read_all_notifications_path
+    post notifications_reading_path
     assert_response :no_content
     assert_equal 0, users(:admin).notifications.unread.count
   end

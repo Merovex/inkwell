@@ -68,10 +68,10 @@ class CirclePulsesTest < ActionDispatch::IntegrationTest
     pulse = create_pulse
     sign_in_as users(:bob)
 
-    delete unsubscribe_circle_pulse_path(@circle, pulse.record)
+    delete circle_pulse_subscription_path(@circle, pulse.record)
     assert_not pulse.subscribed?(users(:bob))
 
-    post subscribe_circle_pulse_path(@circle, pulse.record)
+    post circle_pulse_subscription_path(@circle, pulse.record)
     assert pulse.subscribed?(users(:bob))
   end
 

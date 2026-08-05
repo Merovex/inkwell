@@ -18,6 +18,20 @@ module Recordable
     enum :event, EVENTS.index_by(&:itself), default: :created, prefix: true
   end
 
+  class_methods do
+    # The current versions pointed at by `record_scope` (a Record relation —
+    # Record.active, circle.records.listed, …), optionally under a parent
+    # record. The one idiom for "this scope's live content of my type":
+    #
+    #   Beat.current_in(Record.active, parent: record_id)
+    #   Message.current_in(circle.records.listed)
+    def current_in(record_scope, parent: nil)
+      records = record_scope.where(recordable_type: name)
+      records = records.where(parent_id: parent) if parent
+      where(id: records.select(:recordable_id))
+    end
+  end
+
   # Versions are mutable only while drafted ("draft churn is nobody's
   # business"); every state the world ever saw is permanently recorded.
   def mutable? = drafted?

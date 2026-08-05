@@ -2,7 +2,7 @@
     the switcher's sibling (native popover, right-anchored, phone sheet).
     Opening marks everything read (notifications_controller.js). %>
 <div class="notifications" data-controller="notifications"
-     data-notifications-read-url-value="<%= read_all_notifications_path %>">
+     data-notifications-read-url-value="<%= notifications_reading_path %>">
   <%= turbo_stream_from Current.user, :notifications %>
   <% recent = Current.user.notifications.recent.includes(actor: { avatar_attachment: :blob }) %>
 

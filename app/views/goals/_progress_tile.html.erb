@@ -6,7 +6,7 @@
 <% when "ring" %>
   <span class="goal-stat__label u-microcaps"><%= goal.rate? ? goal_period_phrase(goal).capitalize : "Completion" %></span>
   <div class="goal-stat__ringrow">
-    <%= goal_stat_ring(goal_completion_percent(goal)) %>
+    <%= goal_stat_ring(goal.completion_percent) %>
     <span class="goal-stat__meta">
       <% if goal.rate? %>
         <%= number_with_delimiter(goal.period_total) %> of <%= number_with_delimiter(goal.target) %> <%= goal.unit %><br><%= goal_period_reset(goal) %>
@@ -16,7 +16,7 @@
     </span>
   </div>
 <% when "pace" %>
-  <% series = goal_daily_series(goal, (Time.zone.today - 29)..Time.zone.today) %>
+  <% series = goal.daily_series((Time.zone.today - 29)..Time.zone.today) %>
   <% running = 0; cumulative = series.map { |v| running += v } %>
   <span class="goal-stat__label u-microcaps">Pace</span>
   <span class="goal-stat__value"><%= number_with_delimiter (series.sum / 30.0).round %><span class="goal-stat__per">/day</span></span>
@@ -30,13 +30,13 @@
   <span class="goal-stat__meta">7-day average, trailing 90 days</span>
 <% when "last30" %>
   <% range = (Time.zone.today - 29)..Time.zone.today %>
-  <% series = goal_daily_series(goal, range) %>
+  <% series = goal.daily_series(range) %>
   <span class="goal-stat__label u-microcaps">Last 30 days</span>
   <span class="goal-stat__value"><%= number_with_delimiter series.sum %></span>
   <%= goal_stat_bars(series, labels: range.to_a.map(&:iso8601)) %>
 <% when "calendar" %>
   <% month_range = Time.zone.today.beginning_of_month..Time.zone.today.end_of_month %>
-  <% logged_days = goal_daily_series(goal, month_range).count(&:positive?) %>
+  <% logged_days = goal.daily_series(month_range).count(&:positive?) %>
   <span class="goal-stat__label u-microcaps"><%= Time.zone.today.strftime("%B") %></span>
   <div class="goal-history__month" role="img"
        aria-label="<%= Time.zone.today.strftime("%B") %>: logged <%= logged_days %> of <%= month_range.count %> days">
@@ -44,7 +44,7 @@
   </div>
   <span class="goal-stat__meta">logged on <%= logged_days %> of <%= month_range.count %> days</span>
 <% when "heatmap" %>
-  <% year_total = goal_daily_series(goal, (Time.zone.today - 364)..Time.zone.today).sum %>
+  <% year_total = goal.daily_series((Time.zone.today - 364)..Time.zone.today).sum %>
   <span class="goal-stat__label u-microcaps">Last 365 days</span>
   <%= render "goals/heat_map", goal: goal,
         range: (Time.zone.today - 364)..Time.zone.today,
@@ -61,7 +61,7 @@
     </span>
   </span>
   <%# Prior calendar years with tallies stack beneath, GH-style. %>
-  <% goal_heat_years(goal).each do |year| %>
+  <% goal.earlier_tally_years.each do |year| %>
     <span class="goal-stat__label u-microcaps"><%= year %></span>
     <%= render "goals/heat_map", goal: goal,
           range: Date.new(year, 1, 1)..Date.new(year, 12, 31),
@@ -69,9 +69,9 @@
   <% end %>
 <% when "bar" %>
   <span class="goal-stat__label u-microcaps">Completion</span>
-  <span class="goal-stat__value"><%= goal_completion_percent(goal) %>%</span>
+  <span class="goal-stat__value"><%= goal.completion_percent %>%</span>
   <div class="goal-stat__bar" role="img" aria-label="<%= number_with_delimiter(goal.total) %> of <%= number_with_delimiter(goal.target) %> <%= goal.unit %>">
-    <div class="goal-stat__bar-fill" style="inline-size: <%= goal_completion_percent(goal) %>%"></div>
+    <div class="goal-stat__bar-fill" style="inline-size: <%= goal.completion_percent %>%"></div>
   </div>
   <span class="goal-stat__meta"><%= number_with_delimiter(goal.total) %> of <%= number_with_delimiter(goal.target) %> <%= goal.unit %></span>
 <% else %>

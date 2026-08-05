@@ -37,3 +37,18 @@ don't fork the markup.
 The one sanctioned exception: comment-thread rows (`.list__item.comment` in
 `admin/comments/`, `circles/pulses/`) — their rich-text/menu content and
 turbo-frame swap targets don't fit the summary-row shape.
+
+## CSS cascade hazards (learned the hard way)
+
+- **`lexxy.css` is unlayered** and loads before the app styles — its rules
+  beat EVERY `@layer` rule regardless of specificity (it styles
+  `vnd.actiontext.*` attachments, e.g. squeezing imgs to 1em). A counter-rule
+  must also be unlayered, in a sheet that loads later (they load
+  alphabetically via `stylesheet_link_tag :app`).
+- **Never size `.avatar` with `em` on the avatar element itself** — `.avatar`
+  derives its own font-size from `--avatar-size`, so the em chases its tail
+  and collapses. Declare a `rem` value on the element (an element's own
+  `--avatar-size` also beats any value inherited from a parent).
+- Inline chips that must sit on the text baseline (e.g. `.mention`) should be
+  plain **inline** boxes — an inline-flex chip exports its first item's
+  synthesized box baseline and rides high.

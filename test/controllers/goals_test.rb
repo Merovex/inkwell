@@ -55,7 +55,7 @@ class GoalsTest < ActionDispatch::IntegrationTest
     assert_select ".goal-summary__actions a[href=?][aria-label=?]",
       today_goal_tallies_path(goal.record), "Edit today's tally"
     assert_select ".goal-summary__actions a[href=?]", edit_goal_path(goal.record), text: "Edit goal"
-    assert_select ".goal-summary__actions form[action=?]", archive_goal_path(goal.record)
+    assert_select ".goal-summary__actions form[action=?]", goal_archive_path(goal.record)
     # The design-studies gallery is retired from the page.
     assert_select ".goal-studies", count: 0
   end
@@ -64,14 +64,14 @@ class GoalsTest < ActionDispatch::IntegrationTest
     goal = create_goal
     sign_in_as users(:bob)
 
-    patch archive_goal_path(goal.record)
+    post goal_archive_path(goal.record)
     get goals_path
     assert_select ".goal-summary__title", text: goal.title, count: 0
     assert_select "a[href=?]", archived_goals_path, text: "View 1 archived goal"
 
     get archived_goals_path
     assert_select ".list__title", text: goal.title
-    patch unarchive_goal_path(goal.record)
+    delete goal_archive_path(goal.record)
     get goals_path
     assert_select ".goal-summary__title", text: goal.title
   end

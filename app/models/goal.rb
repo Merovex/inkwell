@@ -26,7 +26,7 @@ class Goal < ApplicationRecord
   # The intersection both sanitizes (junk and blanks drop) and imposes the
   # canonical stacking order, whatever order the checkboxes arrived in.
   serialize :displays, coder: JSON, type: Array
-  before_validation { self.displays = DISPLAYS & Array(displays) }
+  normalizes :displays, with: -> { DISPLAYS & Array(it) }
   # The coder stores an empty set as NULL; the reader keeps the contract Array.
   def displays = super || []
   validates :target, presence: { message: "is required for a rate (per day/week/month) goal" }, if: -> { per.present? }
@@ -40,8 +40,7 @@ class Goal < ApplicationRecord
   # The goal's reports: current versions of the child Tally records (parent =
   # this goal's Record — the same threading Beats use), newest day first.
   def tallies
-    Tally.where(id: Record.active.where(recordable_type: "Tally", parent_id: record_id).select(:recordable_id))
-      .order(logged_on: :desc, record_id: :desc)
+    Tally.current_in(Record.active, parent: record_id).order(logged_on: :desc, record_id: :desc)
   end
 
   def total = tallies.sum(:amount)
@@ -53,9 +52,9 @@ class Goal < ApplicationRecord
   def observed_tallies
     return tallies unless rate?
 
-    sibling_goal_records = Record.active.goals.where(bucket: record.bucket)
-    unit_goal_record_ids = Goal.where(id: sibling_goal_records.select(:recordable_id), unit: unit).select(:record_id)
-    Tally.where(id: Record.active.tallies.where(parent_id: unit_goal_record_ids).select(:recordable_id))
+    unit_goal_record_ids = Goal.current_in(Record.active.where(bucket: record.bucket))
+      .where(unit: unit).select(:record_id)
+    Tally.current_in(Record.active, parent: unit_goal_record_ids)
   end
 
   # The current period's window (nil for non-rate goals).
@@ -68,4 +67,25 @@ class Goal < ApplicationRecord
   end
 
   def period_total = observed_tallies.where(logged_on: period_range).sum(:amount)
+
+  # Per-day sums over a date range, zero-filled — the raw series behind every
+  # progress tile and heat strip (GoalsHelper draws; this measures).
+  def daily_series(range)
+    sums = observed_tallies.where(logged_on: range).group(:logged_on).sum(:amount)
+    range.to_a.map { |date| sums[date] || 0 }
+  end
+
+  # Progress toward the target, capped at 100 (overshooting stays "done").
+  # Projects measure lifetime total; rates measure the current period.
+  def completion_percent
+    logged = rate? ? period_total : total
+    ((logged.to_f / target) * 100).clamp(0, 100).round
+  end
+
+  # Calendar years before this one that hold tallies — each earns its own
+  # heat strip on the heatmap card, GH-style. Newest first.
+  def earlier_tally_years
+    observed_tallies.distinct.pluck(:logged_on).map(&:year).uniq
+      .select { |year| year < Time.zone.today.year }.sort.reverse
+  end
 end

@@ -20,7 +20,7 @@ class Pulse < ApplicationRecord
   validates :cadence, inclusion: { in: CADENCES }
   validates :ask_at_minutes, inclusion: { in: 0..1439 }
 
-  scope :current, -> { where(id: Record.active.where(recordable_type: "Pulse").select(:recordable_id)) }
+  scope :current, -> { current_in(Record.active) }
   scope :live,    -> { current.where(active: true) }
 
   # Every version is history — activating/deactivating and question edits land
@@ -30,7 +30,7 @@ class Pulse < ApplicationRecord
   # The answers to this pulse: current versions of the child Beat records
   # (parent = this pulse's Record), newest occurrence first then by author.
   def beats
-    Beat.where(id: Record.active.where(recordable_type: "Beat", parent_id: record_id).select(:recordable_id))
+    Beat.current_in(Record.active, parent: record_id)
       .includes(:record, :rich_text_content, creator: { avatar_attachment: :blob })
       .order(asked_on: :desc, record_id: :asc)
   end
@@ -39,6 +39,12 @@ class Pulse < ApplicationRecord
   def beats_on(date) = beats.where(asked_on: date)
 
   def subscribed?(user) = user.present? && subscriptions.exists?(user_id: user.id)
+
+  # Enroll a batch (circle members at setup — everyone's in by default): one
+  # statement, no per-member ceremony. Membership is a given at this point.
+  def subscribe(users)
+    PulseSubscription.insert_all(users.ids.map { |user_id| { pulse_record_id: record_id, user_id: user_id } })
+  end
 
   # The occurrence members are currently answering — the latest ask (nil until
   # the pulse has first fired).

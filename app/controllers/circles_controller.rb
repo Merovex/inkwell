@@ -41,8 +41,7 @@ class CirclesController < Circles::BaseController
   def create
     return redirect_to circles_path, alert: CIRCLE_LIMIT_ALERT unless can_create_circle?
 
-    @circle = Circle.create_with_owner(name: circle_params[:name], owner: Current.user,
-      description: circle_params[:description])
+    @circle = Circle.create_with_owner(owner: Current.user, **circle_params.to_h.symbolize_keys)
 
     if @circle.persisted?
       redirect_to circle_path(@circle), notice: "Circle created."

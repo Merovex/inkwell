@@ -46,8 +46,11 @@ Rails.application.routes.draw do
     mount MissionControl::Jobs::Engine, at: "/jobs"
     # The bell: opening the flyout marks everything read; the index is the
     # full 30-day window behind the flyout's "See all".
-    get "notifications", to: "notifications#index", as: :notifications
-    post "notifications/read_all", to: "notifications#read_all", as: :read_all_notifications
+    resources :notifications, only: :index
+    # Marking the bell read = creating a reading (the flyout POSTs on open).
+    namespace :notifications do
+      resource :reading, only: :create
+    end
     # Personal settings — always Current.user, no id in the URL. The avatar is its
     # own resource so picking/dropping a picture can auto-submit.
     namespace :user do
@@ -97,16 +100,15 @@ Rails.application.routes.draw do
       # (create); the invitee accepts it from their circles index. destroy
       # doubles as the invitee declining and the inviter/owner revoking.
       resources :invitations, only: %i[create destroy], module: :circles do
-        member { post :accept }
+        # Accepting = creating the acceptance (membership in, invitation out).
+        resource :acceptance, only: :create, module: :invitations
       end
 
       # Pulse — the circle's recurring check-in. Owner sets it up; members
-      # subscribe/unsubscribe and post a Beat (their answer).
+      # subscribe (their own subscription resource) and post a Beat (their answer).
       resources :pulses, only: %i[new create show edit update destroy], module: :circles do
-        member do
-          post :subscribe
-          delete :unsubscribe
-        end
+        # The member's own seat at the check-in: POST joins, DELETE opts out.
+        resource :subscription, only: %i[create destroy], module: :pulses
         resources :beats, only: %i[create edit update]
       end
     end
@@ -115,12 +117,10 @@ Rails.application.routes.draw do
     # circle (the user is the record bucket). Tallies are the reports against
     # a goal; ids are Record ids, like circles' pulses.
     resources :goals do
-      # Archive is the calm way to retire a goal (reversible, no purge clock).
+      # Archive is the calm way to retire a goal (reversible, no purge clock):
+      # POST sets it aside, DELETE restores — the admin archives shape.
       collection { get :archived }
-      member do
-        patch :archive
-        patch :unarchive
-      end
+      resource :archive, only: %i[create destroy], module: :goals
       resources :tallies, only: %i[create edit update destroy], module: :goals do
         # Today's record, add-or-edit, as a modal (fetched into the "modal" frame).
         collection { get :today }

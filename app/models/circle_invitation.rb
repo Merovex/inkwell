@@ -29,6 +29,12 @@ class CircleInvitation < ApplicationRecord
     end
   end
 
+  # Who may take this invitation off the table: the invitee (declining), the
+  # inviter, or the circle's owner (revoking).
+  def revocable_by?(user)
+    [ user_id, inviter_id, circle.owner_id ].include?(user.id)
+  end
+
   private
     def invitee_not_already_a_member
       errors.add(:user, "is already a member") if circle&.member?(user)

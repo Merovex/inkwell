@@ -5,15 +5,18 @@
 
 ## What this is
 
-A Rails 8.2 app (Ruby 4.0.5) that wears **two faces on one codebase**:
+A Rails 8.2 app (Ruby 4.0.5), now **multi-tenant** ([0017](decisions/0017-phase-1-tenancy-model.md)–[0019](decisions/0019-app-subdomain-and-account-picker.md)), wearing three faces:
 
-- **Inkwell** — the **domain-admin-only backend** at `/admin/*` (app module
-  `Inkwell`). Where the author writes, publishes, and moderates. Gated by
-  `Admin::BaseController` ([0016](decisions/0016-admin-backend-domain-admin-only.md));
-  sign-in and the user's own account live at the top level (`/session`, `/user/*`),
-  and Comments/Boosts stay session-only (not admin) as a future member surface.
-- **Merovex Press** — the anonymous **public site** at `/`. See
-  [[merovex-press-public-site]].
+- **Inkwell** — each site's admin, script-name-mounted on the **app host** at
+  `/{SLUG}/admin` (gated per [0016](decisions/0016-admin-backend-domain-admin-only.md));
+  sign-in, the account picker, **Circles**, **Goals**, and **Notifications**
+  live at the app host's top level.
+- **Public sites** — each Account's site on its own domain (Hugo static
+  pipeline, [0021](decisions/0021-hugo-static-site-generator.md)); "Merovex
+  Press" is the first tenant's brand. See [[merovex-press-public-site]].
+- **The community layer** — cross-account Circles
+  ([0023](decisions/0023-circles-cross-account-buckets.md)): invite-only
+  author groups with discussions, pulse check-ins, boosts, and @mentions.
 
 (Formerly "Alcovo"; renamed 2026-07-08. Accepted ADRs 0001–0006 predate the
 rename and keep the old name as history.)
@@ -21,7 +24,33 @@ rename and keep the old name as history.)
 This `docs/` folder is the single home for design/reference docs and the work
 log; see [[CLAUDE]] for how it's maintained.
 
-## Current state (2026-07-12)
+## Current state (2026-08-05)
+
+Since July: multitenancy shipped (app host + tenant hosts, join-code signup,
+[0017](decisions/0017-phase-1-tenancy-model.md)–[0020](decisions/0020-join-code-signup-and-root-role.md));
+the Hugo static pipeline + SiteDesigner
+([0021](decisions/0021-hugo-static-site-generator.md)/[0022](decisions/0022-sitedesigner-design-json-sovereignty.md));
+and the August community arc:
+
+- **Circles** ([[circles]], [0023](decisions/0023-circles-cross-account-buckets.md)) —
+  invite-only author groups (golden invitation cards, membership page,
+  owner-first rosters); Message discussions; **Pulse check-ins** on Eastern
+  wall-clock schedules (`PulseTickJob`, answers as `Beat` cards).
+- **Goals & Tallies** ([[goals]]) — personal progress on the User bucket;
+  rate vs project goals, display-card sets (heatmaps lead the grid).
+- **Notifications** ([[notifications]], [0024](decisions/0024-notifications-stamped-copy-digests.md)) —
+  stamped-copy rows, live bell (Turbo), tiered digests (4-hour /
+  daily-for-replies), 30-day shelf life.
+- **Boosts & @mentions** across circle content — mentions by typed token or
+  Lexxy's `@`-prompt (User as Action Text attachable, avatar+name chip);
+  comment replies ring the thread everywhere comments exist.
+- **Ops** — Solid Queue in Puma, Mission Control at `/jobs` (root-only),
+  Eastern `config.time_zone`, recurring schedule zones explicit. Production
+  runs `01c6fe9` — the entire August arc is local/undeployed; the
+  alcovo container's volume collision (it mounted `/var/lib/inkwell`) is
+  diagnosed, its deploy.yml fixed, redeploy pending.
+
+## State as of 2026-07-12 (single-tenant era)
 
 - **Auth & shell** — passwordless magic-link auth, first-run Setup, top-bar app
   shell. A Basecamp-style **app menu** (jump-to sheet) is the admin's global
@@ -58,16 +87,21 @@ log; see [[CLAUDE]] for how it's maintained.
 
 ## Core vocabulary
 
-Canonical names (see [[domain-vocabulary]] / [0002](decisions/0002-domain-vocabulary-person-user-account.md)):
-**`Person`** (global login) ──< **`User`** (membership) ──< **`Account`** (tenant).
-Retired: `Identity`, `Membership`, `Group`, `bucket`.
+As shipped (see [[domain-vocabulary]]): **`User`** (global login) ──<
+`AccountUser` >── **`Account`** ("site" in UI — never "press"); `Record.bucket`
+is polymorphic (**Account | Circle | User**); `Person` is the *reader*
+identity (newsletter). Community terms: Circle, Pulse/Beat, Goal/Tally,
+Boost, Notification.
 
 ## Open threads
 
-- Public **author** and **series** pages are still stubbed.
-- A public **distributor click** redirect (increment `clicks`) is not wired yet.
-- App-menu polish: focus-trap, lazy `turbo-permanent` frame, open hotkey.
-- Geo database refresh is manual (`bin/update-geoip.sh`, monthly-ish) and the
-  first deploy needs `geoip:backfill`; no automation yet.
-- Reconcile [data-model.md](data-model.md) / [schema.rb](schema.rb) with the
-  shipped spine; `Account` + `records.account_id` tenancy still deferred.
+- **Deploy** — commit the August arc and `kamal deploy`; fix confirmed for
+  alcovo's deploy.yml (own `/var/lib/alcovo` volumes; domain TODO) and its
+  redeploy + a check of Inkwell's production DB for alcovo cross-contamination.
+- **Goal deadlines + pace line** (NaNo-style) — next feature in line.
+- **Request-an-invite** for circles; **web push** channel; **List-Unsubscribe**
+  on notification emails (blocked on a settings page).
+- The goal design-studies gallery is hidden on disk — deliberate KEEP (owner).
+- Older threads (public author/series pages, distributor click redirect,
+  geo refresh automation, data-model reconciliation) remain from the
+  single-tenant era.

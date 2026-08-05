@@ -48,10 +48,10 @@ class CircleInvitationsTest < ActionDispatch::IntegrationTest
     # The seat on offer leads the deck as a golden card with its own actions.
     assert_select ".circles__card--invited .circles__name", text: @circle.name
     assert_select ".circles__card--invited .circles__meta", text: /invited you/
-    assert_select ".circles__card--invited form[action=?]", accept_circle_invitation_path(@circle, invitation)
+    assert_select ".circles__card--invited form[action=?]", circle_invitation_acceptance_path(@circle, invitation)
 
     assert_difference -> { @circle.circle_memberships.count } => 1, -> { CircleInvitation.count } => -1 do
-      post accept_circle_invitation_path(@circle, invitation)
+      post circle_invitation_acceptance_path(@circle, invitation)
     end
     assert_redirected_to circle_path(@circle)
     assert @circle.reload.member?(users(:admin))
@@ -63,7 +63,7 @@ class CircleInvitationsTest < ActionDispatch::IntegrationTest
     sign_in_as users(:admin)
 
     assert_no_difference -> { @circle.circle_memberships.count } do
-      post accept_circle_invitation_path(@circle, invitation)
+      post circle_invitation_acceptance_path(@circle, invitation)
     end
     assert_redirected_to circles_path
     assert_match(/full/, flash[:alert])

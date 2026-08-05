@@ -42,8 +42,7 @@ class Circle < ApplicationRecord
   # This circle's check-ins (recurring questions). A circle has one active Pulse
   # in practice, but the spine allows more; #pulse is the current one for the home.
   def pulses
-    Pulse.where(id: records.active.where(recordable_type: "Pulse").select(:recordable_id))
-      .order(record_id: :desc)
+    Pulse.current_in(records.active).order(record_id: :desc)
   end
 
   def pulse = pulses.live.first
@@ -103,8 +102,7 @@ class Circle < ApplicationRecord
 
   private
     def discussions_from(record_scope)
-      Message
-        .where(id: record_scope.where(recordable_type: "Message").select(:recordable_id))
+      Message.current_in(record_scope)
         .includes(:record, creator: { avatar_attachment: :blob }, body: :rich_text_content)
         .order(record_id: :desc)
     end

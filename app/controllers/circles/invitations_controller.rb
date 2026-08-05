@@ -1,8 +1,8 @@
-# Extending and answering circle invitations. Deliberately NOT a
-# Circles::BaseController: the invitee answering (accept/destroy-as-decline) is
-# by definition not yet a member, so the membership 404 in set_circle would
-# lock them out of their own invitation. Authorization here is the invitation
-# row itself — plus the invite? policy for extending one.
+# Extending and withdrawing circle invitations (accepting lives at
+# Invitations::AcceptancesController). Deliberately NOT a Circles::BaseController:
+# the invitee declining is by definition not yet a member, so the membership 404
+# in set_circle would lock them out of their own invitation. Authorization here
+# is the invitation row itself — plus the invite? policy for extending one.
 module Circles
   class InvitationsController < ApplicationController
     # A member offers a seat, addressed to an existing Inkwell user by email.
@@ -22,27 +22,11 @@ module Circles
       end
     end
 
-    # Accepting is the invitee's move alone; the scoped find is the authorization.
-    def accept
-      invitation = Current.user.circle_invitations.find(params[:id])
-      circle = invitation.circle
-
-      inviter = invitation.inviter
-      if (membership = invitation.accept)
-        # The inviter deserves to know their invitation landed (bell-only).
-        Notification.deliver(membership, to: inviter, kind: "invitation_accepted") unless inviter == Current.user
-        redirect_to circle_path(circle), notice: "Welcome to #{circle.name}."
-      else
-        redirect_to circles_path, alert: "#{circle.name} is full."
-      end
-    end
-
     # Decline (the invitee's own) or revoke (the inviter's, or any of the
     # owner's). Anyone else gets the same 404 as a missing record.
     def destroy
       invitation = Circle.find(params[:circle_id]).invitations.find(params[:id])
-      permitted = [ invitation.user_id, invitation.inviter_id, invitation.circle.owner_id ]
-      raise ActiveRecord::RecordNotFound unless permitted.include?(Current.user.id)
+      raise ActiveRecord::RecordNotFound unless invitation.revocable_by?(Current.user)
 
       # Revoked or declined: the announcement goes with it (the no-ghosts rule
       # — an invitation that never resolves shouldn't echo in the bell).

@@ -3,7 +3,7 @@
 # schedule are versioned (Pulse is a recordable), so edits land as history.
 module Circles
   class PulsesController < BaseController
-    before_action :set_pulse, only: %i[show edit update destroy subscribe unsubscribe]
+    before_action :set_pulse, only: %i[show edit update destroy]
     # Only the circle owner manages the Pulse check itself.
     before_action -> { authorize! @circle, to: :manage }, only: %i[new create edit update destroy]
 
@@ -17,7 +17,7 @@ module Circles
       if @pulse.valid?
         Record.originate(@pulse)
         # Everyone's in by default; each member can opt out later.
-        @circle.members.find_each { |member| PulseSubscription.create(pulse_record: @pulse.record, user: member) }
+        @pulse.subscribe(@circle.members)
         redirect_to circle_pulse_path(@circle, @pulse.record), notice: "Pulse check set up."
       else
         render :new, status: :unprocessable_entity
@@ -46,16 +46,6 @@ module Circles
     def destroy
       @record.trash
       redirect_to circle_path(@circle), notice: "Pulse check removed."
-    end
-
-    def subscribe
-      PulseSubscription.create(pulse_record: @record, user: Current.user)
-      redirect_to circle_pulse_path(@circle, @record), notice: "You're in — you'll be asked next time."
-    end
-
-    def unsubscribe
-      @pulse.subscriptions.where(user: Current.user).destroy_all
-      redirect_to circle_pulse_path(@circle, @record), notice: "You've opted out of this Pulse check."
     end
 
     private

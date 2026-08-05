@@ -3,16 +3,16 @@
 # recordables — edits amend in place, no versions — and deletes go through the
 # record's trash like everything else on the spine.
 class GoalsController < Goals::BaseController
-  before_action :set_goal, only: %i[show edit update destroy archive unarchive]
+  before_action :set_goal, only: %i[show edit update destroy]
 
   def index
-    @goals = Goal.where(id: goal_records.listed.select(:recordable_id)).order(created_at: :desc)
+    @goals = Goal.current_in(goal_records.listed).order(created_at: :desc)
     @archived_count = goal_records.archived.count
   end
 
   # Retired goals — set aside, tallies intact, one click from coming back.
   def archived
-    @goals = Goal.where(id: goal_records.archived.select(:recordable_id)).order(created_at: :desc)
+    @goals = Goal.current_in(goal_records.archived).order(created_at: :desc)
   end
 
   def new
@@ -51,16 +51,6 @@ class GoalsController < Goals::BaseController
   def destroy
     @record.trash
     redirect_to goals_path, notice: "Goal moved to trash."
-  end
-
-  def archive
-    @record.archive
-    redirect_to goals_path, notice: "Goal archived."
-  end
-
-  def unarchive
-    @record.unarchive
-    redirect_to goals_path, notice: "Goal restored."
   end
 
   private
