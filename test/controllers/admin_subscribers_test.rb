@@ -89,6 +89,32 @@ class AdminSubscribersTest < ActionDispatch::IntegrationTest
     assert_equal "reader@example.com isn't pending — nothing to confirm.", flash[:alert]
   end
 
+  test "the admin can flag and unflag a deliverability seed by hand" do
+    # A rotating-domain seed service (GlockApps-style) that no static list catches.
+    subscriber = Subscriber.opt_in(email_address: "seed-x9@rotating-glock.example.com")
+    subscriber.confirm!
+    sign_in_as users(:admin)
+
+    post admin_subscriber_seed_path(subscriber)
+    assert_redirected_to admin_subscribers_path(state: "confirmed")
+    assert subscriber.reload.seed?
+
+    delete admin_subscriber_seed_path(subscriber)
+    assert_not subscriber.reload.seed?
+  end
+
+  test "seeds are badged in the roster and excluded from the tab counts" do
+    Subscriber.opt_in(email_address: "reader@example.com").confirm!
+    Subscriber.opt_in(email_address: "report@aboutmy.email").confirm!
+    sign_in_as users(:admin)
+
+    get admin_subscribers_path
+    assert_select ".list__title", text: "rep•••@aboutmy.email"
+    assert_select ".badge", text: "Seed"
+    # Count reflects real readers only: 1, not 2.
+    assert_select "a[aria-current=page]", text: /Confirmed\s*\(1\)/
+  end
+
   test "resend is admin-only: a member gets a 404" do
     subscriber = Subscriber.opt_in(email_address: "reader@example.com")
     sign_in_as users(:bob)

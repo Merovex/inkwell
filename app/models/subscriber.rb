@@ -20,6 +20,38 @@ class Subscriber < ApplicationRecord
 
   enum :status, %w[ pending confirmed unsubscribed bounced ].index_by(&:itself), default: "pending"
 
+  # Deliverability-seed inboxes (diagnostic services, not people). A seed may
+  # subscribe and confirm — the confirmation email is what those services
+  # analyze — but gets nothing further: no broadcasts, no drips (an expired
+  # seed inbox hard-bounces, and bounces are reputation damage). Seeds are
+  # also excluded from roster counts. Matched by domain or subdomain at
+  # creation; rotating-domain services (GlockApps, Everest) are flagged
+  # manually from the admin roster.
+  SEED_DOMAINS = %w[
+    aboutmy.email
+    mail-tester.com
+    mailosaur.net
+    mailosaur.io
+    mailtrap.io
+    ethereal.email
+    mailslurp.com
+    mailslurp.net
+    testmail.app
+    emailonacid.com
+    litmusemail.com
+    litmus.com
+  ].freeze
+
+  # Reserved TLDs (RFC 2606/6761) can never receive mail; reject them
+  # deterministically rather than leaning on a DNS lookup.
+  RESERVED_TLDS = %w[ test invalid localhost example ].freeze
+
+  # The people, as opposed to the diagnostics: everyone who isn't a seed.
+  # Roster counts count readers.
+  scope :readers, -> { where(seed: false) }
+  # Who actually gets broadcasts and drips: confirmed, and not a seed.
+  scope :sendable, -> { confirmed.readers }
+
   # Engagement-based sunset thresholds (ADR 0014). "Engagement" is any open or
   # click; any of them resets the clock. Ask ("still want these?") at the later
   # of DAYS/EMAILS since last engagement, but no later than the ask cap; then, if
@@ -36,6 +68,19 @@ class Subscriber < ApplicationRecord
   validates :email_address, presence: true,
     format: { with: URI::MailTo::EMAIL_REGEXP },
     uniqueness: { scope: :account_id }
+
+  # Email hygiene, on: :create only — a domain that later lands on a blocklist
+  # must never wedge unsubscribe!/mark_bounced! (both update! the row), and the
+  # address is immutable after creation anyway. One ladder serves both this
+  # gate and the rejection log: see .rejection_reason. No MX lookup — double
+  # opt-in IS the MX check (an undeliverable domain never confirms, and the
+  # signup POST shouldn't stall on DNS); pure list checks only, so no network
+  # in any environment. The disposable check's allow-list carveout is how
+  # SEED_DOMAINS stay subscribable even when the gem's list contains them (it
+  # does: mail-tester, mailosaur, …); see the valid_email2 initializer.
+  validate :email_address_deliverable, on: :create
+
+  before_create :flag_seed_domain
 
   # The confirmation-link token expires but is otherwise stable — it does NOT
   # fold in confirmed_at. Email clients and security scanners routinely GET a
@@ -92,6 +137,9 @@ class Subscriber < ApplicationRecord
       update!(status: :confirmed, confirmed_at: Time.current)
       log_event!("confirmed", ip:)
     end
+
+    # Seeds stop here: the confirmation email is the whole test. No drips.
+    return if seed?
 
     Drip.enroll(self)
     streams.active.find_each { |stream| DripAdvanceJob.perform_later(stream) }
@@ -179,9 +227,39 @@ class Subscriber < ApplicationRecord
     scope.count
   end
 
+  # THE hygiene ladder — the create validation rejects on any non-nil answer,
+  # and the signup rejection log names the layer that caught the address
+  # (format / reserved_tld / disposable). Ordered cheapest-first.
+  def self.rejection_reason(email_address)
+    domain = domain_of(email_address)
+    return "format" unless email_address.to_s.match?(URI::MailTo::EMAIL_REGEXP)
+    return "reserved_tld" if domain.split(".").last.in?(RESERVED_TLDS)
+
+    address = ValidEmail2::Address.new(email_address)
+    return "format" unless address.valid?
+    return "disposable" if address.disposable_domain? && !address.allow_listed?
+
+    nil
+  end
+
+  def self.seed_domain?(email_address)
+    domain = domain_of(email_address)
+    SEED_DOMAINS.any? { |seed| domain == seed || domain.end_with?(".#{seed}") }
+  end
+
+  def self.domain_of(email_address) = email_address.to_s.split("@").last.to_s.downcase
+
   private
     def assign_person
       self.person ||= Person.find_or_initialize_by(email_address: email_address) if email_address.present?
+    end
+
+    def email_address_deliverable
+      errors.add(:email_address, :invalid) if self.class.rejection_reason(email_address)
+    end
+
+    def flag_seed_domain
+      self.seed = true if self.class.seed_domain?(email_address)
     end
 
     def nudgeworthy?

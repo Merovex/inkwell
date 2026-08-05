@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.2].define(version: 2026_08_05_050000) do
+ActiveRecord::Schema[8.2].define(version: 2026_08_05_133152) do
   create_table "account_users", force: :cascade do |t|
     t.integer "account_id", null: false
     t.integer "user_id", null: false
@@ -614,6 +614,7 @@ ActiveRecord::Schema[8.2].define(version: 2026_08_05_050000) do
     t.datetime "re_engagement_sent_at"
     t.integer "account_id", null: false
     t.integer "person_id", null: false
+    t.boolean "seed", default: false, null: false
     t.index ["account_id", "status"], name: "index_subscribers_on_account_id_and_status"
     t.index ["email_address"], name: "index_subscribers_on_email_address"
     t.index ["person_id", "account_id"], name: "index_subscribers_on_person_id_and_account_id", unique: true

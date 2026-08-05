@@ -1,5 +1,22 @@
 # Inkwell — conventions for Claude
 
+## Rails standards: rails-best-practices-core is ALWAYS in force
+
+Before writing, refactoring, or reviewing any Ruby/Rails code in this repo,
+load the `rails-best-practices-core` skill (via the Skill tool) and apply it.
+This is not optional or judgment-based — treat that skill's contents as part
+of these instructions for every Rails task, not just when a review is asked
+for. (The `/dhh` skill layers a review voice on top; the standards themselves
+live in rails-best-practices-core.)
+
+The most-violated rule, restated here so it is ambient even before the skill
+loads — **everything is CRUD**: no custom member/collection actions in
+`config/routes.rb`. Model the verb as a noun resource (subscribe →
+`resource :subscription`, archive → `resource :archive`, accept →
+`resource :acceptance`; POST creates the state, DELETE undoes it). Toggle
+actions are doubly banned — split them into create/destroy so each request
+names its direction instead of flipping whatever it finds.
+
 ## View components: reuse, don't re-roll
 
 Before writing markup for a UI pattern, check `app/views/shared/` and the living

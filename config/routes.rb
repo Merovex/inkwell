@@ -294,10 +294,13 @@ Rails.application.routes.draw do
 
       # Newsletter roster — domain-admin only. Read + CSV export + manual
       # unsubscribe; subscribers themselves opt in from the public site. Resend
-      # re-issues the confirmation email to a still-pending subscriber.
+      # re-issues the confirmation email to a still-pending subscriber. Seed
+      # status is a resource: POST flags a deliverability-seed inbox, DELETE
+      # returns it to a real reader.
       resources :subscribers, only: :index do
         patch :unsubscribe, on: :member
         post  :resend, on: :member
+        resource :seed, only: %i[create destroy], module: :subscribers
       end
 
       # Broadcasts dashboard — domain-admin only. Read-only send analytics;

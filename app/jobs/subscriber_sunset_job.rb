@@ -12,7 +12,7 @@ class SubscriberSunsetJob < ApplicationJob
     # (later-of days/emails) are then evaluated in sunset_action. A deliberate
     # cross-account sweep; each nudge renders under its subscriber's press.
     Current.allowing_unscoped_tenancy do
-      Subscriber.confirmed
+      Subscriber.sendable
         .where("last_engaged_at IS NULL OR last_engaged_at < ?", Subscriber::RE_ENGAGE_DAYS.days.ago)
         .find_each do |subscriber|
           Current.with_account(subscriber.account) do

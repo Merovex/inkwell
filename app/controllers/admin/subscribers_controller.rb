@@ -12,7 +12,9 @@ class Admin::SubscribersController < Admin::BaseController
   def index
     @state = STATES.include?(params[:state]) ? params[:state] : "confirmed"
     @subscribers = Current.account.subscribers.where(status: @state).order(created_at: :desc)
-    @counts = Current.account.subscribers.group(:status).count
+    # Seeds stay visible in the roster (badged) but out of the headline counts —
+    # they're diagnostics, not readers.
+    @counts = Current.account.subscribers.readers.group(:status).count
 
     respond_to do |format|
       format.html
@@ -49,9 +51,9 @@ class Admin::SubscribersController < Admin::BaseController
 
     def subscribers_csv
       CSV.generate do |csv|
-        csv << %w[ email_address status source confirmed_at unsubscribed_at created_at ]
+        csv << %w[ email_address status source seed confirmed_at unsubscribed_at created_at ]
         @subscribers.each do |s|
-          csv << [ s.email_address, s.status, s.source, s.confirmed_at, s.unsubscribed_at, s.created_at ]
+          csv << [ s.email_address, s.status, s.source, s.seed, s.confirmed_at, s.unsubscribed_at, s.created_at ]
         end
       end
     end

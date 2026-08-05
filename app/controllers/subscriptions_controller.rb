@@ -21,6 +21,10 @@ class SubscriptionsController < PublicController
   def create
     Subscriber.opt_in(email_address: params[:email_address], source: params[:source], ip: request.remote_ip)
     redirect_to newsletter_sent_path
+  rescue ActiveRecord::RecordInvalid
+    log_rejected_signup
+    # Deliberately vague: no oracle telling a prober which check tripped.
+    redirect_to newsletter_path, alert: "That address can't receive mail — please try another."
   end
 
   # The "check your inbox" page — a single centered card, no site chrome.
@@ -79,5 +83,17 @@ class SubscriptionsController < PublicController
     # destination as a real opt-in, so the two are indistinguishable.
     def discard_spam
       redirect_to newsletter_sent_path
+    end
+
+    # The user-facing message stays vague, but the log says which hygiene
+    # layer caught the address (format / reserved_tld / disposable) and
+    # where the attempt came from — that's how we'll know what's actually
+    # knocking on the door.
+    def log_rejected_signup
+      reason = Subscriber.rejection_reason(params[:email_address]) || "other"
+      Rails.logger.warn(
+        "[newsletter] rejected signup email=#{params[:email_address].inspect} " \
+        "reason=#{reason} source=#{params[:source].inspect} ip=#{request.remote_ip}"
+      )
     end
 end

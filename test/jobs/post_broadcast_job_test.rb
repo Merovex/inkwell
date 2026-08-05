@@ -8,9 +8,10 @@ class PostBroadcastJobTest < ActiveSupport::TestCase
     Subscriber.create!(email_address: "a@example.com", status: :confirmed)
     Subscriber.create!(email_address: "b@example.com", status: :confirmed)
     Subscriber.create!(email_address: "pending@example.com", status: :pending)
+    Subscriber.create!(email_address: "report@aboutmy.email", status: :confirmed)  # seed: confirmed but never broadcast to
   end
 
-  test "mails only confirmed subscribers and records the outcome" do
+  test "mails only confirmed non-seed subscribers and records the outcome" do
     assert_emails 2 do
       PostBroadcastJob.perform_now(@broadcast)
     end

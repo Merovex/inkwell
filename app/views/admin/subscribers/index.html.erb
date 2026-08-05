@@ -25,6 +25,21 @@
   <div class="list">
     <% @subscribers.each do |subscriber| %>
       <% actions = capture do %>
+        <% if subscriber.seed? %>
+          <%= button_to admin_subscriber_seed_path(subscriber), method: :delete,
+                class: "button button--icon button--ghost", title: "Unmark seed",
+                "aria-label": "Unmark #{redacted_email(subscriber.email_address)} as a deliverability seed",
+                form: { data: { turbo_confirm: "Treat #{redacted_email(subscriber.email_address)} as a real subscriber again?" } } do %>
+            <%= inline_svg_tag "lucide/flask-conical.svg", class: "lucide", size: "16px" %>
+          <% end %>
+        <% else %>
+          <%= button_to admin_subscriber_seed_path(subscriber), method: :post,
+                class: "button button--icon button--ghost", title: "Mark as seed",
+                "aria-label": "Mark #{redacted_email(subscriber.email_address)} as a deliverability seed",
+                form: { data: { turbo_confirm: "Mark #{redacted_email(subscriber.email_address)} as a deliverability seed? Seeds get no broadcasts or drips and don't count in the roster." } } do %>
+            <%= inline_svg_tag "lucide/flask-conical.svg", class: "lucide", size: "16px" %>
+          <% end %>
+        <% end %>
         <% if subscriber.pending? %>
           <%= button_to resend_admin_subscriber_path(subscriber), method: :post,
                 class: "button button--icon button--ghost", title: "Resend confirmation",
@@ -45,8 +60,8 @@
       <%= render "shared/list_item",
             title: redacted_email(subscriber.email_address),
             avatar: false,
-            badge: ("Nudged" if subscriber.confirmed? && subscriber.re_engagement_sent_at),
-            badge_variant: "warning",
+            badge: (subscriber.seed? ? "Seed" : ("Nudged" if subscriber.confirmed? && subscriber.re_engagement_sent_at)),
+            badge_variant: (subscriber.seed? ? "accent" : "warning"),
             author: "#{"via #{subscriber.source} · " if subscriber.source.present?}joined #{subscriber.created_at.strftime("%b %-d, %Y")}#{" · updated #{subscriber.updated_at.strftime('%b %-d, %Y')}" if subscriber.updated_at.to_date != subscriber.created_at.to_date}#{" · last opened #{subscriber.last_engaged_at.strftime('%b %-d, %Y')}" if subscriber.last_engaged_at}",
             actions: actions %>
     <% end %>

@@ -25,6 +25,30 @@ class SubscriptionsControllerTest < ActionDispatch::IntegrationTest
     assert_equal "hero", subscriber.source
   end
 
+  test "a disposable address is rejected with a vague alert — no subscriber, no email" do
+    assert_no_difference -> { Subscriber.count } do
+      assert_enqueued_emails 0 do
+        post newsletter_path, params: { email_address: "burner@mailinator.com", source: "hero" }
+      end
+    end
+
+    assert_redirected_to newsletter_path
+    assert_equal "That address can't receive mail — please try another.", flash[:alert]
+  end
+
+  test "a seed inbox subscribes normally and gets its confirmation email, flagged as seed" do
+    assert_difference -> { Subscriber.count }, 1 do
+      assert_enqueued_emails 1 do
+        post newsletter_path, params: { email_address: "daughter.park.neck@aboutmy.email", source: "newsletter_page" }
+      end
+    end
+    assert_redirected_to newsletter_sent_path
+
+    seed = Subscriber.find_by(email_address: "daughter.park.neck@aboutmy.email")
+    assert seed.pending?
+    assert seed.seed?
+  end
+
   test "a filled honeypot is silently discarded — no subscriber, no email" do
     assert_no_difference -> { Subscriber.count } do
       assert_enqueued_emails 0 do

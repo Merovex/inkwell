@@ -92,6 +92,10 @@ gem "csv"
 # [https://github.com/markets/invisible_captcha]
 gem "invisible_captcha"
 
+# Signup email hygiene: syntax + MX + disposable-domain rejection
+# [https://github.com/micke/valid_email2]
+gem "valid_email2"
+
 # First-party analytics (visits + events), DB-backed [https://github.com/ankane/ahoy]
 gem "ahoy_matey"
 
