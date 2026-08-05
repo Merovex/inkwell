@@ -1,0 +1,22 @@
+/*
+ * u-copied-veil — the "Copied" confirmation overlay: covers its positioned
+ * parent, revealed when the clipboard controller toggles .is-copied on an
+ * ancestor. The parent supplies position:relative + overflow:hidden.
+ * (Was duplicated verbatim by the broadcast banner and the invite-code card.)
+ */
+@layer utilities {
+  .u-copied-veil {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--brand-strong);
+    color: var(--on-brand);
+    font-weight: var(--font-weight-6);
+    opacity: 0;
+    transition: opacity var(--speed-quick) var(--ease-3);
+    pointer-events: none;
+  }
+  .is-copied .u-copied-veil { opacity: 1; }
+}
