@@ -48,17 +48,18 @@
           <tr>
             <td>
               <%# A broadcast outlives its post being trashed — no dead links. %>
+              <% title = broadcast.post&.title.presence || "Untitled" %>
               <% if broadcast.record.trashed_at? %>
-                <span class="u-text-strong"><%= broadcast.post&.title.presence || "Untitled" %></span>
+                <span class="u-text-strong" title="<%= title %>"><%= title.truncate(40) %></span>
                 <span class="badge">Trashed</span>
               <% else %>
-                <%= link_to broadcast.post&.title.presence || "Untitled", admin_post_path(broadcast.record), class: "u-text-strong" %>
+                <%= link_to title.truncate(40), admin_post_path(broadcast.record), class: "u-text-strong", title: (title if title.length > 40) %>
               <% end %>
             </td>
             <td>
               <% case broadcast.state %>
               <% when :sent %>
-                <time datetime="<%= broadcast.sent_at.to_date.iso8601 %>"><%= l broadcast.sent_at.to_date, format: :long %></time>
+                <time datetime="<%= broadcast.sent_at.to_date.iso8601 %>"><%= broadcast.sent_at.strftime("%b %-d, %Y") %></time>
               <% when :scheduled %>
                 <span class="badge badge--accent">Scheduled ·
                   <time datetime="<%= broadcast.scheduled_at.iso8601 %>" data-controller="local-time"
