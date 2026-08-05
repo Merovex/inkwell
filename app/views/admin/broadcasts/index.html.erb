@@ -47,7 +47,13 @@
         <% @broadcasts.each do |broadcast| %>
           <tr>
             <td>
-              <%= link_to broadcast.post&.title.presence || "Untitled", admin_post_path(broadcast.record), class: "u-text-strong" %>
+              <%# A broadcast outlives its post being trashed — no dead links. %>
+              <% if broadcast.record.trashed_at? %>
+                <span class="u-text-strong"><%= broadcast.post&.title.presence || "Untitled" %></span>
+                <span class="badge">Trashed</span>
+              <% else %>
+                <%= link_to broadcast.post&.title.presence || "Untitled", admin_post_path(broadcast.record), class: "u-text-strong" %>
+              <% end %>
             </td>
             <td>
               <% case broadcast.state %>

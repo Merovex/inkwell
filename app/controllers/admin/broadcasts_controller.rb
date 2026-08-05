@@ -23,10 +23,12 @@ class Admin::BroadcastsController < Admin::BaseController
 
     # Daily series for the chart: handed to the client as JSON; the area-chart
     # controller draws the SVG (client-rendered on purpose — theme-aware via
-    # CSS classes, no chart library).
+    # CSS classes, no chart library). Read the delivery MILESTONES, not
+    # DeliveryEvent rows — same source as the table's counters, so history
+    # from before the canonical event pipeline still charts.
     sent_by_day    = deliveries.where(sent_at: window..).group("date(sent_at)").count
-    opened_by_day  = events.opened.group("date(occurred_at)").count
-    bounced_by_day = events.hard_bounce.group("date(occurred_at)").count
+    opened_by_day  = deliveries.where(opened_at: window..).group("date(opened_at)").count
+    bounced_by_day = deliveries.where(bounced_at: window..).group("date(bounced_at)").count
 
     days = (window.to_date..Date.current).to_a
     @chart = {
@@ -38,12 +40,13 @@ class Admin::BroadcastsController < Admin::BaseController
       ]
     }
 
-    # The totals sentence + breakdown chips under the chart.
+    # The totals sentence + breakdown chips under the chart. Milestones again;
+    # soft bounces exist only as canonical events (they never stamp a milestone).
     @window_sent       = deliveries.where(sent_at: window..).count
-    @window_opened     = events.opened.distinct.count(:delivery_id)
-    @window_hard       = events.hard_bounce.count
+    @window_opened     = deliveries.where(opened_at: window..).count
+    @window_hard       = deliveries.where(bounced_at: window..).count
     @window_soft       = events.soft_bounce.count
-    @window_complaints = events.complaint.count
+    @window_complaints = deliveries.where(complained_at: window..).count
   end
 
   def show

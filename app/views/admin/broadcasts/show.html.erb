@@ -15,7 +15,9 @@
     <% else %>
       Sending…
     <% end %>
-    · <%= link_to "View post", admin_post_path(@broadcast.record) %>
+    <% unless @broadcast.record.trashed_at? %>
+      · <%= link_to "View post", admin_post_path(@broadcast.record) %>
+    <% end %>
   </p>
 </header>
 
