@@ -24,7 +24,7 @@
 <% pct = ->(rate) { rate ? number_to_percentage(rate * 100, precision: 0) : "—" } %>
 
 <%# The send at a glance — same tile language as the analytics dashboard. %>
-<div class="analytics-totals">
+<div class="analytics-totals analytics-totals--six">
   <div class="analytics-stat">
     <span class="analytics-stat__label u-microcaps">Delivered</span>
     <span class="analytics-stat__value"><%= @broadcast.delivered_count %></span>

@@ -10,6 +10,16 @@
     margin-block-end: calc(var(--u-pad) * 2);
   }
 
+  /* Fixed-count variant: N equal tiles abreast (the broadcast detail's six),
+     halving on phones instead of flex-wrapping one orphan full-width. */
+  .analytics-totals--six {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+  }
+  @media (max-width: 48em) { /* --breakpoint-md */
+    .analytics-totals--six { grid-template-columns: repeat(3, 1fr); }
+  }
+
   .analytics-stat {
     flex: 1 1 var(--size-12);
     display: grid;
