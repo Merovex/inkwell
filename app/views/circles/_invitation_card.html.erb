@@ -1,0 +1,15 @@
+<%# locals: (invitation:) %>
+<%# The golden card (Fizzy-style, Tailwind amber): a seat on offer, with its
+    own Accept/Decline — not a door, you're not a member yet. Leads the deck
+    on the index and stands in for its circle on the all-circles page. %>
+<div class="circles__card circles__card--invited">
+  <span class="circles__name"><%= invitation.circle.name %></span>
+  <span class="circles__meta"><%= invitation.inviter.display_name %> invited you</span>
+  <div class="circles__invite-actions">
+    <%= button_to "Accept", accept_circle_invitation_path(invitation.circle, invitation),
+          method: :post, class: "button button--primary button--small" %>
+    <%= button_to "Decline", circle_invitation_path(invitation.circle, invitation), method: :delete,
+          class: "button button--small",
+          form: { data: { turbo_confirm: "Decline the invitation to #{invitation.circle.name}?" } } %>
+  </div>
+</div>

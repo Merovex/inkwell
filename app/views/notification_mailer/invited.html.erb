@@ -1,0 +1,12 @@
+<h1>You're invited to <%= @circle.name %></h1>
+
+<p><strong><%= @inviter.display_name %></strong> invited you to join
+<strong><%= @circle.name %></strong>, a circle on Inkwell
+(<%= pluralize(@circle.circle_memberships.count, "member") %>).</p>
+
+<p><a href="<%= @circles_url %>">Accept or decline from your circles page</a></p>
+
+<p style="color: #888; font-size: 12px;">
+  Circles are invite-only accountability groups. If this isn't for you,
+  declining from your circles page makes this the last you'll hear of it.
+</p>

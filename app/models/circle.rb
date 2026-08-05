@@ -16,6 +16,8 @@ class Circle < ApplicationRecord
 
   has_many :circle_memberships, dependent: :destroy
   has_many :members, through: :circle_memberships, source: :user
+  # Standing offers of a seat — see CircleInvitation; circles are invite-only.
+  has_many :invitations, class_name: "CircleInvitation", dependent: :destroy
   # The circle's content on the spine — board messages today (bucket_type
   # "Circle"). Mirrors Account#records; every circle query scopes through here.
   has_many :records, as: :bucket, dependent: :destroy
@@ -87,6 +89,14 @@ class Circle < ApplicationRecord
   # At capacity? Counts every seat, owner included.
   def full?
     circle_memberships.count >= seat_cap
+  end
+
+  # The members as the avatar cluster reads them: owner first, then by name.
+  # Uses the association as loaded (index preloads it); otherwise brings
+  # avatars along.
+  def roster
+    list = members.loaded? ? members.to_a : members.includes(avatar_attachment: :blob).to_a
+    list.sort_by { |member| [ member.id == owner_id ? 0 : 1, member.name.to_s ] }
   end
 
   def to_s = name

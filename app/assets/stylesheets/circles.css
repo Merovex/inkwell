@@ -49,6 +49,41 @@
   .circles__name { font-weight: var(--font-weight-6); }
   .circles__meta { color: var(--ink-muted); font-size: var(--font-size-0); }
 
+  /* A seat on offer: the golden card leading the deck (Fizzy's golden card,
+     in Tailwind amber). Not a door — it carries its own Accept/Decline. */
+  .circles__card--invited {
+    --gold-bg:   #fef3c7; /* amber-100 */
+    --gold-line: #fcd34d; /* amber-300 */
+    --gold-ink:  #92400e; /* amber-800 */
+    background: var(--gold-bg);
+    border-color: var(--gold-line);
+  }
+  .circles__card--invited .circles__meta { color: var(--gold-ink); }
+  [data-theme="dark"] .circles__card--invited {
+    --gold-bg:   #451a03; /* amber-950 */
+    --gold-line: #92400e; /* amber-800 */
+    --gold-ink:  #fde68a; /* amber-200 */
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .circles__card--invited {
+      --gold-bg: #451a03; --gold-line: #92400e; --gold-ink: #fde68a;
+    }
+  }
+  .circles__invite-actions {
+    display: flex;
+    gap: calc(var(--u-pad) / 4);
+    margin-block-start: auto; /* pin to the card's foot in cards view */
+    padding-block-start: calc(var(--u-pad) / 4);
+  }
+
+  /* The user-lock beside a circle's name — every circle is invite-only. */
+  .circles__name > .lucide,
+  .perma-header__title > .lucide {
+    margin-inline-end: 0.35em;
+    vertical-align: -0.125em;
+    color: var(--ink-muted);
+  }
+
   /* The list/cards switch sits in the header toolbar, not centered. */
   .circles-toolbar { display: flex; justify-content: flex-end; margin-block-end: var(--u-pad); }
   .circles-toolbar .segmented { margin-inline: 0; }
@@ -71,6 +106,21 @@
 
   /* The "see all N discussions" line under the preview list. */
   .section-more { margin-block-start: calc(var(--u-pad) / 2); }
+
+  /* Members section: the avatar cluster beside the invite-by-email row. */
+  .circle-members {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--u-pad);
+    margin-block-end: var(--u-pad);
+  }
+  .circle-members__invite {
+    display: flex;
+    gap: calc(var(--u-pad) / 2);
+    flex: 1;
+    min-inline-size: 16rem;
+  }
 
   /* A discussion's body caps at a comfortable reading measure (~70 characters)
      rather than running the full canvas width, centered in the canvas. */

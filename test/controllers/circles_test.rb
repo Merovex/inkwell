@@ -40,7 +40,13 @@ class CirclesTest < ActionDispatch::IntegrationTest
     assert_select ".circles__name", text: "Poets Circle"
     assert_select "a.circles__card[href=?]", circle_path(circles(:writers))
     assert_select "a.circles__card[href=?]", circle_path(other), count: 0
-    assert_select ".circles__meta", text: /not a member/
+    assert_select ".circles__meta", text: /invite-only/
+
+    # A pending seat follows you here — its circle shows as the golden card.
+    other.invitations.create!(user: users(:bob), inviter: users(:admin))
+    get all_circles_path
+    assert_select ".circles__card--invited .circles__name", text: "Poets Circle"
+    assert_select ".circles__meta", text: /invite-only/, count: 0
   end
 
   test "the circles index honors the persisted layout cookie" do
@@ -119,6 +125,43 @@ class CirclesTest < ActionDispatch::IntegrationTest
     # one-off button at the bottom.
     assert_select ".canvas__head button", text: "Post"
     assert_select ".canvas__head button", text: "Save draft"
+  end
+
+  test "the membership page holds the roster, the invite form, and pending seats" do
+    sign_in_as users(:bob)
+
+    # The circle home: avatars in the header, Membership in the ⋯ menu.
+    get circle_path(circles(:writers))
+    assert_select ".perma-header .avatar-group"
+    assert_select ".menu a[href=?]", circle_members_path(circles(:writers)), text: "Membership"
+
+    get circle_members_path(circles(:writers))
+    assert_response :success
+    assert_select ".perma-header__title", text: "Who's in this circle?"
+    assert_select "form[action=?] input[name=email_address]", circle_invitations_path(circles(:writers))
+    assert_select ".list__title", text: users(:alice).display_name
+    assert_select ".badge", text: "Owner"
+  end
+
+  test "a member leaves a circle from the context menu; the owner cannot" do
+    sign_in_as users(:bob) # member, not owner
+
+    get circle_path(circles(:writers))
+    assert_select ".menu form[action=?]", circle_membership_path(circles(:writers))
+
+    assert_difference -> { circles(:writers).circle_memberships.count }, -1 do
+      delete circle_membership_path(circles(:writers))
+    end
+    assert_redirected_to circles_path
+    assert_not circles(:writers).member?(users(:bob))
+
+    sign_in_as users(:alice) # owner
+    get circle_path(circles(:writers))
+    assert_select ".menu form[action=?]", circle_membership_path(circles(:writers)), count: 0
+    assert_no_difference -> { circles(:writers).circle_memberships.count } do
+      delete circle_membership_path(circles(:writers))
+    end
+    assert_redirected_to circle_path(circles(:writers))
   end
 
   test "a non-member gets the same 404 as a missing record" do

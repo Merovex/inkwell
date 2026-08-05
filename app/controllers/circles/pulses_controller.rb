@@ -3,8 +3,6 @@
 # schedule are versioned (Pulse is a recordable), so edits land as history.
 module Circles
   class PulsesController < BaseController
-    layout "application"
-
     before_action :set_pulse, only: %i[show edit update destroy subscribe unsubscribe]
     # Only the circle owner manages the Pulse check itself.
     before_action -> { authorize! @circle, to: :manage }, only: %i[new create edit update destroy]

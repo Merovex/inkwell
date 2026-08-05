@@ -12,10 +12,17 @@ class User < ApplicationRecord
   # Circles this user belongs to (the other bucket kind) — the /circles doors.
   has_many :circle_memberships, dependent: :destroy
   has_many :circles, through: :circle_memberships
+  # Circle seats offered to this user (awaiting their answer), and the ones
+  # they extended to others; both die with the user.
+  has_many :circle_invitations, dependent: :destroy
+  has_many :extended_circle_invitations, class_name: "CircleInvitation",
+    foreign_key: :inviter_id, inverse_of: :inviter, dependent: :destroy
   # The rotatable invite code this user hands out (root-only until open beta),
   # and who vouched for this user at signup — the abuse-tracing referral chain.
   has_one :join_code, dependent: :destroy
   belongs_to :inviter, class_name: "User", optional: true
+  # The bell's rows; plumbing, gone with the user.
+  has_many :notifications, dependent: :delete_all
   # Exists so "your own boost" authorization can be a scope (BoostsController).
   has_many :boosts, foreign_key: :creator_id, inverse_of: :creator, dependent: :delete_all
 

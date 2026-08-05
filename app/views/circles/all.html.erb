@@ -9,20 +9,38 @@
   </div>
 </header>
 
-<ul class="circles" data-view="list">
-  <% @circles.each do |circle| %>
-    <li>
-      <% if circle.member?(Current.user) %>
-        <%= link_to circle_path(circle), class: "circles__card" do %>
-          <span class="circles__name"><%= circle.name %></span>
-          <span class="circles__meta"><%= pluralize(circle.circle_memberships.count, "member") %></span>
+<%# The same list ⇄ cards choice as the circles index — one shared cookie
+    keeps both pages in the layout you last picked; cards by default here. %>
+<% view = %w[list cards].include?(cookies[:circles_view]) ? cookies[:circles_view] : "cards" %>
+<div data-controller="view-toggle" data-view-toggle-name-value="circles_view">
+  <div class="circles-toolbar">
+    <div class="segmented" role="group" aria-label="Layout">
+      <button type="button" class="segmented__seg" data-view="list"
+              data-action="view-toggle#set" data-view-toggle-target="button"
+              aria-selected="<%= view == "list" %>">List</button>
+      <button type="button" class="segmented__seg" data-view="cards"
+              data-action="view-toggle#set" data-view-toggle-target="button"
+              aria-selected="<%= view == "cards" %>">Cards</button>
+    </div>
+  </div>
+
+  <ul class="circles" data-view="<%= view %>" data-view-toggle-target="collection">
+    <% @circles.each do |circle| %>
+      <li>
+        <% if (invitation = @invitations_by_circle[circle.id]) %>
+          <%= render "circles/invitation_card", invitation: invitation %>
+        <% elsif circle.member?(Current.user) %>
+          <%= link_to circle_path(circle), class: "circles__card" do %>
+            <span class="circles__name"><%= circle.name %></span>
+            <span class="circles__meta"><%= pluralize(circle.circle_memberships.count, "member") %></span>
+          <% end %>
+        <% else %>
+          <span class="circles__card">
+            <span class="circles__name"><%= circle.name %></span>
+            <span class="circles__meta"><%= pluralize(circle.circle_memberships.count, "member") %> · invite-only</span>
+          </span>
         <% end %>
-      <% else %>
-        <span class="circles__card">
-          <span class="circles__name"><%= circle.name %></span>
-          <span class="circles__meta"><%= pluralize(circle.circle_memberships.count, "member") %> · not a member</span>
-        </span>
-      <% end %>
-    </li>
-  <% end %>
-</ul>
+      </li>
+    <% end %>
+  </ul>
+</div>

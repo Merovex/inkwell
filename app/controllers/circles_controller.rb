@@ -9,11 +9,6 @@ class CirclesController < Circles::BaseController
   # Only the owner edits the circle's name/description.
   before_action -> { authorize! @circle, to: :manage }, only: %i[edit update]
 
-  # Both the picker (index) and the board (show) are full workspace pages —
-  # same app header + canvas chrome as the site admin, not the minimal `auth`
-  # shell the base controller defaults to.
-  layout "application"
-
   # How many discussions the circle home previews before the "see all" link.
   PREVIEW_COUNT = 5
 
@@ -24,12 +19,16 @@ class CirclesController < Circles::BaseController
     # Members ride along for the cards' avatar clusters (pictures included).
     @circles = Current.user.circles.includes(members: { avatar_attachment: :blob }).order(:name)
     @all_count = Circle.count
+    # Seats waiting on your answer — accepted or declined right from this page.
+    @invitations = Current.user.circle_invitations.includes(:circle, inviter: { avatar_attachment: :blob })
   end
 
   # Every circle on the platform, browse-only: your own are doors; the rest
   # are just names (a non-member's circle page is a 404 regardless).
   def all
     @circles = Circle.order(:name)
+    # A pending seat follows you here: its circle shows as the golden card.
+    @invitations_by_circle = Current.user.circle_invitations.includes(:inviter).index_by(&:circle_id)
   end
 
   helper_method :can_create_circle?
@@ -59,6 +58,9 @@ class CirclesController < Circles::BaseController
     visible = @circle.discussions_visible_to(Current.user).where.not(status: :scheduled)
     @discussions = visible.limit(PREVIEW_COUNT)
     @discussions_count = visible.count
+    # The header's avatar cluster (owner first); the full roster lives on
+    # the members page.
+    @members = @circle.roster
   end
 
   def edit

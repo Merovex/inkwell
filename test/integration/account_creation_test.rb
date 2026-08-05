@@ -41,10 +41,15 @@ class AccountCreationTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test "the picker's empty state offers press creation" do
+  test "a member with no site lands in circles, never a bare picker" do
     get "/"
+    assert_redirected_to "/circles"
+  end
+
+  test "site creation stands ready at its own door" do
+    get new_account_path
     assert_response :success
-    assert_select "a[href=?]", new_account_path, text: "Create a press"
+    assert_select ".card__title", text: "Create your site"
   end
 
   test "an owner cannot administer someone else's press" do

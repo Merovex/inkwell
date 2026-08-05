@@ -3,6 +3,8 @@
 # belong to no shared account at all. The unique [circle_id, user_id] index is
 # the load-bearing constraint; the validation just gives a friendly error.
 class CircleMembership < ApplicationRecord
+  # The inviter's "accepted" bell row keeps its stamped copy if the seat goes.
+  has_many :notifications, as: :source, dependent: :nullify
   ROLES = %w[ owner member ].freeze
 
   belongs_to :circle

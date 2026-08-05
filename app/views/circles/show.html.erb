@@ -1,13 +1,25 @@
 <% content_for :title, "#{@circle.name} — Circle" %>
 
 <%= render "admin/shared/canvas_head", crumbs: [["Circles", circles_path], [@circle.name, nil]],
-      edit_href: (edit_circle_path(@circle) if allowed_to?(:manage, @circle)) %>
+      edit_href: (edit_circle_path(@circle) if allowed_to?(:manage, @circle)) do %>
+  <%# The membership page: roster + invitations (any member may invite). %>
+  <%= link_to "Membership", circle_members_path(@circle), class: "menu__item", role: "menuitem" %>
+  <% unless allowed_to?(:manage, @circle) %>
+    <hr class="menu__separator">
+    <%# A member's own exit (Basecamp's "Leave this project"). Owners never
+        see it — they delete or hand off, they don't abandon. %>
+    <%= button_to "Leave this circle", circle_membership_path(@circle), method: :delete,
+          class: "menu__item", role: "menuitem",
+          form: { data: { turbo_confirm: "Leave #{@circle.name}? You'll need a new invitation to return." } } %>
+  <% end %>
+<% end %>
 
 <header class="perma-header">
   <h1 class="perma-header__title"><%= @circle.name %></h1>
   <p class="perma-header__content u-text-muted">
     <span class="u-text-strong"><%= @circle.owner.display_name %></span>
     · <%= pluralize(@circle.circle_memberships.count, "member") %>
+    <%= render "shared/avatar_group", users: @members, limit: 10, size: "small" %>
   </p>
   <% if @circle.description.present? %>
     <p class="perma-header__content"><%= @circle.description %></p>
@@ -57,3 +69,6 @@
     <p class="u-text-muted">No discussions yet. Start the first one.</p>
   <% end %>
 </section>
+
+<%# Membership (roster, invites, pending seats) lives on its own page —
+    the ⋯ menu's "Membership"; the header's avatar cluster is the preview. %>

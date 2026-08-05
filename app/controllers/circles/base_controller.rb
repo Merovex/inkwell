@@ -6,7 +6,10 @@
 # records are stamped to it rather than to a site.
 module Circles
   class BaseController < ApplicationController
-    layout "auth"
+    # Circle pages are full workspace pages — app header + canvas chrome.
+    # (The minimal "auth" card shell is for sign-in ceremonies; defaulting to
+    # it here kept producing floating, centered pages.)
+    layout "application"
 
     before_action :set_circle
 

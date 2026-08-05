@@ -1,0 +1,10 @@
+You're invited to <%= @circle.name %>
+
+<%= @inviter.display_name %> invited you to join <%= @circle.name %>, a circle
+on Inkwell (<%= pluralize(@circle.circle_memberships.count, "member") %>).
+
+Accept or decline from your circles page:
+<%= @circles_url %>
+
+Circles are invite-only accountability groups. If this isn't for you, declining
+from your circles page makes this the last you'll hear of it.

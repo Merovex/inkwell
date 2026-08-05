@@ -8,8 +8,6 @@ module Circles
   class MessagesController < BaseController
     include Publishing
 
-    layout "application"
-
     before_action :set_message, only: %i[show edit update destroy archive unarchive]
     # Editing the words is the author's alone; moderating (archive, trash) is the
     # author or the circle owner.

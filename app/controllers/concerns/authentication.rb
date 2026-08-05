@@ -59,10 +59,10 @@ module Authentication
     return admin_root_url unless AccountHost.enforced?
 
     accounts = Current.user.accounts
-    if accounts.one?
-      accounts.first.admin_path
-    else
-      app_host_root_url
+    case accounts.count
+    when 0 then circles_url   # no site yet — the app shell (circles) is home
+    when 1 then accounts.first.admin_path
+    else app_host_root_url    # several — the picker
     end
   end
 

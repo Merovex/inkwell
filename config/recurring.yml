@@ -55,6 +55,11 @@ production:
     class: MissivePurgeJob
     schedule: at 4am every day America/New_York
 
+  # The bell is a doorbell, not an archive: read notifications go after 30 days.
+  prune_notifications:
+    class: NotificationPruneJob
+    schedule: at 4am every day America/New_York
+
   # Circle check-ins: every 30 minutes, fire any pulse whose cadence lands today
   # and whose ask time has passed (30-min granularity matches the UI). Idempotent.
   pulse_tick:

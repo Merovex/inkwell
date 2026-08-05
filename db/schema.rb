@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.2].define(version: 2026_08_05_011000) do
+ActiveRecord::Schema[8.2].define(version: 2026_08_05_040000) do
   create_table "account_users", force: :cascade do |t|
     t.integer "account_id", null: false
     t.integer "user_id", null: false
@@ -234,6 +234,17 @@ ActiveRecord::Schema[8.2].define(version: 2026_08_05_011000) do
     t.index ["record_id", "id"], name: "index_chat_lines_on_record_id_and_id"
   end
 
+  create_table "circle_invitations", force: :cascade do |t|
+    t.integer "circle_id", null: false
+    t.integer "user_id", null: false
+    t.integer "inviter_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["circle_id", "user_id"], name: "index_circle_invitations_on_circle_id_and_user_id", unique: true
+    t.index ["inviter_id"], name: "index_circle_invitations_on_inviter_id"
+    t.index ["user_id"], name: "index_circle_invitations_on_user_id"
+  end
+
   create_table "circle_memberships", force: :cascade do |t|
     t.integer "circle_id", null: false
     t.integer "user_id", null: false
@@ -434,6 +445,21 @@ ActiveRecord::Schema[8.2].define(version: 2026_08_05_011000) do
     t.index ["account_id"], name: "index_missives_on_account_id"
     t.index ["confirmed_at"], name: "index_missives_on_confirmed_at"
     t.index ["created_at"], name: "index_missives_on_created_at"
+  end
+
+  create_table "notifications", force: :cascade do |t|
+    t.integer "user_id", null: false
+    t.string "source_type"
+    t.integer "source_id"
+    t.string "kind", null: false
+    t.datetime "read_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.integer "actor_id"
+    t.string "title"
+    t.string "url"
+    t.index ["source_type", "source_id"], name: "index_notifications_on_source_type_and_source_id"
+    t.index ["user_id", "read_at"], name: "index_notifications_on_user_id_and_read_at"
   end
 
   create_table "people", force: :cascade do |t|

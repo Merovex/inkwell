@@ -7,6 +7,10 @@ class CirclePolicy < ApplicationPolicy
   def show? = member? ? allow! : deny!(:not_a_member)
   def post? = member? ? allow! : deny!(:not_a_member)
 
+  # Circles are invite-only, and any member may extend an invitation — the
+  # invitation records who vouched.
+  def invite? = member? ? allow! : deny!(:not_a_member)
+
   # Only the owner manages the circle itself (settings, membership, deletion).
   def manage? = owner? ? allow! : deny!(:not_owner)
 

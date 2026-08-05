@@ -20,7 +20,7 @@
   <p class="u-margin-block-end"><%= link_to "View all #{pluralize(@all_count, "circle")} on Inkwell", all_circles_path %></p>
 <% end %>
 
-<% if @circles.any? %>
+<% if @circles.any? || @invitations.any? %>
   <%# Persisted list ⇄ cards choice (cookie); default to list. %>
   <% view = %w[list cards].include?(cookies[:circles_view]) ? cookies[:circles_view] : "list" %>
   <div data-controller="view-toggle" data-view-toggle-name-value="circles_view">
@@ -36,11 +36,16 @@
     </div>
 
     <ul class="circles" data-view="<%= view %>" data-view-toggle-target="collection">
+      <%# Seats on offer lead the deck as golden cards (Fizzy-style) — circles
+          are invite-only, so this is the only way in. %>
+      <% @invitations.each do |invitation| %>
+        <li><%= render "circles/invitation_card", invitation: invitation %></li>
+      <% end %>
       <% @circles.each do |circle| %>
         <li>
           <%= link_to circle_path(circle), class: "circles__card" do %>
             <span class="circles__name"><%= circle.name %></span>
-            <%= render "shared/avatar_group", users: circle.members, limit: 10, size: "small" %>
+            <%= render "shared/avatar_group", users: circle.roster, limit: 10, size: "small" %>
             <span class="circles__meta"><%= pluralize(circle.members.size, "member") %></span>
           <% end %>
         </li>

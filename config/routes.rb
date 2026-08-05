@@ -44,6 +44,10 @@ Rails.application.routes.draw do
     # Solid Queue dashboard — platform staff only (Admin::JobsBaseController
     # gates on root); app host only, so tenant domains never even route it.
     mount MissionControl::Jobs::Engine, at: "/jobs"
+    # The bell: opening the flyout marks everything read; the index is the
+    # full 30-day window behind the flyout's "See all".
+    get "notifications", to: "notifications#index", as: :notifications
+    post "notifications/read_all", to: "notifications#read_all", as: :read_all_notifications
     # Personal settings — always Current.user, no id in the URL. The avatar is its
     # own resource so picking/dropping a picture can auto-submit.
     namespace :user do
@@ -76,6 +80,21 @@ Rails.application.routes.draw do
         resources :comments, only: %i[new create], module: :circles
       end
       resources :comments, only: %i[edit update destroy], module: :circles
+
+      # Your own seat: DELETE = leave the circle (non-owners only — the owner
+      # deletes or hands off, they don't abandon).
+      resource :membership, only: :destroy, module: :circles
+      # The membership page (⋯ menu → "Membership"): roster, invite form,
+      # pending seats — Basecamp's "Who's on this project?".
+      resources :members, only: :index, module: :circles
+
+      # Invitations — the only door into a circle (they're invite-only; the
+      # user-lock beside a circle's name says so). Any member extends one
+      # (create); the invitee accepts it from their circles index. destroy
+      # doubles as the invitee declining and the inviter/owner revoking.
+      resources :invitations, only: %i[create destroy], module: :circles do
+        member { post :accept }
+      end
 
       # Pulse — the circle's recurring check-in. Owner sets it up; members
       # subscribe/unsubscribe and post a Beat (their answer).

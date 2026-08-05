@@ -1,0 +1,49 @@
+<% content_for :title, "Membership — #{@circle.name}" %>
+
+<%= render "admin/shared/canvas_head",
+      crumbs: [["Circles", circles_path], [@circle.name, circle_path(@circle)], ["Membership", nil]] %>
+
+<header class="perma-header">
+  <h1 class="perma-header__title">Who's in this circle?</h1>
+  <p class="perma-header__content u-text-muted">
+    Invite-only — every member arrived by invitation, and any member may extend one.
+  </p>
+</header>
+
+<div class="discussion-body u-flow">
+  <%= form_with url: circle_invitations_path(@circle), html: { class: "circle-members__invite" } do |form| %>
+    <%= form.email_field :email_address, class: "field__control", required: true,
+          placeholder: "author@example.com", "aria-label": "Invite by email" %>
+    <%= form.submit "Invite", class: "button button--primary" %>
+  <% end %>
+
+  <div class="list">
+    <% @members.each do |member| %>
+      <%= render "shared/list_item",
+            title: member.display_name,
+            title_tag: "span",
+            avatar_user: member,
+            badge: ("Owner" if member.id == @circle.owner_id),
+            badge_variant: "accent" %>
+    <% end %>
+  </div>
+
+  <% if @pending_invitations.any? %>
+    <h2 class="section-head__title">Invited</h2>
+    <div class="list">
+      <% @pending_invitations.each do |invitation| %>
+        <% revocable = allowed_to?(:manage, @circle) || invitation.inviter_id == Current.user.id %>
+        <%= render "shared/list_item",
+              title: invitation.user.display_name,
+              title_tag: "span",
+              avatar_user: invitation.user,
+              author: "Invited by #{invitation.inviter.display_name}",
+              badge: "Invited",
+              discard_path: (circle_invitation_path(@circle, invitation) if revocable),
+              discard_title: "Revoke",
+              discard_aria: "Revoke #{invitation.user.display_name}'s invitation",
+              discard_confirm: "Revoke the invitation to #{invitation.user.display_name}?" %>
+      <% end %>
+    </div>
+  <% end %>
+</div>
