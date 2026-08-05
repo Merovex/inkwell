@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.2].define(version: 2026_08_05_150000) do
+ActiveRecord::Schema[8.2].define(version: 2026_08_05_160000) do
   create_table "account_users", force: :cascade do |t|
     t.integer "account_id", null: false
     t.integer "user_id", null: false
@@ -406,6 +406,8 @@ ActiveRecord::Schema[8.2].define(version: 2026_08_05_150000) do
     t.datetime "updated_at", null: false
     t.string "per"
     t.text "displays"
+    t.date "starts_on"
+    t.date "ends_on"
     t.index ["creator_id"], name: "index_goals_on_creator_id"
     t.index ["record_id", "id"], name: "index_goals_on_record_id_and_id"
   end

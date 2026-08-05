@@ -60,6 +60,6 @@ class GoalsController < Goals::BaseController
     end
 
     def goal_params
-      params.expect(goal: [ :title, :unit, :target, :per, displays: [] ])
+      params.expect(goal: [ :title, :unit, :target, :per, :starts_on, :ends_on, displays: [] ])
     end
 end

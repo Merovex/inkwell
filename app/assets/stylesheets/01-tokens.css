@@ -40,6 +40,9 @@
   --elevation-flyout:
     0 18px 44px -12px oklch(0% 0 0 / 0.38),
     0 4px 12px -4px oklch(0% 0 0 / 0.22);
+  /* Hover glow on card-doors: a soft drop-shadow tinted with the stat accent,
+     so the door glows in the page's own hue. */
+  --elevation-glow: 0 10px 28px -10px color-mix(in oklab, var(--stat-accent) 45%, transparent);
 
   /* --- intent-named measures (widths with a job, not on the Open Props scale) --- */
   --measure-prose: 65ch;      /* long-form reading/writing column (.prose, composer body) */
@@ -48,6 +51,12 @@
   --measure-toast: 22rem;     /* toast column on desktop */
   --measure-flyout: 26rem;    /* workspace switcher panel */
   --measure-card: 28rem;      /* centered auth card */
+  --measure-form-wide: 56rem; /* wide form surfaces: pulse setup, wide settings */
+  --measure-rail: 22rem;      /* the site designer's fixed options rail */
+  --frame-phone: 24.375rem;   /* 390px — phone-width preview frame (designer stage) */
+
+  /* text on brand-strong fills (buttons, selected pills) — AAA on teal-800 */
+  --on-brand: #fff;
 
   /* --- pine: the Merovex muted-teal brand scale. Hue + lightness keep the
      retired syō-ro curve (every documented contrast ratio below still holds);

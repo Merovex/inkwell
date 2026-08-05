@@ -13,27 +13,27 @@
   </div>
 
   <div class="list__action comment__actions">
-    <button type="button" class="button button--icon button--ghost" popovertarget="comment-menu-<%= comment.record_id %>" aria-haspopup="menu" aria-label="Comment actions">
+    <button type="button" class="button button--icon button--ghost" popovertarget="comment-menu-<%= comment.record_id %>" aria-label="Comment actions">
       <%= inline_svg_tag "lucide/ellipsis-vertical.svg", class: "lucide", size: "16px" %>
     </button>
-    <div class="menu menu--context" popover id="comment-menu-<%= comment.record_id %>" role="menu" data-controller="anchored-popover" data-anchored-popover-placement-value="top">
+    <div class="menu menu--context" popover id="comment-menu-<%= comment.record_id %>" data-controller="anchored-popover" data-anchored-popover-placement-value="top">
       <button type="button" class="button button--icon button--ghost menu__close" popovertarget="comment-menu-<%= comment.record_id %>" popovertargetaction="hide" aria-label="Close menu">
         <%= inline_svg_tag "lucide/x.svg", class: "lucide", size: "20px" %>
       </button>
-      <button type="button" class="menu__item" role="menuitem"
+      <button type="button" class="menu__item"
               data-controller="clipboard" data-action="clipboard#copy"
               data-clipboard-text-value="<%= commentable_url(comment.record.parent, anchor: "comment_#{comment.record_id}") %>"
               popovertarget="comment-menu-<%= comment.record_id %>" popovertargetaction="hide">Copy link</button>
       <%# Editing the words is the author's alone; trashing (moderation) is the %>
       <%# author OR the bucket's owner — an account admin or the circle owner. %>
       <% if comment.record.editable_by?(Current.user) %>
-        <%= link_to "Edit", comment_edit_path(comment.record), class: "menu__item", role: "menuitem" %>
+        <%= link_to "Edit", comment_edit_path(comment.record), class: "menu__item" %>
       <% end %>
       <% if comment.record.moderatable_by?(Current.user) %>
         <hr class="menu__separator">
         <%# Break out of the comment frame: after a trash the comment is gone %>
         <%# from the page, so the response has no matching frame to extract. %>
-        <%= button_to "Move to trash", comment_member_path(comment.record), method: :delete, class: "menu__item", role: "menuitem",
+        <%= button_to "Move to trash", comment_member_path(comment.record), method: :delete, class: "menu__item",
               form: { data: { turbo_confirm: "Move this comment to trash?", turbo_frame: "_top" } } %>
       <% end %>
     </div>

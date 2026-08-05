@@ -2,6 +2,14 @@
 
 Append-only. Newest first. Format defined in [[CLAUDE]] (`CLAUDE.md`).
 
+## [2026-08-05] build | Goal deadlines + the NaNo pace line
+- **Deadline window on project goals** (`starts_on`/`ends_on` dates, project-only — owner: a rate is a treadmill, not a race; validation rejects the fields on rates/logbooks, and a start without a deadline). Blank start anchors at first tally or creation day, whichever is EARLIER (`pace_start` — a backdated tally pulls the line back, chosen over creation-date and required-start options).
+- **Pace card became the race line** when a deadline exists (owner picked ahead/behind as the headline over needed-per-day and projected-finish): dashed target trajectory (`goal_pace_chart_svg`, shared with the form's sample card) under the accent cumulative line, "1,840 behind pace" / "On pace" / "2,300 ahead of pace", meta "needs N/day to finish by Nov 30". Upcoming window → "starts · due"; past → "N short"/"Finished". No deadline → the old 30-day-average card unchanged. Auto-display for a deadline project with no picks is now `pace` (was `bar`); show-page header appends "· by <date>" via a new `goal_date` helper (`<time datetime>`).
+- Math on Goal (drawing stays in GoalsHelper, per the existing split): `pace_days` inclusive (Nov 1–30 = 30), `pace_target_for` clamped to the window, `needed_per_day` ceiled and zero once done/past.
+- Suite 603 green.
+- pages touched: [[goals]], [[overview]]
+- refs: ../app/models/goal.rb, ../app/helpers/goals_helper.rb, ../app/views/goals/, ../db/migrate/20260805160000_add_deadline_window_to_goals.rb
+
 ## [2026-08-05] build | Canonical DeliveryEvent — provider-agnostic bounce pipeline (Postmark + SES)
 - **One canonical event, two adapters** (ADR [[0025-canonical-delivery-events]]): both webhook controllers now verify, translate to a provider-agnostic vocabulary (`delivered/opened/clicked/soft_bounce/hard_bounce/complaint/suppressed/rejected`), and call `DeliveryEvent.ingest!`; suppression and milestone stamping moved downstream into `DeliveryEvent#apply!`. Raw payloads stored for replay; dedupe on `[provider, provider_message_id, event]` unique index (SNS is at-least-once, Postmark retries).
 - **Two live traps fixed**: SES `Permanent/Suppressed|OnAccountSuppressionList` was suppressing live subscribers as hard bounces (now record-only `suppressed` = drift alarm); SES `Reject` stamped `bounced_at` (now `rejected`, record-only — our reputation, not their mailbox). Postmark `Blocked` (was silently dropped) → `rejected`; `SpamNotification` → `complaint`; soft bounces now recorded on both sides, suppressing after 3 straight with no delivery between (streak resets on `delivered`).

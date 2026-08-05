@@ -1,8 +1,8 @@
 <% content_for :title, "Version: #{@version.title} — Inkwell" %>
 
 <%= render "admin/shared/canvas_head", crumbs: [["Books", admin_books_path], [@book.title, admin_book_path(@record)], ["Change Log", admin_book_events_path(@record)], ["Version", nil]] do %>
-  <%= link_to "Change Log", admin_book_events_path(@record), class: "menu__item", role: "menuitem" %>
-  <%= link_to "Back to book", admin_book_path(@record), class: "menu__item", role: "menuitem" %>
+  <%= link_to "Change Log", admin_book_events_path(@record), class: "menu__item" %>
+  <%= link_to "Back to book", admin_book_path(@record), class: "menu__item" %>
 <% end %>
 
 <header class="perma-header">

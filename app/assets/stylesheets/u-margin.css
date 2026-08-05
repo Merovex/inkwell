@@ -39,6 +39,8 @@
   /* auto — centering / pushing to one side */
   .u-margin-auto        { margin: auto; }
   .u-margin-inline-auto { margin-inline: auto; }
+  /* zero — cancel a component's own auto/default margin (e.g. .segmented) */
+  .u-margin-inline-0    { margin-inline: 0; }
   .u-margin-block-start-auto  { margin-block-start: auto; }
   .u-margin-inline-start-auto { margin-inline-start: auto; }
   .u-margin-inline-end-auto   { margin-inline-end: auto; }

@@ -34,6 +34,10 @@ token to `01-tokens.css` that references an Open Props step — don't inline it.
 - Unitless numbers where the unit is the point: `line-height: 1.4`, `flex: 1`,
   `opacity`, `scale`, counts
 - Content-driven measures: `ch`-based widths (`max-width: 60ch`)
+- Font-relative (`em`) micro-spacing and `vertical-align` nudges on inline
+  text-flow chips and icons (`.mention` padding, an inline lucide's baseline
+  nudge) — scaling with the surrounding text is the point. Not a loophole for
+  layout spacing: block/flex/grid gaps and paddings stay on the token scale.
 - `currentColor`, `transparent`, `inherit` and other CSS keywords
 - **Breakpoint literals in `@media` conditions only** — CSS cannot read
   custom properties there. The house stops are `48em` (`--breakpoint-md`,
@@ -47,11 +51,12 @@ Anything else literal — a hex/oklch/rgb color, a `px`/`rem`/`em` length, a raw
 design genuinely needs an off-scale value, that's a design conversation, not an
 inline exception.
 
-**Mechanical check** (excluding vendored `open-props.css`, unlayered vendor
+**Mechanical check** (excluding vendored files — `open-props.css` and
+`jsvectormap.css` are vendored and NEVER touched — plus unlayered vendor
 counter-rules noted in CLAUDE.md, and token *definitions* themselves):
 
 ```sh
-grep -rnE '#[0-9a-fA-F]{3,8}\b|\b[0-9]+(\.[0-9]+)?(px|rem|em)\b' app/assets/stylesheets --include='*.css' | grep -v open-props.css
+grep -rnE '#[0-9a-fA-F]{3,8}\b|\b[0-9]+(\.[0-9]+)?(px|rem|em)\b' app/assets/stylesheets --include='*.css' | grep -v -e open-props.css -e jsvectormap.css
 # then hand-filter the sanctioned list (0, 1px, ch, geometry %)
 ```
 

@@ -5,12 +5,12 @@
       edit_href: (edit_admin_collection_path(@record) if can_manage) do %>
   <% if can_manage %>
     <% if @collection.published? %>
-      <%= button_to "Revert to draft", admin_collection_publish_path(@record), method: :delete, class: "menu__item", role: "menuitem" %>
+      <%= button_to "Revert to draft", admin_collection_publish_path(@record), method: :delete, class: "menu__item" %>
     <% else %>
-      <%= button_to "Publish", admin_collection_publish_path(@record), class: "menu__item", role: "menuitem" %>
+      <%= button_to "Publish", admin_collection_publish_path(@record), class: "menu__item" %>
     <% end %>
     <hr class="menu__separator">
-    <%= button_to "Move to trash", admin_collection_path(@record), method: :delete, class: "menu__item", role: "menuitem" %>
+    <%= button_to "Move to trash", admin_collection_path(@record), method: :delete, class: "menu__item" %>
   <% end %>
 <% end %>
 

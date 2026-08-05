@@ -2,7 +2,7 @@
 <%# The Archive / Unarchive control for a record's context menu — one partial
 <%# for every content type, routed through the shared archives controller. %>
 <% if record.archived? %>
-  <%= button_to "Unarchive", admin_record_archive_path(record), method: :delete, class: "menu__item", role: "menuitem" %>
+  <%= button_to "Unarchive", admin_record_archive_path(record), method: :delete, class: "menu__item" %>
 <% else %>
-  <%= button_to "Archive", admin_record_archive_path(record), class: "menu__item", role: "menuitem" %>
+  <%= button_to "Archive", admin_record_archive_path(record), class: "menu__item" %>
 <% end %>

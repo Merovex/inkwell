@@ -10,21 +10,21 @@
     <% if can_manage %>
       <% if @post.published? %>
         <% if @post.pinned_at %>
-          <%= button_to "Unpin", admin_post_pin_path(@record), method: :delete, class: "menu__item", role: "menuitem" %>
+          <%= button_to "Unpin", admin_post_pin_path(@record), method: :delete, class: "menu__item" %>
         <% else %>
-          <%= button_to "Pin", admin_post_pin_path(@record), class: "menu__item", role: "menuitem" %>
+          <%= button_to "Pin", admin_post_pin_path(@record), class: "menu__item" %>
         <% end %>
-        <%= button_to "Revert to draft", admin_post_publish_path(@record), method: :delete, class: "menu__item", role: "menuitem" %>
+        <%= button_to "Revert to draft", admin_post_publish_path(@record), method: :delete, class: "menu__item" %>
       <% else %>
-        <%= button_to "Publish", admin_post_publish_path(@record), class: "menu__item", role: "menuitem" %>
+        <%= button_to "Publish", admin_post_publish_path(@record), class: "menu__item" %>
       <% end %>
       <hr class="menu__separator">
     <% end %>
-    <%= link_to "View History", admin_post_events_path(@record), class: "menu__item", role: "menuitem" %>
+    <%= link_to "View History", admin_post_events_path(@record), class: "menu__item" %>
     <% if can_manage %>
       <hr class="menu__separator">
       <%= render "admin/shared/archive_menu_item", record: @record %>
-      <%= button_to "Move to trash", admin_post_path(@record), method: :delete, class: "menu__item", role: "menuitem" %>
+      <%= button_to "Move to trash", admin_post_path(@record), method: :delete, class: "menu__item" %>
     <% end %>
   <% end %>
 

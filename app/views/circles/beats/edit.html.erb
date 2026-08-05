@@ -11,7 +11,7 @@
     <%# Autosaved to localStorage; the revision guard drops the draft if the %>
     <%# answer was edited elsewhere since it was typed. %>
     <%= form_with model: @beat, url: circle_pulse_beat_path(@circle, @record, @beat_record),
-          method: :patch, class: "comment__form lexxy-compact",
+          method: :patch, class: "u-stack u-stack-half lexxy-compact",
           data: { controller: "autosave",
                   autosave_key_value: "Record/#{@beat_record.id}/edit",
                   autosave_revision_value: @beat_record.recordable_id } do |f| %>

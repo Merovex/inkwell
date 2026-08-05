@@ -8,7 +8,7 @@
 
   <div class="chat__content">
     <%= render "admin/shared/error_summary", model: @chat_line %>
-    <%= form_with url: admin_chat_line_path(@record), method: :patch, scope: :chat_line, class: "chat__form" do |f| %>
+    <%= form_with url: admin_chat_line_path(@record), method: :patch, scope: :chat_line, class: "u-stack u-stack-half" do |f| %>
       <%= f.text_area :content, value: @chat_line.content.to_plain_text, rows: 2, class: "chat__input",
             aria: { label: "Chat line" },
             data: { controller: "chat-composer", action: "keydown.enter->chat-composer#send" } %>

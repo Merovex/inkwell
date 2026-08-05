@@ -36,12 +36,8 @@
     background: var(--canvas);
     border-block-end: var(--border-size-1) solid var(--line);
   }
-  .designer__topbar-side {
-    display: flex;
-    align-items: center;
-    gap: var(--u-pad);
-    min-width: 0;
-  }
+  /* composes u-cluster in the markup; keeps the wider gap + shrinkability */
+  .designer__topbar-side { --u-cluster-gap: var(--u-pad); min-width: 0; }
   .designer__title {
     margin: 0;
     font-size: var(--font-size-3);
@@ -61,7 +57,7 @@
          scrolling the whole layout. --- */
   .designer__body {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 22rem;
+    grid-template-columns: minmax(0, 1fr) var(--measure-rail);
     grid-template-rows: minmax(0, 1fr);
     min-height: 0;
   }
@@ -80,12 +76,11 @@
     padding: calc(var(--u-pad) / 2) var(--u-pad);
   }
   .designer__scale-note { margin: 0; font-size: var(--font-size-0); }
-  .designer__canvas-controls { display: flex; gap: calc(var(--u-pad) / 2); }
-  .designer__count { margin: 0.25rem 0 0; font-size: var(--font-size-0); text-align: end; }
+  .designer__count { margin: var(--size-1) 0 0; font-size: var(--font-size-0); text-align: end; }
   /* Preset cards: swatches + name in the preset's own faces. */
   .designer__preset {
     display: grid;
-    gap: 0.35rem;
+    gap: calc(var(--u-pad) / 3);
     width: 100%;
     padding: calc(var(--u-pad) / 1.5);
     border: var(--border-size-1) solid var(--line);
@@ -96,9 +91,9 @@
     cursor: pointer;
   }
   .designer__preset:hover { border-color: var(--accent); }
-  .designer__preset-swatches { display: flex; gap: 0.25rem; }
+  .designer__preset-swatches { display: flex; gap: var(--size-1); }
   .designer__preset-swatches .designer__swatch {
-    inline-size: 1.4rem; block-size: 1.4rem; border-radius: 50%;
+    inline-size: var(--size-5); block-size: var(--size-5); border-radius: 50%;
     border: var(--border-size-1) solid var(--line);
   }
   .designer__preset-name { font-size: var(--font-size-2); }
@@ -111,8 +106,7 @@
     border: var(--border-size-1) solid var(--line); border-radius: var(--radius-ui);
   }
   .designer__order-label { font-weight: var(--font-weight-6); }
-  .designer__order-moves { display: flex; gap: calc(var(--u-pad) / 4); }
-  .designer__count--over { color: oklch(0.5 0.19 27); font-weight: var(--font-weight-6); }
+  .designer__count--over { color: var(--danger-ink); font-weight: var(--font-weight-6); }
 
   /* The stage scales a full-width desktop rendering to fit (70%, like the
      teardown), or shows a phone-width frame at 100%. */
@@ -137,7 +131,7 @@
     transform: scale(0.7);
     transform-origin: 0 0;
   }
-  .designer__stage[data-viewport="mobile"] .designer__scaler { width: 24.375rem; /* 390px */ }
+  .designer__stage[data-viewport="mobile"] .designer__scaler { width: var(--frame-phone); }
   .designer__stage[data-viewport="mobile"] .designer__frame { width: 100%; height: 100%; }
 
   /* --- rail: a root menu of summary rows, with sub-panes swapped in
@@ -179,13 +173,10 @@
   }
 
   .designer__group { display: grid; grid-template-columns: minmax(0, 1fr); gap: calc(var(--u-pad) / 4); }
+  /* type comes from u-microcaps + u-text-muted in the markup */
   .designer__group-title {
     margin: 0 0 calc(var(--u-pad) / 4);
-    font-size: var(--font-size-0);
     font-weight: var(--font-weight-6);
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    color: var(--ink-muted);
   }
 
   /* Summary rows: label left, current value + chevron right. */
@@ -220,8 +211,8 @@
   .designer__row--card { justify-content: flex-start; padding: calc(var(--u-pad) / 1.5) calc(var(--u-pad) / 2); }
   .designer__row-chip {
     flex: none;
-    inline-size: 3.75rem;
-    block-size: 2.5rem;
+    inline-size: calc(var(--u-pad) * 3.75);
+    block-size: calc(var(--u-pad) * 2.5);
     display: grid;
     place-items: center;
     overflow: hidden;
@@ -231,7 +222,7 @@
   }
   .designer__chip-option { display: block; inline-size: 100%; block-size: 100%; }
   .designer__chip-option svg { display: block; inline-size: 100%; block-size: 100%; }
-  .designer__chip-abc { font-weight: var(--font-weight-8); letter-spacing: 0.02em; color: #222; }
+  .designer__chip-abc { font-weight: var(--font-weight-8); letter-spacing: var(--font-letterspacing-1); color: var(--gray-9); }
   .designer__chip-swatches {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -242,7 +233,7 @@
     min-width: 0;
     display: grid;
     grid-template-columns: minmax(0, 1fr);
-    gap: 0.1rem;
+    gap: calc(var(--size-1) / 2);
     text-align: start;
   }
   .designer__row--card .designer__row-value { text-align: start; }
@@ -315,7 +306,7 @@
     font-weight: var(--font-weight-6);
   }
   .design-option:has(.design-option__input:focus-visible) .design-option__label {
-    outline: 2px solid var(--accent);
+    outline: var(--border-size-2) solid var(--accent);
     outline-offset: 1px;
   }
 
@@ -326,32 +317,29 @@
   /* Palette cards: name + the bg/accent/ink swatch row. */
   .design-option__swatches { display: flex; gap: calc(var(--u-pad) / 2); }
   .design-option__swatch {
-    inline-size: 3rem;
-    block-size: 3rem;
+    inline-size: var(--size-8);
+    block-size: var(--size-8);
     border: var(--border-size-1) solid var(--line);
     border-radius: var(--radius-ui);
   }
 
   /* Sub-headings inside an axis, from manifest option groups. */
+  /* type comes from u-microcaps + u-text-muted in the markup */
   .designer__option-group {
     margin: var(--u-pad) 0 calc(var(--u-pad) / 3);
-    font-size: var(--font-size-0);
     font-weight: var(--font-weight-6);
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    color: var(--ink-muted);
   }
   .designer__option-group:first-of-type { margin-block-start: calc(var(--u-pad) / 3); }
 
   /* Font-pairing cards: the name set in its display face, the families,
      and a tagline in the body face. */
-  .design-option--font .design-option__label { gap: 0.15rem; }
+  .design-option--font .design-option__label { gap: calc(var(--size-1) / 2); }
   .design-option__font-name { font-size: var(--font-size-4); line-height: 1.15; }
   .design-option__font-families {
     font-size: var(--font-size-0);
     font-weight: var(--font-weight-4);
     text-transform: uppercase;
-    letter-spacing: 0.06em;
+    letter-spacing: var(--font-letterspacing-2);
     color: var(--ink-muted);
   }
   .design-option__font-tagline { font-size: var(--font-size-1); font-weight: var(--font-weight-4); }
@@ -373,10 +361,10 @@
 
   /* --- the links-editor modal (the standard .modal component; this just
          widens it for the row controls) --- */
-  .designer__links-modal { inline-size: min(42rem, calc(100% - 2rem)); }
+  .designer__links-modal { inline-size: min(var(--size-md), calc(100% - var(--size-7))); }
 
   /* --- custom-palette modal: three role slots + the Tailwind grid --- */
-  .designer__color-slots { display: flex; gap: calc(var(--u-pad) / 2); }
+  /* .designer__color-slots composes u-cluster in the markup */
   .designer__color-slot {
     display: inline-flex;
     align-items: center;
@@ -391,17 +379,17 @@
   }
   .designer__color-slot.is-active { border-color: var(--accent); }
   .designer__color-slot-chip {
-    inline-size: 1.5rem;
-    block-size: 1.5rem;
+    inline-size: var(--size-5);
+    block-size: var(--size-5);
     border-radius: 50%;
     border: var(--border-size-1) solid var(--line);
   }
   .designer__color-slot-chip.is-empty {
-    background: repeating-conic-gradient(var(--line) 0% 25%, var(--canvas) 0% 50%) 50% / 0.5rem 0.5rem;
+    background: repeating-conic-gradient(var(--line) 0% 25%, var(--canvas) 0% 50%) 50% / var(--size-2) var(--size-2);
   }
   /* The custom-palette modal: narrower than standard, content centered. */
-  .designer__help { inline-size: min(34rem, calc(100% - 2rem)); }
-  .designer__colors-modal { inline-size: min(27rem, calc(100% - 2rem)); }
+  .designer__help { inline-size: min(var(--size-15), calc(100% - var(--size-7))); }
+  .designer__colors-modal { inline-size: min(var(--measure-card), calc(100% - var(--size-7))); }
   .designer__colors-modal .modal__body { text-align: center; }
   .designer__colors-modal .designer__color-slots { justify-content: center; }
   .designer__hex {
@@ -416,15 +404,15 @@
      clustered inside the hole. */
   .designer__wheel {
     position: relative;
-    inline-size: 16rem;
-    block-size: 16rem;
+    inline-size: calc(var(--u-pad) * 16);
+    block-size: calc(var(--u-pad) * 16);
     margin-inline: auto;
   }
   .designer__hue--wheel {
     position: absolute;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%) rotate(var(--wheel-angle)) translateY(-7rem) rotate(calc(-1 * var(--wheel-angle)));
+    transform: translate(-50%, -50%) rotate(var(--wheel-angle)) translateY(calc(var(--u-pad) * -7)) rotate(calc(-1 * var(--wheel-angle)));
   }
   /* Inner ring: same angle mechanism, smaller radius. The container spans
      the whole wheel and paints above the outer discs, so it must pass
@@ -435,27 +423,27 @@
     position: absolute;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%) rotate(var(--wheel-angle)) translateY(-3.25rem) rotate(calc(-1 * var(--wheel-angle)));
+    transform: translate(-50%, -50%) rotate(var(--wheel-angle)) translateY(calc(var(--u-pad) * -3.25)) rotate(calc(-1 * var(--wheel-angle)));
   }
   .designer__hue {
     display: grid;
     place-items: center;
     border: 0;
     background: none;
-    padding: 2px;
+    padding: calc(var(--size-1) / 2);
     border-radius: 50%;
     cursor: pointer;
   }
   .designer__hue:hover .designer__hue-chip,
-  .designer__hue:focus-visible .designer__hue-chip { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .designer__hue:focus-visible .designer__hue-chip { outline: var(--border-size-2) solid var(--accent); outline-offset: var(--border-size-2); }
   .designer__hue-chip {
-    inline-size: 2rem;
-    block-size: 2rem;
+    inline-size: var(--size-7);
+    block-size: var(--size-7);
     border-radius: 50%;
     /* the ring: 4px, two stops lighter than the fill (inline border-color) */
-    border: 4px solid;
+    border: var(--size-1) solid;
   }
-  .designer__hue--muted .designer__hue-chip { inline-size: 1.625rem; block-size: 1.625rem; border-width: 3px; }
+  .designer__hue--muted .designer__hue-chip { inline-size: calc(var(--u-pad) * 1.625); block-size: calc(var(--u-pad) * 1.625); border-width: calc(var(--size-1) * 0.75); }
   .designer__assigning { margin: 0; text-align: center; font-size: var(--font-size-0); }
 
   /* --- font-picker typeahead (custom-fonts modal): dropdown anchors to
@@ -473,7 +461,7 @@
     border: var(--border-size-1) solid var(--line);
     border-radius: var(--radius-ui);
     box-shadow: var(--shadow-2);
-    max-height: 14rem;
+    max-height: var(--size-13);
     overflow-y: auto;
   }
   .font-picker__list li {
@@ -530,12 +518,7 @@
     border-color: var(--accent);
     background: color-mix(in oklab, var(--accent) 8%, var(--canvas));
   }
-  .designer__logo-actions {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: calc(var(--u-pad) / 2);
-  }
+  /* .designer__logo-actions composes u-cluster in the markup */
   .designer__logo-actions .designer__hint { margin: 0; }
 
   /* Slider-rendered axes (e.g. cover corners). */
@@ -554,8 +537,8 @@
   .designer__check input { margin: 0; }
   .designer__logo-thumb {
     display: block;
-    max-height: 3rem;
-    max-width: 8rem;
+    max-height: var(--size-8);
+    max-width: var(--size-11);
     object-fit: contain;
     border: var(--border-size-1) solid var(--line);
     border-radius: var(--radius-ui);
@@ -567,12 +550,11 @@
     color: var(--ink-muted);
     background: color-mix(in oklab, var(--canvas), var(--ink) 4%);
   }
-  .designer__link-order { display: flex; gap: calc(var(--u-pad) / 4); }
 
   /* Genuinely narrow viewports (phones/tablets): stack, canvas first,
-     natural page scroll. 52rem keeps a half-screen desktop window in the
-     fixed two-pane mode — the rail is 22rem, leaving a workable canvas. */
-  @media (max-width: 52rem) {
+     natural page scroll. --breakpoint-md keeps a half-screen desktop window in the
+     fixed two-pane mode — the rail is --measure-rail, leaving a workable canvas. */
+  @media (max-width: 48em) { /* --breakpoint-md */
     .designer { height: auto; }
     .designer__body { grid-template-columns: 1fr; grid-template-rows: auto; }
     .designer__stage { overflow: visible; }

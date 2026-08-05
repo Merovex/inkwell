@@ -10,4 +10,5 @@
     padding-inline: var(--u-pad);
   }
   .u-center-narrow { --u-center-max: var(--size-content-2, 40rem); }
+  .u-center-prose  { --u-center-max: var(--measure-prose); }
 }

@@ -7,7 +7,7 @@
 @layer components {
   .goal-stats {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(var(--size-12), 1fr));
     gap: var(--u-pad);
     margin-block-end: calc(var(--u-pad) * 2);
   }
@@ -25,10 +25,13 @@
 
   .goal-stat__chart {
     inline-size: 100%;
-    block-size: 2.5rem;
+    block-size: calc(var(--u-pad) * 2.5);
     fill: var(--stat-accent);
   }
   .goal-stat__chart--line polyline { stroke: var(--stat-accent); stroke-width: 2; }
+  /* The pace card's target trajectory — quiet and dashed under the accent
+     actual line (dasharray in viewBox units, like the stroke widths). */
+  .goal-stat__chart-target { stroke: var(--ink-muted); stroke-width: 1; stroke-dasharray: 4 3; }
   /* invisible full-height day column — the hover target for the <title> popup */
   .goal-stat__hover { fill: transparent; pointer-events: all; }
 
@@ -36,7 +39,7 @@
      another goal's completion pack the same row; only heatmap cards span it. */
   .goal-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(19rem, 100%), 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(var(--size-14), 100%), 1fr));
     gap: var(--u-pad);
     align-items: stretch;
   }
@@ -50,12 +53,12 @@
     position: relative;
     block-size: 100%;
     padding-inline-end: calc(var(--u-pad) * 2.5);
-    transition: box-shadow 0.2s var(--ease-3);
+    transition: box-shadow var(--speed-gentle) var(--ease-3);
   }
   /* Hover: a soft drop-shadow tinted with the stat accent — the door glows
      in the page's own hue. */
   .goal-stat--card:hover {
-    box-shadow: 0 10px 28px -10px color-mix(in oklab, var(--stat-accent) 45%, transparent);
+    box-shadow: var(--elevation-glow);
   }
   .goal-summary__actions {
     position: absolute;
@@ -66,7 +69,7 @@
     gap: calc(var(--u-pad) / 4);
     z-index: 1; /* above the card's stretched link */
   }
-  .goal-stat--card .goal-stat__label { margin-inline-end: 7rem; }
+  .goal-stat--card .goal-stat__label { margin-inline-end: var(--size-11); }
   .goal-summary__title { font-size: var(--font-size-2); margin-block-start: auto; padding-block-start: calc(var(--u-pad) / 2); }
   .goal-summary__title a { color: var(--ink); text-decoration: none; }
   /* The whole card is a door to the goal: the foot title's link stretches
@@ -81,7 +84,7 @@
   .goal-stat--card .goal-heat { margin-block-start: calc(var(--u-pad) / 2); }
   /* The goal page's view cards: same responsive grid rhythm as the index. */
   .goal-stats--page {
-    grid-template-columns: repeat(auto-fit, minmax(min(19rem, 100%), 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(var(--size-14), 100%), 1fr));
     margin-block-end: var(--u-pad);
   }
   /* Heatmap cards need the horizontal room — the full grid row, both places. */
@@ -90,48 +93,48 @@
   /* The goal page's logbook: form and tally rows share one column rhythm —
      date · amount · note (the note gets the remaining ~2/3) · actions. */
   .logbook { display: flex; align-items: center; gap: calc(var(--u-pad) / 2); }
-  .logbook__date { inline-size: 11rem; flex-shrink: 0; }
-  .logbook__amount { inline-size: 7rem; flex-shrink: 0; }
+  .logbook__date { inline-size: var(--size-12); flex-shrink: 0; }
+  .logbook__amount { inline-size: var(--size-11); flex-shrink: 0; }
   .logbook__note { flex: 1; }
 
   /* Compound selector: .list__body (list.css loads after this file) sets
      flex-direction column; the extra class outranks it to lay the row out. */
   .list__body.tally-row__body { flex-direction: row; align-items: baseline; gap: calc(var(--u-pad) / 2); }
-  .tally-row__date { inline-size: 4.5rem; flex-shrink: 0; color: var(--brand-text); }
-  .tally-row__amount { inline-size: 8.5rem; flex-shrink: 0; font-weight: var(--font-weight-8); }
+  .tally-row__date { inline-size: var(--size-10); flex-shrink: 0; color: var(--brand-text); }
+  .tally-row__amount { inline-size: var(--size-12); flex-shrink: 0; font-weight: var(--font-weight-8); }
   .tally-row__note { flex: 1; min-inline-size: 0; }
 
   /* The Progress-display picker: the four options AS sample cards, radios
      hidden, the picked card wearing the accent ring (pure CSS via :has). */
   .display-cards {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(8.5rem, 100%), 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(var(--size-11), 100%), 1fr));
     gap: calc(var(--u-pad) / 2);
   }
   /* Sample cards, 3:2, with the type stepped down — they're pickers, not
      data; the shapes matter, the numbers are set dressing. */
   .display-card {
     cursor: pointer;
-    outline: 2px solid transparent;
-    outline-offset: 2px;
+    outline: var(--border-size-2) solid transparent;
+    outline-offset: var(--border-size-2);
     aspect-ratio: 3 / 2;
     padding: calc(var(--u-pad) / 2);
     gap: calc(var(--u-pad) / 6);
     align-content: start;
     overflow: hidden;
   }
-  .display-card .goal-stat__label { font-size: 0.65rem; }
+  .display-card .goal-stat__label { font-size: var(--font-size-0); }
   .display-card .goal-stat__value { font-size: var(--font-size-2); }
   .display-card .goal-stat__per { font-size: var(--font-size-0); }
   .display-card .goal-stat__meta { font-size: var(--font-size-0); }
-  .display-card .goal-stat__chart { block-size: 1.75rem; }
-  .display-card .goal-stat__ring { inline-size: 2.75rem; block-size: 2.75rem; }
-  .display-card .goal-stat__ring-text { font-size: 0.8rem; }
+  .display-card .goal-stat__chart { block-size: var(--size-6); }
+  .display-card .goal-stat__ring { inline-size: var(--size-8); block-size: var(--size-8); }
+  .display-card .goal-stat__ring-text { font-size: var(--font-size-0); }
   /* Mini calendar/heat samples inside the picker cards. */
-  .display-card .goal-history__month { grid-template-columns: repeat(7, 1fr); gap: 2px; }
-  .display-card .goal-history__day { font-size: 0; border-radius: 2px; }
-  .display-card .goal-history__heat { gap: 2px; grid-auto-columns: auto; inline-size: auto; justify-content: start; }
-  .display-card .goal-history__cell { inline-size: 0.3rem; block-size: 0.3rem; border-radius: 1px; box-shadow: none; }
+  .display-card .goal-history__month { grid-template-columns: repeat(7, 1fr); gap: calc(var(--size-1) / 2); }
+  .display-card .goal-history__day { font-size: 0; border-radius: var(--radius-1); }
+  .display-card .goal-history__heat { gap: calc(var(--size-1) / 2); grid-auto-columns: auto; inline-size: auto; justify-content: start; }
+  .display-card .goal-history__cell { inline-size: var(--size-1); block-size: var(--size-1); border-radius: 1px; box-shadow: none; }
   .display-card__input { position: absolute; opacity: 0; pointer-events: none; }
   .display-card:has(.display-card__input:checked) { outline-color: var(--stat-accent); }
   .display-card:has(.display-card__input:focus-visible) { outline-color: var(--stat-accent); outline-style: dashed; }
@@ -139,7 +142,7 @@
 
   /* Completion tile: progress track + fill, with the raw numbers beneath. */
   .goal-stat__bar {
-    block-size: 0.5rem;
+    block-size: var(--size-2);
     align-self: center;
     inline-size: 100%;
     border-radius: var(--radius-round);
@@ -151,10 +154,10 @@
 
   /* Rate goal's period ring (Strava-shaped, current period only). */
   .goal-stat__ringrow { display: flex; align-items: center; gap: calc(var(--u-pad) / 2); }
-  .goal-stat__ring { inline-size: 3.5rem; block-size: 3.5rem; flex-shrink: 0; }
+  .goal-stat__ring { inline-size: calc(var(--u-pad) * 3.5); block-size: calc(var(--u-pad) * 3.5); flex-shrink: 0; }
   .goal-stat__ring-track { stroke: color-mix(in oklab, var(--ink) 12%, transparent); stroke-width: 7; }
   .goal-stat__ring-fill { stroke: var(--stat-accent); stroke-width: 7; stroke-linecap: round; }
-  .goal-stat__ring-text { font-size: 0.9rem; font-weight: 800; fill: var(--ink); }
+  .goal-stat__ring-text { font-size: var(--font-size-1); font-weight: var(--font-weight-8); fill: var(--ink); }
 
   /* ── History pieces (server-rendered: the heat strip, the calendar month) ── */
   /* Fluid cells: the columns split the available width, so a 53-week year
@@ -164,7 +167,7 @@
     grid-auto-flow: column;
     grid-template-rows: repeat(7, auto);
     grid-auto-columns: minmax(0, 1fr);
-    gap: 3px;
+    gap: var(--size-1);
     inline-size: 100%;
     align-content: start; /* never let surplus height pad the rows apart */
   }
@@ -172,7 +175,7 @@
      the hairline is what separates a cell from the card wash, every level. */
   .goal-history__cell {
     aspect-ratio: 1;
-    border-radius: 2px;
+    border-radius: var(--radius-1);
     background: color-mix(in oklab, var(--ink) 7%, transparent);
     box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--ink) 14%, transparent);
   }
@@ -183,36 +186,36 @@
   .goal-heat {
     display: grid;
     grid-template-columns: auto minmax(0, 1fr);
-    gap: 3px;
-    font-size: 0.65rem;
+    gap: var(--size-1);
+    font-size: var(--font-size-0);
     line-height: 1; /* body's 1.65 would inflate the label column, and grid
                        stretch then spreads the cell rows apart to match */
     color: var(--ink-muted);
   }
-  .goal-heat__months { grid-column: 2; display: grid; gap: 3px; }
+  .goal-heat__months { grid-column: 2; display: grid; gap: var(--size-1); }
   .goal-heat__months span { white-space: nowrap; overflow: visible; }
   .goal-heat__days {
     grid-column: 1;
     grid-row: 2;
     display: grid;
     grid-template-rows: repeat(7, minmax(0, 1fr));
-    gap: 3px;
+    gap: var(--size-1);
     align-items: center;
-    padding-inline-end: 2px;
+    padding-inline-end: calc(var(--size-1) / 2);
   }
   .goal-heat .goal-history__heat { grid-column: 2; grid-row: 2; }
 
   /* GH's legend — the real scale, zero to full, tucked bottom-right. */
   .goal-heat__legendrow { display: flex; justify-content: space-between; align-items: center; gap: var(--u-pad); }
-  .goal-heat__legend { display: inline-flex; align-items: center; gap: 3px; font-size: 0.65rem; color: var(--ink-muted); }
-  .goal-heat__legend .goal-history__cell { inline-size: 0.7rem; block-size: 0.7rem; flex-shrink: 0; }
+  .goal-heat__legend { display: inline-flex; align-items: center; gap: var(--size-1); font-size: var(--font-size-0); color: var(--ink-muted); }
+  .goal-heat__legend .goal-history__cell { inline-size: calc(var(--u-pad) * 0.7); block-size: calc(var(--u-pad) * 0.7); flex-shrink: 0; }
   /* Three intensity stops (a lighter read than GitHub's four): the first
      starts at 40% so even light days register against the canvas. */
   .goal-history__cell[data-level="1"] { background: color-mix(in oklab, var(--stat-accent) 40%, var(--canvas)); }
   .goal-history__cell[data-level="2"] { background: color-mix(in oklab, var(--stat-accent) 70%, var(--canvas)); }
   .goal-history__cell[data-level="3"] { background: var(--stat-accent); }
 
-  .goal-history__month { display: grid; grid-template-columns: repeat(7, 2.25rem); gap: 4px; justify-content: center; }
+  .goal-history__month { display: grid; grid-template-columns: repeat(7, calc(var(--u-pad) * 2.25)); gap: var(--size-1); justify-content: center; }
   .goal-history__day {
     display: grid;
     place-items: center;
@@ -232,7 +235,7 @@
   .goal-studies__heading { margin-block-end: var(--u-pad); }
   .goal-studies__grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(19rem, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(var(--size-14), 1fr));
     gap: var(--u-pad);
   }
   .goal-study {
@@ -248,18 +251,18 @@
   .goal-study__meta { font-size: var(--font-size-0); color: var(--brand-text); }
   .goal-study__note { font-size: var(--font-size-0); color: var(--ink-muted); }
 
-  .goal-study__chart { inline-size: 100%; block-size: 5rem; }
+  .goal-study__chart { inline-size: 100%; block-size: var(--size-10); }
   .goal-study__line { stroke: var(--stat-accent); stroke-width: 2; }
   .goal-study__par { stroke: var(--ink-muted); stroke-width: 1.5; stroke-dasharray: 5 4; }
   .goal-study__road { fill: color-mix(in oklab, var(--stat-accent) 14%, transparent); }
 
   .goal-study__ringrow { display: flex; align-items: center; gap: var(--u-pad); }
-  .goal-study__ring { inline-size: 5.25rem; block-size: 5.25rem; flex-shrink: 0; }
+  .goal-study__ring { inline-size: calc(var(--u-pad) * 5.25); block-size: calc(var(--u-pad) * 5.25); flex-shrink: 0; }
   .goal-study__ring-track { stroke: color-mix(in oklab, var(--ink) 12%, transparent); stroke-width: 8; }
   .goal-study__ring-fill { stroke: var(--stat-accent); stroke-width: 8; stroke-linecap: round; }
-  .goal-study__ring-text { font-size: 1.15rem; font-weight: 800; fill: var(--ink); }
+  .goal-study__ring-text { font-size: var(--font-size-2); font-weight: var(--font-weight-8); fill: var(--ink); }
 
-  .goal-study__month { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+  .goal-study__month { display: grid; grid-template-columns: repeat(7, 1fr); gap: var(--size-1); }
   .goal-study__day {
     display: grid;
     place-items: center;
@@ -271,8 +274,8 @@
   }
   .goal-study__day--wrote { background: var(--stat-accent); color: var(--stat-accent-ink); }
 
-  .goal-study__heat { display: grid; grid-auto-flow: column; grid-template-rows: repeat(7, auto); gap: 3px; justify-content: start; }
-  .goal-study__cell { inline-size: 0.7rem; block-size: 0.7rem; border-radius: 2px; background: color-mix(in oklab, var(--ink) 7%, transparent); }
+  .goal-study__heat { display: grid; grid-auto-flow: column; grid-template-rows: repeat(7, auto); gap: var(--size-1); justify-content: start; }
+  .goal-study__cell { inline-size: calc(var(--u-pad) * 0.7); block-size: calc(var(--u-pad) * 0.7); border-radius: var(--radius-1); background: color-mix(in oklab, var(--ink) 7%, transparent); }
   .goal-study__cell[data-level="1"] { background: color-mix(in oklab, var(--stat-accent) 40%, var(--canvas)); }
   .goal-study__cell[data-level="2"] { background: color-mix(in oklab, var(--stat-accent) 70%, var(--canvas)); }
   .goal-study__cell[data-level="3"] { background: var(--stat-accent); }

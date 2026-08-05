@@ -93,7 +93,7 @@
     flex-wrap: wrap;
     gap: calc(var(--u-pad) / 4);
     /* two tidy rows of six rather than one strip off the viewport edge */
-    max-inline-size: 15rem;
+    max-inline-size: var(--size-13);
   }
 
   .boosts__emoji {

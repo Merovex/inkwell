@@ -15,19 +15,19 @@
         <%= inline_svg_tag (logged_today ? "lucide/pencil.svg" : "lucide/plus.svg"), class: "lucide", size: "14px" %> Today
       <% end %>
       <button type="button" class="button button--icon button--ghost" popovertarget="<%= menu_id %>"
-              aria-haspopup="menu" aria-label="Goal actions">
+              aria-label="Goal actions">
         <%= inline_svg_tag "lucide/ellipsis-vertical.svg", class: "lucide", size: "16px" %>
       </button>
-      <div class="menu menu--context" popover id="<%= menu_id %>" role="menu"
+      <div class="menu menu--context" popover id="<%= menu_id %>"
            data-controller="anchored-popover" data-anchored-popover-placement-value="top">
         <button type="button" class="button button--icon button--ghost menu__close" popovertarget="<%= menu_id %>"
                 popovertargetaction="hide" aria-label="Close menu">
           <%= inline_svg_tag "lucide/x.svg", class: "lucide", size: "20px" %>
         </button>
-        <%= link_to "Edit goal", edit_goal_path(goal.record), class: "menu__item", role: "menuitem" %>
+        <%= link_to "Edit goal", edit_goal_path(goal.record), class: "menu__item" %>
         <hr class="menu__separator">
         <%= button_to "Archive goal", goal_archive_path(goal.record), method: :post,
-              class: "menu__item", role: "menuitem" %>
+              class: "menu__item" %>
       </div>
     </div>
 

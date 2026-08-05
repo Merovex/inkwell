@@ -22,10 +22,10 @@
     aspect-ratio: 5 / 3;
     justify-content: flex-end;
   }
-  @media (max-width: 60rem) {
+  @media (max-width: 64em) { /* --breakpoint-lg */
     .circles[data-view="cards"] { grid-template-columns: repeat(2, 1fr); }
   }
-  @media (max-width: 34rem) {
+  @media (max-width: 48em) { /* --breakpoint-md */
     .circles[data-view="cards"] { grid-template-columns: 1fr; }
     .circles[data-view="cards"] .circles__card { aspect-ratio: auto; }
   }
@@ -78,7 +78,7 @@
     border: var(--border-size-1) dashed var(--line);
     border-radius: var(--radius-card);
   }
-  @media (max-width: 40rem) {
+  @media (max-width: 48em) { /* --breakpoint-md */
     .pulse-preview__answers { grid-template-columns: 1fr; }
     .pulse-preview__card { aspect-ratio: auto; }
     .pulse-preview__ghost { display: none; } /* stacked empty boxes are noise */
@@ -90,7 +90,7 @@
     font-size: var(--font-size-0);
     color: var(--brand-text);
   }
-  .pulse-preview__byline .avatar { --avatar-size: 1.5rem; flex-shrink: 0; }
+  .pulse-preview__byline .avatar { --avatar-size: var(--size-5); flex-shrink: 0; }
   .pulse-preview__excerpt {
     font-size: var(--font-size-0);
     color: var(--ink);
@@ -101,23 +101,24 @@
   }
 
   /* A seat on offer: the golden card leading the deck (Fizzy's golden card,
-     in Tailwind amber). Not a door — it carries its own Accept/Decline. */
+     warm amber — Open Props yellow/choco stops). Not a door — it carries its
+     own Accept/Decline. */
   .circles__card--invited {
-    --gold-bg:   #fef3c7; /* amber-100 */
-    --gold-line: #fcd34d; /* amber-300 */
-    --gold-ink:  #92400e; /* amber-800 */
+    --gold-bg:   var(--yellow-1);
+    --gold-line: var(--yellow-3);
+    --gold-ink:  var(--choco-9);
     background: var(--gold-bg);
     border-color: var(--gold-line);
   }
   .circles__card--invited .circles__meta { color: var(--gold-ink); }
   [data-theme="dark"] .circles__card--invited {
-    --gold-bg:   #451a03; /* amber-950 */
-    --gold-line: #92400e; /* amber-800 */
-    --gold-ink:  #fde68a; /* amber-200 */
+    --gold-bg:   var(--choco-12);
+    --gold-line: var(--choco-9);
+    --gold-ink:  var(--yellow-2);
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) .circles__card--invited {
-      --gold-bg: #451a03; --gold-line: #92400e; --gold-ink: #fde68a;
+      --gold-bg: var(--choco-12); --gold-line: var(--choco-9); --gold-ink: var(--yellow-2);
     }
   }
   .circles__invite-actions {
@@ -135,25 +136,10 @@
     color: var(--ink-muted);
   }
 
-  /* The list/cards switch sits in the header toolbar, not centered. */
-  .circles-toolbar { display: flex; justify-content: flex-end; margin-block-end: var(--u-pad); }
-  .circles-toolbar .segmented { margin-inline: 0; }
-
   /* Circle home: the stacked sections (Pulse check, Discussions, …) need room
-     to breathe, with the heading set well off from its divider and rows. */
+     to breathe. Section heads are utility compositions in the markup
+     (u-cluster u-cluster-between + margins) — no component class. */
   .circle-section { margin-block-start: calc(var(--u-pad) * 3.5); }
-  .circle-section .section-head { margin-block: 0 calc(var(--u-pad) * 1.75); }
-
-  /* An in-page section heading with its primary action pinned far right —
-     "Discussions … New message". */
-  .section-head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--u-pad);
-    margin-block: var(--u-pad) calc(var(--u-pad) / 2);
-  }
-  .section-head__title { margin: 0; }
 
   /* The "see all N discussions" line under the preview list. */
   .section-more { margin-block-start: calc(var(--u-pad) / 2); }
@@ -170,10 +156,6 @@
     display: flex;
     gap: calc(var(--u-pad) / 2);
     flex: 1;
-    min-inline-size: 16rem;
+    min-inline-size: var(--size-13);
   }
-
-  /* A discussion's body caps at a comfortable reading measure (~70 characters)
-     rather than running the full canvas width, centered in the canvas. */
-  .discussion-body { max-inline-size: 70ch; margin-inline: auto; }
 }

@@ -17,7 +17,7 @@
       </div>
       <div class="modal__body u-flow">
         <p class="u-text-muted">Pick a role, then tap a color. Shades are set for you.</p>
-        <div class="designer__color-slots" role="group" aria-label="Color roles">
+        <div class="designer__color-slots u-cluster" role="group" aria-label="Color roles">
           <% { "bg" => "Background", "accent" => "Accent", "ink" => "Text" }.each_with_index do |(slot, label), i| %>
             <button type="button" class="designer__color-slot <%= "is-active" if i.zero? %>"
                     data-designer-target="colorSlot" data-slot="<%= slot %>" data-action="designer#selectColorSlot">

@@ -9,7 +9,7 @@
   <legend class="designer__block-title"><%= axis["noun"] %></legend>
   <%# chunk drops nil-keyed elements, so ungrouped options key on false. %>
   <% axis["options"].chunk { |option| option["group"] || false }.each do |group, options| %>
-    <% if group %><h4 class="designer__option-group"><%= group %></h4><% end %>
+    <% if group %><h4 class="designer__option-group u-microcaps u-text-muted"><%= group %></h4><% end %>
     <div class="designer__options">
       <% options.each do |option| %>
         <% card = option["wireframe"] || option["display"] || option["swatches"] %>

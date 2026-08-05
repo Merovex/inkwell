@@ -15,23 +15,23 @@
       <div class="chat__bubble u-flow"><%= chat_line.content %></div>
 
       <div class="chat__actions">
-        <button type="button" class="button button--icon button--ghost" popovertarget="chat-line-menu-<%= chat_line.record_id %>" aria-haspopup="menu" aria-label="Chat line actions">
+        <button type="button" class="button button--icon button--ghost" popovertarget="chat-line-menu-<%= chat_line.record_id %>" aria-label="Chat line actions">
           <%= inline_svg_tag "lucide/ellipsis.svg", class: "lucide", size: "16px" %>
         </button>
         <%# A plain dropdown, not the teal corner panel: centered under the %>
         <%# icon, opening upward near the bottom of the window (light- %>
         <%# dismiss does the closing — no close button). %>
-        <div class="menu" popover id="chat-line-menu-<%= chat_line.record_id %>" role="menu" data-controller="anchored-popover" data-anchored-popover-placement-value="centered">
+        <div class="menu" popover id="chat-line-menu-<%= chat_line.record_id %>" data-controller="anchored-popover" data-anchored-popover-placement-value="centered">
           <%# Reply reloads the page with the quote in the composer — break %>
           <%# out of the row's frame. %>
-          <%= link_to "Reply", admin_chatroom_path(reply_to: chat_line.record_id), class: "menu__item", role: "menuitem",
+          <%= link_to "Reply", admin_chatroom_path(reply_to: chat_line.record_id), class: "menu__item",
                 data: { turbo_frame: "_top" } %>
           <% if chat_line.creator == Current.user %>
-            <%= link_to "Edit", edit_admin_chat_line_path(chat_line.record), class: "menu__item", role: "menuitem" %>
+            <%= link_to "Edit", edit_admin_chat_line_path(chat_line.record), class: "menu__item" %>
             <hr class="menu__separator">
             <%# Break out of the frame: after a trash the row is gone from %>
             <%# the page, so the response has no matching frame to extract. %>
-            <%= button_to "Move to trash", admin_chat_line_path(chat_line.record), method: :delete, class: "menu__item", role: "menuitem",
+            <%= button_to "Move to trash", admin_chat_line_path(chat_line.record), method: :delete, class: "menu__item",
                   form: { data: { turbo_confirm: "Move this chat line to trash?", turbo_frame: "_top" } } %>
           <% end %>
         </div>

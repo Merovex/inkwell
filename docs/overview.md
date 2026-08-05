@@ -98,7 +98,7 @@ Boost, Notification.
 - **Deploy** — commit the August arc and `kamal deploy`; fix confirmed for
   alcovo's deploy.yml (own `/var/lib/alcovo` volumes; domain TODO) and its
   redeploy + a check of Inkwell's production DB for alcovo cross-contamination.
-- **Goal deadlines + pace line** (NaNo-style) — next feature in line.
+- ~~**Goal deadlines + pace line**~~ — shipped 2026-08-05 (see [[goals]]).
 - **Request-an-invite** for circles; **web push** channel; **List-Unsubscribe**
   on notification emails (blocked on a settings page).
 - The goal design-studies gallery is hidden on disk — deliberate KEEP (owner).

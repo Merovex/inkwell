@@ -33,10 +33,10 @@
         <% if edit_href %>
           <%= link_to "Edit", edit_href, class: "button button--ghost canvas__head-action" %>
         <% end %>
-        <button type="button" class="button button--icon button--ghost" popovertarget="<%= menu_id %>" aria-haspopup="menu" aria-label="Actions">
+        <button type="button" class="button button--icon button--ghost" popovertarget="<%= menu_id %>" aria-label="Actions">
           <%= inline_svg_tag "lucide/ellipsis-vertical.svg", class: "lucide", size: "20px" %>
         </button>
-        <div class="menu menu--context" popover id="<%= menu_id %>" role="menu" data-controller="anchored-popover" data-anchored-popover-placement-value="top">
+        <div class="menu menu--context" popover id="<%= menu_id %>" data-controller="anchored-popover" data-anchored-popover-placement-value="top">
           <button type="button" class="button button--icon button--ghost menu__close" popovertarget="<%= menu_id %>" popovertargetaction="hide" aria-label="Close menu">
             <%= inline_svg_tag "lucide/x.svg", class: "lucide", size: "20px" %>
           </button>

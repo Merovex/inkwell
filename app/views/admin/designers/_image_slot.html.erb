@@ -9,7 +9,7 @@
        data-action="dragover->designer#imageDragOver dragleave->designer#imageDragLeave drop->designer#imageDrop">
     <img class="designer__logo-thumb" data-image-role="thumb" alt="Current <%= heading.downcase %>"
          <% if attachment.attached? %>src="<%= url_for(attachment) %>"<% else %>hidden<% end %>>
-    <div class="designer__logo-actions">
+    <div class="designer__logo-actions u-cluster">
       <label class="button">
         <%= upload_label %>
         <input type="file" class="designer__file" accept="<%= Site::LOGO_CONTENT_TYPES.join(",") %>"

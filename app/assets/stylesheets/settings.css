@@ -14,7 +14,7 @@
   }
 
   /* System settings sits at a comfortable ~900px, not the narrow prose column. */
-  .settings--wide { --u-center-max: 56rem; }
+  .settings--wide { --u-center-max: var(--measure-form-wide); }
 
   .settings__section {
     display: grid;

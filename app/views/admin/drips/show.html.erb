@@ -3,12 +3,12 @@
 <%= render "admin/shared/canvas_head", crumbs: [["Drips", admin_drips_path], [@drip.title, nil]],
       edit_href: edit_admin_drip_path(@record) do %>
   <% if @drip.active? %>
-    <%= button_to "Deactivate", activate_admin_drip_path(@record, active: false), method: :patch, class: "menu__item", role: "menuitem" %>
+    <%= button_to "Deactivate", activate_admin_drip_path(@record, active: false), method: :patch, class: "menu__item" %>
   <% else %>
-    <%= button_to "Activate", activate_admin_drip_path(@record, active: true), method: :patch, class: "menu__item", role: "menuitem" %>
+    <%= button_to "Activate", activate_admin_drip_path(@record, active: true), method: :patch, class: "menu__item" %>
   <% end %>
   <hr class="menu__separator">
-  <%= button_to "Move to trash", admin_drip_path(@record), method: :delete, class: "menu__item", role: "menuitem" %>
+  <%= button_to "Move to trash", admin_drip_path(@record), method: :delete, class: "menu__item" %>
 <% end %>
 
 <header class="perma-header">

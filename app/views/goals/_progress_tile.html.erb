@@ -16,12 +16,49 @@
     </span>
   </div>
 <% when "pace" %>
-  <% series = goal.daily_series((Time.zone.today - 29)..Time.zone.today) %>
-  <% running = 0; cumulative = series.map { |v| running += v } %>
-  <span class="goal-stat__label u-microcaps">Pace</span>
-  <span class="goal-stat__value"><%= number_with_delimiter (series.sum / 30.0).round %><span class="goal-stat__per">/day</span></span>
-  <%= goal_stat_line(cumulative) %>
-  <span class="goal-stat__meta"><%= number_with_delimiter series.sum %> <%= goal.unit %> in the last 30 days</span>
+  <%# With a deadline this is THE race line (target trajectory vs actual);
+      without one it stays the 30-day average it always was. %>
+  <% if goal.deadline? %>
+    <% today = Time.zone.today %>
+    <span class="goal-stat__label u-microcaps">Pace</span>
+    <% if today < goal.pace_start %>
+      <span class="goal-stat__value"><%= number_with_delimiter(goal.target) %><span class="goal-stat__per"><%= goal.unit %></span></span>
+      <%= goal_pace_chart(goal) %>
+      <span class="goal-stat__meta">starts <%= goal_date(goal.pace_start) %> · due <%= goal_date(goal.ends_on) %></span>
+    <% elsif today > goal.ends_on %>
+      <% shortfall = goal.target - goal.total %>
+      <% if shortfall.positive? %>
+        <span class="goal-stat__value"><%= number_with_delimiter(shortfall) %><span class="goal-stat__per">short</span></span>
+      <% else %>
+        <span class="goal-stat__value">Finished</span>
+      <% end %>
+      <%= goal_pace_chart(goal) %>
+      <span class="goal-stat__meta"><%= number_with_delimiter(goal.total) %> of <%= number_with_delimiter(goal.target) %> · ended <%= goal_date(goal.ends_on) %></span>
+    <% else %>
+      <% delta = goal.pace_delta(today) %>
+      <% if delta.zero? %>
+        <span class="goal-stat__value">On pace</span>
+      <% else %>
+        <span class="goal-stat__value"><%= number_with_delimiter(delta.abs) %><span class="goal-stat__per"><%= delta.positive? ? "ahead of pace" : "behind pace" %></span></span>
+      <% end %>
+      <%= goal_pace_chart(goal) %>
+      <% needed = goal.needed_per_day(today) %>
+      <span class="goal-stat__meta">
+        <% if needed.positive? %>
+          needs <%= number_with_delimiter(needed) %>/day to finish by <%= goal_date(goal.ends_on) %>
+        <% else %>
+          target reached · due <%= goal_date(goal.ends_on) %>
+        <% end %>
+      </span>
+    <% end %>
+  <% else %>
+    <% series = goal.daily_series((Time.zone.today - 29)..Time.zone.today) %>
+    <% running = 0; cumulative = series.map { |v| running += v } %>
+    <span class="goal-stat__label u-microcaps">Pace</span>
+    <span class="goal-stat__value"><%= number_with_delimiter (series.sum / 30.0).round %><span class="goal-stat__per">/day</span></span>
+    <%= goal_stat_line(cumulative) %>
+    <span class="goal-stat__meta"><%= number_with_delimiter series.sum %> <%= goal.unit %> in the last 30 days</span>
+  <% end %>
 <% when "rolling" %>
   <% rolling = goal_rolling_series(goal) %>
   <span class="goal-stat__label u-microcaps">90-day Rolling</span>

@@ -146,6 +146,44 @@ class GoalsTest < ActionDispatch::IntegrationTest
     assert_select ".goal-stat__label", text: (Date.current.year - 1).to_s
   end
 
+  test "a deadline project renders the race line: behind/ahead, needed-per-day, dashed target" do
+    # 10-day window, 10,000 target, 3,000 logged by day 5 → 2,000 behind,
+    # 1,167/day (ceil of 7,000 over 6 remaining days) to land it.
+    goal = create_goal(title: "NaNo", target: 10_000,
+      starts_on: Date.current - 4, ends_on: Date.current + 5)
+    log_tally(goal, amount: 3_000, logged_on: Date.current - 2)
+    sign_in_as users(:bob)
+
+    # No picked displays: the deadline project auto-resolves to the pace card.
+    get goals_path
+    assert_select ".goal-stat__label", text: "Pace"
+    assert_select ".goal-stat__value", text: /2,000\s*behind pace/
+    assert_select ".goal-stat__meta", text: /needs 1,167\/day to finish by/
+    assert_select ".goal-stat__chart-target"          # the dashed trajectory
+    assert_select ".goal-stat__chart--line polyline"  # the actual line
+
+    # The goal page's header carries the finish line.
+    get goal_path(goal.record)
+    assert_select ".perma-header__content time", text: (Date.current + 5).strftime("%b %-d")
+
+    # The form offers the window fields.
+    get new_goal_path
+    assert_select "dialog input[type=date][name=?]", "goal[ends_on]"
+    assert_select "dialog input[type=date][name=?]", "goal[starts_on]"
+  end
+
+  test "a deadline on a rate goal is rejected" do
+    sign_in_as users(:bob)
+
+    assert_no_difference -> { Goal.count } do
+      post goals_path, params: { goal: { title: "Sprint", unit: "words",
+        target: 500, per: "day", ends_on: Date.tomorrow } }
+    end
+    # The modal form's server-side misses land back on the index with the reason.
+    assert_redirected_to goals_path
+    assert_match(/in-total/, flash[:alert])
+  end
+
   test "the author picks a set of progress views, stacked on the card" do
     ring_project = create_goal(title: "Ringed", target: 1000, displays: %w[ring heatmap])
     thirty = create_goal(title: "Thirty", displays: %w[rolling last30])

@@ -43,12 +43,20 @@ module GoalsHelper
   end
 
   # The views a goal actually stacks: its chosen set, or the shape's natural
-  # view when none are picked; a ring without a target degrades to the plain
-  # total. Shared by the tile partial and the layout (a stack containing the
-  # heatmap spans the full grid row).
+  # view when none are picked (a deadline project's is the pace line — the
+  # race IS the goal); a ring without a target degrades to the plain total.
+  # Shared by the tile partial and the layout (a stack containing the heatmap
+  # spans the full grid row).
   def goal_resolved_displays(goal)
-    displays = goal.displays.presence || [ goal.rate? ? "ring" : goal.target ? "bar" : "total" ]
+    displays = goal.displays.presence ||
+      [ goal.rate? ? "ring" : goal.deadline? ? "pace" : goal.target ? "bar" : "total" ]
     displays.map { |d| d == "ring" && goal.target.nil? ? "total" : d }.uniq
+  end
+
+  # A short human date carrying its machine form — "Nov 30" the reader sees,
+  # ISO the parser gets.
+  def goal_date(date)
+    tag.time date.strftime("%b %-d"), datetime: date.iso8601
   end
 
   PERIOD_PHRASE = { "day" => "today", "week" => "this week", "month" => "this month" }.freeze
@@ -109,6 +117,36 @@ module GoalsHelper
                    height: bar_height, rx: 1)
         ]
       end)
+    end
+  end
+
+  # The NaNo pace chart for a deadline goal: the target trajectory (dashed,
+  # corner to corner across the whole window) with the actual cumulative line
+  # over it. The actual line ends at today's x-position, so the empty space to
+  # its right is the race still to run.
+  def goal_pace_chart(goal, today: Time.zone.today)
+    start = goal.pace_start
+    through = [ today, goal.ends_on ].min
+    running = 0
+    cumulative = through < start ? [] : goal.daily_series(start..through).map { |v| running += v }
+    goal_pace_chart_svg(cumulative, target: goal.target, days: goal.pace_days)
+  end
+
+  # The drawing itself, also used by the form's sample card. Both lines share
+  # one scale; overshooting the target pushes the scale up, keeping the actual
+  # line in frame.
+  def goal_pace_chart_svg(cumulative, target:, days:, width: 120, height: 36)
+    y_max = [ target, cumulative.max || 0 ].max.to_f
+    step = width.to_f / [ days - 1, 1 ].max
+    y = ->(value) { (height - 1 - (value / y_max * (height - 2))).round(1) }
+    points = cumulative.each_with_index.map { |value, i| "#{(i * step).round(1)},#{y.(value)}" }
+
+    tag.svg viewBox: "0 0 #{width} #{height}", class: "goal-stat__chart goal-stat__chart--line",
+            preserveAspectRatio: "none", "aria-hidden": true do
+      safe_join [
+        tag.line(x1: 0, y1: y.(0), x2: width, y2: y.(target), class: "goal-stat__chart-target"),
+        (tag.polyline(points: points.join(" "), fill: "none") if points.any?)
+      ].compact
     end
   end
 

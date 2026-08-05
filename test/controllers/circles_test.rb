@@ -70,8 +70,8 @@ class CirclesTest < ActionDispatch::IntegrationTest
     assert_select ".perma-header__title", text: circles(:writers).name
     # The Discussions section: an H2 with a far-right New message button and the
     # latest discussion as a list row linking to its own page.
-    assert_select ".section-head h2", text: "Discussions"
-    assert_select ".section-head a[href=?]", new_circle_message_path(circles(:writers)), text: /New message/
+    assert_select "h2#discussions-heading", text: "Discussions"
+    assert_select ".circle-section a[href=?]", new_circle_message_path(circles(:writers)), text: /New message/
     assert_select ".list .list__title", text: "Welcome to the circle"
   end
 

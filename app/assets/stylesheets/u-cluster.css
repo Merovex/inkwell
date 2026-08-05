@@ -12,4 +12,5 @@
   .u-cluster-tight { --u-cluster-gap: calc(var(--u-pad) / 4); }
   .u-cluster-between { justify-content: space-between; }
   .u-cluster-center { justify-content: center; }
+  .u-cluster-end { justify-content: flex-end; }
 }

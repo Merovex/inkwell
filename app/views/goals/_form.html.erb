@@ -38,6 +38,21 @@
     </div>
   </div>
 
+  <%# The finish line — in-total goals only ("50,000 by Nov 30"), NaNo-style.
+      A deadline turns the Pace card into the race line. Start optional:
+      blank anchors the line at your first tally. %>
+  <div class="field-row">
+    <div class="field">
+      <%= f.label :ends_on, "Deadline (optional)", class: "field__label" %>
+      <%= f.date_field :ends_on, class: "field__control" %>
+    </div>
+
+    <div class="field">
+      <%= f.label :starts_on, "Starts (optional)", class: "field__label" %>
+      <%= f.date_field :starts_on, class: "field__control" %>
+    </div>
+  </div>
+
   <%# Progress views — a SET of sample cards (checkbox-backed): pick several
       and the goal's card stacks them in canonical order; pick none for auto
       (by shape). Each picked card wears the accent ring. Samples are demo
@@ -58,9 +73,9 @@
         <%= f.check_box :displays, { multiple: true, class: "display-card__input",
               checked: goal.displays.include?("pace") }, "pace", nil %>
         <span class="goal-stat__label u-microcaps">Pace</span>
-        <span class="goal-stat__value">640<span class="goal-stat__per">/day</span></span>
-        <%= goal_stat_line([0, 900, 2100, 3400, 5200, 6600, 8600, 9900, 12200, 13800, 16400, 19200]) %>
-        <span class="goal-stat__meta">30-day average</span>
+        <span class="goal-stat__value">1,840<span class="goal-stat__per">behind pace</span></span>
+        <%= goal_pace_chart_svg([0, 900, 2100, 3400, 5200, 6600, 8600, 9900, 12200], target: 50_000, days: 30) %>
+        <span class="goal-stat__meta">vs your deadline · 30-day average without one</span>
       </label>
 
       <label class="goal-stat display-card">

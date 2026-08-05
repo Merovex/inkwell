@@ -3,7 +3,7 @@
 <%= render "admin/shared/canvas_head",
       crumbs: [["Goals", goals_path], [@goal.title, nil]],
       edit_href: edit_goal_path(@record) do %>
-  <%= button_to "Move to trash", goal_path(@record), method: :delete, class: "menu__item", role: "menuitem",
+  <%= button_to "Move to trash", goal_path(@record), method: :delete, class: "menu__item",
         form: { data: { turbo_confirm: "Trash this goal and its tallies?" } } %>
 <% end %>
 
@@ -14,7 +14,7 @@
       <%= number_with_delimiter(@goal.period_total) %> of <%= number_with_delimiter(@goal.target) %> <%= @goal.unit %> <%= goal_period_phrase(@goal) %>
       · observes every <%= @goal.unit.singularize %>-tally across your goals
     <% elsif @goal.target %>
-      <%= number_with_delimiter(@goal.total) %> of <%= number_with_delimiter(@goal.target) %> <%= @goal.unit %>
+      <%= number_with_delimiter(@goal.total) %> of <%= number_with_delimiter(@goal.target) %> <%= @goal.unit %><% if @goal.deadline? %> · by <%= goal_date(@goal.ends_on) %><% end %>
     <% else %>
       <%= number_with_delimiter(@goal.total) %> <%= @goal.unit %> so far
     <% end %>
@@ -23,7 +23,7 @@
 
 <%# The goal's chosen views — one card each, same as its index cards
     (a heatmap card takes the full row). %>
-<div class="discussion-body">
+<div class="u-center u-center-prose">
   <div class="goal-stats goal-stats--page">
     <% goal_resolved_displays(@goal).each do |display| %>
       <div class="goal-stat<%= " goal-stat--wide" if display == "heatmap" %>">
@@ -33,7 +33,7 @@
   </div>
 </div>
 
-<div class="discussion-body u-flow">
+<div class="u-center u-center-prose u-flow">
   <%# The logbook line, one row: date · amount · note (the note gets the
       lion's share) · Log it. Tally rows below mirror these columns. %>
   <%= form_with model: @tally, url: goal_tallies_path(@record), class: "logbook" do |f| %>

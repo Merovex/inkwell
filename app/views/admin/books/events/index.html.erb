@@ -1,7 +1,7 @@
 <% content_for :title, "Change Log: #{@book.title} — Inkwell" %>
 
 <%= render "admin/shared/canvas_head", crumbs: [["Books", admin_books_path], [@book.title, admin_book_path(@record)], ["Change Log", nil]] do %>
-  <%= link_to "Back to book", admin_book_path(@record), class: "menu__item", role: "menuitem" %>
+  <%= link_to "Back to book", admin_book_path(@record), class: "menu__item" %>
 <% end %>
 
 <header class="perma-header">

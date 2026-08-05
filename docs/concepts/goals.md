@@ -41,11 +41,30 @@ Serialization gotcha: Rails' `serialize ... type: Array` coder dumps `[]` as
 NULL — the column must be nullable and the reader defends
 (`def displays = super || []`).
 
+## Deadline window + pace line (shipped 2026-08-05)
+
+Project goals (target, no `per`) can carry a **deadline window**: `ends_on`
+plus an optional `starts_on` — "50,000 words by Nov 30", NaNo-style. Rates
+and logbooks reject the fields (a rate is a treadmill, not a race). With a
+blank start the line anchors at the **first tally or the goal's creation
+day, whichever is earlier** (`Goal#pace_start`) — the line never pretends
+you started later than your data says.
+
+The **pace card** becomes the race line when a deadline exists: dashed
+target trajectory (corner to corner across the window, `goal_pace_chart`)
+under the accent actual-cumulative line, headlined **ahead/behind pace**
+("1,840 behind pace"), meta "needs N/day to finish by Nov 30" (N =
+remaining ÷ days left, ceiled; zero once done or past). Upcoming windows
+read "starts Nov 1 · due Nov 30"; ended ones "N short"/"Finished". Without
+a deadline the card stays the old 30-day average. A deadline project with
+no picked displays auto-resolves to `pace` (was `bar`); the goal page
+header appends "· by Nov 30".
+
 ## Deferred
 
-Deadlines + NaNo-style pace line; circle-goal surfacing (the "Wins" idea was
-dropped 2026-08-05). A hidden design-studies gallery
-(`goals/_design_studies.html.erb`) is a deliberate KEEP (owner).
+Circle-goal surfacing (the "Wins" idea was dropped 2026-08-05). A hidden
+design-studies gallery (`goals/_design_studies.html.erb`) is a deliberate
+KEEP (owner).
 
 ## Links
 

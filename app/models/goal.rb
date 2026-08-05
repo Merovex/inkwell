@@ -30,9 +30,48 @@ class Goal < ApplicationRecord
   # The coder stores an empty set as NULL; the reader keeps the contract Array.
   def displays = super || []
   validates :target, presence: { message: "is required for a rate (per day/week/month) goal" }, if: -> { per.present? }
+  # The deadline window — a race, so projects only: a rate goal is a
+  # treadmill, not a race, and a logbook has no finish line to pace against.
+  validate :deadline_window_shape
 
   def rate?    = per.present?
   def project? = per.nil? && target.present?
+
+  # ── The deadline window and its pace line (NaNo-style) ─────────────────────
+
+  def deadline? = ends_on.present?
+
+  # Where the pace line starts: the explicit start, else the first logged day
+  # or the goal's creation day, whichever is earlier — the line never
+  # pretends you started later than your data says.
+  def pace_start
+    starts_on || [ tallies.minimum(:logged_on), record.created_at.to_date ].compact.min
+  end
+
+  # Days in the window, inclusive — NaNo's Nov 1..Nov 30 is 30 days.
+  def pace_days = (ends_on - pace_start).to_i + 1
+
+  # The straight line: the cumulative amount the deadline demands by the end
+  # of the given day.
+  def pace_target_for(date)
+    elapsed = ((date - pace_start).to_i + 1).clamp(0, pace_days)
+    (target * elapsed / pace_days.to_f).round
+  end
+
+  # Ahead (positive) or behind (negative) the line as of today.
+  def pace_delta(today = Time.zone.today)
+    total - pace_target_for(today)
+  end
+
+  # What each remaining day (today included) must average to land the target
+  # on time; zero once the target is hit or the deadline has passed.
+  def needed_per_day(today = Time.zone.today)
+    days_left = (ends_on - today).to_i + 1
+    remaining = target - total
+    return 0 if days_left <= 0 || remaining <= 0
+
+    (remaining / days_left.to_f).ceil
+  end
 
   # No draft state and nothing published — an amend is just a correction.
   def mutable? = true
@@ -88,4 +127,11 @@ class Goal < ApplicationRecord
     observed_tallies.distinct.pluck(:logged_on).map(&:year).uniq
       .select { |year| year < Time.zone.today.year }.sort.reverse
   end
+
+  private
+    def deadline_window_shape
+      errors.add(:ends_on, "only applies to an in-total (project) goal") if ends_on && !project?
+      errors.add(:starts_on, "needs a deadline to anchor — set one or clear the start") if starts_on && ends_on.blank?
+      errors.add(:ends_on, "must come after the start") if starts_on && ends_on && ends_on <= starts_on
+    end
 end

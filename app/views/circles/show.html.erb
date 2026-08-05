@@ -3,13 +3,13 @@
 <%= render "admin/shared/canvas_head", crumbs: [["Circles", circles_path], [@circle.name, nil]],
       edit_href: (edit_circle_path(@circle) if allowed_to?(:manage, @circle)) do %>
   <%# The membership page: roster + invitations (any member may invite). %>
-  <%= link_to "Membership", circle_members_path(@circle), class: "menu__item", role: "menuitem" %>
+  <%= link_to "Membership", circle_members_path(@circle), class: "menu__item" %>
   <% unless allowed_to?(:manage, @circle) %>
     <hr class="menu__separator">
     <%# A member's own exit (Basecamp's "Leave this project"). Owners never
         see it — they delete or hand off, they don't abandon. %>
     <%= button_to "Leave this circle", circle_membership_path(@circle), method: :delete,
-          class: "menu__item", role: "menuitem",
+          class: "menu__item",
           form: { data: { turbo_confirm: "Leave #{@circle.name}? You'll need a new invitation to return." } } %>
   <% end %>
 <% end %>
@@ -27,8 +27,8 @@
 </header>
 
 <section class="circle-section" aria-labelledby="pulse-heading">
-  <div class="section-head">
-    <h2 class="section-head__title" id="pulse-heading">Pulse check</h2>
+  <div class="u-cluster u-cluster-between u-margin-block-end-double">
+    <h2 id="pulse-heading">Pulse check</h2>
     <% if @pulse.nil? && allowed_to?(:manage, @circle) %>
       <%= link_to new_circle_pulse_path(@circle), class: "button button--primary button--small" do %>
         <%= inline_svg_tag "lucide/plus.svg", class: "lucide", size: "16px" %> Set up a Pulse check
@@ -68,8 +68,8 @@
 </section>
 
 <section class="circle-section" aria-labelledby="discussions-heading">
-  <div class="section-head">
-    <h2 class="section-head__title" id="discussions-heading">Discussions</h2>
+  <div class="u-cluster u-cluster-between u-margin-block-end-double">
+    <h2 id="discussions-heading">Discussions</h2>
     <%= link_to new_circle_message_path(@circle), class: "button button--primary button--small" do %>
       <%= inline_svg_tag "lucide/plus.svg", class: "lucide", size: "16px" %> New message
     <% end %>

@@ -13,8 +13,8 @@
     keeps both pages in the layout you last picked; cards by default here. %>
 <% view = %w[list cards].include?(cookies[:circles_view]) ? cookies[:circles_view] : "cards" %>
 <div data-controller="view-toggle" data-view-toggle-name-value="circles_view">
-  <div class="circles-toolbar">
-    <div class="segmented" role="group" aria-label="Layout">
+  <div class="u-cluster u-cluster-end u-margin-block-end">
+    <div class="segmented u-margin-inline-0" role="group" aria-label="Layout">
       <button type="button" class="segmented__seg" data-view="list"
               data-action="view-toggle#set" data-view-toggle-target="button"
               aria-selected="<%= view == "list" %>">List</button>

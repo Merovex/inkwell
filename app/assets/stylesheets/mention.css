@@ -21,7 +21,7 @@
      collapses. Declared on the element to beat .avatar's own default
      (inherited values lose to it; mention.css loads after avatar.css). */
   .mention__avatar {
-    --avatar-size: 1.25rem;
+    --avatar-size: var(--size-4);
     vertical-align: text-bottom;
     margin-inline-end: 0.25em;
   }
@@ -31,7 +31,7 @@
     align-items: center;
     gap: calc(var(--u-pad) / 3);
   }
-  .mention-option__avatar { --avatar-size: 1.5rem; flex-shrink: 0; }
+  .mention-option__avatar { --avatar-size: var(--size-5); flex-shrink: 0; }
   .mention-option__name { font-weight: var(--font-weight-6); }
 }
 

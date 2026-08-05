@@ -4,22 +4,22 @@
       crumbs: [["Circles", circles_path], [@circle.name, circle_path(@circle)],
                ["Discussions", circle_messages_path(@circle)], [@message.title, nil]],
       edit_href: (edit_circle_message_path(@circle, @record) if editable?) do %>
-  <button type="button" class="menu__item" role="menuitem"
+  <button type="button" class="menu__item"
           data-controller="clipboard" data-action="clipboard#copy"
           data-clipboard-text-value="<%= circle_message_url(@circle, @record) %>"
           popovertarget="canvas-menu" popovertargetaction="hide">Copy link</button>
   <% if moderatable? %>
     <hr class="menu__separator">
     <% if @record.archived? %>
-      <%= button_to "Unarchive", unarchive_circle_message_path(@circle, @record), method: :patch, class: "menu__item", role: "menuitem" %>
+      <%= button_to "Unarchive", unarchive_circle_message_path(@circle, @record), method: :patch, class: "menu__item" %>
     <% else %>
-      <%= button_to "Archive", archive_circle_message_path(@circle, @record), method: :patch, class: "menu__item", role: "menuitem" %>
+      <%= button_to "Archive", archive_circle_message_path(@circle, @record), method: :patch, class: "menu__item" %>
     <% end %>
-    <%= button_to "Move to trash", circle_message_path(@circle, @record), method: :delete, class: "menu__item", role: "menuitem" %>
+    <%= button_to "Move to trash", circle_message_path(@circle, @record), method: :delete, class: "menu__item" %>
   <% end %>
 <% end %>
 
-<header class="perma-header discussion-body">
+<header class="perma-header u-center u-center-prose">
   <h1 class="perma-header__title"><%= @message.title %></h1>
   <p class="perma-header__content u-text-muted">
     <span class="u-text-strong"><%= @record.creator.display_name %></span>
@@ -38,14 +38,14 @@
   </p>
 </header>
 
-<article class="u-flow discussion-body">
+<article class="prose">
   <%= mentions_highlighted(@message.content, @record) %>
 </article>
 
-<div class="discussion-body">
+<div class="u-center u-center-prose">
   <%= render "admin/boosts/boosts", record: @record %>
 </div>
 
-<div class="discussion-body">
+<div class="u-center u-center-prose">
   <%= render "admin/comments/comments", record: @record %>
 </div>

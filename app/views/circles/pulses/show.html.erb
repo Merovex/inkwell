@@ -5,18 +5,18 @@
       crumbs: [["Circles", circles_path], [@circle.name, circle_path(@circle)], ["Pulse check", nil]],
       edit_href: (edit_circle_pulse_path(@circle, @record) if can_manage) do %>
   <% if @pulse.subscribed?(Current.user) %>
-    <%= button_to "Leave this Pulse check", circle_pulse_subscription_path(@circle, @record), method: :delete, class: "menu__item", role: "menuitem" %>
+    <%= button_to "Leave this Pulse check", circle_pulse_subscription_path(@circle, @record), method: :delete, class: "menu__item" %>
   <% else %>
-    <%= button_to "Join this Pulse check", circle_pulse_subscription_path(@circle, @record), method: :post, class: "menu__item", role: "menuitem" %>
+    <%= button_to "Join this Pulse check", circle_pulse_subscription_path(@circle, @record), method: :post, class: "menu__item" %>
   <% end %>
   <% if can_manage %>
     <hr class="menu__separator">
-    <%= button_to "Move to trash", circle_pulse_path(@circle, @record), method: :delete, class: "menu__item", role: "menuitem",
+    <%= button_to "Move to trash", circle_pulse_path(@circle, @record), method: :delete, class: "menu__item",
           form: { data: { turbo_confirm: "Remove this Pulse check?" } } %>
   <% end %>
 <% end %>
 
-<header class="perma-header discussion-body">
+<header class="perma-header u-center u-center-prose">
   <h1 class="perma-header__title"><%= @pulse.question %></h1>
   <p class="perma-header__content u-text-muted">
     Asked <%= @pulse.schedule_summary %> at <%= @pulse.ask_at %>
@@ -24,7 +24,7 @@
   </p>
 </header>
 
-<div class="discussion-body u-flow">
+<div class="u-center u-center-prose u-flow">
   <% if @pulse.subscribed?(Current.user) %>
     <%# The composer shows only until you've answered; after that your answer %>
     <%# lives in the list below with its own Edit (like a comment). %>

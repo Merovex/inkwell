@@ -10,7 +10,7 @@
   </p>
 </header>
 
-<div class="discussion-body u-flow">
+<div class="u-center u-center-prose u-flow">
   <%= form_with url: circle_invitations_path(@circle), html: { class: "circle-members__invite" } do |form| %>
     <%= form.email_field :email_address, class: "field__control", required: true,
           placeholder: "author@example.com", "aria-label": "Invite by email" %>
@@ -29,7 +29,7 @@
   </div>
 
   <% if @pending_invitations.any? %>
-    <h2 class="section-head__title">Invited</h2>
+    <h2>Invited</h2>
     <div class="list">
       <% @pending_invitations.each do |invitation| %>
         <% revocable = allowed_to?(:manage, @circle) || invitation.inviter_id == Current.user.id %>
