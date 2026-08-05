@@ -48,6 +48,8 @@
   --press-shadow: 0 8px 24px oklch(0% 0 0 / 0.18); /* raised cards */
   --press-overlay-ink: oklch(100% 0 0 / 0.65);     /* text over the hero image */
   --press-letterspacing: 0.015em;
+  --press-tracking-kicker: 0.08em;  /* uppercase kickers/labels (was 0.08/0.1 drift) */
+  --press-tracking-wordmark: 0.12em;
   --press-weight-body: 500;
   --press-weight-display: 800;
   --press-weight-strong: 600;   /* buttons, tags, nav CTAs */

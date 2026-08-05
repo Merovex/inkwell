@@ -35,7 +35,7 @@
 .press-kicker {
   font-size: var(--press-size-micro);
   font-weight: var(--press-weight-strong);
-  letter-spacing: 0.1em;
+  letter-spacing: var(--press-tracking-kicker);
   text-transform: uppercase;
   color: var(--accent);
 }
@@ -51,7 +51,7 @@
 .wordmark {
   font-family: "Federo", var(--press-serif, serif);
   text-transform: uppercase;
-  letter-spacing: 0.12em;
+  letter-spacing: var(--press-tracking-wordmark);
   font-weight: var(--press-weight-display);
   font-size: var(--press-size-meta);
 }

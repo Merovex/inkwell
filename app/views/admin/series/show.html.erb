@@ -36,7 +36,7 @@
   <% if @series.books.any? %>
     <section class="series-books">
       <h2 class="subhead">Books in this series</h2>
-      <ul class="mrows">
+      <ul class="mrows u-unlist">
         <% @series.books.each do |book| %>
           <li class="mrow u-surface"><span class="mrow__label"><%= link_to book.title, admin_book_path(book.record) %></span></li>
         <% end %>

@@ -13,10 +13,8 @@
     --history-line-size: 3px;
     --history-stop-center: 0.5rem;                 /* dot center below entry top */
 
-    list-style: none;
-    margin-block: 0;
+    /* composes u-unlist in the markup */
     margin-inline: auto;
-    padding: 0;
     display: grid;
     gap: calc(var(--u-pad) * 1.5);
     inline-size: 50%;

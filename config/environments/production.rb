@@ -62,25 +62,38 @@ Rails.application.configure do
   # resolve — not the sending subdomains.
   config.action_mailer.default_url_options = { host: Rails.application.credentials.dig(:ses, :host) || "example.com" }
 
-  # SES (API v2) wiring, commented out in favor of Postmark but kept for an
-  # easy revert. Region + IAM credentials come from encrypted credentials
-  # (ses:). Per-stream configuration sets and message tags are set on each
-  # mailer via delivery_method_options (ADR 0015). Before re-enabling: turn
-  # OFF SES account-level auto-suppression — our database is the authoritative
-  # suppression list, and AWS silently dropping sends makes Subscriber.status
-  # drift from reality (ADR 0025).
-  # config.action_mailer.delivery_method = :ses_v2
-  # config.action_mailer.ses_v2_settings = {
-  #   region: Rails.application.credentials.dig(:ses, :region),
-  #   access_key_id: Rails.application.credentials.dig(:ses, :access_key_id),
-  #   secret_access_key: Rails.application.credentials.dig(:ses, :secret_access_key)
-  # }
-
-  # Deliver mail through Postmark (token in encrypted credentials).
+  # Both delivery pipes run side-by-side (ADR 0025 + docs/log 2026-08-05).
+  # Postmark is the DEFAULT — the must-deliver mail (sign-in, opt-in
+  # confirmations, re-engagement) where a miss loses a user or a subscriber.
   config.action_mailer.delivery_method = :postmark
   config.action_mailer.postmark_settings = {
     api_token: Rails.application.credentials.postmark_api_token
   }
+
+  # SES (API v2) carries the bulk — broadcasts and drip steps — for volume
+  # economics; both mailers already stamp the marketing config set + message
+  # tags via delivery_method_options (ADR 0015). Ops preconditions for this
+  # pipe: SES account-level auto-suppression OFF (our database is the
+  # authoritative suppression list — with it on, AWS silently drops sends and
+  # Subscriber.status drifts, ADR 0025), the SNS subscription to /webhooks/ses
+  # confirmed, and the news.merovex.press identity verified.
+  config.action_mailer.ses_v2_settings = {
+    region: Rails.application.credentials.dig(:ses, :region),
+    access_key_id: Rails.application.credentials.dig(:ses, :access_key_id),
+    secret_access_key: Rails.application.credentials.dig(:ses, :secret_access_key)
+  }
+
+  # The bulk pipe assignment. Flip :ses_v2 → :postmark for the warm-standby
+  # day (an SES throttle or complaint spike) — same From identity once
+  # news.merovex.press is dual-verified in Postmark. Without SES credentials
+  # everything stays on Postmark. SubscriberMailer stays on the default on
+  # purpose: confirmations are must-deliver (unproven addresses, one shot).
+  if Rails.application.credentials.dig(:ses, :access_key_id).present?
+    config.to_prepare do
+      PostBroadcastMailer.delivery_method = :ses_v2
+      DropMailer.delivery_method = :ses_v2
+    end
+  end
 
   # Enable locale fallbacks for I18n (makes lookups for any locale fall back to
   # the I18n.default_locale when a translation cannot be found).

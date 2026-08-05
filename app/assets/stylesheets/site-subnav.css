@@ -22,7 +22,7 @@
     padding: var(--size-1) var(--size-3);
     border-radius: var(--radius-round);
     color: var(--ink);
-    font-weight: 600;
+    font-weight: var(--font-weight-6);
     cursor: pointer;
     list-style: none;
   }

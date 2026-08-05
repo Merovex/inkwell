@@ -66,21 +66,7 @@
   }
   .broadcast-banner__copy:hover { background: color-mix(in oklab, var(--brand-strong), black 15%); }
 
-  /* Copied confirmation: covers the whole field, then fades away. */
-  .broadcast-banner__copied {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: var(--brand-strong);
-    color: var(--on-brand);
-    font-weight: var(--font-weight-6);
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity var(--speed-quick) var(--ease-3);
-  }
-  .broadcast-banner__field.is-copied .broadcast-banner__copied { opacity: 1; }
+  /* The "Copied" overlay is u-copied-veil in the markup. */
 
   .broadcast-banner__stamp {
     margin: 0;

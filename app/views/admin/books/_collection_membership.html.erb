@@ -6,7 +6,7 @@
         context: "book_collection", url: search_admin_collections_path,
         anchor_param: "book_record_id", selected_param: "container_record_id",
         anchor_id: record.id, placeholder: "Search collections to add…" %>
-  <ul class="mrows" id="book_collections">
+  <ul class="mrows u-unlist" id="book_collections">
     <% book.installments.each do |installment| %>
       <% collection = Current.account.collections.find_by(record_id: installment.container_record_id) %>
       <% next unless collection %>

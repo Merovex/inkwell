@@ -99,7 +99,8 @@
   .designer__preset-name { font-size: var(--font-size-2); }
   .designer__preset-tagline { color: var(--ink-muted); font-size: var(--font-size-0); }
 
-  .designer__order { list-style: none; margin: 0; padding: 0; display: grid; gap: calc(var(--u-pad) / 4); }
+  /* composes u-unlist in the markup */
+  .designer__order { display: grid; gap: calc(var(--u-pad) / 4); }
   .designer__order-row {
     display: flex; align-items: center; justify-content: space-between; gap: var(--u-pad);
     padding: calc(var(--u-pad) / 2);
@@ -155,15 +156,11 @@
     gap: var(--u-pad);
     align-content: start;
   }
+  /* composes u-unbutton in the markup */
   .designer__pane-back {
     justify-self: start;
-    border: 0;
-    background: none;
-    padding: 0;
-    font: inherit;
     font-weight: var(--font-weight-6);
     color: var(--accent);
-    cursor: pointer;
   }
   .designer__pane-back:hover { text-decoration: underline; }
   .designer__rail-title {
@@ -454,9 +451,7 @@
     inset-inline: 0;
     top: 100%;
     z-index: 5;
-    margin: 0;
-    padding: calc(var(--u-pad) / 4);
-    list-style: none;
+    padding: calc(var(--u-pad) / 4); /* composes u-unlist */
     background: var(--canvas);
     border: var(--border-size-1) solid var(--line);
     border-radius: var(--radius-ui);
@@ -474,10 +469,8 @@
     background: color-mix(in oklab, var(--accent) 12%, var(--canvas));
   }
 
+  /* composes u-unlist in the markup */
   .designer__links {
-    list-style: none;
-    margin: 0;
-    padding: 0;
     display: grid;
     /* Pin the single track to the container: the default auto track sizes
        to the rows' max-content (two intrinsic-width inputs) and overflows

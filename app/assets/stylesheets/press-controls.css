@@ -30,7 +30,7 @@
   font-size: var(--press-size-meta);
   font-weight: var(--press-weight-strong);
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: var(--press-tracking-kicker);
   text-decoration: none;
   border: 1px solid transparent;
   border-radius: var(--press-radius-xs);

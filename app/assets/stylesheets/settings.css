@@ -7,12 +7,9 @@
  *   form.settings__avatar-well > label.settings__avatar (.avatar)
  */
 @layer components {
-  .settings {
-    display: grid;
-    gap: calc(var(--u-pad) * 2);
-    margin-block-start: var(--u-pad);
-  }
-
+  /* The page wrapper composes u-center + u-stack u-stack-double +
+     u-margin-block-start in the markup; .settings remains as the scope for
+     the rules below. */
   /* System settings sits at a comfortable ~900px, not the narrow prose column. */
   .settings--wide { --u-center-max: var(--measure-form-wide); }
 

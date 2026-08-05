@@ -55,7 +55,7 @@
     min-width: 0;
   }
   .canvas__home {
-    font-weight: 700;
+    font-weight: var(--font-weight-7);
     color: var(--ink);
     text-decoration: none;
     white-space: nowrap;

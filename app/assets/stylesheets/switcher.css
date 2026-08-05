@@ -41,7 +41,7 @@
   }
   .switcher__whoami { display: inline-flex; align-items: center; gap: var(--size-2); min-width: 0; }
   .switcher__name {
-    font-weight: 600;
+    font-weight: var(--font-weight-6);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -90,7 +90,7 @@
   .switcher__card:hover .switcher__card-icon { background: var(--surface-raised); color: var(--ink); }
   .switcher__card-body { display: flex; flex-direction: column; min-width: 0; }
   .switcher__card-name {
-    font-weight: 700;
+    font-weight: var(--font-weight-7);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -145,7 +145,7 @@
     gap: var(--size-1);
     padding: var(--size-3);
     color: var(--ink);
-    font-weight: 600;
+    font-weight: var(--font-weight-6);
     text-decoration: none;
   }
   .switcher__foot + .switcher__foot { border-inline-start: var(--border-size-1) solid color-mix(in oklab, var(--ink) 8%, transparent); }

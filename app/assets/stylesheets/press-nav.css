@@ -32,7 +32,7 @@
 .press-nav__menu-link {
   font-family: var(--press-serif); /* Archivo Narrow, matching the headings */
   text-transform: uppercase;
-  letter-spacing: 0.12em;
+  letter-spacing: var(--press-tracking-wordmark);
   color: var(--text-1);
   text-decoration: none;
 }

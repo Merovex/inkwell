@@ -6,7 +6,7 @@
   <h1 class="perma-header__title">Custom domain</h1>
 </header>
 
-<div class="settings u-center u-center-narrow">
+<div class="settings u-stack u-stack-double u-margin-block-start u-center u-center-narrow">
   <% if @domains.any? %>
     <% canonical = @domains.find(&:canonical?) || @domains.first %>
     <% apex = canonical.hostname.delete_prefix("www.") %>

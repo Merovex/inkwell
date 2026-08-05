@@ -157,7 +157,7 @@
 
       <%# --- sub-panes: hero, preset, one per style axis, one per page section --- %>
       <div class="designer__pane" data-designer-target="pane" data-pane="hero" hidden>
-        <button type="button" class="designer__pane-back" data-action="designer#back">&larr; Edit website</button>
+        <button type="button" class="designer__pane-back u-unbutton" data-action="designer#back">&larr; Edit website</button>
         <label class="switch">
           <input class="switch__input" type="checkbox"
                  data-designer-target="axisToggle" data-axis="hero_home"
@@ -223,7 +223,7 @@
       </div>
 
       <div class="designer__pane" data-designer-target="pane" data-pane="order" hidden>
-        <button type="button" class="designer__pane-back" data-action="designer#back">&larr; Edit website</button>
+        <button type="button" class="designer__pane-back u-unbutton" data-action="designer#back">&larr; Edit website</button>
         <section class="designer__block" aria-label="Section order">
           <h3 class="designer__block-title">Section order</h3>
           <p class="designer__hint u-text-muted">Choose the order the sections appear on your home page.</p>
@@ -231,7 +231,7 @@
               schema-lab duplication with home.html's default slice, settled
               at the contract bump). The controller reorders these rows and
               reads the order back from the DOM. %>
-          <ul class="designer__order" data-designer-target="orderList">
+          <ul class="designer__order u-unlist" data-designer-target="orderList">
             <% { "hero" => "Hero", "books" => "Books", "posts" => "Blog",
                  "bio" => "Biography", "authors" => "Authors", "newsletter" => "Email signup" }.each do |id, label| %>
               <li class="designer__order-row" data-section="<%= id %>">
@@ -249,7 +249,7 @@
       </div>
 
       <div class="designer__pane" data-designer-target="pane" data-pane="preset" hidden>
-        <button type="button" class="designer__pane-back" data-action="designer#back">&larr; Edit website</button>
+        <button type="button" class="designer__pane-back u-unbutton" data-action="designer#back">&larr; Edit website</button>
         <section class="designer__block" aria-label="Presets">
           <h3 class="designer__block-title">Presets</h3>
           <p class="designer__hint u-text-muted">A preset restyles the whole site at once &mdash; <strong>palette, fonts, layouts, and the trimmings</strong> (it replaces any custom fonts or colors). A starting point, not a cage: everything it sets can be changed after.</p>
@@ -280,7 +280,7 @@
 
       <% style_axes.each do |axis| %>
         <div class="designer__pane" data-designer-target="pane" data-pane="<%= axis["key"] %>" hidden>
-          <button type="button" class="designer__pane-back" data-action="designer#back">&larr; Edit website</button>
+          <button type="button" class="designer__pane-back u-unbutton" data-action="designer#back">&larr; Edit website</button>
           <% if axis["key"] == "palette" %>
             <%# Mode belongs to the palette: it leads the pane. %>
             <%= render "axis", axis: mode_axis %>
@@ -302,7 +302,7 @@
 
       <% page_sections.each do |section, axes| %>
         <div class="designer__pane" data-designer-target="pane" data-pane="<%= section %>" hidden>
-          <button type="button" class="designer__pane-back" data-action="designer#back">&larr; Edit website</button>
+          <button type="button" class="designer__pane-back u-unbutton" data-action="designer#back">&larr; Edit website</button>
           <%# Boolean-ish axes read better as switches than chips, and they
               lead the pane. Checked = the axis's first option (its default);
               option labels feed the row summary. %>

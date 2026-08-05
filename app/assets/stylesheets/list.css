@@ -9,11 +9,7 @@
  *   .list__byline) + .list__count + .list__action
  */
 @layer components {
-  .list {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-  }
+  /* .list renders on a <div> (see shared/_list_item) — no list chrome to strip. */
 
   .list__item {
     position: relative;           /* containing block for the stretched link */

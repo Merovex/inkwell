@@ -4,10 +4,8 @@
  * `view-toggle` Stimulus controller flips data-view; this is only the skin.
  */
 @layer components {
+  /* composes u-unlist in the markup */
   .circles {
-    list-style: none;
-    margin: 0;
-    padding: 0;
     display: grid;
     gap: var(--u-pad);
   }
@@ -30,22 +28,7 @@
     .circles[data-view="cards"] .circles__card { aspect-ratio: auto; }
   }
 
-  .circles__card {
-    display: flex;
-    flex-direction: column;
-    gap: calc(var(--u-pad) / 4);
-    padding: var(--u-pad);
-    border: var(--border-size-1) solid var(--line);
-    border-radius: var(--radius-ui);
-    color: inherit;
-    text-decoration: none;
-  }
-  .circles__card:hover,
-  .circles__card:focus-visible {
-    border-color: var(--accent);
-    background: var(--accent-soft);
-  }
-
+  /* Cards compose .door (surface + hover invitation) in the markup. */
   .circles__name { font-weight: var(--font-weight-6); }
   .circles__meta { color: var(--ink-muted); font-size: var(--font-size-0); }
 

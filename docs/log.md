@@ -2,6 +2,14 @@
 
 Append-only. Newest first. Format defined in [[CLAUDE]] (`CLAUDE.md`).
 
+## [2026-08-05] build | SES re-enabled side-by-side — the provider split is live in config
+- Implements the split settled earlier today (see the note below): production keeps **Postmark as the default** delivery method (must-deliver: sign-in, opt-in confirmations, re-engagement — SubscriberMailer deliberately stays on the default), and a `config.to_prepare` block rides **PostBroadcastMailer + DropMailer on `:ses_v2`**, guarded on `ses.access_key_id` presence (no SES credentials → everything stays Postmark). Standby flip is the documented one-line `:ses_v2 → :postmark`.
+- `ApplicationMailer#marketing_from` became **pipe-aware**: an ESP rejects a From it hasn't verified, so the address follows the class's delivery method — `ses.marketing_from` (news.merovex.press) under `:ses_v2`, the Postmark identity (`postmark.marketing_from` / newsletter@merovex.press) otherwise. Test env resolves to the Postmark branch (delivery_method :test), so existing From assertions hold.
+- **Ops preconditions before deploy** (stated in the production.rb comment): SES account-level auto-suppression OFF (runbook Step 8 as revised by [[0025-canonical-delivery-events]]), SNS subscription to /webhooks/ses Confirmed, news.merovex.press identity + DKIM still Verified, production access still enabled. Both webhook controllers already ingest into the canonical DeliveryEvent pipeline, so per-rail bounce/complaint rates are observable from day one.
+- Suite 603 green.
+- pages touched: (log only)
+- refs: ../config/environments/production.rb, ../app/mailers/application_mailer.rb
+
 ## [2026-08-05] note | Provider split settled: Postmark = must-deliver, SES = bread-and-butter
 - Settles the routing question [[0025-canonical-delivery-events]] deferred. **Postmark** carries the must-deliver mail on `auth.merovex.press`: magic links, sign-in codes, and opt-in confirmations — confirmations are must-deliver despite being "newsletter" mail because they hit unproven addresses (highest bounce-risk stream, and SES's bounce/complaint thresholds are ACCOUNT-level — config sets separate stats, not enforcement) and a miss loses the subscriber permanently. **SES** carries everything post-confirmation on `news.merovex.press`: broadcasts, drips, the welcome sequence (the highest-engagement mail — deliberately on the news identity to warm it), re-engagement.
 - **Dual-verify `news.` in BOTH ESPs** (DKIM selectors are namespaced — `pm._domainkey` beside SES's Easy-DKIM selectors, separate return-path sub-subdomains, DMARC aligns via DKIM for both): Postmark becomes a warm standby for broadcasts — an SES throttle/complaint-spike day is a config flip under the same From identity, no DNS scramble. The DeliveryEvent per-send provider stamp is what makes the flip observable per-rail.

@@ -41,6 +41,44 @@ next. Check boxes as you go; this is a living doc.
 
 Where you edit DNS: **______** (registrar / Cloudflare / Route 53 — note it here).
 
+## Round 2 — platform identities (kindredquill.com), 2026-08-05
+
+The multitenant cut: sending identities become **platform-owned** (every
+tenant's mail authenticates as kindredquill.com, tenant name as display label,
+tenant contact as Reply-To — the Substack model). Split per the settled
+provider policy ([[0025-canonical-delivery-events]] + log note 2026-08-05):
+**SES gets only the bulk identity; the must-deliver identity is verified in
+Postmark, not SES.**
+
+| Key | Value | Notes |
+|-----|-------|-------|
+| Root domain | `kindredquill.com` | DMARC published here; **never sends** |
+| AWS region | `us-east-1` | unchanged |
+| **Bulk** identity (SES) | `news.kindredquill.com` | broadcasts + drips + welcome; future `ses.marketing_from` |
+| Bulk MAIL FROM | `bounce.news.kindredquill.com` | SPF alignment |
+| **Must-deliver** identity (Postmark) | `auth.kindredquill.com` | sign-in codes, magic links, opt-in confirmations |
+| Standby (Postmark, optional) | `news.kindredquill.com` | dual-verify → ESP flip keeps one From identity |
+| Tracking | default SES domain | Step 5 decision stands |
+| SNS webhook URL | `https://app.kindredquill.com/webhooks/ses` | webhook routes are host-unconstrained |
+| DMARC report inbox | `dmarc@merovex.com` | needs `kindredquill.com._report._dmarc.merovex.com` TXT (Step 4 pattern) |
+
+Steps that apply, against the checklist below: **2** (one identity in SES:
+`news.` only — auth goes in the Postmark console instead), **3** (MAIL FROM on
+`news.`), **4** (DMARC on the kindredquill.com root + the cross-domain report
+authz on merovex.com), **6** (reuse the existing `inkwell-marketing` /
+`inkwell-transactional` config sets — nothing new to create), **7** (same SNS
+topic; add/confirm the app-host subscription), **8 as revised** (suppression
+stays OFF). Sandbox exit (9) is already done — the account is shared.
+
+Identity cleanup once cutover lands: drop `auth.merovex.press` (SES carries no
+auth mail), drop the cohwall identities (owner, 2026-08-05); keep
+`news.merovex.press` until `ses.marketing_from` points at the new identity.
+`verkilo.com` is another product — untouched. Code follow-ups at cutover:
+`ses.marketing_from` credential → the new address; `marketing_from`'s
+hardcoded "Ben Wilson" display name → the tenant's site name; transactional
+default From moves off the root (`support@kindredquill.com` → an
+`auth.kindredquill.com` sender, keeping support@ as the human mailbox).
+
 > **Reputation split in one line:** transactional signs `d=auth.merovex.press`,
 > marketing signs `d=news.merovex.press`; receivers score them separately, so the
 > newsletter can never sink the login email. Config sets and suppression (below)

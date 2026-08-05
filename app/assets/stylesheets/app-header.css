@@ -18,7 +18,7 @@
     border: 0;
     background: transparent;
     font: inherit;
-    font-weight: 800;
+    font-weight: var(--font-weight-8);
     color: inherit;
     cursor: pointer;
   }

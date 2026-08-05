@@ -31,13 +31,20 @@ class ApplicationMailer < ActionMailer::Base
       AccountHost.public_url_options(account)
     end
 
-    # Newsletter mail sends under Ben Wilson's name from the Postmark-verified
-    # merovex.press identity — moved off the old SES sender (news.merovex.press)
-    # now that Postmark is the delivery pipe. Uses the `postmark.marketing_from`
-    # credential when set, otherwise newsletter@merovex.press. The account's
-    # contact address becomes Reply-To on the caller so replies still reach the press.
+    # Newsletter mail sends under Ben Wilson's name from whichever identity
+    # this mailer's delivery pipe has verified: the SES marketing sender
+    # (ses.marketing_from, news.merovex.press) when the class rides :ses_v2,
+    # otherwise the Postmark-verified identity (postmark.marketing_from, or
+    # newsletter@merovex.press). An ESP rejects a From it hasn't verified, so
+    # the address must follow the pipe. The account's contact address becomes
+    # Reply-To on the caller so replies still reach the press.
     def marketing_from(setting)
-      address = Rails.application.credentials.dig(:postmark, :marketing_from).presence || "newsletter@merovex.press"
+      address =
+        if self.class.delivery_method == :ses_v2
+          Rails.application.credentials.dig(:ses, :marketing_from)
+        else
+          Rails.application.credentials.dig(:postmark, :marketing_from).presence || "newsletter@merovex.press"
+        end
       "Ben Wilson <#{address}>"
     end
 

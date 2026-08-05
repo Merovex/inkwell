@@ -371,13 +371,13 @@
 
     <%# ---- Circles components (mock data — the live ones render in circles/) ---- %>
     <section class="sg-section">
-      <p class="sg-h">Circle cards — <code>.circles</code> (cards view, with a golden invite)</p>
+      <p class="sg-h">Circle cards — <code>.circles</code> composing <code>.door</code> (the tappable card; also used by the account picker)</p>
       <div class="circles" data-view="cards">
-        <a href="#" class="circles__card">
+        <a href="#" class="circles__card door">
           <span class="circles__name"><%= inline_svg_tag "lucide/lock.svg", class: "lucide", size: "16px" %> Night Writers</span>
           <span class="circles__meta">4 members · last pulse yesterday</span>
         </a>
-        <div class="circles__card circles__card--invited">
+        <div class="circles__card circles__card--invited door">
           <span class="circles__name"><%= inline_svg_tag "lucide/lock.svg", class: "lucide", size: "16px" %> Poetry Circle</span>
           <span class="circles__meta">You're invited by Harper</span>
           <span class="circles__invite-actions">
@@ -385,7 +385,7 @@
             <button class="button button--ghost button--small">Decline</button>
           </span>
         </div>
-        <a href="#" class="circles__card">
+        <a href="#" class="circles__card door">
           <span class="circles__name"><%= inline_svg_tag "lucide/lock.svg", class: "lucide", size: "16px" %> Serial Plotters</span>
           <span class="circles__meta">7 members · quiet this week</span>
         </a>

@@ -24,18 +24,18 @@
     </div>
   </div>
 
-  <ul class="circles" data-view="<%= view %>" data-view-toggle-target="collection">
+  <ul class="circles u-unlist" data-view="<%= view %>" data-view-toggle-target="collection">
     <% @circles.each do |circle| %>
       <li>
         <% if (invitation = @invitations_by_circle[circle.id]) %>
           <%= render "circles/invitation_card", invitation: invitation %>
         <% elsif circle.member?(Current.user) %>
-          <%= link_to circle_path(circle), class: "circles__card" do %>
+          <%= link_to circle_path(circle), class: "circles__card door" do %>
             <span class="circles__name"><%= circle.name %></span>
             <span class="circles__meta"><%= pluralize(circle.circle_memberships.count, "member") %></span>
           <% end %>
         <% else %>
-          <span class="circles__card">
+          <span class="circles__card door">
             <span class="circles__name"><%= circle.name %></span>
             <span class="circles__meta"><%= pluralize(circle.circle_memberships.count, "member") %> · invite-only</span>
           </span>

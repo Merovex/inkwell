@@ -6,7 +6,7 @@
   <h1 class="perma-header__title">Edit author</h1>
 </header>
 
-<div class="settings u-center u-center-narrow">
+<div class="settings u-stack u-stack-double u-margin-block-start u-center u-center-narrow">
   <section class="settings__section settings__section--picture" aria-label="Picture">
     <%= form_with url: admin_author_avatar_path(@author), method: :patch, multipart: true, class: "settings__avatar-well",
           data: { controller: "avatar-upload",

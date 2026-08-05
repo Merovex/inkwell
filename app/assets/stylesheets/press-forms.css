@@ -4,7 +4,7 @@
   display: block;
   font-size: var(--press-size-micro);
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: var(--press-tracking-kicker);
   color: var(--text-2);
   margin-block-end: var(--size-2);
 }
