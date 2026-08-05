@@ -1,8 +1,12 @@
 class ApplicationMailer < ActionMailer::Base
-  # Transactional mail sends from the kindredquill.com support identity, walled
-  # off from the newsletter's reputation so a bad broadcast can't sink sign-in
-  # delivery (ADR 0015).
-  default from: "support@kindredquill.com"
+  # User-transactional mail signs d=auth.merovex.press — the root domain never
+  # sends (docs/email-architecture.md; supersedes ADR 0015's root-transactional
+  # posture). support@ stays inbound-only. The address follows the ses
+  # credential so the eventual verify.* identity is a credential change.
+  default from: email_address_with_name(
+    Rails.application.credentials.dig(:ses, :transactional_from).presence || "noreply@auth.merovex.press",
+    "Inkwell"
+  )
   layout "mailer"
 
   # Mailers don't include app helpers by default, but the Action Text blob
@@ -55,5 +59,15 @@ class ApplicationMailer < ActionMailer::Base
     # is ever renamed.
     def broadcast_stream
       Rails.application.credentials.dig(:postmark, :broadcast_stream).presence || "broadcast"
+    end
+
+    # Platform bulk mail to Users (notification digests, Pulse asks) — the
+    # platform's own voice, not a Site's. INTERIM: rides the news.merovex.press
+    # identity because it must never ride the verification identity
+    # (docs/email-architecture.md stream 2) and notify.* doesn't exist yet;
+    # moves to notify.kindredquill.com with the platform migration.
+    def platform_bulk_from
+      address = Rails.application.credentials.dig(:ses, :marketing_from).presence || "noreply@news.merovex.press"
+      email_address_with_name(address, "Inkwell")
     end
 end

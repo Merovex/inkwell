@@ -1,7 +1,7 @@
 require "test_helper"
 
 class PulseMailerTest < ActionMailer::TestCase
-  test "the ask carries the question and rides the transactional identity" do
+  test "the ask carries the question and rides the platform bulk identity" do
     circle = circles(:writers)
     pulse = Current.with_bucket(circle) do
       Record.originate(Pulse.new(question: "What did you ship?", creator: users(:alice)))
@@ -10,8 +10,9 @@ class PulseMailerTest < ActionMailer::TestCase
     email = PulseMailer.ask(pulse, users(:bob), Date.current)
 
     assert_equal [ users(:bob).email_address ], email.to
-    # Transactional support identity, not a press newsletter sender.
-    assert_equal [ "support@kindredquill.com" ], email.from
+    # Platform bulk identity (stream 2, docs/email-architecture.md): user bulk
+    # never rides the verification identity, and the root never sends.
+    assert_equal [ "noreply@news.merovex.press" ], email.from
     assert_match "What did you ship?", email.html_part.decoded
     # The question is the subject; the body links back to the pulse to answer.
     assert_equal "What did you ship?", email.subject

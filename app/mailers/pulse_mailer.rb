@@ -1,7 +1,12 @@
-# The Pulse check ask. A transactional note to a circle member (a real user), so it
-# rides the kindredquill.com support identity ApplicationMailer defaults to — not
-# a press's newsletter identity — on the default transactional stream.
+# The Pulse check ask — user bulk (stream 2, docs/email-architecture.md):
+# scheduled platform mail to a circle member, so it rides the platform bulk
+# identity, never the verification one.
 class PulseMailer < ApplicationMailer
+  # Bulk config set: complaint/bounce events flow like the newsletter's.
+  default delivery_method_options: {
+    configuration_set_name: Rails.application.credentials.dig(:ses, :marketing_config_set)
+  }
+
   def ask(pulse, user, asked_on)
     @pulse = pulse
     @circle = pulse.record.bucket
@@ -11,6 +16,6 @@ class PulseMailer < ApplicationMailer
     @answer_url = circle_pulse_url(@circle, pulse.record, **app_url_options)
 
     # The question is the subject (the circle is named in the body/from context).
-    mail(to: user.email_address, subject: @pulse.question.truncate(120))
+    mail(to: user.email_address, from: platform_bulk_from, subject: @pulse.question.truncate(120))
   end
 end

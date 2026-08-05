@@ -1,8 +1,14 @@
 # The 4-hour notification digest (NotificationDigestJob): one email rolling
-# up a person's unread, email-worthy notifications. Transactional — the app
-# identity, links pinned to the app host (app_url_options). A single item
+# up a person's unread, email-worthy notifications. User bulk (stream 2,
+# docs/email-architecture.md): platform voice, never the verification
+# identity. Links pinned to the app host (app_url_options). A single item
 # borrows its own sentence as the subject.
 class NotificationMailer < ApplicationMailer
+  # Bulk config set: complaint/bounce events flow like the newsletter's.
+  default delivery_method_options: {
+    configuration_set_name: Rails.application.credentials.dig(:ses, :marketing_config_set)
+  }
+
   def digest(user, notifications)
     @notifications = notifications
     @base_url = root_url(**app_url_options).chomp("/")
@@ -10,6 +16,6 @@ class NotificationMailer < ApplicationMailer
 
     subject = notifications.one? ? notifications.first.title
                                  : "#{notifications.size} new notifications on Inkwell"
-    mail to: user.email_address, subject: subject
+    mail to: user.email_address, from: platform_bulk_from, subject: subject
   end
 end

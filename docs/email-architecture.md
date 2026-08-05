@@ -4,6 +4,14 @@ Revised 2026-08-05. Supersedes the prior map, which was built on a
 single-tenant reading of the product and got the growth curve, the
 economics, and the tenancy model wrong.
 
+Amended same day: stream 1 moved from Postmark to SES under runway
+pressure. The isolation Postmark bought is delivered instead by a
+dedicated AWS account for `verify.*` — which costs nothing — created
+when needed, not now. One account carries the platform (Quill) and
+Merovex Press until then. Postmark is cancelled after the cutover
+proves out; the substrate keeps the provider flip as the recovery
+path.
+
 ---
 
 ## What changed from the prior map
@@ -57,9 +65,14 @@ Magic-link authentication, account-creation confirmation. Low volume,
 rare per user, unrecoverable on failure since login *is* an email link.
 Recipients are known Users.
 
-**ESP: Postmark.** Premium placement is worth paying for on the one
-stream that cannot fail, and volume is small enough that the cost is
-noise.
+**ESP: SES, in its own AWS account once created.** SES polices bounce and
+complaint rates at the *account* level, so the isolation this stream
+needs is an account boundary, not a premium vendor — and an AWS account
+is free. Until that account exists, the stream signs
+`d=auth.merovex.press` on the main account: separate domain reputation,
+shared account fate, acceptable while every list in the system is ours.
+Postmark's premium placement was the runway-rich answer; the re-entry
+trigger below records when to reconsider.
 
 ### 2. User bulk — `notify.kindredquill.com`
 
@@ -105,7 +118,7 @@ sending.
 | Name | Role | Sends |
 |---|---|---|
 | `kindredquill.com` | Root, brand, link target | No. Inbound only for support@ |
-| `verify.kindredquill.com` | User transactional | Postmark |
+| `verify.kindredquill.com` | User transactional | SES (dedicated account; interim `auth.merovex.press` on the main account) |
 | `notify.kindredquill.com` | User bulk | SES |
 | `news.kindredquill.com` | Subscriber mail | SES |
 | `sites.kindredquill.com` | Custom-domain alias target | No |
@@ -211,20 +224,34 @@ ships, both gates are needed.
 - **Paid subscriber model.** Authors selling paid content on a Site
   introduces a fourth audience with different consent and different
   stakes. Unexamined.
+- **Postmark re-entry.** Revisit a paid transactional ESP for stream 1
+  when there is meaningful MRR, or at the first shared-pool
+  deliverability incident, whichever comes first. Until then the
+  DeliveryEvent pipeline watches magic-link time-to-delivery as the
+  early-warning signal.
+- **Interim stream-2 identity.** User bulk (digests, Pulse asks)
+  currently signs `d=news.merovex.press` because it must never ride the
+  verification identity and `notify.*` doesn't exist yet. Mixing User
+  and Subscriber audiences on one identity is a known interim smell;
+  resolved when the platform identities are created.
 
 ---
 
 ## Migration sequence
 
-1. Create the three sending identities and their DNS records.
-2. Move magic links off support@ to `verify.kindredquill.com`. Lock the
-   root: SPF `-all`, DMARC `p=reject`, inbound only.
+1. ~~Move magic links off support@~~ **Done in code**: all mail rides
+   SES; transactional signs `d=auth.merovex.press`, bulk signs
+   `d=news.merovex.press`. Remaining: lock the root — SPF `-all`,
+   DMARC `p=reject`, inbound only (DNS side).
+2. Verify the SES cutover in production, then cancel Postmark.
 3. Replace the hardcoded display name with a per-tenant value.
-4. Migrate merovex.press onto platform identities as tenant one.
-5. Postmark console hygiene: one production server with streams, spares
-   become staging or get deleted.
-6. Bring SES live for both bulk streams before the first paying Site.
-7. Revisit the firewall before the second paying Site, and certainly
+4. Create the `kindredquill.com` sending identities (three subdomains,
+   DNS record sets together) and migrate merovex.press onto platform
+   identities as tenant one.
+5. Create the dedicated AWS account for `verify.*` before the first
+   third-party list import; move stream 1 into it (a credential
+   change — the From follows `ses.transactional_from`).
+6. Revisit the firewall before the second paying Site, and certainly
    before import ships.
 
 None of this is a one-way door. The substrate was built provider-agnostic,

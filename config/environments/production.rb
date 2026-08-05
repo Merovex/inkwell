@@ -62,10 +62,16 @@ Rails.application.configure do
   # resolve — not the sending subdomains.
   config.action_mailer.default_url_options = { host: Rails.application.credentials.dig(:ses, :host) || "example.com" }
 
-  # Both delivery pipes run side-by-side (ADR 0025 + docs/log 2026-08-05).
-  # Postmark is the DEFAULT — the must-deliver mail (sign-in, opt-in
-  # confirmations, re-engagement) where a miss loses a user or a subscriber.
-  config.action_mailer.delivery_method = :postmark
+  # SES is the DEFAULT pipe for everything (docs/email-architecture.md,
+  # 2026-08-05): one account carries the platform (Quill) and Merovex Press
+  # interim; the verify.* stream moves to its own AWS account when created.
+  # Transactional signs d=auth.merovex.press, bulk signs d=news.merovex.press —
+  # separate domain reputations inside the shared account.
+  config.action_mailer.delivery_method = :ses_v2
+  # Postmark stays configured as the dormant warm-standby (the provider flip
+  # is the recovery path if SES throttles or the shared pool sours); the
+  # account itself is scheduled for cancellation once the SES cutover proves
+  # out — re-entry trigger recorded in docs/email-architecture.md.
   config.action_mailer.postmark_settings = {
     api_token: Rails.application.credentials.postmark_api_token
   }
@@ -82,18 +88,6 @@ Rails.application.configure do
     access_key_id: Rails.application.credentials.dig(:ses, :access_key_id),
     secret_access_key: Rails.application.credentials.dig(:ses, :secret_access_key)
   }
-
-  # The bulk pipe assignment. Flip :ses_v2 → :postmark for the warm-standby
-  # day (an SES throttle or complaint spike) — same From identity once
-  # news.merovex.press is dual-verified in Postmark. Without SES credentials
-  # everything stays on Postmark. SubscriberMailer stays on the default on
-  # purpose: confirmations are must-deliver (unproven addresses, one shot).
-  if Rails.application.credentials.dig(:ses, :access_key_id).present?
-    config.to_prepare do
-      PostBroadcastMailer.delivery_method = :ses_v2
-      DropMailer.delivery_method = :ses_v2
-    end
-  end
 
   # Enable locale fallbacks for I18n (makes lookups for any locale fall back to
   # the I18n.default_locale when a translation cannot be found).
