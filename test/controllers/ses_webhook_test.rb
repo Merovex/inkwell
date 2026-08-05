@@ -27,18 +27,47 @@ class SesWebhookTest < ActionDispatch::IntegrationTest
     assert_equal 1, @broadcast.reload.opened_count
   end
 
-  test "a permanent bounce stamps bounced" do
+  test "a permanent bounce stamps bounced and suppresses the subscriber" do
     post_event("Bounce", extra: { "bounce" => { "bounceType" => "Permanent" } })
 
     assert @delivery.reload.bounced_at
     assert_equal 1, @broadcast.reload.bounced_count
+    assert @subscriber.reload.bounced?
   end
 
-  test "a transient bounce is ignored — SES keeps retrying" do
+  test "a transient bounce records but doesn't suppress — SES keeps retrying" do
     post_event("Bounce", extra: { "bounce" => { "bounceType" => "Transient" } })
 
     assert_nil @delivery.reload.bounced_at
     assert_equal 0, @broadcast.reload.bounced_count
+    assert @subscriber.reload.confirmed?
+    assert_equal 1, @subscriber.delivery_events.soft_bounce.count
+  end
+
+  test "a suppression-list refusal never sent — recorded, subscriber untouched" do
+    post_event("Bounce", extra: { "bounce" =>
+      { "bounceType" => "Permanent", "bounceSubType" => "OnAccountSuppressionList" } })
+
+    assert_nil @delivery.reload.bounced_at
+    assert_equal 0, @broadcast.reload.bounced_count
+    assert @subscriber.reload.confirmed?
+    assert_equal 1, @subscriber.delivery_events.suppressed.count
+  end
+
+  test "an SES Reject is a rejection, not a bounce" do
+    post_event("Reject")
+
+    assert_nil @delivery.reload.bounced_at
+    assert_equal 0, @broadcast.reload.bounced_count
+    assert @subscriber.reload.confirmed?
+    assert_equal 1, @subscriber.delivery_events.rejected.count
+  end
+
+  test "an SNS redelivery of the same event records once" do
+    2.times { post_event("Bounce", extra: { "bounce" => { "bounceType" => "Permanent" } }) }
+
+    assert_equal 1, DeliveryEvent.hard_bounce.count
+    assert_equal 1, @broadcast.reload.bounced_count
   end
 
   test "a complaint records and drops the subscriber from the list" do
@@ -46,7 +75,7 @@ class SesWebhookTest < ActionDispatch::IntegrationTest
 
     assert @delivery.reload.complained_at
     assert_equal 1, @broadcast.reload.complained_count
-    assert @subscriber.reload.unsubscribed?
+    assert @subscriber.reload.complained?
   end
 
   test "a bad signature is rejected and records nothing" do

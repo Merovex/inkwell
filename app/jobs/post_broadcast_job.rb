@@ -14,8 +14,10 @@ class PostBroadcastJob < ApplicationJob
       delivery = broadcast.deliveries.create_or_find_by!(subscriber: subscriber)
       next if delivery.sent_at
 
-      PostBroadcastMailer.issue(broadcast, subscriber).deliver_now
-      delivery.update!(sent_at: Time.current)
+      message = PostBroadcastMailer.issue(broadcast, subscriber).deliver_now
+      # The dispatch stamp (which ESP + its message id) is what lets a later
+      # bounce or complaint be attributed to this exact send.
+      delivery.update!(sent_at: Time.current, **DeliveryEvent.dispatch_stamp(message))
     end
 
     broadcast.update!(sent_at: Time.current,

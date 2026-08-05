@@ -18,11 +18,36 @@
   /* --- spacing alias (Open Props supplies the scale) --- */
   --u-pad: var(--size-3); /* 1rem — the standard pad unit; half/double derive from it */
 
+  /* --- breakpoints --- */
+  /* CSS cannot read custom properties inside @media conditions, so these two
+     are documentation constants: every media query repeats the literal with a
+     "--breakpoint-md" / "--breakpoint-lg" comment. em units so the boundary
+     scales with the user's font size (px spec / 16). */
+  --breakpoint-md: 48em; /* 768px — the mobile/desktop edge */
+  --breakpoint-lg: 64em; /* 1024px */
+
+  /* --- motion durations (Open Props has no duration scale) --- */
+  --speed-quick: 120ms;  /* hover/open micro-transitions (menus, chevrons) */
+  --speed-gentle: 180ms; /* entrances/exits (toasts) */
+
   /* --- type / radius / elevation aliases (Open Props) --- */
   --font-body: var(--font-sans, system-ui, sans-serif);
   --radius-ui: var(--radius-2);
   --radius-card: var(--radius-3);
   --elevation-card: var(--shadow-2);
+  /* Flyout panels (switcher, subnav menus): one deep, soft shadow — was two
+     hand-tweaked near-copies that had already drifted apart. */
+  --elevation-flyout:
+    0 18px 44px -12px oklch(0% 0 0 / 0.38),
+    0 4px 12px -4px oklch(0% 0 0 / 0.22);
+
+  /* --- intent-named measures (widths with a job, not on the Open Props scale) --- */
+  --measure-prose: 65ch;      /* long-form reading/writing column (.prose, composer body) */
+  --measure-menu: 12rem;      /* action-menu min width (.menu, subnav flyouts) */
+  --measure-menu-wide: 14rem; /* the roomier context menu */
+  --measure-toast: 22rem;     /* toast column on desktop */
+  --measure-flyout: 26rem;    /* workspace switcher panel */
+  --measure-card: 28rem;      /* centered auth card */
 
   /* --- pine: the Merovex muted-teal brand scale. Hue + lightness keep the
      retired syō-ro curve (every documented contrast ratio below still holds);
@@ -66,6 +91,10 @@
   --line: var(--color-mountain-mist-300);       /* borders / hairlines */
   --scrim: oklch(0% 0 0 / 0.4);                 /* overlay behind modals & bottom sheets */
   --fill-subtle: var(--color-mountain-mist-100); /* subtle neutral fill: code bg, quiet hovers */
+  /* Raised/floating surface (flyouts, popovers): the canvas in light mode, a
+     step LIGHTER than the dark canvas in dark mode so panels read as elevated
+     without a border. Was duplicated locally by switcher + subnav. */
+  --surface-raised: var(--canvas);
 
   /* --- code syntax highlighting (GitHub light palette) --- */
   --code-att:         #d73a49;
@@ -185,6 +214,7 @@
   --ink-muted: var(--color-mountain-mist-400);
   --line: var(--color-mountain-mist-700);
   --fill-subtle: var(--color-mountain-mist-800); /* a step lighter than the dark canvas */
+  --surface-raised: var(--color-mountain-mist-700); /* flyouts lift a step off the dark canvas */
 
   /* code syntax (GitHub dark palette) */
   --code-att:         #ff7b72;
@@ -213,6 +243,7 @@
     --ink-muted: var(--color-mountain-mist-400);
     --line: var(--color-mountain-mist-700);
     --fill-subtle: var(--color-mountain-mist-800);
+    --surface-raised: var(--color-mountain-mist-700);
 
     /* code syntax (GitHub dark palette) */
     --code-att:         #ff7b72;

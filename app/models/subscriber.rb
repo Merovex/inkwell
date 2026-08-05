@@ -17,8 +17,9 @@ class Subscriber < ApplicationRecord
   has_many :events, -> { order(:created_at) }, class_name: "SubscriptionEvent", dependent: :destroy
   has_many :broadcast_deliveries, dependent: :destroy
   has_many :streams, dependent: :destroy
+  has_many :delivery_events, dependent: :delete_all
 
-  enum :status, %w[ pending confirmed unsubscribed bounced ].index_by(&:itself), default: "pending"
+  enum :status, %w[ pending confirmed unsubscribed bounced complained ].index_by(&:itself), default: "pending"
 
   # Deliverability-seed inboxes (diagnostic services, not people). A seed may
   # subscribe and confirm — the confirmation email is what those services
@@ -105,7 +106,7 @@ class Subscriber < ApplicationRecord
 
       action =
         if record.confirmed?      then nil
-        elsif record.persisted? && (record.unsubscribed? || record.bounced?) then "resubscribed"
+        elsif record.persisted? && (record.unsubscribed? || record.bounced? || record.complained?) then "resubscribed"
         else "subscribed"
         end
 
@@ -147,9 +148,10 @@ class Subscriber < ApplicationRecord
 
   # Honor an opt-out. The row is kept (never deleted) as a suppression record.
   # Any in-flight drip runs end here so no further Drops go out (the tick's own
-  # confirmed? guard is a backstop).
+  # confirmed? guard is a backstop). A complaint already suppresses harder than
+  # an opt-out — never downgrade it to a mere unsubscribe.
   def unsubscribe!(ip: nil, source: nil)
-    return if unsubscribed?
+    return if unsubscribed? || complained?
 
     transaction do
       update!(status: :unsubscribed, unsubscribed_at: Time.current)
@@ -161,11 +163,12 @@ class Subscriber < ApplicationRecord
 
   # A permanent delivery failure (hard bounce): suppress like an unsubscribe —
   # the row is kept, no more sends — but as its own status so the roster can
-  # tell "address is dead" from "asked to leave". An explicit opt-out outranks
-  # it (never downgrade unsubscribed). A later opt-in revives the row through
-  # the normal pending → double-opt-in path, which proves the mailbox works again.
+  # tell "address is dead" from "asked to leave". An explicit opt-out or a
+  # complaint outranks it (never downgrade either). A later opt-in revives the
+  # row through the normal pending → double-opt-in path, which proves the
+  # mailbox works again.
   def mark_bounced!(source: nil)
-    return if bounced? || unsubscribed?
+    return if bounced? || unsubscribed? || complained?
 
     transaction do
       update!(status: :bounced)
@@ -173,6 +176,23 @@ class Subscriber < ApplicationRecord
     end
 
     streams.active.find_each { |stream| stream.end!("bounced") }
+  end
+
+  # A spam complaint: the reader marked an issue as spam. Suppress like an
+  # unsubscribe but as its own status — "marked us spam" and "asked to leave"
+  # are different facts, and complaint rate is the reputation signal the
+  # sending firewall will watch. The strongest suppression: it overrides
+  # unsubscribed/bounced (a complaint is both true and more actionable), and
+  # only a fresh double opt-in revives the row.
+  def mark_complained!(source: nil)
+    return if complained?
+
+    transaction do
+      update!(status: :complained)
+      log_event!("complained", source:)
+    end
+
+    streams.active.find_each { |stream| stream.end!("complained") }
   end
 
   # Append one immutable event to the consent log.

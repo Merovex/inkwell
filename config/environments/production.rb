@@ -65,7 +65,10 @@ Rails.application.configure do
   # SES (API v2) wiring, commented out in favor of Postmark but kept for an
   # easy revert. Region + IAM credentials come from encrypted credentials
   # (ses:). Per-stream configuration sets and message tags are set on each
-  # mailer via delivery_method_options (ADR 0015).
+  # mailer via delivery_method_options (ADR 0015). Before re-enabling: turn
+  # OFF SES account-level auto-suppression — our database is the authoritative
+  # suppression list, and AWS silently dropping sends makes Subscriber.status
+  # drift from reality (ADR 0025).
   # config.action_mailer.delivery_method = :ses_v2
   # config.action_mailer.ses_v2_settings = {
   #   region: Rails.application.credentials.dig(:ses, :region),

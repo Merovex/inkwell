@@ -2,7 +2,7 @@
 # with when, from where, and the IP. This is the legal proof-of-consent trail —
 # events are appended, never edited or reordered. See ADR 0011.
 class SubscriptionEvent < ApplicationRecord
-  ACTIONS = %w[ subscribed confirmed unsubscribed resubscribed bounced ].freeze
+  ACTIONS = %w[ subscribed confirmed unsubscribed resubscribed bounced complained ].freeze
 
   belongs_to :subscriber
 

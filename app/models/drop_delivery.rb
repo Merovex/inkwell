@@ -7,6 +7,7 @@ class DropDelivery < ApplicationRecord
   belongs_to :stream
   belongs_to :drop_record, class_name: "Record"
   belongs_to :subscriber
+  has_many :delivery_events, as: :delivery, dependent: :delete_all
 
   # pending → not yet due; sent → mailed; skipped → subscriber ineligible at
   # send time (unsubscribed), recorded (with skip_reason) but never mailed.
@@ -15,7 +16,8 @@ class DropDelivery < ApplicationRecord
   # Opens and clicks are engagement — they reset the subscriber's sunset clock.
   ENGAGEMENT = %w[ opened clicked ].freeze
 
-  # SES event name → the milestone column it stamps (first-event-wins).
+  # Internal event name → the milestone column it stamps (first-event-wins);
+  # DeliveryEvent#apply! translates canonical provider events into these names.
   EVENTS = {
     "delivered"    => :delivered_at,
     "opened"       => :opened_at,

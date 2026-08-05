@@ -48,12 +48,43 @@ class PostmarkWebhookTest < ActionDispatch::IntegrationTest
     assert_equal "postmark", @subscriber.events.last.source
   end
 
-  test "a soft bounce is ignored — Postmark keeps retrying" do
+  test "a soft bounce records but doesn't suppress — Postmark keeps retrying" do
     post_event("Bounce", extra: { "Type" => "SoftBounce" })
 
     assert_nil @delivery.reload.bounced_at
     assert_equal 0, @broadcast.reload.bounced_count
     assert @subscriber.reload.confirmed?
+    assert_equal 1, @subscriber.delivery_events.soft_bounce.count
+  end
+
+  test "three straight soft bounces suppress the subscriber" do
+    3.times { |i| post_event("Bounce", extra: { "Type" => "SoftBounce", "MessageID" => "pm-#{i}" }) }
+
+    assert @subscriber.reload.bounced?
+    assert @delivery.reload.bounced_at
+  end
+
+  test "a Blocked bounce is a rejection — our reputation, not a dead mailbox" do
+    post_event("Bounce", extra: { "Type" => "Blocked" })
+
+    assert_nil @delivery.reload.bounced_at
+    assert_equal 0, @broadcast.reload.bounced_count
+    assert @subscriber.reload.confirmed?
+    assert_equal 1, @subscriber.delivery_events.rejected.count
+  end
+
+  test "a SpamNotification bounce is a complaint in bounce clothing" do
+    post_event("Bounce", extra: { "Type" => "SpamNotification" })
+
+    assert @delivery.reload.complained_at
+    assert @subscriber.reload.complained?
+  end
+
+  test "a retried webhook with the same message id records once" do
+    2.times { post_event("Bounce", extra: { "Type" => "HardBounce", "MessageID" => "pm-1" }) }
+
+    assert_equal 1, DeliveryEvent.where(provider_message_id: "pm-1").count
+    assert_equal 1, @broadcast.reload.bounced_count
   end
 
   test "a hard bounce never downgrades an explicit unsubscribe" do
@@ -75,7 +106,8 @@ class PostmarkWebhookTest < ActionDispatch::IntegrationTest
 
     assert @delivery.reload.complained_at
     assert_equal 1, @broadcast.reload.complained_count
-    assert @subscriber.reload.unsubscribed?
+    assert @subscriber.reload.complained?
+    assert_equal [ "complained" ], @subscriber.events.pluck(:action)
   end
 
   test "missing basic auth is rejected and records nothing" do
@@ -93,11 +125,12 @@ class PostmarkWebhookTest < ActionDispatch::IntegrationTest
     assert_equal 0, @broadcast.reload.delivered_count
   end
 
-  test "an event for an unknown delivery is a no-op 200" do
+  test "an event for an unknown delivery still records for audit, touches nothing" do
     post_event("Open", subscriber_id: 999_999)
 
     assert_response :ok
     assert_equal 0, @broadcast.reload.opened_count
+    assert_equal 1, DeliveryEvent.opened.where(subscriber: nil).count
   end
 
   test "processes the POST even with forgery protection on (no CSRF token)" do

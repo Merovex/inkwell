@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.2].define(version: 2026_08_05_133152) do
+ActiveRecord::Schema[8.2].define(version: 2026_08_05_150000) do
   create_table "account_users", force: :cascade do |t|
     t.integer "account_id", null: false
     t.integer "user_id", null: false
@@ -193,6 +193,8 @@ ActiveRecord::Schema[8.2].define(version: 2026_08_05_133152) do
     t.datetime "bounced_at"
     t.datetime "complained_at"
     t.datetime "unsubscribed_at"
+    t.string "provider"
+    t.string "provider_message_id"
     t.index ["broadcast_id", "subscriber_id"], name: "index_broadcast_deliveries_on_broadcast_id_and_subscriber_id", unique: true
     t.index ["broadcast_id"], name: "index_broadcast_deliveries_on_broadcast_id"
     t.index ["subscriber_id"], name: "index_broadcast_deliveries_on_subscriber_id"
@@ -313,6 +315,22 @@ ActiveRecord::Schema[8.2].define(version: 2026_08_05_133152) do
     t.index ["hostname"], name: "index_custom_domains_on_hostname", unique: true
   end
 
+  create_table "delivery_events", force: :cascade do |t|
+    t.string "provider", null: false
+    t.string "event", null: false
+    t.string "provider_message_id"
+    t.string "recipient"
+    t.integer "subscriber_id"
+    t.string "delivery_type"
+    t.integer "delivery_id"
+    t.json "payload", null: false
+    t.datetime "occurred_at"
+    t.datetime "created_at", null: false
+    t.index ["delivery_type", "delivery_id"], name: "index_delivery_events_on_delivery"
+    t.index ["provider", "provider_message_id", "event"], name: "index_delivery_events_on_dedupe_key", unique: true
+    t.index ["subscriber_id"], name: "index_delivery_events_on_subscriber_id"
+  end
+
   create_table "depictions", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
@@ -357,6 +375,8 @@ ActiveRecord::Schema[8.2].define(version: 2026_08_05_133152) do
     t.datetime "unsubscribed_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "provider"
+    t.string "provider_message_id"
     t.index ["drop_record_id"], name: "index_drop_deliveries_on_drop_record_id"
     t.index ["stream_id", "drop_record_id"], name: "index_drop_deliveries_on_stream_id_and_drop_record_id", unique: true
     t.index ["stream_id"], name: "index_drop_deliveries_on_stream_id"

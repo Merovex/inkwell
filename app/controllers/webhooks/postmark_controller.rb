@@ -1,7 +1,8 @@
-# Receives Postmark event webhooks (Delivery / Open / Click / Bounce /
-# SpamComplaint) and records them against the matching BroadcastDelivery or
-# DropDelivery, driving the /admin/broadcasts dashboard — the Postmark-side
-# counterpart to Webhooks::SesController.
+# Receives Postmark event webhooks, verifies them, and translates each into a
+# canonical DeliveryEvent — the Postmark adapter at the provider boundary.
+# Everything downstream (milestones, suppression, subscriber status) reads only
+# the canonical form; this controller is the last place Postmark's vocabulary
+# exists.
 #
 # A machine endpoint: inherits ActionController::Base directly, so none of the
 # app's browser/auth/forgery concerns apply. Postmark posts one JSON event per
@@ -21,12 +22,13 @@ class Webhooks::PostmarkController < ActionController::Base
 
   before_action :authenticate
 
-  # Postmark RecordType → the internal event name the delivery models understand.
-  # Bounce and SpamComplaint are handled separately; Delivery/Open/Click map here.
+  # Postmark RecordType → canonical event. Bounce fans out by Type below;
+  # SubscriptionChange and anything unrecognized fall through to a no-op.
   EVENT_MAP = {
-    "Delivery" => "delivered",
-    "Open"     => "opened",
-    "Click"    => "clicked"
+    "Delivery"      => "delivered",
+    "Open"          => "opened",
+    "Click"         => "clicked",
+    "SpamComplaint" => "complaint"
   }.freeze
 
   def create
@@ -52,32 +54,43 @@ class Webhooks::PostmarkController < ActionController::Base
           Rails.application.credentials.dig(:postmark, :webhook_pass) ]
     end
 
-    def ingest(event)
-      delivery = find_delivery(event["Metadata"] || {})
-      return unless delivery
+    def ingest(payload)
+      event = canonical_event(payload)
+      return unless event
 
-      internal = internal_event(event)
-      return unless internal
+      DeliveryEvent.ingest!(
+        provider: "postmark",
+        event: event,
+        payload: payload,
+        provider_message_id: payload["MessageID"],
+        recipient: payload["Recipient"] || payload["Email"],
+        occurred_at: timestamp(payload),
+        delivery: find_delivery(payload["Metadata"] || {})
+      )
+    end
 
-      first_time = delivery.record_event!(internal)
+    def canonical_event(payload)
+      payload["RecordType"] == "Bounce" ? bounce_event(payload) : EVENT_MAP[payload["RecordType"]]
+    end
 
-      # Suppress the subscriber on the events that mean "stop sending": a spam
-      # complaint is a "mark as spam" — drop them like any other opt-out; a hard
-      # bounce means the address is permanently dead — flag it bounced so future
-      # fan-outs (confirmed-only) skip it. Both land in the consent trail.
-      # (Postmark has no unsubscribe event on these streams; suppression-list
-      # changes arrive as SubscriptionChange.)
-      if first_time
-        case internal
-        when "complained" then delivery.subscriber.unsubscribe!(source: "postmark")
-        when "bounced"    then delivery.subscriber.mark_bounced!(source: "postmark")
-        end
+    # The bounce ladder, most-specific first. Blocked is an ISP/policy refusal —
+    # about our reputation, not their address — so it's rejected, never a
+    # bounce. SpamNotification is a spam-flagged bounce: a complaint in bounce
+    # clothing. HardBounce (or Postmark deactivating the address, Inactive) is
+    # permanent; everything else (SoftBounce, Transient, …) is transient.
+    def bounce_event(payload)
+      case payload["Type"]
+      when "Blocked"          then "rejected"
+      when "SpamNotification" then "complaint"
+      when "HardBounce"       then "hard_bounce"
+      else payload["Inactive"] ? "hard_bounce" : "soft_bounce"
       end
     end
 
     # Route by the ids Postmark echoed in Metadata: broadcasts stamp a
     # BroadcastDelivery, drip drops a DropDelivery. Both speak record_event! and
-    # belong to a subscriber.
+    # belong to a subscriber. An unmatched event still records (audit trail) —
+    # it just has no delivery or subscriber to act on.
     def find_delivery(metadata)
       subscriber_id = metadata["subscriber_id"]
       if (broadcast_id = metadata["broadcast_id"])
@@ -87,20 +100,12 @@ class Webhooks::PostmarkController < ActionController::Base
       end
     end
 
-    # Only hard bounces stamp bounced_at; soft bounces are transient (Postmark
-    # keeps retrying), so don't hold them against the recipient. SpamComplaint is
-    # its own RecordType → "complained". Everything else comes from EVENT_MAP.
-    def internal_event(event)
-      case event["RecordType"]
-      when "Bounce"        then hard_bounce?(event) ? "bounced" : nil
-      when "SpamComplaint" then "complained"
-      else EVENT_MAP[event["RecordType"]]
-      end
-    end
-
-    # Postmark deactivates the address (Inactive) on a permanent failure; its
-    # Type is "HardBounce" for a true hard bounce. Either signals permanence.
-    def hard_bounce?(event)
-      event["Type"] == "HardBounce" || event["Inactive"] == true
+    # The event's own timestamp, per RecordType (DeliveredAt on Delivery,
+    # BouncedAt on Bounce/SpamComplaint, ReceivedAt on Open/Click).
+    def timestamp(payload)
+      value = payload["DeliveredAt"] || payload["BouncedAt"] || payload["ReceivedAt"]
+      Time.iso8601(value) if value
+    rescue ArgumentError
+      nil
     end
 end

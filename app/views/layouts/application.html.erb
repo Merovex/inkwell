@@ -27,10 +27,11 @@
   </head>
 
   <body class="<%= "hotwire-native" if hotwire_native? %>">
+    <a href="#main-content" class="u-skip-link">Skip to content</a>
     <%= render "layouts/header" %>
     <%# CANDIDATE: the Site's workspace sub-header (Basecamp page-sheet nav). %>
     <%= render "layouts/site_subnav" unless hotwire_native? %>
-    <main class="canvas <%= yield(:canvas_class) %>"><%= yield %></main>
+    <main id="main-content" class="canvas <%= yield(:canvas_class) %>"><%= yield %></main>
     <%= render "layouts/toasts" %>
   </body>
 </html>

@@ -31,8 +31,8 @@
     content: "▾";
     display: inline-block;
     color: var(--ink-muted);
-    font-size: 0.7em;
-    transition: transform 0.15s ease;
+    font-size: var(--font-size-0);
+    transition: transform var(--speed-quick) var(--ease-3);
   }
   .subnav__group[open] .subnav__tab::after { transform: rotate(180deg); }
 
@@ -44,20 +44,11 @@
     z-index: 20;
     display: flex;
     flex-direction: column;
-    min-width: 12rem;
+    min-width: var(--measure-menu);
     padding: var(--size-1);
-    /* Raised surface so the flyout reads as elevated in dark mode without a
-       border (a --canvas panel would vanish against the dark canvas). */
-    --surface: var(--canvas);
-    background: var(--surface);
+    background: var(--surface-raised); /* elevated in dark mode without a border */
     border-radius: var(--radius-ui);
-    box-shadow:
-      0 14px 34px -12px rgb(0 0 0 / 0.34),
-      0 3px 10px -4px rgb(0 0 0 / 0.20);
-  }
-  [data-theme="dark"] .subnav__menu { --surface: var(--color-mountain-mist-700); }
-  @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) .subnav__menu { --surface: var(--color-mountain-mist-700); }
+    box-shadow: var(--elevation-flyout);
   }
   .subnav__menu a {
     padding: var(--size-2);
@@ -67,7 +58,7 @@
   }
   .subnav__menu a:hover { background: color-mix(in oklab, var(--ink) 4%, transparent); }
 
-  @media (max-width: 40rem) {
+  @media (max-width: 48em) { /* --breakpoint-md */
     .subnav__inner { justify-content: flex-start; }
   }
 }

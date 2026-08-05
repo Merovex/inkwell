@@ -53,6 +53,21 @@
 }
 
 /*
+ * Composer: frameless editor. These declarations MUST be unlayered and load
+ * after the gem sheet (CLAUDE.md cascade hazards): the gem sets the frame on
+ * :where(lexxy-editor) UNLAYERED, which beats any @layer rule — composer.css
+ * once carried these in @layer components, where they silently lost.
+ */
+.composer lexxy-editor {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  /* Keep the text off the edges now the frame is gone; inline inset lines the
+     body up with the title above. */
+  --lexxy-editor-padding: var(--u-pad);
+}
+
+/*
  * Compact toolbar — a shorter editor chrome for inline composers (comments,
  * chat). The toolbar height derives from the button size, so shrinking that
  * one variable on an ancestor cascades down to the toolbar inside.

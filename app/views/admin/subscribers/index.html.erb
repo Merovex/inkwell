@@ -48,7 +48,7 @@
             <%= inline_svg_tag "lucide/send.svg", class: "lucide", size: "16px" %>
           <% end %>
         <% end %>
-        <% unless subscriber.unsubscribed? || subscriber.bounced? %>
+        <% unless subscriber.unsubscribed? || subscriber.bounced? || subscriber.complained? %>
           <%= button_to unsubscribe_admin_subscriber_path(subscriber), method: :patch,
                 class: "button button--icon button--ghost", title: "Unsubscribe",
                 "aria-label": "Unsubscribe #{redacted_email(subscriber.email_address)}",
@@ -77,6 +77,8 @@
         People who signed up but haven't confirmed their email yet appear here.
       <% elsif @state == "bounced" %>
         Addresses that hard-bounced — permanently undeliverable — appear here and won't be emailed again.
+      <% elsif @state == "complained" %>
+        People who marked an issue as spam appear here and won't be emailed again.
       <% else %>
         People who've unsubscribed (or were sunset for inactivity) appear here.
       <% end %>

@@ -17,6 +17,18 @@ loads — **everything is CRUD**: no custom member/collection actions in
 actions are doubly banned — split them into create/destroy so each request
 names its direction instead of flipping whatever it finds.
 
+## CSS/HTML standards: css-html-standards is ALWAYS in force
+
+Before writing, refactoring, or reviewing any CSS or view markup, load the
+`css-html-standards` skill (via the Skill tool) and apply it. Same footing as
+rails-best-practices-core: not optional, not judgment-based. Its rules are
+authoritative over existing code — code that deviates is wrong, not precedent.
+Headline rules: every design value is a `var()` token (Open Props scale or a
+semantic local token); similar CSS becomes a `u-*` compositional utility, not a
+new block; BEM (`block__element`) only for components that are named,
+structured, AND reused via a shared partial or the style guide; semantic HTML
+and the skill's a11y checklist are hard gates.
+
 ## View components: reuse, don't re-roll
 
 Before writing markup for a UI pattern, check `app/views/shared/` and the living

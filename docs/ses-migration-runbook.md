@@ -4,8 +4,8 @@ title: SES/SNS migration runbook — Phase 0 (AWS + DNS)
 status: active
 tags: [rails, email, ses, sns, aws, dns, runbook, migration]
 created: 2026-07-10
-updated: 2026-07-10
-sources: [decisions/0015-email-relay-mailgun-to-ses.md]
+updated: 2026-08-05
+sources: [decisions/0015-email-relay-mailgun-to-ses.md, decisions/0025-canonical-delivery-events.md]
 ---
 
 # SES/SNS migration runbook — Phase 0 (AWS + DNS)
@@ -183,6 +183,15 @@ message** (Phase 1). The mapping we'll wire:
 3. **Event destination** → publish to **SNS** (topic from Step 7). Subscribe to:
    **Send, Delivery, Bounce, Complaint, Open, Click, Reject, Rendering Failure**.
 
+> **Where these land (Phase 2, built):** `Webhooks::SesController` translates
+> every event into a canonical `DeliveryEvent` ([[0025-canonical-delivery-events]]):
+> Permanent bounce → `hard_bounce` (suppresses), `Suppressed`/
+> `OnAccountSuppressionList` subtypes → `suppressed` (record-only, see Step 8),
+> Transient → `soft_bounce` (suppresses after 3 straight), Complaint →
+> `complaint` (suppresses as `complained`), Reject/Rendering Failure →
+> `rejected` (record-only — our reputation, not their mailbox). Raw payloads
+> are stored for replay; SNS redeliveries dedupe on the SES message id.
+
 **6b. `inkwell-transactional`**
 1. Create configuration set `inkwell-transactional`.
 2. **No** custom redirect domain.
@@ -208,15 +217,27 @@ message** (Phase 1). The mapping we'll wire:
 
 **Verify:** subscription state is **Confirmed** (revisit after Phase 2 if needed).
 
-## Step 8 — Account-level suppression (the net)  ☐
-**Goal:** SES auto-suppresses hard bounces/complaints so we never re-send, even if
-an app-side write is missed. App-side `Subscriber` stays source of truth (ADR 0011);
-this is redundancy.
+## Step 8 — Account-level suppression: leave it OFF  ☐
+> **Revised 2026-08-05 by [[0025-canonical-delivery-events]]** — this step
+> originally said to enable suppression as redundancy. Reversed: the app-side
+> `Subscriber` table (ADR 0011) is the **only** suppression list. With the AWS
+> net enabled, SES silently drops sends to listed addresses and
+> `Subscriber.status` drifts from reality — we believe we sent, nothing went out,
+> and no bounce ever comes back to tell us.
 
-1. SES → **Configuration → Suppression list** → enable account-level suppression
-   for **Bounces and Complaints**.
+1. SES → **Configuration → Suppression list** → account-level suppression
+   **disabled** for both reasons (Bounces and Complaints).
+2. The app-side net that replaces it (already wired, Phase 2):
+   `Webhooks::SesController` maps a `Permanent` bounce with subtype
+   `Suppressed`/`OnAccountSuppressionList` to canonical **`suppressed`** —
+   record-only, never a hard bounce (the mail was never sent, so it says
+   nothing about the mailbox). If one of these ever arrives for a subscriber we
+   think is `confirmed`, that's the drift alarm: AWS has a list entry we don't.
+   Clear it under **Suppression list → the address → Remove**.
 
-**Verify:** suppression reasons show Bounce + Complaint enabled.
+**Verify:** suppression list shows account-level suppression disabled; a re-sent
+address that previously bounced in the sandbox gets a real send attempt (and a
+real bounce event), not a silent drop.
 
 ## Step 9 — Request production access (sandbox exit)  ☐  ⏳ long-lead
 **Goal:** leave the sandbox (sandbox = 200/day + only verified recipients).
@@ -239,11 +260,11 @@ this is redundancy.
 - [ ] Tracking domain active on `inkwell-marketing` (Step 5)
 - [ ] Both configuration sets present with the right event sets (Step 6)
 - [ ] SNS topic created; subscription **Confirmed** after Phase 2 (Step 7)
-- [ ] Account suppression on (Step 8)
+- [ ] Account suppression **off** — app DB is the suppression list (Step 8, per [[0025-canonical-delivery-events]])
 - [ ] **Production access enabled** (Step 9)
 
 Then Phase 1 (sending) can flip. Gems for Phase 1 (reference): `aws-sdk-rails ~> 5`
 + `aws-actionmailer-ses ~> 1`; `delivery_method = :ses_v2`, `ses_v2_settings = { region: ... }`.
 
 ## Links
-Decision: [[0015-email-relay-mailgun-to-ses]] · Consent trail: [[0011-subscribers-and-consent-log]]
+Decision: [[0015-email-relay-mailgun-to-ses]] · Consent trail: [[0011-subscribers-and-consent-log]] · Event canon: [[0025-canonical-delivery-events]]

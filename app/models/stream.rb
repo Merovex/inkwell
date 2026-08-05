@@ -27,8 +27,10 @@ class Stream < ApplicationRecord
       next unless delivery.status_pending?
 
       if subscriber.confirmed?
-        DropMailer.step(self, drop).deliver_now
-        delivery.update!(status: :sent, sent_at: Time.current)
+        message = DropMailer.step(self, drop).deliver_now
+        # The dispatch stamp (which ESP + its message id) is what lets a later
+        # bounce or complaint be attributed to this exact send.
+        delivery.update!(status: :sent, sent_at: Time.current, **DeliveryEvent.dispatch_stamp(message))
       else
         delivery.update!(status: :skipped, skip_reason: subscriber.status)
       end

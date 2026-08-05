@@ -21,28 +21,31 @@
   <% if authenticated? %>
   <%= render "notifications/bell" %>
 
-  <button type="button" class="avatar" popovertarget="user-menu" aria-haspopup="menu" aria-label="Account menu"><%= avatar_content(Current.user) %></button>
+  <%# No menu/menuitem roles: that ARIA pattern promises arrow-key navigation we
+      don't implement. Native popover + real buttons/links are keyboard-correct
+      as-is (first rule of ARIA). %>
+  <button type="button" class="avatar" popovertarget="user-menu" aria-label="Account menu"><%= avatar_content(Current.user) %></button>
 
-  <div class="menu menu--user" popover id="user-menu" role="menu">
-    <button type="button" class="menu__item" role="menuitem">My Profile</button>
-    <%= link_to "Settings", user_settings_path, class: "menu__item", role: "menuitem" %>
+  <div class="menu menu--user" popover id="user-menu">
+    <button type="button" class="menu__item">My Profile</button>
+    <%= link_to "Settings", user_settings_path, class: "menu__item" %>
     <hr class="menu__separator">
     <div class="menu__row">
-      <button type="button" class="menu__item theme-toggle" role="menuitem" data-mode="light"
+      <button type="button" class="menu__item theme-toggle" data-mode="light"
               data-controller="theme" data-action="theme#cycle" aria-label="Theme">
         <%= inline_svg_tag "lucide/sun.svg", class: "lucide theme-toggle__icon theme-toggle__icon--light", size: "16px" %>
         <%= inline_svg_tag "lucide/moon.svg", class: "lucide theme-toggle__icon theme-toggle__icon--dark", size: "16px" %>
         <%= inline_svg_tag "lucide/monitor.svg", class: "lucide theme-toggle__icon theme-toggle__icon--auto", size: "16px" %>
         <span data-theme-target="label">Light</span>
       </button>
-      <button type="button" class="menu__item tint-toggle" role="menuitem" aria-label="Background color"
+      <button type="button" class="menu__item tint-toggle" aria-label="Background color"
               data-controller="tint" data-tint-tints-value='["olive","taupe","mauve","mist","zinc"]'
               data-action="tint#cycle">
         <%= inline_svg_tag "lucide/droplet.svg", class: "lucide", size: "16px" %>
         <span data-tint-target="label">Zinc</span>
       </button>
     </div>
-    <%= button_to "Sign out", session_path, method: :delete, class: "menu__item", role: "menuitem" %>
+    <%= button_to "Sign out", session_path, method: :delete, class: "menu__item" %>
   </div>
   <% else %>
   <%= link_to "Sign in", new_session_path, class: "button button--ghost" %>

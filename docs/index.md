@@ -54,6 +54,7 @@ for canonical naming.
 | [0022](decisions/0022-sitedesigner-design-json-sovereignty.md) | SiteDesigner + design.json sovereignty — the switcher is retired | accepted | 2026-07-31 |
 | [0023](decisions/0023-circles-cross-account-buckets.md) | Circles — cross-account buckets; invite-only invariant; bucket goes polymorphic | accepted | 2026-08-05 |
 | [0024](decisions/0024-notifications-stamped-copy-digests.md) | Notifications — stamped copy, bell + tiered email digests | accepted | 2026-08-05 |
+| [0025](decisions/0025-canonical-delivery-events.md) | Canonical delivery events — one vocabulary, two ESP adapters (Postmark + SES) | accepted | 2026-08-05 |
 
 ## Concepts
 

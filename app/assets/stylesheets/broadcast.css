@@ -11,8 +11,9 @@
     gap: var(--u-pad);
     justify-items: center;
     margin-block: calc(var(--u-pad) * 1.5);
-    /* Match .post-body's inset so the card's edges align with the body text. */
-    margin-inline: clamp(0rem, 6vw, 3.5rem);
+    /* Share the prose column so the card's edges align with the body text. */
+    max-inline-size: var(--measure-prose);
+    margin-inline: auto;
     padding: calc(var(--u-pad) * 1.25);
     background: color-mix(in oklab, var(--canvas), var(--ink) 5%);
     border: var(--border-size-1) solid var(--line);

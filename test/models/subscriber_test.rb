@@ -62,6 +62,31 @@ class SubscriberTest < ActiveSupport::TestCase
     assert_equal %w[subscribed confirmed bounced resubscribed], revived.events.pluck(:action)
   end
 
+  test "a complaint is the strongest suppression — overrides others, never downgraded" do
+    subscriber = Subscriber.opt_in(email_address: "reader@example.com")
+    subscriber.confirm!
+    subscriber.unsubscribe!
+
+    subscriber.mark_complained!(source: "postmark")
+    assert subscriber.complained?, "a complaint outranks an opt-out"
+
+    subscriber.unsubscribe!
+    subscriber.mark_bounced!(source: "postmark")
+    assert subscriber.complained?, "neither opt-out nor bounce downgrades a complaint"
+  end
+
+  test "re-subscribing after a complaint revives the row through double opt-in" do
+    subscriber = Subscriber.opt_in(email_address: "reader@example.com")
+    subscriber.confirm!
+    subscriber.mark_complained!(source: "ses")
+
+    revived = Subscriber.opt_in(email_address: "reader@example.com")
+
+    assert_equal subscriber.id, revived.id
+    assert revived.pending?, "fresh consent must go through double opt-in again"
+    assert_equal %w[subscribed confirmed complained resubscribed], revived.events.pluck(:action)
+  end
+
   test "confirmation and unsubscribe tokens resolve back to the subscriber" do
     subscriber = Subscriber.opt_in(email_address: "reader@example.com")
 
