@@ -48,7 +48,7 @@
     <% label = chips.any? ? safe_join(chips.map { |chip| tag.span(chip, class: "badge badge--accent") }, " ") : author %>
     <% byline = safe_join([ label.presence, date.presence ].compact, " · ") %>
     <% if byline.present? || excerpt.present? %>
-      <span class="list__meta"><% if byline.present? %><span class="list__byline"><%= byline %></span> <% end %><%= excerpt %></span>
+      <span class="list__meta u-clamp"><% if byline.present? %><span class="list__byline"><%= byline %></span> <% end %><%= excerpt %></span>
     <% end %>
     <% if scheduled_at %>
       <span class="list__flag">

@@ -4,11 +4,7 @@
  * Structure: ul.account-picker > li > a.account-picker__card > name + meta
  */
 @layer components {
-  /* composes u-unlist in the markup */
-  .account-picker {
-    display: grid;
-    gap: calc(var(--u-pad) / 2);
-  }
+  /* The list composes u-unlist + u-grid u-grid-half in the markup. */
 
   /* Rows compose .door (surface + hover invitation) in the markup. */
   .account-picker__name { font-weight: var(--font-weight-6); }

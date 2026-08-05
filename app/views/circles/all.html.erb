@@ -24,7 +24,7 @@
     </div>
   </div>
 
-  <ul class="circles u-unlist" data-view="<%= view %>" data-view-toggle-target="collection">
+  <ul class="circles u-unlist u-grid" data-view="<%= view %>" data-view-toggle-target="collection">
     <% @circles.each do |circle| %>
       <li>
         <% if (invitation = @invitations_by_circle[circle.id]) %>

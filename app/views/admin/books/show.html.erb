@@ -59,9 +59,9 @@
     <% if can_manage %>
       <%= render "cover", book: @book, record: @record %>
     <% elsif @book.cover? %>
-      <%= image_tag @book.cover, class: "book-detail__cover", alt: "#{@book.title} cover" %>
+      <%= image_tag @book.cover, class: "cover book-detail__cover", alt: "#{@book.title} cover" %>
     <% else %>
-      <span class="book-detail__cover book-detail__cover--empty u-center-content" aria-hidden="true">No cover</span>
+      <span class="cover book-detail__cover book-detail__cover--empty u-center-content" aria-hidden="true">No cover</span>
     <% end %>
   <% end %>
   <article class="u-flow"><%= @book.content %></article>

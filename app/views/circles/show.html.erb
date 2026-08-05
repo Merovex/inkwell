@@ -51,7 +51,7 @@
                 <span class="avatar" aria-hidden="true"><%= avatar_content(beat.creator) %></span>
                 <%= beat.creator.display_name %> · <%= time_ago_in_words(beat.record.created_at) %> ago
               </span>
-              <span class="pulse-preview__excerpt"><%= plain_excerpt(beat.content, length: 110) %></span>
+              <span class="pulse-preview__excerpt u-clamp"><%= plain_excerpt(beat.content, length: 110) %></span>
             </span>
           <% end %>
           <%# Empty slots hold the shape — one answer still reads as a row

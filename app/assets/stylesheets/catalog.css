@@ -38,7 +38,8 @@
   .sortable__item { cursor: grab; }
   .sortable__item.is-dragging { opacity: 0.5; }
   .sortable__handle { color: var(--ink-muted); display: inline-flex; }
-  .sortable__cover { width: var(--size-7); height: var(--size-8); object-fit: cover; border-radius: var(--radius-1); flex: none; }
+  /* a mini .cover (32px wide; height follows the 2:3 ratio) */
+  .sortable__cover { --cover-size: var(--size-7); --cover-radius: var(--radius-1); flex: none; }
   .sortable__cover--empty { background: var(--fill-subtle); }
   .sortable__label { flex: 1; }
 
@@ -58,12 +59,14 @@
 
   /* --- book detail (show) --- */
   .book-detail { display: flex; gap: calc(var(--u-pad) * 2); align-items: flex-start; flex-wrap: wrap; }
+  /* a framed .cover at the display width */
   .book-detail__cover {
-    width: var(--measure-cover); height: auto; flex: none;
-    border: var(--border-size-1) solid var(--line); border-radius: var(--radius-card);
+    --cover-size: var(--measure-cover);
+    --cover-radius: var(--radius-card);
+    flex: none;
+    border: var(--border-size-1) solid var(--line);
   }
   .book-detail__cover--empty {
-    aspect-ratio: 2 / 3;
     background: var(--fill-subtle); color: var(--ink-muted);
     border-style: dashed; font-size: var(--font-size-0);
   }

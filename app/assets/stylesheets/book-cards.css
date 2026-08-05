@@ -23,25 +23,12 @@
     font-size: var(--font-size-4);
   }
 
-  .book-shelf__count {
-    padding: calc(var(--u-pad) / 4) calc(var(--u-pad) / 2);
-    background: var(--canvas);
-    border-radius: var(--radius-ui);
-    color: var(--ink-muted);
-    font-size: var(--font-size-0);
-    white-space: nowrap;
-  }
+  /* the count is a .badge in the markup */
 
   .book-shelf__blank {
     color: var(--ink-muted);
     text-align: center;
     padding-block: calc(var(--u-pad) * 2);
-  }
-
-  /* composes u-unlist in the markup */
-  .book-cards {
-    display: grid;
-    gap: var(--u-pad);
   }
 
   .book-card {
@@ -59,23 +46,10 @@
     text-decoration: none;
   }
 
-  .book-card__cover img,
-  .book-card__cover-blank {
-    display: block;
-    inline-size: 100%;
-    aspect-ratio: 2 / 3;
-    object-fit: cover;
-    border-radius: var(--radius-ui);
-    box-shadow: var(--shadow-1);
-  }
-
-  /* No cover yet: a quiet accent slab with the title's initial. */
-  /* composes u-center-content in the markup */
-  .book-card__cover-blank {
-    background: var(--accent-soft);
-    color: var(--ink-on-soft);
-    font-size: var(--font-size-6);
-  }
+  /* Covers are .cover (+ .cover--blank monogram) in the markup; the card
+     just lifts them off the surface and sizes the monogram initial. */
+  .book-card .cover { box-shadow: var(--shadow-1); }
+  .book-card .cover--blank { font-size: var(--font-size-6); }
 
   .book-card__body {
     display: flex;
@@ -88,26 +62,16 @@
     font-size: var(--font-size-3);
   }
 
-  .book-card__excerpt {
-    margin: 0;
-    display: -webkit-box;
-    -webkit-line-clamp: 7;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
+  /* composes u-clamp in the markup */
+  .book-card__excerpt { --u-clamp-lines: 7; }
 
-  /* Pinned to the card's bottom edge even when the excerpt is short. */
-  .book-card__meta {
-    margin-block-start: auto;
-    padding-block-start: calc(var(--u-pad) / 2);
-    display: flex;
-    gap: var(--u-pad);
-    color: var(--ink-muted);
-    font-size: var(--font-size-0);
-  }
+  /* Composes u-cluster + u-text-small/-muted + u-margin-block-start-auto
+     in the markup (auto margin pins it to the card foot); only the minimum
+     breathing above it lives here. */
+  .book-card__meta { padding-block-start: calc(var(--u-pad) / 2); }
 
   @media (max-width: 48em) { /* --breakpoint-md */
     .book-card__link { grid-template-columns: var(--size-10) 1fr; }
-    .book-card__excerpt { -webkit-line-clamp: 4; }
+    .book-card__excerpt { --u-clamp-lines: 4; }
   }
 }

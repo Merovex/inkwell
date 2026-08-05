@@ -1,0 +1,13 @@
+/*
+ * u-clamp — clamp flowing text to a line count with an ellipsis. Tune the
+ * count via --u-clamp-lines (default 2). Was re-rolled by list rows, book
+ * cards, and pulse previews.
+ */
+@layer utilities {
+  .u-clamp {
+    display: -webkit-box;
+    -webkit-line-clamp: var(--u-clamp-lines, 2);
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+}

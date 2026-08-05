@@ -4,11 +4,8 @@
  * `view-toggle` Stimulus controller flips data-view; this is only the skin.
  */
 @layer components {
-  /* composes u-unlist in the markup */
-  .circles {
-    display: grid;
-    gap: var(--u-pad);
-  }
+  /* The collection composes u-unlist + u-grid in the markup; only the
+     data-view column templates live here. */
 
   /* List: one full-width row per circle (the default). */
   .circles[data-view="list"] { grid-template-columns: 1fr; }
@@ -74,13 +71,11 @@
     color: var(--brand-text);
   }
   .pulse-preview__byline .avatar { --avatar-size: var(--size-5); flex-shrink: 0; }
+  /* composes u-clamp in the markup */
   .pulse-preview__excerpt {
+    --u-clamp-lines: 3;
     font-size: var(--font-size-0);
     color: var(--ink);
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
   }
 
   /* A seat on offer: the golden card leading the deck (Fizzy's golden card,
