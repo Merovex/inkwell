@@ -13,10 +13,10 @@ class CircleMembership < ApplicationRecord
   validate :within_member_limit, on: :create
 
   private
-    # Refuse a new seat once the circle is full. The owner's own seat is created
-    # with the circle (count 0 at that point), so it always fits.
+    # Refuse a new seat once the circle is full (its member_limit or, always,
+    # the hard cap). The owner's own seat is created with the circle (count 0
+    # at that point), so it always fits.
     def within_member_limit
-      return unless circle&.member_limit
-      errors.add(:base, "Circle is full") if circle.circle_memberships.count >= circle.member_limit
+      errors.add(:base, "Circle is full") if circle&.full?
     end
 end

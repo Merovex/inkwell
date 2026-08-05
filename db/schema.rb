@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.2].define(version: 2026_08_04_170000) do
+ActiveRecord::Schema[8.2].define(version: 2026_08_05_011000) do
   create_table "account_users", force: :cascade do |t|
     t.integer "account_id", null: false
     t.integer "user_id", null: false
@@ -364,6 +364,21 @@ ActiveRecord::Schema[8.2].define(version: 2026_08_04_170000) do
     t.index ["record_id", "id"], name: "index_drops_on_record_id_and_id"
   end
 
+  create_table "goals", force: :cascade do |t|
+    t.integer "record_id", null: false
+    t.integer "creator_id", null: false
+    t.string "event", default: "created", null: false
+    t.string "title", null: false
+    t.string "unit", default: "words", null: false
+    t.integer "target"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.string "per"
+    t.text "displays"
+    t.index ["creator_id"], name: "index_goals_on_creator_id"
+    t.index ["record_id", "id"], name: "index_goals_on_record_id_and_id"
+  end
+
   create_table "installments", force: :cascade do |t|
     t.integer "container_record_id", null: false
     t.integer "book_record_id", null: false
@@ -586,6 +601,19 @@ ActiveRecord::Schema[8.2].define(version: 2026_08_04_170000) do
     t.string "source"
     t.datetime "created_at", null: false
     t.index ["subscriber_id"], name: "index_subscription_events_on_subscriber_id"
+  end
+
+  create_table "tallies", force: :cascade do |t|
+    t.integer "record_id", null: false
+    t.integer "creator_id", null: false
+    t.string "event", default: "created", null: false
+    t.date "logged_on", null: false
+    t.integer "amount", null: false
+    t.string "note"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["creator_id"], name: "index_tallies_on_creator_id"
+    t.index ["record_id", "id"], name: "index_tallies_on_record_id_and_id"
   end
 
   create_table "users", force: :cascade do |t|

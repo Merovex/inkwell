@@ -1,0 +1,39 @@
+<%# locals: (goal:, display:) %>
+<%# ONE view card for a goal, footed with the goal's linked name. EVERY card
+    carries the Today quick-log + ⋯ menu — actions shouldn't need hunting;
+    the popover id is per-card (record + display) so siblings don't clash. %>
+<% menu_id = "goal-menu-#{goal.record_id}-#{display}" %>
+<section class="goal-summary<%= " goal-summary--wide" if display == "heatmap" %>">
+  <div class="goal-stat goal-stat--card">
+    <% logged_today = goal.tallies.exists?(logged_on: Time.zone.today) %>
+    <div class="goal-summary__actions">
+      <%# The one-click today log, left of the menu. %>
+      <%= link_to today_goal_tallies_path(goal.record),
+            class: "button button--small button--ghost", data: { turbo_frame: "modal" },
+            title: (logged_today ? "Edit today's tally" : "Log today's tally"),
+            "aria-label": (logged_today ? "Edit today's tally" : "Log today's tally") do %>
+        <%= inline_svg_tag (logged_today ? "lucide/pencil.svg" : "lucide/plus.svg"), class: "lucide", size: "14px" %> Today
+      <% end %>
+      <button type="button" class="button button--icon button--ghost" popovertarget="<%= menu_id %>"
+              aria-haspopup="menu" aria-label="Goal actions">
+        <%= inline_svg_tag "lucide/ellipsis-vertical.svg", class: "lucide", size: "16px" %>
+      </button>
+      <div class="menu menu--context" popover id="<%= menu_id %>" role="menu"
+           data-controller="anchored-popover" data-anchored-popover-placement-value="top">
+        <button type="button" class="button button--icon button--ghost menu__close" popovertarget="<%= menu_id %>"
+                popovertargetaction="hide" aria-label="Close menu">
+          <%= inline_svg_tag "lucide/x.svg", class: "lucide", size: "20px" %>
+        </button>
+        <%= link_to "Edit goal", edit_goal_path(goal.record), class: "menu__item", role: "menuitem" %>
+        <hr class="menu__separator">
+        <%= button_to "Archive goal", archive_goal_path(goal.record), method: :patch,
+              class: "menu__item", role: "menuitem" %>
+      </div>
+    </div>
+
+    <%= render "goals/progress_tile", goal: goal, display: display %>
+
+    <%# The goal's name anchors every card's foot; the whole title is the door. %>
+    <h2 class="goal-summary__title"><%= link_to goal.title, goal_path(goal.record) %></h2>
+  </div>
+</section>

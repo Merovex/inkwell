@@ -105,6 +105,54 @@ class CirclePulsesTest < ActionDispatch::IntegrationTest
     assert_select "#beats .comment__body", text: /Alice here/
   end
 
+  test "after answering, the composer yields to the answer's own Edit" do
+    pulse = create_pulse
+    pulse.update_column(:last_asked_on, Date.current)
+    sign_in_as users(:bob)
+    post circle_pulse_beats_path(@circle, pulse.record), params: { beat: { content: "<p>Shipped it</p>" } }
+
+    get circle_pulse_path(@circle, pulse.record)
+    assert_select "[aria-label='Your answer']", count: 0        # composer gone
+    beat_record = pulse.beats_on(Date.current).find_by(creator_id: users(:bob).id).record
+    assert_select "#beat_#{beat_record.id} a", text: "Edit"
+  end
+
+  test "the author edits an answer inline; the edit lands as a tracked version" do
+    pulse = create_pulse
+    pulse.update_column(:last_asked_on, Date.current)
+    sign_in_as users(:bob)
+    post circle_pulse_beats_path(@circle, pulse.record), params: { beat: { content: "<p>Shipped it</p>" } }
+    beat_record = pulse.beats_on(Date.current).find_by(creator_id: users(:bob).id).record
+
+    get edit_circle_pulse_beat_path(@circle, pulse.record, beat_record)
+    assert_response :success
+    assert_select "form [aria-label='Your answer']"
+
+    patch circle_pulse_beat_path(@circle, pulse.record, beat_record),
+      params: { beat: { content: "<p>Actually two things</p>" } }
+    assert_redirected_to circle_pulse_path(@circle, pulse.record, anchor: "beat_#{beat_record.id}")
+    beat = pulse.beats_on(Date.current).find_by(creator_id: users(:bob).id)
+    assert_match "two things", beat.content.to_plain_text
+    assert beat.event_updated?
+  end
+
+  test "another member cannot edit someone else's answer" do
+    pulse = create_pulse
+    pulse.update_column(:last_asked_on, Date.current)
+    Current.with_bucket(@circle) do
+      Record.originate(Beat.new(content: "<p>Alice here</p>", asked_on: Date.current, creator: users(:alice)), parent: pulse.record)
+    end
+    beat_record = pulse.beats_on(Date.current).find_by(creator_id: users(:alice).id).record
+    sign_in_as users(:bob)
+
+    get edit_circle_pulse_beat_path(@circle, pulse.record, beat_record)
+    assert_response :not_found
+    patch circle_pulse_beat_path(@circle, pulse.record, beat_record),
+      params: { beat: { content: "<p>Hijacked</p>" } }
+    assert_response :not_found
+    assert_match "Alice here", pulse.beats_on(Date.current).find_by(creator_id: users(:alice).id).content.to_plain_text
+  end
+
   test "the circle home shows the pulse as a single item" do
     pulse = create_pulse
     sign_in_as users(:bob)

@@ -1,0 +1,23 @@
+<%# locals: (goal:, range:, label:) %>
+<%# The contribution map with GH's axis furniture: 3-letter months across the
+    top at the week each month begins, Mon/Wed/Fri down the side (rows 2/4/6
+    of the Sunday-first grid). Cells are fluid — the year always fits the
+    container, never scrolls. Labels are decoration; the aria-label carries
+    the meaning. %>
+<% weeks = ((range.last - range.first.beginning_of_week(:sunday)).to_i / 7) + 1 %>
+<div class="goal-heat" role="img" aria-label="<%= label %>">
+  <div class="goal-heat__months" aria-hidden="true"
+       style="grid-template-columns: repeat(<%= weeks %>, minmax(0, 1fr))">
+    <% goal_heat_months(range).each do |week, name| %>
+      <span style="grid-column-start: <%= week + 1 %>"><%= name %></span>
+    <% end %>
+  </div>
+  <div class="goal-heat__days" aria-hidden="true">
+    <span style="grid-row-start: 2">Mon</span>
+    <span style="grid-row-start: 4">Wed</span>
+    <span style="grid-row-start: 6">Fri</span>
+  </div>
+  <div class="goal-history__heat">
+    <%= goal_heat_cells(goal, range: range) %>
+  </div>
+</div>

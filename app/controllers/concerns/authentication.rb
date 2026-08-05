@@ -8,6 +8,8 @@ module Authentication
   included do
     before_action :require_authentication
     helper_method :authenticated?
+    # The app header's house link needs it too (see layouts/_header).
+    helper_method :default_admin_url
   end
 
   class_methods do

@@ -26,11 +26,14 @@
 
 <div class="discussion-body u-flow">
   <% if @pulse.subscribed?(Current.user) %>
-    <% beat = @my_beat || Beat.new %>
-    <%= form_with model: beat, url: circle_pulse_beats_path(@circle, @record), method: :post,
-          class: "lexxy-compact" do |f| %>
-      <%= f.rich_textarea :content, placeholder: "Share your answer…", "aria-label": "Your answer" %>
-      <%= f.submit(@my_beat ? "Update my answer" : "Share my answer", class: "button button--primary u-margin-block-start") %>
+    <%# The composer shows only until you've answered; after that your answer %>
+    <%# lives in the list below with its own Edit (like a comment). %>
+    <% if @my_beat.nil? %>
+      <%= form_with model: Beat.new, url: circle_pulse_beats_path(@circle, @record), method: :post,
+            class: "lexxy-compact" do |f| %>
+        <%= f.rich_textarea :content, placeholder: "Share your answer…", "aria-label": "Your answer" %>
+        <%= f.submit "Share my answer", class: "button button--primary u-margin-block-start" %>
+      <% end %>
     <% end %>
   <% else %>
     <p class="u-text-muted">You're not in this Pulse check.
@@ -42,15 +45,8 @@
     <% if @beats.any? %>
       <h2 class="comments__heading"><%= pluralize(@beats.size, "answer") %></h2>
       <div class="list">
-        <% @beats.each do |b| %>
-          <article class="list__item comment">
-            <span class="avatar list__avatar" aria-hidden="true"><%= avatar_content(b.creator) %></span>
-            <div class="comment__content">
-              <%= byline b.creator, b.record.created_at, edited: b.event_updated? %>
-              <div class="comment__body u-flow"><%= b.content %></div>
-            </div>
-          </article>
-        <% end %>
+        <%= render partial: "circles/beats/beat", collection: @beats,
+              locals: { circle: @circle, pulse_record: @record } %>
       </div>
     <% else %>
       <p class="u-text-muted">No answers yet.</p>

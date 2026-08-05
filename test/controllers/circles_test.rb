@@ -18,6 +18,31 @@ class CirclesTest < ActionDispatch::IntegrationTest
     assert_select "ul.circles[data-view=list]"
   end
 
+  test "the index puts New circle in the canvas head and links the wider world" do
+    Circle.create_with_owner(name: "Poets Circle", owner: users(:admin))
+    sign_in_as users(:bob)
+
+    get circles_path
+    # New circle rides the canvas head (bob owns none, so he may create).
+    assert_select ".canvas__head a[href=?]", new_circle_path
+    assert_select ".perma-header__toolbar", count: 0
+    # Drafts-style link out to every circle on the platform.
+    assert_select "a[href=?]", all_circles_path, text: "View all 2 circles on Inkwell"
+  end
+
+  test "all circles lists everything, but only yours are doors" do
+    other = Circle.create_with_owner(name: "Poets Circle", owner: users(:admin))
+    sign_in_as users(:bob)
+
+    get all_circles_path
+    assert_response :success
+    assert_select ".circles__name", text: "Writers Circle"
+    assert_select ".circles__name", text: "Poets Circle"
+    assert_select "a.circles__card[href=?]", circle_path(circles(:writers))
+    assert_select "a.circles__card[href=?]", circle_path(other), count: 0
+    assert_select ".circles__meta", text: /not a member/
+  end
+
   test "the circles index honors the persisted layout cookie" do
     sign_in_as users(:bob)
     cookies[:circles_view] = "cards"

@@ -6,6 +6,12 @@
 
   * { margin: 0; }
 
+  /* The hidden attribute must actually hide: the UA's [hidden] display:none
+     loses to any author display rule (e.g. a .goal-stat grid), so components
+     toggled via `hidden` would stay visible. !important in this early layer
+     still wins over later layers' normal declarations. */
+  [hidden] { display: none !important; }
+
   /* Background lives on html too (not just body) so the document canvas behind a
      view transition matches — otherwise the browser default (white) flashes
      through during the cross-fade in dark mode. */

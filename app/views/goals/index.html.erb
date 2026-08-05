@@ -1,0 +1,44 @@
+<% content_for :title, "Your goals — Inkwell" %>
+
+<%= render "admin/shared/canvas_head", crumbs: [["Goals", nil]], menu: false do %>
+  <%# Fetches goals/new into the "modal" frame below — a dialog, not a page. %>
+  <%# Ghost, like the canvas head's Edit action — quiet chrome, not a CTA. %>
+  <%= link_to new_goal_path, class: "button button--ghost canvas__head-action",
+        data: { turbo_frame: "modal" } do %>
+    <%= inline_svg_tag "lucide/plus.svg", class: "lucide", size: "16px" %> New goal
+  <% end %>
+<% end %>
+
+<header class="perma-header">
+  <h1 class="perma-header__title">Your goals</h1>
+  <div class="perma-header__content">
+    <p class="u-text-muted">Practice targets you report against — yours alone, in every circle.</p>
+  </div>
+</header>
+
+<% if @archived_count.positive? %>
+  <p class="u-margin-block-end"><%= link_to "View #{pluralize(@archived_count, "archived goal")}", archived_goals_path %></p>
+<% end %>
+
+<% if @goals.any? %>
+  <%# Every goal's view cards share one grid: the full-width contribution
+      maps lead, then the small cards flex together across goals (a ring
+      beside another goal's completion). The goal's first-rendered card
+      carries its Today/⋯ actions. %>
+  <% cards = @goals.flat_map { |goal| goal_resolved_displays(goal).map { |display| [goal, display] } } %>
+  <% cards = cards.select { |_, d| d == "heatmap" } + cards.reject { |_, d| d == "heatmap" } %>
+  <div class="goal-grid">
+    <% cards.each do |goal, display| %>
+      <%= render "goal_card", goal: goal, display: display %>
+    <% end %>
+  </div>
+<% else %>
+  <div class="empty">
+    <span class="empty__icon"><%= inline_svg_tag "lucide/target.svg", class: "lucide", size: "40px" %></span>
+    <p class="empty__title">No goals yet</p>
+    <p class="empty__text">Set a practice target — words, hours, or pages — and log against it whenever you like.</p>
+    <div class="empty__actions"><%= link_to "New goal", new_goal_path, class: "button button--primary", data: { turbo_frame: "modal" } %></div>
+  </div>
+<% end %>
+
+<%= turbo_frame_tag "modal" %>

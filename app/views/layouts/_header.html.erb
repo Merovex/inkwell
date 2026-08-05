@@ -1,7 +1,10 @@
 <%# App header — brand left; notifications + user menu top-right. %>
 <%# .app-header is hidden under Hotwire Native (native nav takes over). %>
 <header class="bar app-header">
-  <%= link_to admin_root_path, class: "app-header__home", aria: { label: "Home" } do %>
+  <%# In a site's admin (slug in SCRIPT_NAME) home is that site's admin root; %>
+  <%# on the bare app host admin_root_path would emit a slugless /admin (404), %>
+  <%# so home falls back to where sign-in lands you (default_admin_url). %>
+  <%= link_to (Current.account ? admin_root_path : default_admin_url), class: "app-header__home", aria: { label: "Home" } do %>
     <%= inline_svg_tag "lucide/house.svg", class: "lucide", size: "20px" %>
   <% end %>
   <button type="button" class="bar__brand app-menu-trigger" popovertarget="app-menu"
@@ -9,9 +12,9 @@
     Inkwell
     <%= inline_svg_tag "lucide/chevron-down.svg", class: "lucide app-menu-trigger__chevron", size: "16px" %>
   </button>
-  <%# Candidate menus (same trigger, id="app-menu"): "app_menu_switcher" (container %>
-  <%# switcher — destination cards), "app_menu_hub" (Author Hub w/ full site nav), %>
-  <%# "app_menu" (cards), "app_menu_classic" (jump-sheet). %>
+  <%# THE app menu (id="app-menu"): the workspace switcher. The other candidate %>
+  <%# menus tried during design (hub, cards, jump-sheet) are gone — resurrect %>
+  <%# from git history, don't fork a new one. %>
   <%= render "layouts/app_menu_switcher" %>
   <div class="bar__spacer"></div>
 

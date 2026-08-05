@@ -1,0 +1,14 @@
+<%# locals: (users:, limit: 10, size: nil) %>
+<%# AvatarGroup — the .avatar-group cluster from the style guide: the first %>
+<%# `limit` users as overlapping avatars, then a "+N" tile for the rest. %>
+<%# size: "small" (or "large") maps to the .avatar--* modifiers. %>
+<% shown = users.first(limit) %>
+<% extra = users.size - shown.size %>
+<span class="avatar-group">
+  <% shown.each do |user| %>
+    <span class="avatar<%= " avatar--#{size}" if size %>" title="<%= user.display_name %>"><%= avatar_content(user) %></span>
+  <% end %>
+  <% if extra > 0 %>
+    <span class="avatar<%= " avatar--#{size}" if size %>" title="<%= pluralize(extra, "more member") %>">+<%= extra %></span>
+  <% end %>
+</span>

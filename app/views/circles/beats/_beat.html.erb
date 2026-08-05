@@ -1,0 +1,19 @@
+<%# locals: (beat:, circle:, pulse_record:) %>
+<%# One answer row — the .list__item comment shape (avatar | byline + rich %>
+<%# text | far-right action). The frame id doubles as the anchor and the %>
+<%# inline-edit swap target: Edit navigates the frame to beats#edit, which %>
+<%# renders the same frame with the content column as an editor. %>
+<%= turbo_frame_tag "beat_#{beat.record_id}", class: "list__item comment" do %>
+  <span class="avatar list__avatar" aria-hidden="true"><%= avatar_content(beat.creator) %></span>
+
+  <div class="comment__content">
+    <%= byline beat.creator, beat.record.created_at, edited: beat.event_updated? %>
+    <div class="comment__body u-flow"><%= beat.content %></div>
+  </div>
+
+  <div class="list__action comment__actions">
+    <% if beat.record.editable_by?(Current.user) %>
+      <%= link_to "Edit", edit_circle_pulse_beat_path(circle, pulse_record, beat.record_id), class: "button button--small" %>
+    <% end %>
+  </div>
+<% end %>

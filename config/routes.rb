@@ -60,6 +60,8 @@ Rails.application.routes.draw do
     # home (a preview of its discussions). The nested messages are the circle's
     # discussions: index lists them all, new is the composer, create posts one.
     resources :circles, only: %i[index new create show edit update] do
+      # Every circle on the platform (not just yours) — browse-only discovery.
+      collection { get :all }
       resources :messages, only: %i[index show new create edit update destroy], module: :circles do
         collection { get :archived }
         member do
@@ -82,7 +84,23 @@ Rails.application.routes.draw do
           post :subscribe
           delete :unsubscribe
         end
-        resources :beats, only: :create
+        resources :beats, only: %i[create edit update]
+      end
+    end
+
+    # Personal practice goals — the author's own, independent of any site or
+    # circle (the user is the record bucket). Tallies are the reports against
+    # a goal; ids are Record ids, like circles' pulses.
+    resources :goals do
+      # Archive is the calm way to retire a goal (reversible, no purge clock).
+      collection { get :archived }
+      member do
+        patch :archive
+        patch :unarchive
+      end
+      resources :tallies, only: %i[create edit update destroy], module: :goals do
+        # Today's record, add-or-edit, as a modal (fetched into the "modal" frame).
+        collection { get :today }
       end
     end
   end

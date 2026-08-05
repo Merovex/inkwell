@@ -160,8 +160,6 @@
   }
   .switcher__foot + .switcher__foot { border-inline-start: var(--border-size-1) solid color-mix(in oklab, var(--ink) 8%, transparent); }
   .switcher__foot:hover { background: color-mix(in oklab, var(--ink) 6%, transparent); }
-  .switcher__foot--soon { color: var(--ink-muted); cursor: default; }
-  .switcher__foot--soon:hover { background: transparent; }
 
   /* Phone: full-screen sheet (already single column). */
   @media (max-width: 40rem) {

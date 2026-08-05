@@ -7,6 +7,11 @@ class Circle < ApplicationRecord
   include Sluggable
   self.slug_param_only = true
 
+  # The ceiling no circle may exceed, whatever its member_limit says: Dunbar's
+  # number — past ~150 people a group can't sustain real relationships, and a
+  # circle is nothing but those.
+  MEMBER_HARD_CAP = 150
+
   belongs_to :owner, class_name: "User"
 
   has_many :circle_memberships, dependent: :destroy
@@ -16,6 +21,8 @@ class Circle < ApplicationRecord
   has_many :records, as: :bucket, dependent: :destroy
 
   validates :name, presence: true
+  validates :member_limit, numericality: { only_integer: true, greater_than: 0,
+    less_than_or_equal_to: MEMBER_HARD_CAP }, allow_nil: true
 
   # The discussions: current versions of this circle's Messages, newest first
   # (a board reads most-recent-first). The bucket-owned twin of
@@ -70,10 +77,16 @@ class Circle < ApplicationRecord
   # with account-admin).
   def moderated_by?(user) = user.present? && owner_id == user.id
 
-  # At capacity? nil member_limit means uncapped. Counts every seat, owner
-  # included.
+  # The circle's effective seat ceiling: its own member_limit if set, but never
+  # more than the hard cap — nil member_limit means "up to the cap", not
+  # unlimited.
+  def seat_cap
+    [ member_limit, MEMBER_HARD_CAP ].compact.min
+  end
+
+  # At capacity? Counts every seat, owner included.
   def full?
-    member_limit.present? && circle_memberships.count >= member_limit
+    circle_memberships.count >= seat_cap
   end
 
   def to_s = name

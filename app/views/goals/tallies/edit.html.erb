@@ -1,0 +1,20 @@
+<% content_for :title, "Edit tally — Inkwell" %>
+
+<%# Rendered into the tally's turbo frame on the goal page: the row becomes %>
+<%# the logbook form in the same column shape. "Never mind" navigates the %>
+<%# frame back to the goal page, which restores the displayed tally. %>
+<%= turbo_frame_tag "tally_#{@tally_record.id}", class: "list__item tally-row" do %>
+  <div class="list__body">
+    <%= render "admin/shared/error_summary", model: @tally %>
+    <%= form_with model: @tally, url: goal_tally_path(@goal_record, @tally_record),
+          method: :patch, class: "logbook" do |f| %>
+      <%= f.date_field :logged_on, class: "field__control logbook__date", "aria-label": "Date" %>
+      <%= f.number_field :amount, class: "field__control logbook__amount", min: 1, required: true,
+            "aria-label": "Amount" %>
+      <%= f.text_field :note, class: "field__control logbook__note", maxlength: Tally::NOTE_MAX_LENGTH,
+            placeholder: "A short note (optional)", "aria-label": "Note" %>
+      <%= f.submit "Save", class: "button button--primary" %>
+      <%= link_to "Never mind", goal_path(@goal_record), class: "button" %>
+    <% end %>
+  </div>
+<% end %>

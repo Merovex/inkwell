@@ -1,0 +1,28 @@
+<% content_for :title, "All circles — Inkwell" %>
+
+<%= render "admin/shared/canvas_head", crumbs: [["Circles", circles_path], ["All circles", nil]] %>
+
+<header class="perma-header">
+  <h1 class="perma-header__title">All circles</h1>
+  <div class="perma-header__content">
+    <p class="u-text-muted">Every circle on Inkwell. Yours are doors; the rest are just names.</p>
+  </div>
+</header>
+
+<ul class="circles" data-view="list">
+  <% @circles.each do |circle| %>
+    <li>
+      <% if circle.member?(Current.user) %>
+        <%= link_to circle_path(circle), class: "circles__card" do %>
+          <span class="circles__name"><%= circle.name %></span>
+          <span class="circles__meta"><%= pluralize(circle.circle_memberships.count, "member") %></span>
+        <% end %>
+      <% else %>
+        <span class="circles__card">
+          <span class="circles__name"><%= circle.name %></span>
+          <span class="circles__meta"><%= pluralize(circle.circle_memberships.count, "member") %> · not a member</span>
+        </span>
+      <% end %>
+    </li>
+  <% end %>
+</ul>

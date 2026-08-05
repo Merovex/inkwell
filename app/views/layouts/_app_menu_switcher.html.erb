@@ -1,10 +1,9 @@
-<%# CANDIDATE: the "Container Switcher" (TailwindPlus flyout style — neutral, no %>
-<%# accent). The global menu answers only "which container am I working in?" and %>
-<%# gets you in the front door of a Site or a Circle; deep page nav lives in each %>
-<%# container's own nav (the Site sub-header). One column: the single site card on %>
-<%# top, circles listed below — icon-square + title + description rows — and a %>
-<%# two-action footer. Circle links drop the site slug from SCRIPT_NAME. Opened by %>
-<%# the brand trigger (id="app-menu"). Other candidates: _app_menu_hub, _app_menu. %>
+<%# THE app menu — the "Container Switcher" (TailwindPlus flyout style — neutral, %>
+<%# no accent). It answers only "which container am I working in?" and gets you in %>
+<%# the front door of a Site, a Circle, or your Goals; deep page nav lives in each %>
+<%# container's own nav (the Site sub-header). Site card on top, circles listed %>
+<%# below, personal doors in the footer. Circle/goal links drop the site slug from %>
+<%# SCRIPT_NAME. Opened by the brand trigger (id="app-menu"). %>
 <div class="switcher" id="app-menu" popover role="dialog" aria-label="Switch workspace">
   <% if Current.user %>
     <% sites   = Current.user.accounts.order(:name) %>
@@ -70,11 +69,11 @@
     </div>
 
     <footer class="switcher__footer">
-      <span class="switcher__foot switcher__foot--soon" title="Not wired yet">
-        <%= inline_svg_tag "lucide/plus.svg", class: "lucide", size: "16px" %> New circle
-      </span>
       <%= link_to circles_path(script_name: ""), class: "switcher__foot" do %>
         <%= inline_svg_tag "lucide/message-square.svg", class: "lucide", size: "16px" %> All circles
+      <% end %>
+      <%= link_to goals_path(script_name: ""), class: "switcher__foot" do %>
+        <%= inline_svg_tag "lucide/target.svg", class: "lucide", size: "16px" %> Your goals
       <% end %>
     </footer>
   <% end %>

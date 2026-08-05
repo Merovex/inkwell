@@ -1,0 +1,71 @@
+# An author's personal practice target — "Draft the novel", measured in words,
+# hours, or pages. Lives on the Record spine bucketed to the USER, not a site
+# or circle: you carry your goals with you across every room (circles could
+# reference one later, but it is always yours alone). Mutable — edits amend in
+# place, no version history, no publish states; the spine is here for identity,
+# trash, and the Tally threading, not ceremony.
+class Goal < ApplicationRecord
+  include Recordable
+
+  UNITS    = %w[ words hours pages ].freeze
+  PERIODS  = %w[ day week month ].freeze
+  # Progress views the author can pick — a SET, stacked on the card in this
+  # canonical order (the now-number first, trends, then history). Empty =
+  # auto by shape (rate → ring, project → bar, logbook → plain total).
+  DISPLAYS = %w[ ring pace rolling last30 calendar heatmap ].freeze
+
+  validates :title, presence: true
+  validates :unit, inclusion: { in: UNITS }
+  validates :target, numericality: { only_integer: true, greater_than: 0 }, allow_nil: true
+  # Shape: target + per. per: nil with a target = a project ("50,000 in
+  # total"); per: day/week/month = a rate ("2,000 per day") and then the
+  # target is required — a rate without a number is meaningless. No target at
+  # all = a plain logbook.
+  normalizes :per, with: -> { it.presence }
+  validates :per, inclusion: { in: PERIODS }, allow_nil: true
+  # The intersection both sanitizes (junk and blanks drop) and imposes the
+  # canonical stacking order, whatever order the checkboxes arrived in.
+  serialize :displays, coder: JSON, type: Array
+  before_validation { self.displays = DISPLAYS & Array(displays) }
+  # The coder stores an empty set as NULL; the reader keeps the contract Array.
+  def displays = super || []
+  validates :target, presence: { message: "is required for a rate (per day/week/month) goal" }, if: -> { per.present? }
+
+  def rate?    = per.present?
+  def project? = per.nil? && target.present?
+
+  # No draft state and nothing published — an amend is just a correction.
+  def mutable? = true
+
+  # The goal's reports: current versions of the child Tally records (parent =
+  # this goal's Record — the same threading Beats use), newest day first.
+  def tallies
+    Tally.where(id: Record.active.where(recordable_type: "Tally", parent_id: record_id).select(:recordable_id))
+      .order(logged_on: :desc, record_id: :desc)
+  end
+
+  def total = tallies.sum(:amount)
+
+  # What this goal measures. A project/logbook measures its own tallies (the
+  # attribution: these words went HERE). A rate goal owns nothing — it
+  # observes every tally in its unit across the owner's goals, so "2,000
+  # words/day" credits novel words and blog words alike.
+  def observed_tallies
+    return tallies unless rate?
+
+    sibling_goal_records = Record.active.goals.where(bucket: record.bucket)
+    unit_goal_record_ids = Goal.where(id: sibling_goal_records.select(:recordable_id), unit: unit).select(:record_id)
+    Tally.where(id: Record.active.tallies.where(parent_id: unit_goal_record_ids).select(:recordable_id))
+  end
+
+  # The current period's window (nil for non-rate goals).
+  def period_range(today = Time.zone.today)
+    case per
+    when "day"   then today..today
+    when "week"  then today.beginning_of_week..today.end_of_week
+    when "month" then today.beginning_of_month..today.end_of_month
+    end
+  end
+
+  def period_total = observed_tallies.where(logged_on: period_range).sum(:amount)
+end

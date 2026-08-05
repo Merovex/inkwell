@@ -2,9 +2,9 @@
 # circle itself (name, description). Membership and the active bucket are set by
 # the base controller.
 class CirclesController < Circles::BaseController
-  # index/new/create don't operate on an existing circle, so they can't load one
-  # or set a bucket. Anyone signed in can start a circle (they become its owner).
-  skip_before_action :set_circle, only: %i[index new create]
+  # index/all/new/create don't operate on an existing circle, so they can't load
+  # one or set a bucket. Anyone signed in can start a circle (they become its owner).
+  skip_before_action :set_circle, only: %i[index all new create]
 
   # Only the owner edits the circle's name/description.
   before_action -> { authorize! @circle, to: :manage }, only: %i[edit update]
@@ -21,7 +21,15 @@ class CirclesController < Circles::BaseController
   CIRCLE_LIMIT_ALERT = "You can only create one circle."
 
   def index
-    @circles = Current.user.circles.order(:name)
+    # Members ride along for the cards' avatar clusters (pictures included).
+    @circles = Current.user.circles.includes(members: { avatar_attachment: :blob }).order(:name)
+    @all_count = Circle.count
+  end
+
+  # Every circle on the platform, browse-only: your own are doors; the rest
+  # are just names (a non-member's circle page is a 404 regardless).
+  def all
+    @circles = Circle.order(:name)
   end
 
   helper_method :can_create_circle?

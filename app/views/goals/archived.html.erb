@@ -1,0 +1,32 @@
+<% content_for :title, "Archived goals — Inkwell" %>
+
+<%= render "admin/shared/canvas_head", crumbs: [["Goals", goals_path], ["Archived", nil]] %>
+
+<header class="perma-header">
+  <h1 class="perma-header__title">Archived goals</h1>
+  <div class="perma-header__content">
+    <p class="u-text-muted">Set aside, tallies intact — restore one and it's back on the board.</p>
+  </div>
+</header>
+
+<% if @goals.any? %>
+  <div class="list">
+    <% @goals.each do |goal| %>
+      <% restore = capture do %>
+        <%= button_to "Restore", unarchive_goal_path(goal.record), method: :patch, class: "button button--small" %>
+      <% end %>
+      <%= render "shared/list_item",
+            href: goal_path(goal.record),
+            title: goal.title,
+            avatar: false,
+            author: "#{number_with_delimiter(goal.total)} #{goal.unit} logged",
+            actions: restore %>
+    <% end %>
+  </div>
+<% else %>
+  <div class="empty">
+    <span class="empty__icon"><%= inline_svg_tag "lucide/inbox.svg", class: "lucide", size: "40px" %></span>
+    <p class="empty__title">Nothing archived</p>
+    <p class="empty__text">Archived goals rest here, out of the main list, until you restore them.</p>
+  </div>
+<% end %>

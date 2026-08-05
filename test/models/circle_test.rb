@@ -26,6 +26,21 @@ class CircleTest < ActiveSupport::TestCase
     assert_match(/full/i, membership.errors.full_messages.to_sentence)
   end
 
+  test "member_limit can never exceed the Dunbar hard cap" do
+    circle = Circle.new(name: "Horde", owner: users(:alice), member_limit: Circle::MEMBER_HARD_CAP + 1)
+
+    assert_not circle.valid?
+    assert circle.errors[:member_limit].any?
+  end
+
+  test "no member_limit still means the Dunbar hard cap, not unlimited" do
+    circle = circles(:writers)
+    circle.update!(member_limit: nil)
+
+    assert_equal Circle::MEMBER_HARD_CAP, circle.seat_cap
+    assert_not circle.full?
+  end
+
   test "a circle's discussions are Messages owned by the circle, isolated from any account" do
     circle = circles(:writers)
 

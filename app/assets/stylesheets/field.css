@@ -7,6 +7,15 @@
  */
 @layer components {
   .field { display: flex; flex-direction: column; gap: calc(var(--u-pad) / 3); }
+  /* fields sharing a line — e.g. a goal's unit beside its target */
+  .field-row { display: flex; gap: var(--u-pad); }
+  .field-row > .field { flex: 1; }
+
+  /* Number fields keep the numeric keyboard and validation but lose the
+     spinner arrows — fiddly at this size; typing is the input. */
+  .field__control[type="number"] { appearance: textfield; -moz-appearance: textfield; }
+  .field__control[type="number"]::-webkit-inner-spin-button,
+  .field__control[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
 
   .field__label { font-weight: var(--font-weight-6); font-size: var(--font-size-0); }
   .field__label--required::after { content: " *"; color: var(--danger-ink); }

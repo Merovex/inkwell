@@ -1,20 +1,24 @@
 <% content_for :title, "Your circles — Inkwell" %>
 
-<%= render "admin/shared/canvas_head", crumbs: [["Circles", nil]] %>
+<%= render "admin/shared/canvas_head", crumbs: [["Circles", nil]], menu: false do %>
+  <% if can_create_circle? %>
+    <%= link_to new_circle_path, class: "button button--primary button--small" do %>
+      <%= inline_svg_tag "lucide/plus.svg", class: "lucide", size: "16px" %> New circle
+    <% end %>
+  <% end %>
+<% end %>
 
 <header class="perma-header">
   <h1 class="perma-header__title">Your circles</h1>
   <div class="perma-header__content">
     <p class="u-text-muted">Accountability groups you're a part of.</p>
-    <% if can_create_circle? %>
-      <nav class="perma-header__toolbar" aria-label="Actions">
-        <%= link_to new_circle_path, class: "button button--primary button--small" do %>
-          <%= inline_svg_tag "lucide/plus.svg", class: "lucide", size: "16px" %> New circle
-        <% end %>
-      </nav>
-    <% end %>
   </div>
 </header>
+
+<%# Like the drafts/archived links on posts: the wider world, one click away. %>
+<% if @all_count > @circles.size %>
+  <p class="u-margin-block-end"><%= link_to "View all #{pluralize(@all_count, "circle")} on Inkwell", all_circles_path %></p>
+<% end %>
 
 <% if @circles.any? %>
   <%# Persisted list ⇄ cards choice (cookie); default to list. %>
@@ -36,7 +40,8 @@
         <li>
           <%= link_to circle_path(circle), class: "circles__card" do %>
             <span class="circles__name"><%= circle.name %></span>
-            <span class="circles__meta"><%= pluralize(circle.circle_memberships.count, "member") %></span>
+            <%= render "shared/avatar_group", users: circle.members, limit: 10, size: "small" %>
+            <span class="circles__meta"><%= pluralize(circle.members.size, "member") %></span>
           <% end %>
         </li>
       <% end %>
