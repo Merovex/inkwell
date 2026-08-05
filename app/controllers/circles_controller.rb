@@ -53,6 +53,8 @@ class CirclesController < Circles::BaseController
 
   def show
     @pulse = @circle.pulse
+    # The pulse preview's answer cards: the latest three, any occurrence.
+    @pulse_beats = @pulse ? @pulse.beats.first(3) : []
     # Scheduled discussions wait in their own view; the home previews the
     # conversation as it stands (posted + in-progress).
     visible = @circle.discussions_visible_to(Current.user).where.not(status: :scheduled)

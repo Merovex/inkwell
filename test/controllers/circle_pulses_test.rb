@@ -153,12 +153,20 @@ class CirclePulsesTest < ActionDispatch::IntegrationTest
     assert_match "Alice here", pulse.beats_on(Date.current).find_by(creator_id: users(:alice).id).content.to_plain_text
   end
 
-  test "the circle home shows the pulse as a single item" do
+  test "the circle home previews the pulse with its latest answers, one big door" do
     pulse = create_pulse
+    pulse.update_column(:last_asked_on, Date.current)
+    Current.with_bucket(@circle) do
+      Record.originate(Beat.new(content: "<p>Wrote through the block today</p>", asked_on: Date.current, creator: users(:alice)), parent: pulse.record)
+    end
     sign_in_as users(:bob)
 
     get circle_path(@circle)
     assert_select "#pulse-heading", text: "Pulse check"
-    assert_select ".list__title", text: pulse.question
+    assert_select "a.pulse-preview[href=?]", circle_pulse_path(@circle, pulse.record)
+    assert_select ".pulse-preview__question", text: pulse.question
+    assert_select ".pulse-preview__card", count: 1
+    assert_select ".pulse-preview__byline", text: /#{users(:alice).display_name}.*ago/m
+    assert_select ".pulse-preview__excerpt", text: /Wrote through the block/
   end
 end

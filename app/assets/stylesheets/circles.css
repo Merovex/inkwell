@@ -49,6 +49,57 @@
   .circles__name { font-weight: var(--font-weight-6); }
   .circles__meta { color: var(--ink-muted); font-size: var(--font-size-0); }
 
+  /* The pulse preview on the circle home — one big door to the pulse page:
+     question, schedule, and up to three answer cards (excerpt, face, time). */
+  .pulse-preview { display: block; color: inherit; text-decoration: none; }
+  .pulse-preview:hover .pulse-preview__question { text-decoration: underline; }
+  .pulse-preview__question { display: block; font-weight: var(--font-weight-8); color: var(--ink); }
+  .pulse-preview__schedule { display: block; color: var(--ink-muted); }
+  /* Always three slots: a lone answer sits beside dashed ghosts, so the row
+     reads as "room for more". Cards hold a 3:2 ratio. */
+  .pulse-preview__answers {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: calc(var(--u-pad) / 2);
+    margin-block-start: calc(var(--u-pad) / 2);
+  }
+  .pulse-preview__card {
+    display: grid;
+    gap: calc(var(--u-pad) / 4);
+    align-content: start;
+    aspect-ratio: 3 / 2;
+    overflow: hidden;
+    padding: calc(var(--u-pad) * 0.75);
+    background: var(--site-bg);
+    border-radius: var(--radius-card);
+  }
+  .pulse-preview__ghost {
+    aspect-ratio: 3 / 2;
+    border: var(--border-size-1) dashed var(--line);
+    border-radius: var(--radius-card);
+  }
+  @media (max-width: 40rem) {
+    .pulse-preview__answers { grid-template-columns: 1fr; }
+    .pulse-preview__card { aspect-ratio: auto; }
+    .pulse-preview__ghost { display: none; } /* stacked empty boxes are noise */
+  }
+  .pulse-preview__byline {
+    display: flex;
+    align-items: center;
+    gap: calc(var(--u-pad) / 3);
+    font-size: var(--font-size-0);
+    color: var(--brand-text);
+  }
+  .pulse-preview__byline .avatar { --avatar-size: 1.5rem; flex-shrink: 0; }
+  .pulse-preview__excerpt {
+    font-size: var(--font-size-0);
+    color: var(--ink);
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
   /* A seat on offer: the golden card leading the deck (Fizzy's golden card,
      in Tailwind amber). Not a door — it carries its own Accept/Decline. */
   .circles__card--invited {
