@@ -391,9 +391,11 @@ class CirclesTest < ActionDispatch::IntegrationTest
     # The comment lives in the circle, not an account.
     assert_equal "Circle", discussion.record.comments.first.record.bucket_type
 
-    # The discussions list marks the comment count in the row's far corner.
+    # The discussions list carries the activity line: count, the commenters'
+    # faces, and how long since the last word.
     get circle_messages_path(circles(:writers))
-    assert_select ".list__item .list__count", text: "1"
+    assert_select ".list__item .list__activity", text: /1 comment.*ago/m
+    assert_select ".list__activity .avatar-group"
   end
 
   test "only the comment's author can edit it" do

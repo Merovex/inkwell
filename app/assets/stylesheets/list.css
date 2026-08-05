@@ -101,6 +101,17 @@
     color: #fff;
   }
 
+  /* activity: the staleness line under the excerpt — "3 comments · 2 hours
+     ago" with the commenters' faces. Sage byline tint, body-adjacent size. */
+  .list__activity {
+    display: inline-flex;
+    align-items: center;
+    gap: calc(var(--u-pad) / 3);
+    margin-block-start: calc(var(--u-pad) / 4);
+    font-size: var(--font-size-1);
+    color: var(--brand-text);
+  }
+
   /* unread-count bubble — a flex sibling AFTER the link, not inside it */
   .list__count {
     flex-shrink: 0;

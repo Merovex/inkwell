@@ -1,4 +1,4 @@
-<%# locals: (title:, href: nil, title_tag: "h3", author: nil, date: nil, excerpt: nil, avatar: true, avatar_user: nil, avatar_src: nil, avatar_alt: "", avatar_initials: nil, avatar_spacer: false, chips: [], badge: nil, badge_variant: nil, client_visible: false, comment_count: 0, scheduled_at: nil, pinned: false, actions: nil, discard_path: nil, discard_confirm: nil, discard_title: "Delete", discard_aria: nil) %>
+<%# locals: (title:, href: nil, title_tag: "h3", author: nil, date: nil, excerpt: nil, avatar: true, avatar_user: nil, avatar_src: nil, avatar_alt: "", avatar_initials: nil, avatar_spacer: false, chips: [], badge: nil, badge_variant: nil, client_visible: false, comment_count: 0, scheduled_at: nil, pinned: false, activity: nil, actions: nil, discard_path: nil, discard_confirm: nil, discard_title: "Delete", discard_aria: nil) %>
 <%# THE list row. Every .list renders its rows through this partial — never %>
 <%# hand-roll .list__item markup (see CLAUDE.md "List rows"). %>
 <%# Structure: avatar + (heading title + meta) + optional trailing count/actions. %>
@@ -63,6 +63,11 @@
         <%= inline_svg_tag "lucide/pin.svg", class: "lucide", size: "14px" %>
         Pinned
       </span>
+    <% end %>
+    <%# activity: a captured staleness row under the excerpt — e.g. a
+        discussion's "3 comments [avatars] · 2 hours ago". %>
+    <% if activity.present? %>
+      <span class="list__activity"><%= activity %></span>
     <% end %>
   <% end %>
 
