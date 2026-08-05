@@ -39,8 +39,12 @@
 </header>
 
 <article class="u-flow discussion-body">
-  <%= @message.content %>
+  <%= mentions_highlighted(@message.content, @record) %>
 </article>
+
+<div class="discussion-body">
+  <%= render "admin/boosts/boosts", record: @record %>
+</div>
 
 <div class="discussion-body">
   <%= render "admin/comments/comments", record: @record %>

@@ -1,18 +1,22 @@
-# A person did something that concerns you — the bell's rows. Scheduled sends
-# (pulse asks, drips) and operational mail are NOT notifications; your own
-# actions never notify you (the caller's responsibility via `to:`).
+# Something happened that concerns you — the bell's rows. Mostly a person's
+# act (invitations, mentions, boosts); the one scheduled exception is the
+# pulse ask, which rings the bell alongside its own mailer. Operational mail
+# (drips, digests) stays out, and your own actions never notify you (the
+# caller's responsibility via `to:`).
 #
 # Each row carries its OWN copy — actor, sentence, door — stamped at delivery,
 # so it outlives its source (accepting an invitation destroys the invitation;
 # the announcement stays). Sources nullify on destruction; removing
 # notifications is an explicit act on the revoke/decline path only.
 class Notification < ApplicationRecord
-  KINDS = %w[ invited invitation_accepted ].freeze
+  KINDS = %w[ invited invitation_accepted mentioned boosted pulse_asked ].freeze
   # Email-worthy kinds. Nothing notification-shaped is time-sensitive: these
   # roll up into one email every 4 hours (NotificationDigestJob) — and reading
-  # in-app first cancels the email (the bell beat us to it). The rest are
-  # bell-only.
-  EMAILED = %w[ invited ].freeze
+  # in-app first cancels the email (the bell beat us to it). The rest
+  # (acceptances, boosts) are bell-only. pulse_asked is bell-only HERE because
+  # its email is PulseMailer's immediate ask — the question shouldn't arrive
+  # twice.
+  EMAILED = %w[ invited mentioned ].freeze
 
   belongs_to :user   # the recipient
   belongs_to :actor, class_name: "User", optional: true
@@ -50,7 +54,45 @@ class Notification < ApplicationRecord
     when "invitation_accepted"
       { actor: source.user, url: "/circles/#{source.circle.slug}/members",
         title: "#{source.user.display_name} accepted your invitation to #{source.circle.name}" }
+    when "mentioned" # source: the Record the mention appears in
+      { actor: source.creator, url: record_path_for(source),
+        title: "#{source.creator.display_name} mentioned you in #{context_for(source)}" }
+    when "boosted"   # source: the Boost
+      { actor: source.creator, url: record_path_for(source.record),
+        title: "#{source.creator.display_name} boosted your #{noun_for(source.record)}: #{source.content}" }
+    when "pulse_asked" # source: the Pulse's Record — the schedule fired, no human actor
+      { actor: nil, url: record_path_for(source),
+        title: "Pulse check in #{source.bucket.name}: #{source.recordable.question}" }
     end
   end
   private_class_method :copy_for
+
+  # Circle-record page paths, stamped as strings (these notifications only
+  # arise from circle content — see Mentions and Circles::BoostsController).
+  def self.record_path_for(record)
+    slug = record.bucket.slug
+    case record.recordable_type
+    when "Message" then "/circles/#{slug}/messages/#{record.id}"
+    when "Comment" then "#{record_path_for(record.parent)}#comment_#{record.id}"
+    when "Beat"    then "/circles/#{slug}/pulses/#{record.parent_id}"
+    when "Pulse"   then "/circles/#{slug}/pulses/#{record.id}"
+    else "/circles/#{slug}"
+    end
+  end
+  private_class_method :record_path_for
+
+  def self.context_for(record)
+    case record.recordable_type
+    when "Message" then "“#{record.recordable.title}”"
+    when "Comment" then "a comment on “#{record.parent.recordable.try(:title) || record.parent.recordable.try(:question)}”"
+    when "Beat"    then "a Pulse answer"
+    else record.bucket.name
+    end
+  end
+  private_class_method :context_for
+
+  def self.noun_for(record)
+    { "Message" => "message", "Comment" => "comment", "Beat" => "answer" }.fetch(record.recordable_type, "post")
+  end
+  private_class_method :noun_for
 end

@@ -11,6 +11,9 @@ class Boost < ApplicationRecord
 
   belongs_to :record
   belongs_to :creator, class_name: "User", default: -> { Current.user }
+  # The author's "boosted your…" bell row keeps its stamped copy if the
+  # boost is taken back.
+  has_many :notifications, as: :source, dependent: :nullify
 
   validates :content, presence: true, length: { maximum: MAX_LENGTH }
 end

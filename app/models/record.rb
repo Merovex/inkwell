@@ -6,6 +6,10 @@
 class Record < ApplicationRecord
   include Boostable
 
+  # Mention notifications sourced to this record (see Mentions); stamped
+  # copies survive the record via nullify.
+  has_many :notifications, as: :source, dependent: :nullify
+
   # Content types that may live in the envelope; grows as recordables are added.
   RECORDABLE_TYPES = %w[ Post Comment ChatLine Message Book Series Collection Author Drip Drop Site Pulse Beat Goal Tally ]
 

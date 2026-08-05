@@ -31,7 +31,7 @@
     <% if @my_beat.nil? %>
       <%= form_with model: Beat.new, url: circle_pulse_beats_path(@circle, @record), method: :post,
             class: "lexxy-compact" do |f| %>
-        <%= f.rich_textarea :content, placeholder: "Share your answer…", "aria-label": "Your answer" %>
+        <%= f.rich_textarea :content, placeholder: "Share your answer…", "aria-label": "Your answer" do %><%= mention_prompt(@circle) %><% end %>
         <%= f.submit "Share my answer", class: "button button--primary u-margin-block-start" %>
       <% end %>
     <% end %>

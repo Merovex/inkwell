@@ -11,5 +11,5 @@
   <%= f.text_field :title, class: "composer__title", placeholder: "Type a title…",
         "aria-label": "Title", required: true, autofocus: true %>
 
-  <%= f.rich_textarea :content, placeholder: "Write away…", "aria-label": "Body" %>
+  <%= f.rich_textarea :content, placeholder: "Write away…", "aria-label": "Body" do %><%= mention_prompt(@circle) %><% end %>
 <% end %>

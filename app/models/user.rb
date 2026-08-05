@@ -1,5 +1,7 @@
 class User < ApplicationRecord
   include Registration
+  # Attachable in rich text — @mention chips reference users by sgid.
+  include ActionText::Attachable
 
   AVATAR_CONTENT_TYPES = %w[ image/jpeg image/png image/avif image/webp ]
   AVATAR_MAX_SIZE = 5.megabytes
@@ -56,6 +58,25 @@ class User < ApplicationRecord
   # creation), with the email as a belt-and-braces fallback for legacy rows.
   def display_name
     name.presence || email_address
+  end
+
+  # As an Action Text attachable — the @mention chip. Picking a member in the
+  # Lexxy prompt attaches the user by sgid; this partial is the chip everywhere
+  # (display render AND the editor round-trip, which re-renders it into the
+  # attachment's content attribute).
+  def to_attachable_partial_path
+    "users/mention"
+  end
+
+  # What the chip reads as in plain text (excerpts, notification copy scans).
+  def attachable_plain_text_representation(_caption = nil)
+    "@#{display_name}"
+  end
+
+  # Keeps the stored attachment's content-type stable (Action Text would
+  # otherwise stamp application/octet-stream) — mention.css keys off it.
+  def attachable_content_type
+    "application/vnd.actiontext.mention"
   end
 
   # Per-account superuser: the owner administers their account; root

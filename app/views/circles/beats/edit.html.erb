@@ -15,7 +15,7 @@
           data: { controller: "autosave",
                   autosave_key_value: "Record/#{@beat_record.id}/edit",
                   autosave_revision_value: @beat_record.recordable_id } do |f| %>
-      <%= f.rich_textarea :content, "aria-label": "Your answer" %>
+      <%= f.rich_textarea :content, "aria-label": "Your answer" do %><%= mention_prompt(@circle) %><% end %>
       <div class="u-cluster">
         <%= f.submit "Save changes", class: "button button--primary" %>
         <%= link_to "Never mind", circle_pulse_path(@circle, @record), class: "button" %>

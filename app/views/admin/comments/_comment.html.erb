@@ -8,11 +8,8 @@
 
   <div class="comment__content">
     <%= byline comment.creator, comment.record.created_at, edited: comment.event_updated? %>
-    <div class="comment__body u-flow"><%= comment.content %></div>
-    <%# Boosts are an account-side affordance for now (their routes are admin). %>
-    <% unless comment.record.bucket.is_a?(Circle) %>
-      <%= render "admin/boosts/boosts", record: comment.record %>
-    <% end %>
+    <div class="comment__body u-flow"><%= mentions_highlighted(comment.content, comment.record) %></div>
+    <%= render "admin/boosts/boosts", record: comment.record %>
   </div>
 
   <div class="list__action comment__actions">

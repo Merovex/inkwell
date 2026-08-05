@@ -107,6 +107,101 @@ class NotificationsTest < ActionDispatch::IntegrationTest
     assert notification.reload.emailed_at? # covered, so the scope stays small
   end
 
+  test "an @mention in a comment notifies the member, and only members" do
+    users(:alice).update!(name: "alice") # handle-shaped, like generated names
+    discussion = Current.with_bucket(@circle) do
+      Record.originate(Message.new(title: "Hello", content: "start", creator: users(:alice),
+        status: :published, published_at: Time.current))
+    end
+    sign_in_as users(:bob)
+
+    assert_difference -> { users(:alice).notifications.count }, 1 do
+      post circle_record_comments_path(@circle, discussion),
+        params: { comment: { content: "<p>Good point @alice — and @nobodyhere too</p>" } }
+    end
+    notification = users(:alice).notifications.last
+    assert_equal "mentioned", notification.kind
+    assert_match(/mentioned you in a comment on “Hello”/, notification.title)
+    assert_includes Notification::EMAILED, "mentioned" # digest-worthy
+  end
+
+  test "a mention by email address reaches the member too" do
+    discussion = Current.with_bucket(@circle) do
+      Record.originate(Message.new(title: "Hi", content: "start", creator: users(:bob),
+        status: :published, published_at: Time.current))
+    end
+    sign_in_as users(:bob)
+
+    # alice's name ("Alice Example") isn't handle-shaped — email still works.
+    assert_difference -> { users(:alice).notifications.count }, 1 do
+      post circle_record_comments_path(@circle, discussion),
+        params: { comment: { content: "<p>ping @#{users(:alice).email_address}</p>" } }
+    end
+    assert_equal "mentioned", users(:alice).notifications.last.kind
+  end
+
+  test "a mention picked from the prompt (attachment by sgid) notifies too" do
+    discussion = Current.with_bucket(@circle) do
+      Record.originate(Message.new(title: "Hey", content: "start", creator: users(:bob),
+        status: :published, published_at: Time.current))
+    end
+    sign_in_as users(:bob)
+
+    # What Lexxy submits after picking from the @-prompt: an attachment
+    # carrying the member's sgid, no plain @token anywhere.
+    chip = %(<action-text-attachment sgid="#{users(:alice).attachable_sgid}" content-type="application/vnd.actiontext.mention"></action-text-attachment>)
+    assert_difference -> { users(:alice).notifications.count }, 1 do
+      post circle_record_comments_path(@circle, discussion),
+        params: { comment: { content: "<p>ping #{chip} about this</p>" } }
+    end
+    assert_equal "mentioned", users(:alice).notifications.last.kind
+  end
+
+  test "mentions in a draft stay quiet; publishing is what rings" do
+    users(:alice).update!(name: "alice")
+    sign_in_as users(:bob)
+
+    assert_no_difference -> { users(:alice).notifications.count } do
+      post circle_messages_path(@circle), params: { message: { title: "WIP", content: "hey @alice" } }
+    end
+    assert_difference -> { users(:alice).notifications.count }, 1 do
+      post circle_messages_path(@circle),
+        params: { message: { title: "Live", content: "hey @alice" }, publish: "1" }
+    end
+  end
+
+  test "publishing a drafted message is what rings its mentions" do
+    users(:alice).update!(name: "alice")
+    sign_in_as users(:bob)
+    post circle_messages_path(@circle), params: { message: { title: "Later", content: "hey @alice" } }
+    draft = @circle.discussions_visible_to(users(:bob)).find { |m| m.title == "Later" }
+
+    assert_difference -> { users(:alice).notifications.count }, 1 do
+      patch circle_message_path(@circle, draft.record),
+        params: { message: { title: "Later", content: "hey @alice" }, publish: "1" }
+    end
+    assert_equal "mentioned", users(:alice).notifications.last.kind
+  end
+
+  test "the pulse ask rings the bell alongside its email" do
+    pulse = Current.with_bucket(@circle) do
+      Record.originate(Pulse.new(question: "How goes it?", creator: users(:alice),
+        cadence: "daily", days_of_week: 0b1111111, ask_at_minutes: 540))
+    end.recordable
+    pulse.subscriptions.create!(user: users(:bob))
+
+    assert_difference -> { users(:bob).notifications.count }, 1 do
+      assert_enqueued_jobs 1, only: ApplicationMailDeliveryJob do
+        pulse.ask!
+      end
+    end
+    notification = users(:bob).notifications.last
+    assert_equal "pulse_asked", notification.kind
+    assert_match(/How goes it\?/, notification.title)
+    assert_nil notification.actor # the schedule fired, not a person
+    assert_not_includes Notification::EMAILED, "pulse_asked" # PulseMailer is its email
+  end
+
   test "read notifications are pruned after thirty days; unread wait" do
     invitation = @circle.invitations.create!(user: users(:admin), inviter: users(:alice))
     read   = Notification.deliver(invitation, to: users(:admin), kind: "invited")

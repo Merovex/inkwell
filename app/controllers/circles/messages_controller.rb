@@ -58,6 +58,8 @@ module Circles
 
       if @message.errors.none?
         Record.originate(@message)
+        # Mentions ring when the words go live — drafts/scheduled keep quiet.
+        Mentions.deliver_for(@message.record) if @message.published?
         @message.schedule(at: scheduled_at) if scheduling?
         redirect_to circle_message_path(@circle, @message.record), notice: create_notice
       else
@@ -75,6 +77,9 @@ module Circles
         publish: publishing?, schedule_at: (scheduled_at if scheduling?), unschedule: unscheduling?)
 
       if @message.errors.none?
+        # New/edited words that are live get scanned; idempotency in Mentions
+        # keeps repeat scans from double-ringing.
+        Mentions.deliver_for(@record) if @message.published?
         redirect_to circle_message_path(@circle, @record)
       else
         render :edit, status: :unprocessable_entity

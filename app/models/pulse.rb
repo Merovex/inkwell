@@ -67,7 +67,12 @@ class Pulse < ApplicationRecord
   # last_asked_on is operational state, not a content edit, so it's set in place
   # (no new version) — dup carries it forward if the question is later revised.
   def ask!(on = Time.zone.today)
-    respondents.find_each { |user| PulseMailer.ask(self, user, on).deliver_later }
+    respondents.find_each do |user|
+      PulseMailer.ask(self, user, on).deliver_later
+      # The ask is also a bell notification; the email above is its "email
+      # channel", so the kind stays out of the digest (no double asks).
+      Notification.deliver(record, to: user, kind: "pulse_asked")
+    end
     update_column(:last_asked_on, on)
   end
 

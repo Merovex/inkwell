@@ -8,7 +8,8 @@
 
   <div class="comment__content">
     <%= byline beat.creator, beat.record.created_at, edited: beat.event_updated? %>
-    <div class="comment__body u-flow"><%= beat.content %></div>
+    <div class="comment__body u-flow"><%= mentions_highlighted(beat.content, beat.record) %></div>
+    <%= render "admin/boosts/boosts", record: beat.record %>
   </div>
 
   <div class="list__action comment__actions">

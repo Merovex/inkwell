@@ -1,0 +1,46 @@
+/*
+ * Mentions, both ends: .mention is a recognized @mention inside rendered
+ * circle content (MentionsHelper wraps only tokens matching an actual member,
+ * so the highlight is proof the mention landed) — sage, like bylines. The
+ * .mention-option rows fill Lexxy's @-prompt menu (circles/_mention_prompt).
+ */
+@layer components {
+  /* Inline, not flex: the chip's baseline must be the NAME's text baseline
+     so it sits on the same line as the surrounding sentence (a flex chip
+     exports the avatar box's synthesized baseline and rides ~4px high).
+     Only the avatar gets a vertical nudge. */
+  .mention {
+    padding-inline: 0.2em;
+    border-radius: var(--radius-ui);
+    color: var(--brand-text);
+    background: color-mix(in oklab, var(--brand-text) 10%, transparent);
+    font-weight: var(--font-weight-6);
+  }
+  /* rem, not em: .avatar derives its font-size from --avatar-size, so a
+     font-relative size here resolves against that derived value and
+     collapses. Declared on the element to beat .avatar's own default
+     (inherited values lose to it; mention.css loads after avatar.css). */
+  .mention__avatar {
+    --avatar-size: 1.25rem;
+    vertical-align: text-bottom;
+    margin-inline-end: 0.25em;
+  }
+
+  .mention-option {
+    display: inline-flex;
+    align-items: center;
+    gap: calc(var(--u-pad) / 3);
+  }
+  .mention-option__avatar { --avatar-size: 1.5rem; flex-shrink: 0; }
+  .mention-option__name { font-weight: var(--font-weight-6); }
+}
+
+/* Unlayered on purpose: lexxy.css ships unlayered rules for custom
+   vnd.actiontext.* attachments (its native mention pattern) that squeeze any
+   img inside to 1em round — and unlayered beats every @layer rule. The
+   counter-rule must be unlayered too (mention.css loads after lexxy.css).
+   It restores .avatar__img to filling its 1.25rem disk. */
+.mention .avatar__img {
+  inline-size: 100%;
+  block-size: 100%;
+}

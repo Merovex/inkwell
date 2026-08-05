@@ -15,10 +15,12 @@ module Circles
       beat = @pulse.beats_on(occurrence).find_by(creator_id: Current.user.id)
       if beat
         beat.record.revise(event: :updated, content: beat_params[:content])
+        Mentions.deliver_for(beat.record)
       elsif beat_params[:content].present?
-        Record.originate(
+        record = Record.originate(
           Beat.new(content: beat_params[:content], asked_on: occurrence, creator: Current.user),
           parent: @record)
+        Mentions.deliver_for(record)
       end
 
       redirect_to circle_pulse_path(@circle, @record, anchor: "beats")
@@ -31,6 +33,7 @@ module Circles
       @beat = @beat_record.revise(event: :updated, **beat_params.to_h.symbolize_keys)
 
       if @beat.errors.none?
+        Mentions.deliver_for(@beat_record)
         redirect_to circle_pulse_path(@circle, @record, anchor: "beat_#{@beat_record.id}")
       else
         render :edit, status: :unprocessable_entity

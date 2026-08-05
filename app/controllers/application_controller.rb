@@ -80,6 +80,7 @@ class ApplicationController < ActionController::Base
       case record.recordable_type
       when "ChatLine" then admin_chatroom_path(anchor: anchor)
       when "Comment"  then helpers.commentable_path(record.parent, anchor: anchor)
+      when "Beat"     then circle_pulse_path(record.bucket, record.parent_id, anchor: anchor)
       else helpers.commentable_path(record, anchor: anchor)
       end
     end

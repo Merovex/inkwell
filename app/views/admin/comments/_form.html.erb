@@ -12,7 +12,7 @@
         data: { turbo_frame: "_top",
                 controller: "autosave",
                 autosave_key_value: "Record/#{record.id}/comment" } do |f| %>
-    <%= f.rich_textarea :content, placeholder: "Add a comment…", "aria-label": "Comment", autofocus: true %>
+    <%= f.rich_textarea :content, placeholder: "Add a comment…", "aria-label": "Comment", autofocus: true do %><%= mention_prompt(record.bucket) %><% end %>
     <div class="u-cluster">
       <%= f.submit "Add this comment", class: "button button--primary" %>
       <%# Navigates the frame back to the parent's page, whose response holds %>

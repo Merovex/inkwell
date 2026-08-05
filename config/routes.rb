@@ -78,8 +78,12 @@ Rails.application.routes.draw do
       # comment's own Record id.
       resources :records, only: [] do
         resources :comments, only: %i[new create], module: :circles
+        # Boosts on any circle record (message, comment, pulse answer) —
+        # same shape as the admin side, circle-scoped.
+        resources :boosts, only: :create, module: :circles
       end
       resources :comments, only: %i[edit update destroy], module: :circles
+      resources :boosts, only: :destroy, module: :circles
 
       # Your own seat: DELETE = leave the circle (non-owners only — the owner
       # deletes or hands off, they don't abandon).

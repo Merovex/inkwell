@@ -20,6 +20,7 @@ module Circles
 
       if @comment.valid?
         Record.originate(@comment, parent: @parent)
+        Mentions.deliver_for(@comment.record)
         redirect_to helpers.commentable_path(@parent, anchor: "comment_#{@comment.record_id}")
       else
         redirect_to helpers.commentable_path(@parent), alert: "Comment can't be blank."
@@ -34,6 +35,7 @@ module Circles
       @comment = @record.revise(event: :updated, **comment_params.to_h.symbolize_keys)
 
       if @comment.errors.none?
+        Mentions.deliver_for(@record)
         redirect_to helpers.commentable_path(@record.parent, anchor: "comment_#{@record.id}")
       else
         render "admin/comments/edit", status: :unprocessable_entity
