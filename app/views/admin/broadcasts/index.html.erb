@@ -50,8 +50,8 @@
               <%# The title is the door to this send's delivery detail; the post
                   itself is one link further ("View post" there, live posts only). %>
               <% title = broadcast.post&.title.presence || "Untitled" %>
-              <%= link_to title.truncate(40), admin_broadcast_path(broadcast),
-                    class: "u-text-strong", title: (title if title.length > 40) %>
+              <%= link_to title.truncate(32), admin_broadcast_path(broadcast),
+                    class: "u-text-strong", title: (title if title.length > 32) %>
               <% if broadcast.record.trashed_at? %><span class="badge">Trashed</span><% end %>
             </td>
             <td>
