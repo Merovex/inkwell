@@ -35,7 +35,7 @@
             <td>
               <% case broadcast.state %>
               <% when :sent %>
-                <%= l broadcast.sent_at.to_date, format: :long %>
+                <time datetime="<%= broadcast.sent_at.to_date.iso8601 %>"><%= l broadcast.sent_at.to_date, format: :long %></time>
               <% when :scheduled %>
                 <span class="badge badge--accent">Scheduled ·
                   <time datetime="<%= broadcast.scheduled_at.iso8601 %>" data-controller="local-time"

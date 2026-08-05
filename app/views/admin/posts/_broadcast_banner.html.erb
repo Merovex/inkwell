@@ -29,7 +29,7 @@
     </div>
 
     <% if broadcast&.sent? %>
-      <p class="broadcast-banner__stamp">✓ Sent to <%= pluralize(broadcast.recipients_count, "subscriber") %> on <%= l broadcast.sent_at.to_date, format: :long %></p>
+      <p class="broadcast-banner__stamp">✓ Sent to <%= pluralize(broadcast.recipients_count, "subscriber") %> on <time datetime="<%= broadcast.sent_at.to_date.iso8601 %>"><%= l broadcast.sent_at.to_date, format: :long %></time></p>
     <% elsif broadcast&.scheduled? %>
       <p class="broadcast-banner__stamp">Scheduled to email subscribers on
         <time datetime="<%= broadcast.scheduled_at.iso8601 %>" data-controller="local-time"

@@ -2,6 +2,13 @@
 
 Append-only. Newest first. Format defined in [[CLAUDE]] (`CLAUDE.md`).
 
+## [2026-08-05] note | Provider split settled: Postmark = must-deliver, SES = bread-and-butter
+- Settles the routing question [[0025-canonical-delivery-events]] deferred. **Postmark** carries the must-deliver mail on `auth.merovex.press`: magic links, sign-in codes, and opt-in confirmations — confirmations are must-deliver despite being "newsletter" mail because they hit unproven addresses (highest bounce-risk stream, and SES's bounce/complaint thresholds are ACCOUNT-level — config sets separate stats, not enforcement) and a miss loses the subscriber permanently. **SES** carries everything post-confirmation on `news.merovex.press`: broadcasts, drips, the welcome sequence (the highest-engagement mail — deliberately on the news identity to warm it), re-engagement.
+- **Dual-verify `news.` in BOTH ESPs** (DKIM selectors are namespaced — `pm._domainkey` beside SES's Easy-DKIM selectors, separate return-path sub-subdomains, DMARC aligns via DKIM for both): Postmark becomes a warm standby for broadcasts — an SES throttle/complaint-spike day is a config flip under the same From identity, no DNS scramble. The DeliveryEvent per-send provider stamp is what makes the flip observable per-rail.
+- Root `merovex.press` never sends — DMARC policy holder only (as ADR 0015 / the runbook already establish).
+- pages touched: (log only — implement via the deferred routing rule when SES re-enables)
+- refs: [[0025-canonical-delivery-events]], [[ses-migration-runbook]]
+
 ## [2026-08-05] build | Goal deadlines + the NaNo pace line
 - **Deadline window on project goals** (`starts_on`/`ends_on` dates, project-only — owner: a rate is a treadmill, not a race; validation rejects the fields on rates/logbooks, and a start without a deadline). Blank start anchors at first tally or creation day, whichever is EARLIER (`pace_start` — a backdated tally pulls the line back, chosen over creation-date and required-start options).
 - **Pace card became the race line** when a deadline exists (owner picked ahead/behind as the headline over needed-per-day and projected-finish): dashed target trajectory (`goal_pace_chart_svg`, shared with the form's sample card) under the accent cumulative line, "1,840 behind pace" / "On pace" / "2,300 ahead of pace", meta "needs N/day to finish by Nov 30". Upcoming window → "starts · due"; past → "N short"/"Finished". No deadline → the old 30-day-average card unchanged. Auto-display for a deadline project with no picks is now `pace` (was `bar`); show-page header appends "· by <date>" via a new `goal_date` helper (`<time datetime>`).

@@ -25,8 +25,12 @@
 
   <header class="perma-header">
     <% if can_manage %>
-      <h1 class="perma-header__title editable__display" data-editable-target="display"
-          data-action="dblclick->editable#edit" title="Double-click to rename" tabindex="0"><%= @book.title %></h1>
+      <%# A real button inside the h1: heading semantics for AT; dblclick for
+          mouse (single click selects text), Enter for the keyboard. %>
+      <h1 class="perma-header__title" data-editable-target="display"><button type="button"
+          class="u-unbutton editable__display"
+          data-action="dblclick->editable#edit keydown.enter->editable#edit"
+          title="Double-click to rename"><%= @book.title %></button></h1>
       <%= form_with model: @book, url: admin_book_path(@record) do |f| %>
         <%= f.text_field :title, hidden: true, class: "perma-header__title editable__input",
               aria: { label: "Title" },

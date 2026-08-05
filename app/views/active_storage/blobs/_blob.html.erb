@@ -1,6 +1,7 @@
 <figure class="attachment attachment--<%= blob.representable? ? "preview" : "file" %> attachment--<%= blob.filename.extension %>">
   <% if blob.representable? %>
-    <%= image_tag blob.representation(attachment_variation(blob, in_gallery: local_assigns[:in_gallery])) %>
+    <%# empty alt: the figcaption below carries the name/caption — a filled alt would double-announce %>
+    <%= image_tag blob.representation(attachment_variation(blob, in_gallery: local_assigns[:in_gallery])), alt: "" %>
   <% end %>
 
   <figcaption class="attachment__caption">

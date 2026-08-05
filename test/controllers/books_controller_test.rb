@@ -29,8 +29,9 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
     get admin_book_path(record)
     assert_response :success
     assert_select "h1", text: "Shown Book"
-    # editable title, change-log menu link, and a cover placeholder
-    assert_select "[data-controller=editable] h1[data-action*=?]", "editable#edit"
+    # editable title (a real button inside the h1 — keyboard-operable),
+    # change-log menu link, and a cover placeholder
+    assert_select "[data-controller=editable] h1 button[data-action*=?]", "editable#edit"
     assert_select "a[href=?]", admin_book_events_path(record), text: "Change log"
     assert_select ".cover-drop"   # click/drop cover uploader (no cover yet)
   end

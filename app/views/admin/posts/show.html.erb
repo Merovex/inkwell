@@ -30,8 +30,11 @@
 
   <header class="perma-header">
     <% if can_manage %>
-      <h1 class="perma-header__title editable__display" data-editable-target="display"
-          data-action="click->editable#edit" title="Click to rename" tabindex="0"><%= @post.title %></h1>
+      <%# A real button inside the h1: heading semantics for AT, native
+          keyboard operability (Enter/Space) for the rename affordance. %>
+      <h1 class="perma-header__title" data-editable-target="display"><button type="button"
+          class="u-unbutton editable__display" data-action="editable#edit"
+          title="Click to rename"><%= @post.title %></button></h1>
       <%= form_with model: @post, url: admin_post_path(@record) do |f| %>
         <%= f.text_field :title, hidden: true, class: "perma-header__title editable__input",
               aria: { label: "Title" },
@@ -44,7 +47,7 @@
     <p class="perma-header__content u-text-muted">
       <span class="u-text-strong"><%= @record.creator.display_name %></span>
       <% if @post.published? %>
-        · <%= l @post.published_at.to_date, format: :long %>
+        · <time datetime="<%= @post.published_at.to_date.iso8601 %>"><%= l @post.published_at.to_date, format: :long %></time>
       <% elsif @post.scheduled? %>
         · <span class="badge badge--accent">Scheduled ·
           <time datetime="<%= @post.published_at.iso8601 %>" data-controller="local-time"

@@ -36,8 +36,10 @@ token to `01-tokens.css` that references an Open Props step — don't inline it.
 - Content-driven measures: `ch`-based widths (`max-width: 60ch`)
 - Font-relative (`em`) micro-spacing and `vertical-align` nudges on inline
   text-flow chips and icons (`.mention` padding, an inline lucide's baseline
-  nudge) — scaling with the surrounding text is the point. Not a loophole for
-  layout spacing: block/flex/grid gaps and paddings stay on the token scale.
+  nudge), and `em` padding on controls whose box deliberately scales with
+  their label (the public-site button) — scaling with the text is the point.
+  Not a loophole for layout spacing: block/flex/grid gaps and container
+  paddings stay on the token scale.
 - `currentColor`, `transparent`, `inherit` and other CSS keywords
 - **Breakpoint literals in `@media` conditions only** — CSS cannot read
   custom properties there. The house stops are `48em` (`--breakpoint-md`,
