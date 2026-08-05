@@ -40,17 +40,17 @@
     <span class="analytics-stat__value"><%= @broadcast.clicked_count %></span>
     <span class="u-text-muted u-text-small"><%= pct.(@broadcast.click_rate) %></span>
   </div>
-  <div class="analytics-stat">
+  <div class="analytics-stat<%= " analytics-stat--trouble" if @broadcast.bounced_count.positive? %>">
     <span class="analytics-stat__label u-microcaps">Bounced</span>
     <span class="analytics-stat__value"><%= @broadcast.bounced_count %></span>
     <span class="u-text-muted u-text-small">&nbsp;</span>
   </div>
-  <div class="analytics-stat">
+  <div class="analytics-stat<%= " analytics-stat--trouble" if @broadcast.complained_count.positive? %>">
     <span class="analytics-stat__label u-microcaps">Complaints</span>
     <span class="analytics-stat__value"><%= @broadcast.complained_count %></span>
     <span class="u-text-muted u-text-small">&nbsp;</span>
   </div>
-  <div class="analytics-stat">
+  <div class="analytics-stat<%= " analytics-stat--trouble" if @broadcast.unsubscribed_count.positive? %>">
     <span class="analytics-stat__label u-microcaps">Unsubs</span>
     <span class="analytics-stat__value"><%= @broadcast.unsubscribed_count %></span>
     <span class="u-text-muted u-text-small">&nbsp;</span>

@@ -30,6 +30,12 @@
     text-align: center;
   }
   .analytics-stat__value { font-size: var(--font-size-6); font-weight: var(--font-weight-8); color: var(--ink); }
+
+  /* Trouble tiles (bounces, complaints, unsubs) blush when the number is
+     non-zero — the danger surface pair, so it reads in both themes. */
+  .analytics-stat--trouble { background: var(--danger-surface); }
+  .analytics-stat--trouble .analytics-stat__value,
+  .analytics-stat--trouble .analytics-stat__label { color: var(--danger-ink); }
   .analytics-stat__label { color: var(--ink-on-soft); } /* type via u-microcaps in the markup */
 
   /* Geography card: choropleth beside the country/region rankings. The
