@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.2].define(version: 2026_08_05_040000) do
+ActiveRecord::Schema[8.2].define(version: 2026_08_05_050000) do
   create_table "account_users", force: :cascade do |t|
     t.integer "account_id", null: false
     t.integer "user_id", null: false
@@ -458,6 +458,7 @@ ActiveRecord::Schema[8.2].define(version: 2026_08_05_040000) do
     t.integer "actor_id"
     t.string "title"
     t.string "url"
+    t.datetime "emailed_at"
     t.index ["source_type", "source_id"], name: "index_notifications_on_source_type_and_source_id"
     t.index ["user_id", "read_at"], name: "index_notifications_on_user_id_and_read_at"
   end

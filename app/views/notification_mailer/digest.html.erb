@@ -1,0 +1,14 @@
+<h1>While you were away</h1>
+
+<ul>
+  <% @notifications.each do |notification| %>
+    <li><a href="<%= @base_url %><%= notification.url %>"><%= notification.title %></a></li>
+  <% end %>
+</ul>
+
+<p><a href="<%= @notifications_url %>">See all your notifications on Inkwell</a></p>
+
+<p style="color: #888; font-size: 12px;">
+  Rolled up every few hours so your inbox stays quiet. Anything you've already
+  seen on Inkwell is left out.
+</p>

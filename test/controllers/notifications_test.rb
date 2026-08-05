@@ -5,11 +5,11 @@ require "test_helper"
 class NotificationsTest < ActionDispatch::IntegrationTest
   setup { @circle = circles(:writers) }
 
-  test "an invitation notifies the invitee — bell row plus immediate email" do
+  test "an invitation notifies the invitee — bell row now, email by digest" do
     sign_in_as users(:bob)
 
     assert_difference -> { users(:admin).notifications.count }, 1 do
-      assert_enqueued_jobs 1, only: ApplicationMailDeliveryJob do
+      assert_no_enqueued_jobs only: ApplicationMailDeliveryJob do
         post circle_invitations_path(@circle), params: { email_address: users(:admin).email_address }
       end
     end
@@ -78,6 +78,33 @@ class NotificationsTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select ".list__title", text: /invited you to #{@circle.name}/
     assert_equal 0, users(:admin).notifications.unread.count
+  end
+
+  test "the digest rolls up unread email-worthy notifications, once" do
+    invitation = @circle.invitations.create!(user: users(:admin), inviter: users(:alice))
+    Notification.deliver(invitation, to: users(:admin), kind: "invited")
+
+    # One email for the batch; the batch is stamped as covered.
+    assert_enqueued_jobs 1, only: ApplicationMailDeliveryJob do
+      NotificationDigestJob.perform_now
+    end
+    assert users(:admin).notifications.last.emailed_at?
+
+    # A second run finds nothing new.
+    assert_no_enqueued_jobs only: ApplicationMailDeliveryJob do
+      NotificationDigestJob.perform_now
+    end
+  end
+
+  test "reading in-app before the digest cancels the email" do
+    invitation = @circle.invitations.create!(user: users(:admin), inviter: users(:alice))
+    notification = Notification.deliver(invitation, to: users(:admin), kind: "invited")
+    notification.update!(read_at: Time.current)
+
+    assert_no_enqueued_jobs only: ApplicationMailDeliveryJob do
+      NotificationDigestJob.perform_now
+    end
+    assert notification.reload.emailed_at? # covered, so the scope stays small
   end
 
   test "read notifications are pruned after thirty days; unread wait" do

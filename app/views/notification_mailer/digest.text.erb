@@ -1,0 +1,11 @@
+While you were away
+
+<% @notifications.each do |notification| -%>
+- <%= notification.title %>: <%= @base_url %><%= notification.url %>
+<% end -%>
+
+See all your notifications on Inkwell:
+<%= @notifications_url %>
+
+Rolled up every few hours so your inbox stays quiet. Anything you've already
+seen on Inkwell is left out.

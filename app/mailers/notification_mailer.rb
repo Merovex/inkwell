@@ -1,14 +1,15 @@
-# Emails for immediate-class notifications (Notification::EMAILED) — one
-# method per kind. Transactional: the app identity, links pinned to the app
-# host (app_url_options).
+# The 4-hour notification digest (NotificationDigestJob): one email rolling
+# up a person's unread, email-worthy notifications. Transactional — the app
+# identity, links pinned to the app host (app_url_options). A single item
+# borrows its own sentence as the subject.
 class NotificationMailer < ApplicationMailer
-  def invited(notification)
-    @invitation = notification.source
-    @circle = @invitation.circle
-    @inviter = @invitation.inviter
-    @circles_url = circles_url(**app_url_options)
+  def digest(user, notifications)
+    @notifications = notifications
+    @base_url = root_url(**app_url_options).chomp("/")
+    @notifications_url = "#{@base_url}/notifications"
 
-    mail to: notification.user.email_address,
-         subject: "#{@inviter.display_name} invited you to #{@circle.name} on Inkwell"
+    subject = notifications.one? ? notifications.first.title
+                                 : "#{notifications.size} new notifications on Inkwell"
+    mail to: user.email_address, subject: subject
   end
 end

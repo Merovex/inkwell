@@ -8,8 +8,10 @@
 # notifications is an explicit act on the revoke/decline path only.
 class Notification < ApplicationRecord
   KINDS = %w[ invited invitation_accepted ].freeze
-  # The immediate class: kinds worth an email the moment they happen. Everything
-  # else is bell-only (digest-class kinds arrive with comments/replies later).
+  # Email-worthy kinds. Nothing notification-shaped is time-sensitive: these
+  # roll up into one email every 4 hours (NotificationDigestJob) — and reading
+  # in-app first cancels the email (the bell beat us to it). The rest are
+  # bell-only.
   EMAILED = %w[ invited ].freeze
 
   belongs_to :user   # the recipient
@@ -23,14 +25,12 @@ class Notification < ApplicationRecord
   scope :recent, -> { order(created_at: :desc).limit(15) }
 
   # THE way a notification is born — never bare create!. Fan-out and channel
-  # decisions live here: the row (bell) always; email per the kind's class;
-  # the live dot/row via Turbo Stream to the recipient's bell.
+  # decisions live here: the row (bell) always, live via Turbo Stream; email
+  # waits for the 4-hour digest (EMAILED kinds only).
   def self.deliver(source, to:, kind:)
     return if to.nil?
 
-    create!(source: source, user: to, kind: kind, **copy_for(source, kind)).tap do |notification|
-      NotificationMailer.public_send(kind, notification).deliver_later if EMAILED.include?(kind)
-    end
+    create!(source: source, user: to, kind: kind, **copy_for(source, kind))
   end
 
   # Live bell: prepend the row and light the dot in the recipient's header.

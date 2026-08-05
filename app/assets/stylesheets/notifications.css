@@ -17,8 +17,21 @@
     border-radius: var(--radius-round);
     background: transparent;
   }
-  /* Attention reads as urgent: the dot is the danger red, not the accent. */
-  .notifications__dot--on { background: var(--danger-solid); }
+  /* Attention reads as urgent: the dot is the danger red, not the accent.
+     It PINGS on arrival — the Turbo Stream replaces the indicator, so the
+     animation replays each time something new lands. */
+  .notifications__dot--on {
+    background: var(--danger-solid);
+    animation: notification-ping 1.2s var(--ease-3);
+  }
+  @keyframes notification-ping {
+    0%   { box-shadow: 0 0 0 0 color-mix(in oklab, var(--danger-solid) 60%, transparent); transform: scale(0.6); }
+    40%  { transform: scale(1.25); }
+    100% { box-shadow: 0 0 0 0.7rem transparent; transform: scale(1); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .notifications__dot--on { animation: none; }
+  }
 
   .notifications__panel {
     position: fixed;
