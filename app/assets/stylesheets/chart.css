@@ -1,0 +1,49 @@
+/*
+ * .chart — the small overview area chart (broadcasts dashboard). The SVG is
+ * drawn client-side by the area-chart controller; all paint lives here so the
+ * chart follows the theme. Series colors are chart-scoped tokens shared by
+ * the areas and their legend keys.
+ */
+@layer components {
+  .chart {
+    --chart-sent:    color-mix(in oklab, var(--stat-accent) 25%, transparent);
+    --chart-opened:  color-mix(in oklab, var(--stat-accent) 65%, transparent);
+    --chart-bounced: color-mix(in oklab, var(--danger-ink) 55%, transparent);
+
+    display: grid;
+    gap: calc(var(--u-pad) / 2);
+  }
+
+  .chart__svg {
+    display: block;
+    inline-size: 100%;
+    block-size: var(--size-11);
+  }
+  .chart__area--sent    { fill: var(--chart-sent); }
+  .chart__area--opened  { fill: var(--chart-opened); }
+  .chart__area--bounced { fill: var(--chart-bounced); }
+
+  .chart__axis {
+    display: flex;
+    justify-content: space-between;
+    color: var(--ink-muted);
+    font-size: var(--font-size-0);
+  }
+
+  .chart__legend {
+    display: flex;
+    gap: var(--u-pad);
+    color: var(--ink-muted);
+    font-size: var(--font-size-0);
+  }
+  .chart__key { display: inline-flex; align-items: center; gap: calc(var(--u-pad) / 4); }
+  .chart__key::before {
+    content: "";
+    inline-size: var(--size-2);
+    block-size: var(--size-2);
+    border-radius: var(--radius-round);
+  }
+  .chart__key--sent::before    { background: var(--chart-sent); }
+  .chart__key--opened::before  { background: var(--chart-opened); }
+  .chart__key--bounced::before { background: var(--chart-bounced); }
+}

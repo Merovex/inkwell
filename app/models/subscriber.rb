@@ -178,6 +178,35 @@ class Subscriber < ApplicationRecord
     streams.active.find_each { |stream| stream.end!("bounced") }
   end
 
+  # Lift a delivery suppression (the admin's "Reactivate"). Two shapes, by
+  # what the suppression meant:
+  #   bounced    → straight back to confirmed. The mailbox was the problem;
+  #                consent was never revoked, so a full re-opt-in would ask
+  #                the reader to answer a question they already answered.
+  #   complained → pending + a fresh double opt-in email. They flagged us —
+  #                only their own click brings them back, never our say-so.
+  # Anything else (unsubscribed, or not suppressed at all) is a no-op: an
+  # explicit opt-out has no admin-side undo. Returns true when acted.
+  def reactivate!(ip: nil)
+    case status
+    when "bounced"
+      transaction do
+        update!(status: :confirmed)
+        log_event!("reactivated", ip:, source: "admin")
+      end
+      true
+    when "complained"
+      transaction do
+        update!(status: :pending)
+        log_event!("reinvited", ip:, source: "admin")
+      end
+      send_confirmation
+      true
+    else
+      false
+    end
+  end
+
   # A spam complaint: the reader marked an issue as spam. Suppress like an
   # unsubscribe but as its own status — "marked us spam" and "asked to leave"
   # are different facts, and complaint rate is the reputation signal the

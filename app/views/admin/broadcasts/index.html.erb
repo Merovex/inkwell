@@ -11,6 +11,22 @@
 
 <% pct = ->(rate) { rate ? number_to_percentage(rate * 100, precision: 0) : "—" } %>
 
+<%# Account-wide overview: the window's daily series (client-drawn chart) and
+    totals. The sentence carries the numbers; the chart is decoration for AT. %>
+<section class="u-surface u-pad u-stack u-margin-block-end-double" aria-label="Sending overview, last 30 days">
+  <h2 class="subhead">Last 30 days</h2>
+  <div class="chart" data-controller="area-chart" data-area-chart-data-value="<%= @chart.to_json %>"></div>
+  <p>
+    You sent <strong><%= @window_sent %></strong> <%= "email".pluralize(@window_sent) %> in the last 30 days<% if @window_sent.positive? %>
+      · <strong><%= pct.(@window_opened.to_f / @window_sent) %></strong> opened<% end %>.
+  </p>
+  <p class="u-cluster">
+    <span class="badge<%= " badge--warning" if @window_hard.positive? %>"><%= @window_hard %> hard <%= "bounce".pluralize(@window_hard) %></span>
+    <span class="badge"><%= @window_soft %> soft <%= "bounce".pluralize(@window_soft) %></span>
+    <span class="badge<%= " badge--danger" if @window_complaints.positive? %>"><%= @window_complaints %> spam <%= "complaint".pluralize(@window_complaints) %></span>
+  </p>
+</section>
+
 <% if @broadcasts.any? %>
   <div class="table-scroll">
     <table class="table table--nowrap">
@@ -24,6 +40,7 @@
           <th scope="col" data-align="end">Clicks</th>
           <th scope="col" data-align="end">Bounces</th>
           <th scope="col" data-align="end">Unsubs</th>
+          <th scope="col"><span class="u-visually-hidden">Details</span></th>
         </tr>
       </thead>
       <tbody>
@@ -50,6 +67,8 @@
             <td data-align="end"><%= broadcast.clicked_count %> <span class="u-text-muted u-text-small"><%= pct.(broadcast.click_rate) %></span></td>
             <td data-align="end"><%= broadcast.bounced_count %></td>
             <td data-align="end"><%= broadcast.unsubscribed_count %></td>
+            <td data-align="end"><%= link_to "Details", admin_broadcast_path(broadcast),
+                  aria: { label: "Delivery details for #{broadcast.post&.title.presence || "Untitled"}" } %></td>
           </tr>
         <% end %>
       </tbody>

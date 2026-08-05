@@ -43,4 +43,41 @@ class AdminBroadcastsTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select ".empty__title", text: "No broadcasts yet"
   end
+
+  test "a broadcast's detail shows the tiles, recipient milestones, and clicked links" do
+    broadcast = records(:kickoff).create_broadcast!(sent_at: Time.current,
+      recipients_count: 2, delivered_count: 2, opened_count: 1, clicked_count: 1)
+    opened  = Subscriber.opt_in(email_address: "reader@example.com").tap(&:confirm!)
+    ignored = Subscriber.opt_in(email_address: "quiet@example.com").tap(&:confirm!)
+    delivery = broadcast.deliveries.create!(subscriber: opened, sent_at: Time.current,
+      delivered_at: Time.current, opened_at: Time.current, clicked_at: Time.current)
+    broadcast.deliveries.create!(subscriber: ignored, sent_at: Time.current, delivered_at: Time.current)
+    DeliveryEvent.create!(provider: :ses, event: :clicked, provider_message_id: "m1",
+      payload: { "click" => { "link" => "https://merovex.press/books" } },
+      delivery: delivery, subscriber: opened, occurred_at: Time.current)
+    sign_in_as users(:admin)
+
+    get admin_broadcast_path(broadcast)
+    assert_response :success
+    assert_match "rea•••@example.com", response.body
+    assert_select "a[href=?]", "https://merovex.press/books"
+    # The quiet recipient shows delivered but no engagement badge trouble.
+    assert_match "qui•••@example.com", response.body
+  end
+
+  test "the overview strip summarizes the window from delivery events" do
+    broadcast = records(:kickoff).create_broadcast!(sent_at: Time.current, recipients_count: 1)
+    reader = Subscriber.opt_in(email_address: "reader@example.com").tap(&:confirm!)
+    delivery = broadcast.deliveries.create!(subscriber: reader, sent_at: Time.current)
+    DeliveryEvent.create!(provider: :ses, event: :opened, provider_message_id: "m2",
+      payload: {}, delivery: delivery, subscriber: reader, occurred_at: Time.current)
+    DeliveryEvent.create!(provider: :ses, event: :hard_bounce, provider_message_id: "m3",
+      payload: {}, delivery: delivery, subscriber: reader, occurred_at: Time.current)
+    sign_in_as users(:admin)
+
+    get admin_broadcasts_path
+    assert_response :success
+    assert_select "[data-controller=area-chart]"
+    assert_match "1 hard bounce", response.body
+  end
 end

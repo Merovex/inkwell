@@ -301,11 +301,17 @@ Rails.application.routes.draw do
         patch :unsubscribe, on: :member
         post  :resend, on: :member
         resource :seed, only: %i[create destroy], module: :subscribers
+        # Reactivation lifts a delivery suppression: a bounced subscriber
+        # returns to confirmed (mailbox trouble — consent was never revoked);
+        # a complained one is re-invited via a fresh double opt-in instead,
+        # never silently. Unsubscribed has no reactivation — they chose.
+        resource :reactivation, only: :create, module: :subscribers
       end
 
       # Broadcasts dashboard — domain-admin only. Read-only send analytics;
-      # sending happens from the post page.
-      resources :broadcasts, only: :index
+      # sending happens from the post page. show is one send's detail:
+      # per-recipient milestones and the link-click breakdown.
+      resources :broadcasts, only: %i[index show]
 
       # Contact-form submissions (Missives) — domain-admin only. Read the feed +
       # its Trash tab; destroy purges one outright. There's no create/edit — they

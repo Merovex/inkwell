@@ -1,0 +1,123 @@
+<% title = @broadcast.post&.title.presence || "Untitled" %>
+<% content_for :title, "#{title} — broadcast — Inkwell" %>
+
+<%= render "admin/shared/canvas_head",
+      crumbs: [["Broadcasts", admin_broadcasts_path], [title, nil]] %>
+
+<header class="perma-header">
+  <h1 class="perma-header__title"><%= title %></h1>
+  <p class="perma-header__content u-text-muted">
+    <% if @broadcast.sent? %>
+      Sent <time datetime="<%= @broadcast.sent_at.to_date.iso8601 %>"><%= l @broadcast.sent_at.to_date, format: :long %></time>
+      to <%= pluralize(@broadcast.recipients_count, "subscriber") %>
+    <% elsif @broadcast.scheduled? %>
+      Scheduled for <time datetime="<%= @broadcast.scheduled_at.iso8601 %>"><%= l @broadcast.scheduled_at.to_date, format: :long %></time>
+    <% else %>
+      Sending…
+    <% end %>
+    · <%= link_to "View post", admin_post_path(@broadcast.record) %>
+  </p>
+</header>
+
+<% pct = ->(rate) { rate ? number_to_percentage(rate * 100, precision: 0) : "—" } %>
+
+<%# The send at a glance — same tile language as the analytics dashboard. %>
+<div class="analytics-totals">
+  <div class="analytics-stat">
+    <span class="analytics-stat__label u-microcaps">Delivered</span>
+    <span class="analytics-stat__value"><%= @broadcast.delivered_count %></span>
+    <span class="u-text-muted u-text-small"><%= pct.(@broadcast.delivery_rate) %> of <%= @broadcast.recipients_count %></span>
+  </div>
+  <div class="analytics-stat">
+    <span class="analytics-stat__label u-microcaps">Opened</span>
+    <span class="analytics-stat__value"><%= @broadcast.opened_count %></span>
+    <span class="u-text-muted u-text-small"><%= pct.(@broadcast.open_rate) %></span>
+  </div>
+  <div class="analytics-stat">
+    <span class="analytics-stat__label u-microcaps">Clicked</span>
+    <span class="analytics-stat__value"><%= @broadcast.clicked_count %></span>
+    <span class="u-text-muted u-text-small"><%= pct.(@broadcast.click_rate) %></span>
+  </div>
+  <div class="analytics-stat">
+    <span class="analytics-stat__label u-microcaps">Bounced</span>
+    <span class="analytics-stat__value"><%= @broadcast.bounced_count %></span>
+    <span class="u-text-muted u-text-small">&nbsp;</span>
+  </div>
+  <div class="analytics-stat">
+    <span class="analytics-stat__label u-microcaps">Complaints</span>
+    <span class="analytics-stat__value"><%= @broadcast.complained_count %></span>
+    <span class="u-text-muted u-text-small">&nbsp;</span>
+  </div>
+  <div class="analytics-stat">
+    <span class="analytics-stat__label u-microcaps">Unsubs</span>
+    <span class="analytics-stat__value"><%= @broadcast.unsubscribed_count %></span>
+    <span class="u-text-muted u-text-small">&nbsp;</span>
+  </div>
+</div>
+
+<% if @link_clicks.any? %>
+  <section class="u-margin-block-end-double" aria-labelledby="links-heading">
+    <h2 class="subhead u-margin-block-end" id="links-heading">Links clicked</h2>
+    <div class="table-scroll">
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">Link</th>
+            <th scope="col" data-align="end">Clicks</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @link_clicks.each do |url, count| %>
+            <tr>
+              <td><%= link_to url.truncate(80), url, rel: "noopener" %></td>
+              <td data-align="end"><%= count %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  </section>
+<% end %>
+
+<section aria-labelledby="recipients-heading">
+  <h2 class="subhead u-margin-block-end" id="recipients-heading">Recipients</h2>
+  <% if @deliveries.any? %>
+    <div class="table-scroll">
+      <table class="table table--nowrap">
+        <thead>
+          <tr>
+            <th scope="col">Recipient</th>
+            <th scope="col">Delivered</th>
+            <th scope="col">Opened</th>
+            <th scope="col">Clicked</th>
+            <th scope="col">Trouble</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% stamp = ->(time) { time ? tag.time(l(time, format: :short), datetime: time.iso8601) : tag.span("—", class: "u-text-muted") } %>
+          <% @deliveries.each do |delivery| %>
+            <tr>
+              <td><%= redacted_email(delivery.subscriber.email_address) %></td>
+              <td><%= stamp.(delivery.delivered_at) %></td>
+              <td><%= stamp.(delivery.opened_at) %></td>
+              <td><%= stamp.(delivery.clicked_at) %></td>
+              <td>
+                <% if delivery.complained_at %>
+                  <span class="badge badge--danger">Complained</span>
+                <% elsif delivery.bounced_at %>
+                  <span class="badge badge--warning">Bounced</span>
+                <% elsif delivery.unsubscribed_at %>
+                  <span class="badge">Unsubscribed</span>
+                <% else %>
+                  <span class="u-text-muted">—</span>
+                <% end %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% else %>
+    <p class="u-text-muted">No recipients yet — the fan-out hasn't run.</p>
+  <% end %>
+</section>
