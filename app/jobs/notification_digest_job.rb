@@ -1,14 +1,14 @@
-# Every 4 hours (config/recurring.yml): one email per person rolling up their
-# unread, not-yet-emailed, email-worthy notifications. Nothing notification-
-# shaped is time-sensitive — batching keeps email overhead low and inboxes
-# calm. Anything read in-app before the digest runs is skipped for good: the
-# bell beat us to it.
+# One email per person rolling up their unread, not-yet-emailed notifications
+# of the given kinds. Two cadences share this job (config/recurring.yml):
+# every 4 hours for the default kinds, once a day for the calm ones
+# (EMAILED_DAILY — thread replies shouldn't bug anyone). Anything read in-app
+# before the digest runs is skipped for good: the bell beat us to it.
 class NotificationDigestJob < ApplicationJob
-  def perform
-    pending = Notification.unread.where(emailed_at: nil, kind: Notification::EMAILED)
+  def perform(kinds = Notification::EMAILED - Notification::EMAILED_DAILY)
+    pending = Notification.unread.where(emailed_at: nil, kind: kinds)
 
     User.where(id: pending.select(:user_id).distinct).find_each do |user|
-      batch = user.notifications.unread.where(emailed_at: nil, kind: Notification::EMAILED)
+      batch = user.notifications.unread.where(emailed_at: nil, kind: kinds)
         .order(:created_at).to_a
       next if batch.empty?
 

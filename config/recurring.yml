@@ -65,6 +65,12 @@ production:
     class: NotificationDigestJob
     schedule: every 4 hours
 
+  # The calm kinds (thread replies) roll up once a day instead.
+  notification_daily_digest:
+    class: NotificationDigestJob
+    args: [ [ "replied" ] ]
+    schedule: at 8am every day America/New_York
+
   # Circle check-ins: every 30 minutes, fire any pulse whose cadence lands today
   # and whose ask time has passed (30-min granularity matches the UI). Idempotent.
   pulse_tick:

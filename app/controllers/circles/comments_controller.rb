@@ -21,6 +21,7 @@ module Circles
       if @comment.valid?
         Record.originate(@comment, parent: @parent)
         Mentions.deliver_for(@comment.record)
+        Replies.deliver_for(@comment.record)
         redirect_to helpers.commentable_path(@parent, anchor: "comment_#{@comment.record_id}")
       else
         redirect_to helpers.commentable_path(@parent), alert: "Comment can't be blank."

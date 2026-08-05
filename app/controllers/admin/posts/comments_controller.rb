@@ -16,6 +16,7 @@ class Admin::Posts::CommentsController < ApplicationController
 
     if @comment.valid?
       Record.originate(@comment, parent: @record)
+      Replies.deliver_for(@comment.record)
       redirect_to admin_post_path(@record, anchor: "comment_#{@comment.record_id}")
     else
       redirect_to admin_post_path(@record, anchor: "new_comment"), alert: "Comment can't be blank."

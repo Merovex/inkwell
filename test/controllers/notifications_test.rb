@@ -157,6 +157,69 @@ class NotificationsTest < ActionDispatch::IntegrationTest
     assert_equal "mentioned", users(:alice).notifications.last.kind
   end
 
+  test "a comment rings the thread: author and prior commenters, not the commenter" do
+    users(:alice).update!(name: "alice")
+    discussion = Current.with_bucket(@circle) do
+      Record.originate(Message.new(title: "Thread", content: "start", creator: users(:alice),
+        status: :published, published_at: Time.current))
+    end
+    # admin joins the thread first, so bob's comment should ring alice AND admin
+    @circle.circle_memberships.create!(user: users(:admin))
+    Current.with_bucket(@circle) do
+      Record.originate(Comment.new(content: "first!", creator: users(:admin)), parent: discussion)
+    end
+    sign_in_as users(:bob)
+
+    assert_difference -> { users(:alice).notifications.count } => 1,
+                      -> { users(:admin).notifications.count } => 1,
+                      -> { users(:bob).notifications.count } => 0 do
+      post circle_record_comments_path(@circle, discussion),
+        params: { comment: { content: "<p>me too</p>" } }
+    end
+    notification = users(:alice).notifications.last
+    assert_equal "replied", notification.kind
+    assert_match(/commented on “Thread”/, notification.title)
+    assert_includes Notification::EMAILED, "replied"
+  end
+
+  test "a mention in the comment wins over the reply ring — one row, not two" do
+    users(:alice).update!(name: "alice")
+    discussion = Current.with_bucket(@circle) do
+      Record.originate(Message.new(title: "Once", content: "start", creator: users(:alice),
+        status: :published, published_at: Time.current))
+    end
+    sign_in_as users(:bob)
+
+    assert_difference -> { users(:alice).notifications.count }, 1 do
+      post circle_record_comments_path(@circle, discussion),
+        params: { comment: { content: "<p>hey @alice</p>" } }
+    end
+    assert_equal "mentioned", users(:alice).notifications.last.kind
+  end
+
+  test "replies wait for the daily digest; the 4-hour one skips them" do
+    users(:alice).update!(name: "alice")
+    discussion = Current.with_bucket(@circle) do
+      Record.originate(Message.new(title: "Cadence", content: "start", creator: users(:alice),
+        status: :published, published_at: Time.current))
+    end
+    comment = Current.with_bucket(@circle) do
+      Record.originate(Comment.new(content: "ping", creator: users(:bob)), parent: discussion)
+    end
+    Replies.deliver_for(comment)
+    replied = users(:alice).notifications.where(kind: "replied").last
+
+    assert_no_enqueued_jobs only: ApplicationMailDeliveryJob do
+      NotificationDigestJob.perform_now # 4-hour cadence: replied excluded
+    end
+    assert_nil replied.reload.emailed_at
+
+    assert_enqueued_jobs 1, only: ApplicationMailDeliveryJob do
+      NotificationDigestJob.perform_now(Notification::EMAILED_DAILY)
+    end
+    assert replied.reload.emailed_at?
+  end
+
   test "mentions in a draft stay quiet; publishing is what rings" do
     users(:alice).update!(name: "alice")
     sign_in_as users(:bob)
