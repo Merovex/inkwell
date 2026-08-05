@@ -230,53 +230,10 @@
   }
   .goal-history__day--logged { background: var(--stat-accent); color: var(--stat-accent-ink); }
 
-  /* ── Design studies (mock gallery — delete with _design_studies.html.erb) ── */
+  /* ── Design studies (goals/_design_studies): the theme test gallery — it
+       renders the REAL goal-stat / goal-history components on mock data, so
+       only mock-only pieces keep rules here. ── */
   .goal-studies { margin-block-start: calc(var(--u-pad) * 3); }
-  .goal-studies__heading { margin-block-end: var(--u-pad); }
-  .goal-studies__grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(var(--size-14), 1fr));
-    gap: var(--u-pad);
-  }
-  .goal-study {
-    display: grid;
-    gap: calc(var(--u-pad) / 2);
-    align-content: start;
-    padding: var(--u-pad);
-    background: var(--site-bg);
-    border-radius: var(--radius-card);
-  }
-  .goal-study__name { font-weight: var(--font-weight-8); display: flex; align-items: baseline; justify-content: space-between; gap: var(--u-pad); }
-  .goal-study__from { color: var(--ink-muted); font-weight: var(--font-weight-5); }
-  .goal-study__meta { font-size: var(--font-size-0); color: var(--brand-text); }
-  .goal-study__note { font-size: var(--font-size-0); color: var(--ink-muted); }
-
-  .goal-study__chart { inline-size: 100%; block-size: var(--size-10); }
-  .goal-study__line { stroke: var(--stat-accent); stroke-width: 2; }
-  .goal-study__par { stroke: var(--ink-muted); stroke-width: 1.5; stroke-dasharray: 5 4; }
+  /* Beeminder-style rate corridor — a design idea with no product component yet. */
   .goal-study__road { fill: color-mix(in oklab, var(--stat-accent) 14%, transparent); }
-
-  .goal-study__ringrow { display: flex; align-items: center; gap: var(--u-pad); }
-  .goal-study__ring { inline-size: calc(var(--u-pad) * 5.25); block-size: calc(var(--u-pad) * 5.25); flex-shrink: 0; }
-  .goal-study__ring-track { stroke: color-mix(in oklab, var(--ink) 12%, transparent); stroke-width: 8; }
-  .goal-study__ring-fill { stroke: var(--stat-accent); stroke-width: 8; stroke-linecap: round; }
-  .goal-study__ring-text { font-size: var(--font-size-2); font-weight: var(--font-weight-8); fill: var(--ink); }
-
-  .goal-study__month { display: grid; grid-template-columns: repeat(7, 1fr); gap: var(--size-1); }
-  .goal-study__day {
-    display: grid;
-    place-items: center;
-    aspect-ratio: 1;
-    border-radius: var(--radius-ui);
-    font-size: var(--font-size-0);
-    color: var(--ink-muted);
-    background: color-mix(in oklab, var(--ink) 6%, transparent);
-  }
-  .goal-study__day--wrote { background: var(--stat-accent); color: var(--stat-accent-ink); }
-
-  .goal-study__heat { display: grid; grid-auto-flow: column; grid-template-rows: repeat(7, auto); gap: var(--size-1); justify-content: start; }
-  .goal-study__cell { inline-size: calc(var(--u-pad) * 0.7); block-size: calc(var(--u-pad) * 0.7); border-radius: var(--radius-1); background: color-mix(in oklab, var(--ink) 7%, transparent); }
-  .goal-study__cell[data-level="1"] { background: color-mix(in oklab, var(--stat-accent) 40%, var(--canvas)); }
-  .goal-study__cell[data-level="2"] { background: color-mix(in oklab, var(--stat-accent) 70%, var(--canvas)); }
-  .goal-study__cell[data-level="3"] { background: var(--stat-accent); }
 }

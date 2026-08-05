@@ -368,3 +368,57 @@
         <div class="tabs__panel" role="tabpanel" id="sg-panel-3" aria-labelledby="sg-tab-3" data-tabs-target="panel"><p>Settings panel content.</p></div>
       </div>
     </section>
+
+    <%# ---- Circles components (mock data — the live ones render in circles/) ---- %>
+    <section class="sg-section">
+      <p class="sg-h">Circle cards — <code>.circles</code> (cards view, with a golden invite)</p>
+      <div class="circles" data-view="cards">
+        <a href="#" class="circles__card">
+          <span class="circles__name"><%= inline_svg_tag "lucide/lock.svg", class: "lucide", size: "16px" %> Night Writers</span>
+          <span class="circles__meta">4 members · last pulse yesterday</span>
+        </a>
+        <div class="circles__card circles__card--invited">
+          <span class="circles__name"><%= inline_svg_tag "lucide/lock.svg", class: "lucide", size: "16px" %> Poetry Circle</span>
+          <span class="circles__meta">You're invited by Harper</span>
+          <span class="circles__invite-actions">
+            <button class="button button--primary button--small">Accept</button>
+            <button class="button button--ghost button--small">Decline</button>
+          </span>
+        </div>
+        <a href="#" class="circles__card">
+          <span class="circles__name"><%= inline_svg_tag "lucide/lock.svg", class: "lucide", size: "16px" %> Serial Plotters</span>
+          <span class="circles__meta">7 members · quiet this week</span>
+        </a>
+      </div>
+    </section>
+
+    <%# ---- Pulse preview ---- %>
+    <section class="sg-section">
+      <p class="sg-h">Pulse preview — <code>.pulse-preview</code> (one answer + ghost slots)</p>
+      <a href="#" class="pulse-preview">
+        <span class="pulse-preview__question">What scene are you avoiding, and why?</span>
+        <span class="pulse-preview__schedule">Asked weekly on Fridays at 9:00</span>
+        <span class="pulse-preview__answers">
+          <span class="pulse-preview__card">
+            <span class="pulse-preview__byline"><span class="avatar">H</span> Harper · 2h ago</span>
+            <span class="pulse-preview__excerpt">The reunion in chapter 12 — I know what has to be said and I don't want either of them to say it yet.</span>
+          </span>
+          <span class="pulse-preview__ghost" aria-hidden="true"></span>
+          <span class="pulse-preview__ghost" aria-hidden="true"></span>
+        </span>
+      </a>
+    </section>
+
+    <%# ---- Day pills ---- %>
+    <section class="sg-section">
+      <p class="sg-h">Day pills — <code>.day-pill</code> (native checkboxes styled as toggles)</p>
+      <div class="day-pills">
+        <% %w[Mon Tue Wed Thu Fri Sat Sun].each_with_index do |day, i| %>
+          <label class="day-pill">
+            <input type="checkbox" class="day-pill__input" <%= "checked" if [0, 2, 4].include?(i) %>>
+            <span class="day-pill__check"><%= inline_svg_tag "lucide/check.svg", class: "lucide", size: "14px" %></span>
+            <%= day %>
+          </label>
+        <% end %>
+      </div>
+    </section>

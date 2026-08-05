@@ -104,7 +104,10 @@ A `block__element` component may exist only if **all three** hold:
    rendered from exactly one `app/views/layouts/` partial (header, subnav,
    switcher, toasts) — single-sourced markup satisfies the rule's intent.
 
-Fail any one → use utilities. Pass all three → the component gets its own CSS
+Fail any one → use utilities, or bring the component up to standard (document
+it in the style guide, or extract the shared partial). Exceptions are not
+blessed — there should be few if any; refactor toward the standard instead.
+Pass all three → the component gets its own CSS
 file in `@layer components`, its markup lives in exactly one shared partial
 (extend the partial with locals; never fork its markup — see CLAUDE.md on
 `shared/list_item`), and it appears in the style guide.

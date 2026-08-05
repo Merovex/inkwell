@@ -5,14 +5,14 @@
  * grid, the cover-card hover/overlay, and the detail-page top layout. */
 
 /* A series section on the catalog / book page; internal spacing via u-flow. */
-.press-series { margin-block: 3.5rem; }
+.press-series { margin-block: calc(var(--u-pad) * 3.5); }
 
 /* Cap the columns so covers stay a reasonable height (~330px, matching the
    book detail cover) rather than filling the full container width. */
-.press-book-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 1.5rem; max-width: calc(3 * 220px + 2 * 1.5rem + 2px); margin-inline: auto; }
-.press-book-grid > .press-book-card { flex: 0 0 220px; max-width: 220px; box-sizing: border-box; }
-@media (max-width: 760px) { .press-book-grid { max-width: calc(2 * 220px + 1.5rem); } }
-@media (max-width: 520px) { .press-book-grid > .press-book-card { flex-basis: 260px; max-width: 260px; } }
+.press-book-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--size-5); max-width: calc(3 * var(--measure-book-card) + 2 * var(--size-5) + var(--border-size-2)); margin-inline: auto; }
+.press-book-grid > .press-book-card { flex: 0 0 var(--measure-book-card); max-width: var(--measure-book-card); box-sizing: border-box; }
+@media (max-width: 48em) { /* --breakpoint-md */ .press-book-grid { max-width: calc(2 * var(--measure-book-card) + var(--size-5)); } }
+@media (max-width: 48em) { .press-book-grid > .press-book-card { flex-basis: var(--measure-book-card-wide); max-width: var(--measure-book-card-wide); } }
 
 /* Cover card — surface comes from .press-card (composed in the view). */
 .press-book-card {
@@ -21,10 +21,10 @@
   overflow: hidden;
   text-decoration: none;
   color: inherit;
-  transition: transform 200ms ease, border-color 200ms ease, box-shadow 200ms ease;
+  transition: transform var(--press-speed) var(--ease-3), border-color var(--press-speed) var(--ease-3), box-shadow var(--press-speed) var(--ease-3);
 }
-.press-book-card:hover { transform: translateY(-2px); border-color: var(--border-2); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18); }
-.press-book-card:focus-visible { outline: 2px solid var(--link-color); outline-offset: 2px; }
+.press-book-card:hover { transform: translateY(calc(-1 * var(--border-size-2))); border-color: var(--border-2); box-shadow: var(--press-shadow); }
+.press-book-card:focus-visible { outline: var(--border-size-2) solid var(--link-color); outline-offset: var(--border-size-2); }
 .press-book-card__cover,
 .press-book-card__placeholder {
   display: block;
@@ -37,11 +37,11 @@
 .press-book-card__title {
   position: absolute; inset: 0;
   display: flex; align-items: center; justify-content: center; text-align: center;
-  padding: 1rem; font-size: 1.3rem;
+  padding: var(--u-pad); font-size: var(--press-size-title);
 }
 
 /* --- book detail: cover + meta side by side --- */
-.press-book__top { display: flex; gap: 2rem; align-items: flex-start; flex-wrap: wrap; margin-block: 2rem; }
+.press-book__top { display: flex; gap: var(--size-7); align-items: flex-start; flex-wrap: wrap; margin-block: var(--size-7); }
 /* Border frames the art — dark covers otherwise bleed into the dark canvas. */
 .press-book__cover { width: 220px; flex: none; border: 1px solid var(--border-1); border-radius: 0.5rem; }
-.press-book__meta { flex: 1; min-width: 15rem; }
+.press-book__meta { flex: 1; min-width: var(--size-13); }

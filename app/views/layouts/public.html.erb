@@ -38,10 +38,7 @@
         <% end %>
 
         <div class="press-nav__links">
-          <%= link_to "Home", root_path, class: "press-nav__link#{' is-active' if current_page?(root_path)}" %>
-          <%= link_to "Books", books_path, class: "press-nav__link#{' is-active' if controller_name == 'books'}" %>
-          <%= link_to "Blog", blog_path, class: "press-nav__link#{' is-active' if controller_name == 'blog'}" %>
-          <%= link_to "About", about_path, class: "press-nav__link#{' is-active' if current_page?(about_path)}" %>
+          <%= render "layouts/public_nav_links", link_class: "press-nav__link" %>
         </div>
 
         <div class="u-cluster">
@@ -57,10 +54,7 @@
       </div>
 
       <div id="press-nav-menu" class="press-nav__menu" hidden>
-        <%= link_to "Home", root_path, class: "press-nav__menu-link#{' is-active' if current_page?(root_path)}" %>
-        <%= link_to "Books", books_path, class: "press-nav__menu-link#{' is-active' if controller_name == 'books'}" %>
-        <%= link_to "Blog", blog_path, class: "press-nav__menu-link#{' is-active' if controller_name == 'blog'}" %>
-        <%= link_to "About", about_path, class: "press-nav__menu-link#{' is-active' if current_page?(about_path)}" %>
+        <%= render "layouts/public_nav_links", link_class: "press-nav__menu-link" %>
         <%= render "layouts/press_theme_toggle" %>
         <%= link_to "Join the Newsletter", newsletter_path(source: "nav"), class: "press-btn press-btn--primary press-nav__menu-cta" %>
       </div>

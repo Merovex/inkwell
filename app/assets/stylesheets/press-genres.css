@@ -4,19 +4,19 @@
 .press-genres {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 2rem;
-  max-width: 1100px;
-  margin: 0 auto 5rem;
-  padding-inline: 1.5rem;
+  gap: var(--size-7);
+  max-width: var(--shell-wide);
+  margin: 0 auto var(--size-10);
+  padding-inline: var(--size-5);
 }
-@media (min-width: 640px) {
+@media (min-width: 48em) { /* --breakpoint-md */
   .press-genres { grid-template-columns: 1fr 1fr; }
 }
 .press-genre-card {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-  padding: 1.5rem;
-  transition: border-color 200ms ease;
+  gap: var(--size-2);
+  padding: var(--size-5);
+  transition: border-color var(--press-speed) var(--ease-3);
 }
 .press-genre-card:hover { border-color: var(--border-2); }

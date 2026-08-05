@@ -68,6 +68,19 @@
 }
 
 /*
+ * Write/read typography parity: the composer body types at the rhythm .prose
+ * renders — the reading line-height and paragraph spacing — so what you write
+ * is exactly what readers see. Unlayered for the same reason as the frame
+ * rules above. Compact editors (comments, chat) keep Lexxy's tighter rhythm.
+ */
+.composer lexxy-editor {
+  line-height: var(--font-lineheight-4);
+}
+.composer lexxy-editor [contenteditable] > * + * {
+  margin-block-start: var(--size-4);
+}
+
+/*
  * Compact toolbar — a shorter editor chrome for inline composers (comments,
  * chat). The toolbar height derives from the button size, so shrinking that
  * one variable on an ancestor cascades down to the toolbar inside.
