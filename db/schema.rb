@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.2].define(version: 2026_08_05_160000) do
+ActiveRecord::Schema[8.2].define(version: 2026_08_05_225000) do
   create_table "account_users", force: :cascade do |t|
     t.integer "account_id", null: false
     t.integer "user_id", null: false
@@ -34,6 +34,15 @@ ActiveRecord::Schema[8.2].define(version: 2026_08_05_160000) do
     t.index ["name"], name: "index_accounts_on_name", unique: true
     t.index ["owner_id"], name: "index_accounts_on_owner_id"
     t.index ["slug"], name: "index_accounts_on_slug", unique: true
+  end
+
+  create_table "action_mailbox_inbound_emails", force: :cascade do |t|
+    t.integer "status", default: 0, null: false
+    t.string "message_id", null: false
+    t.string "message_checksum", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["message_id", "message_checksum"], name: "index_action_mailbox_inbound_emails_uniqueness", unique: true
   end
 
   create_table "action_text_rich_texts", force: :cascade do |t|
@@ -464,9 +473,11 @@ ActiveRecord::Schema[8.2].define(version: 2026_08_05_160000) do
     t.datetime "updated_at", null: false
     t.datetime "trashed_at"
     t.integer "account_id", null: false
+    t.string "source_message_id"
     t.index ["account_id"], name: "index_missives_on_account_id"
     t.index ["confirmed_at"], name: "index_missives_on_confirmed_at"
     t.index ["created_at"], name: "index_missives_on_created_at"
+    t.index ["source_message_id"], name: "index_missives_on_source_message_id", unique: true, where: "source_message_id IS NOT NULL"
   end
 
   create_table "notifications", force: :cascade do |t|

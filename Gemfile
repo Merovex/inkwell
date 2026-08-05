@@ -119,3 +119,5 @@ gem "honeybadger", "~> 6.9"
 gem "geocode", "~> 0.2.1"
 
 gem "postmark-rails", "~> 0.22.1"
+
+gem "aws-actionmailbox-ses", "~> 0.2.0"

@@ -19,6 +19,7 @@ for canonical naming.
 - [multi-tenancy.md](multi-tenancy.md) — shared-DB, row-level tenancy (`Current.account`)
 - [database-and-scaling.md](database-and-scaling.md) — SQLite vs MariaDB; when to split app servers
 - [lexxy-and-active-record.md](lexxy-and-active-record.md) — Lexxy editor + Action Text coupling
+- [ses-tenants.md](ses-tenants.md) — SES tenant isolation (Aug 2025 feature): per-Site reputation + auto-pause on the shared identity — the reputation firewall's design answer (context block, verify API before implementing)
 - [email-architecture.md](email-architecture.md) — CANONICAL email map: four audience streams, all-SES, identity/domain plan, economics, import policy, migration sequence (supersedes ADR 0015's posture in part)
 - [ses-migration-runbook.md](ses-migration-runbook.md) — Phase 0 (AWS + DNS) checklist for the Mailgun → SES/SNS migration (ADR 0015)
 - [phase-2-static-serving.md](phase-2-static-serving.md) — CANONICAL delivery plan: Phase 2 (static serving cut-over) + Phase 2.5 (email transition)

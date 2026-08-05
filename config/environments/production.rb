@@ -1,6 +1,9 @@
 require "active_support/core_ext/integer/time"
 
 Rails.application.configure do
+  # Prepare the ingress controller used to receive mail
+  # config.action_mailbox.ingress = :relay
+
   # Settings specified here will take precedence over those in config/application.rb.
 
   # Code is not reloaded between requests.
@@ -88,6 +91,24 @@ Rails.application.configure do
     access_key_id: Rails.application.credentials.dig(:ses, :access_key_id),
     secret_access_key: Rails.application.credentials.dig(:ses, :secret_access_key)
   }
+
+  # Inbound: SES receipt rule → S3 (kindredquill-inbound-email) → SNS → the
+  # :ses ingress → SupportMailbox → Missives. Activated by the mail-in SNS
+  # topic ARN (rake email:provision_inbound prints it). NOTE:
+  # aws-actionmailbox-ses takes the SINGULAR `subscribed_topic` (one ARN).
+  if (topic = Rails.application.credentials.dig(:mailin, :sns_topic_arn)).present?
+    config.action_mailbox.ingress = :ses
+    config.action_mailbox.ses.subscribed_topic = topic
+
+    # The SNS notification only points at bucket/key; the gem reads the raw
+    # message back out of S3 with these credentials — the inkwell-ses IAM user
+    # also needs s3:GetObject on the inbound bucket.
+    config.action_mailbox.ses.s3_client_options = {
+      region: Rails.application.credentials.dig(:ses, :region),
+      access_key_id: Rails.application.credentials.dig(:ses, :access_key_id),
+      secret_access_key: Rails.application.credentials.dig(:ses, :secret_access_key)
+    }
+  end
 
   # Enable locale fallbacks for I18n (makes lookups for any locale fall back to
   # the I18n.default_locale when a translation cannot be found).

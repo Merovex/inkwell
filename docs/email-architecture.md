@@ -5,7 +5,9 @@ single-tenant reading of the product and got the growth curve, the
 economics, and the tenancy model wrong.
 
 Amended same day: stream 1 moved from Postmark to SES under runway
-pressure. The isolation Postmark bought is delivered instead by a
+pressure — and SES tenant isolation (see `ses-tenants.md`) then closed
+the reputation-firewall question, the last structural argument for a
+second ESP. The isolation Postmark bought is delivered instead by a
 dedicated AWS account for `verify.*` — which costs nothing — created
 when needed, not now. One account carries the platform (Quill) and
 Merovex Press until then. Postmark is cancelled after the cutover
@@ -109,7 +111,35 @@ authentication.
 ### 4. Human — `support@kindredquill.com`
 
 Inbound support and replies only, after the migration. No automated
-sending.
+sending — and no human sending either: the Rails app handles the
+mail-in, and admin replies go out from the admin's own client (the
+Missives pattern), so root SPF `-all` is literally true.
+
+**Mail-in (shipped 2026-08-05 — awaiting deploy + MX):** three pieces —
+
+1. **DNS**: `kindredquill.com. MX 10 inbound-smtp.us-east-1.amazonaws.com.`
+   pointing root inbound at SES email receiving. Do NOT add the MX before
+   the receipt rule exists or support@ blackholes in the interim; any
+   existing forwarding keeps working until the switch.
+2. **SES**: a receipt rule set for `support@kindredquill.com` delivering
+   to S3 (+SNS notify) — automated in the same rake-task style as
+   identity provisioning, so the DNS cutover is one atomic step.
+3. **App**: the `aws-actionmailbox-ses` ingress + a `SupportMailbox`
+   routing straight into **Missives** — already the inbound-support
+   substrate (records, admin digest, read-in-UI,
+   reply-from-your-own-client). Email-in is a second front door to the
+   same feature; the digest covers both.
+
+Provisioned reality: the account/region's ONE active receipt rule set is
+Covenant's (`covenant-support-inbound`), so the kindredquill-support rule
+was merged into it (`email:adopt_inbound_rule`) rather than activating a
+second set — recipient filters keep the two apps' rules independent. The
+`kindredquill-inbound` set exists but is parked. Topic
+`kindredquill-mailin`; bucket `kindredquill-inbound-email` (30-day
+expiry, SES-only writes, inkwell-ses reads). Remaining: deploy (the app
+auto-confirms the SNS subscription; re-run `email:provision_inbound` to
+re-request if pending), then the root MX —
+`kindredquill.com. MX 10 inbound-smtp.us-east-1.amazonaws.com.` — LAST.
 
 ---
 
@@ -208,12 +238,13 @@ ships, both gates are needed.
 
 ## Decisions open
 
-- **The reputation firewall.** All Site broadcasts sign with one bulk
-  identity, so one author's bad list degrades every author's placement.
-  No policy exists yet for what happens at 8% bounce or 0.5% complaints.
-  Because this is unresolved, do not commit to a permanent single bulk
-  identity — keep the option to shard authors across several sending
-  subdomains so a bad list poisons a cohort rather than the platform.
+- **The reputation firewall — design settled, build open.** SES tenants
+  (August 2025 feature; `ses-tenants.md`) answer the structural question:
+  one tenant per paying Site on the shared `news.` identity, Standard
+  policy, so a bad list pauses that author alone — no identity sharding
+  needed. Still open is everything SES doesn't solve: the author-visible
+  paused state, the recovery path, who reviews — and verifying the API
+  signatures before implementing (the feature is recent).
 - **Import policy specifics.** Whether import ships at launch, which
   vendor, what margin, and whether the fee is credited back.
 - **Circles pricing.** Free, $20/year, or $50/year. Affects nothing in
@@ -224,16 +255,31 @@ ships, both gates are needed.
 - **Paid subscriber model.** Authors selling paid content on a Site
   introduces a fourth audience with different consent and different
   stakes. Unexamined.
-- **Postmark re-entry.** Revisit a paid transactional ESP for stream 1
-  when there is meaningful MRR, or at the first shared-pool
-  deliverability incident, whichever comes first. Until then the
-  DeliveryEvent pipeline watches magic-link time-to-delivery as the
-  early-warning signal.
+- **Postmark re-entry — narrowed to the vendor-failure hedge.** SES
+  tenants close the reputation case for a second ESP (per-stream pausing
+  without leaving SES). What remains is vendor-level failure — regional
+  outage or account-wide action — where the hedge is a dormant
+  second-provider *identity*, not a paid subscription. The DeliveryEvent
+  pipeline still watches magic-link time-to-delivery as the early-warning
+  signal.
 - **Interim stream-2 identity.** User bulk (digests, Pulse asks)
   currently signs `d=news.merovex.press` because it must never ride the
   verification identity and `notify.*` doesn't exist yet. Mixing User
   and Subscriber audiences on one identity is a known interim smell;
   resolved when the platform identities are created.
+
+---
+
+## Owner-facing metrics (shipped 2026-08-05)
+
+The Site owner's metrics loop no longer touches an ESP console. The
+broadcasts dashboard carries the account-wide overview (daily
+sent/opened/bounced chart + window totals off the delivery milestones);
+each send has a detail page (per-recipient milestones, link-click
+breakdown from stored event payloads); the subscriber roster's status
+tabs double as the suppression list, with reactivation semantics matching
+the consent model — bounced returns to confirmed, complained only via a
+fresh double opt-in, unsubscribed never.
 
 ---
 
@@ -251,8 +297,30 @@ ships, both gates are needed.
 5. Create the dedicated AWS account for `verify.*` before the first
    third-party list import; move stream 1 into it (a credential
    change — the From follows `ses.transactional_from`).
-6. Revisit the firewall before the second paying Site, and certainly
-   before import ships.
+6. Adopt SES tenants alongside the platform identities: `platform-auth`
+   (Strict), `platform-circles` (Standard), one `site-<account_id>`
+   tenant per paying Site on the shared `news.` identity; EventBridge
+   findings flow into the DeliveryEvent pipeline. Build the
+   author-visible paused state before the second paying Site, and
+   certainly before import ships (`ses-tenants.md`).
+
+## Next steps (as of 2026-08-05, evening)
+
+Identities + platform tenants are PROVISIONED (rake `email:provision`,
+scoped `inkwell-provisioner` IAM user). In order:
+
+1. Registrar paste — the printed DNS block (root MX excluded until the
+   receipt rule is live).
+2. Console: tenant reputation policies (`platform-auth` → Strict,
+   `platform-circles` → Standard); delete the provisioner access key.
+3. Wait for the three identities to go Verified.
+4. Flip From credentials (`ses.transactional_from` →
+   noreply@verify.kindredquill.com, `ses.marketing_from` →
+   noreply@news.kindredquill.com) and deploy — this IS the Merovex Press
+   patient-zero identity migration.
+5. Pull the `merovex.press` identities from SES (only after 4 is live).
+6. Mail-in slice (same day): receipt-rule provisioning, ingress,
+   SupportMailbox → Missives, then the root MX record last.
 
 None of this is a one-way door. The substrate was built provider-agnostic,
 so every choice above is configuration rather than code.

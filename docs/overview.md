@@ -44,6 +44,18 @@ and the August community arc:
 - **Boosts & @mentions** across circle content — mentions by typed token or
   Lexxy's `@`-prompt (User as Action Text attachable, avatar+name chip);
   comment replies ring the thread everywhere comments exist.
+- **Email** ([[email-architecture]], CANONICAL) — all-SES; the root never
+  sends. Four audience streams: transactional signs `auth.merovex.press`
+  ("Inkwell"), user bulk + subscriber mail sign `news.merovex.press`
+  (notify.* and the dedicated verify.* AWS account come with the platform
+  migration). Postmark = dormant warm-standby, cancellation pending.
+  Owner-facing metrics are in-app now: broadcasts overview chart + per-send
+  detail (links, recipient milestones) + roster reactivation — the ESP
+  console is no longer part of the Site owner's loop.
+- **CSS/HTML standards** — `css-html-standards` skill always-in-force
+  (tokens-first, curated `u-*` utilities, earned BEM, 48em/64em stops,
+  a11y gates); every stylesheet passes the mechanical check, markup swept
+  app-wide (skip links, keyboard-operable editables, dead ARIA stripped).
 - **Ops** — Solid Queue in Puma, Mission Control at `/jobs` (root-only),
   Eastern `config.time_zone`, recurring schedule zones explicit. Production
   runs `01c6fe9` — the entire August arc is local/undeployed; the
