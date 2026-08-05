@@ -33,14 +33,13 @@
       <thead>
         <tr>
           <th scope="col">Post</th>
-          <th scope="col">Sent</th>
-          <th scope="col" data-align="end">Recipients</th>
+          <th scope="col">Date</th>
+          <th scope="col" data-align="end">Sent</th>
           <th scope="col" data-align="end">Delivered</th>
           <th scope="col" data-align="end">Opens</th>
           <th scope="col" data-align="end">Clicks</th>
           <th scope="col" data-align="end">Bounces</th>
           <th scope="col" data-align="end">Unsubs</th>
-          <th scope="col"><span class="u-visually-hidden">Details</span></th>
         </tr>
       </thead>
       <tbody>
@@ -48,13 +47,12 @@
           <tr>
             <td>
               <%# A broadcast outlives its post being trashed — no dead links. %>
+              <%# The title is the door to this send's delivery detail; the post
+                  itself is one link further ("View post" there, live posts only). %>
               <% title = broadcast.post&.title.presence || "Untitled" %>
-              <% if broadcast.record.trashed_at? %>
-                <span class="u-text-strong" title="<%= title %>"><%= title.truncate(40) %></span>
-                <span class="badge">Trashed</span>
-              <% else %>
-                <%= link_to title.truncate(40), admin_post_path(broadcast.record), class: "u-text-strong", title: (title if title.length > 40) %>
-              <% end %>
+              <%= link_to title.truncate(40), admin_broadcast_path(broadcast),
+                    class: "u-text-strong", title: (title if title.length > 40) %>
+              <% if broadcast.record.trashed_at? %><span class="badge">Trashed</span><% end %>
             </td>
             <td>
               <% case broadcast.state %>
@@ -74,8 +72,6 @@
             <td data-align="end"><%= broadcast.clicked_count %> <span class="u-text-muted u-text-small"><%= pct.(broadcast.click_rate) %></span></td>
             <td data-align="end"><%= broadcast.bounced_count %></td>
             <td data-align="end"><%= broadcast.unsubscribed_count %></td>
-            <td data-align="end"><%= link_to "Details", admin_broadcast_path(broadcast),
-                  aria: { label: "Delivery details for #{broadcast.post&.title.presence || "Untitled"}" } %></td>
           </tr>
         <% end %>
       </tbody>
