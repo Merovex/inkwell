@@ -1,6 +1,10 @@
 <% content_for :title, "Announcements — Inkwell" %>
 
-<%= render "admin/shared/canvas_head", crumbs: [["Announcements", nil]] %>
+<%= render "admin/shared/canvas_head", crumbs: [["Announcements", nil]], menu: false do %>
+  <% if Current.user&.root? %>
+    <%= link_to "Manage bulletins", support_bulletins_path, class: "button" %>
+  <% end %>
+<% end %>
 
 <header class="perma-header">
   <h1 class="perma-header__title">Announcements</h1>

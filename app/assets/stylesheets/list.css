@@ -56,6 +56,8 @@
     gap: calc(var(--u-pad) / 2);
     min-inline-size: 0;
   }
+  /* icon: local — a small type glyph before the title (notifications' kinds). */
+  .list__icon { display: inline-grid; place-items: center; flex-shrink: 0; color: var(--ink-muted); }
   /* An h3 by default (real heading for a11y); line-height/size pinned here so
      the base h3 rules (incl. the mobile step-down) don't reshape the row. */
   .list__title {

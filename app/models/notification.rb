@@ -20,6 +20,20 @@ class Notification < ApplicationRecord
   # shouldn't bug anyone. (Bell rings live regardless.)
   EMAILED_DAILY = %w[ replied ].freeze
 
+  # The bell's visual grammar: one lucide glyph per kind, rendered beside the
+  # stamped sentence in the flyout and the index (and standing alone when no
+  # human acted). Unknown/legacy kinds fall back to the bell itself.
+  ICONS = {
+    "invited" => "user-plus",
+    "invitation_accepted" => "check",
+    "mentioned" => "at-sign",
+    "boosted" => "rocket",
+    "pulse_asked" => "activity",
+    "replied" => "message-square",
+    "ticket_opened" => "life-buoy",
+    "bulletin_published" => "megaphone"
+  }.freeze
+
   belongs_to :user   # the recipient
   belongs_to :actor, class_name: "User", optional: true
   belongs_to :source, polymorphic: true, optional: true
@@ -30,6 +44,8 @@ class Notification < ApplicationRecord
 
   scope :unread, -> { where(read_at: nil) }
   scope :recent, -> { order(created_at: :desc).limit(15) }
+
+  def icon = "lucide/#{ICONS.fetch(kind, "bell")}.svg"
 
   # THE way a notification is born — never bare create!. Fan-out and channel
   # decisions live here: the row (bell) always, live via Turbo Stream; email

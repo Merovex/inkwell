@@ -35,11 +35,27 @@ class BulletinsTest < ActionDispatch::IntegrationTest
     get bulletins_path
     assert_response :success
     assert_select "h3", text: "Sidebar changes"
+    # The app menu's platform doors are present; the manage affordance isn't.
+    assert_select "a[href=?]", bulletins_path, text: /Announcements/
+    assert_select "a[href=?]", tickets_path, text: /Support/
+    assert_select "a", text: "Manage bulletins", count: 0
 
     get bulletin_path(record.to_slug)
     assert_response :success
     assert_select "h1", text: "Sidebar changes"
     assert_match "An announcement from", response.body
+    assert_select "a", text: "Edit", count: 0
+  end
+
+  test "root gets the manage and edit affordances on the reader pages" do
+    record = originate_bulletin
+    sign_in_as users(:alice)
+
+    get bulletins_path
+    assert_select "a[href=?]", support_bulletins_path, text: "Manage bulletins"
+
+    get bulletin_path(record.to_slug)
+    assert_select "a[href=?]", edit_support_bulletin_path(record), text: "Edit"
   end
 
   test "drafts are invisible to members but previewable by root" do

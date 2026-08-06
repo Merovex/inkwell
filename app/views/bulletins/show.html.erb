@@ -1,6 +1,10 @@
 <% content_for :title, "#{@bulletin.title} — Inkwell" %>
 
-<%= render "admin/shared/canvas_head", crumbs: [["Announcements", bulletins_path], [@bulletin.title, nil]] %>
+<%= render "admin/shared/canvas_head", crumbs: [["Announcements", bulletins_path], [@bulletin.title, nil]], menu: false do %>
+  <% if Current.user&.root? %>
+    <%= link_to "Edit", edit_support_bulletin_path(@record), class: "button" %>
+  <% end %>
+<% end %>
 
 <article class="u-stack u-stack-double">
   <header class="perma-header">

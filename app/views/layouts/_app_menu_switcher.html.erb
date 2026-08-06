@@ -68,6 +68,17 @@
       </section>
     </div>
 
+    <%# Platform doors, above the personal footer: the announcements archive
+        (the bell's long tail) and the help desk (open a ticket). %>
+    <nav class="switcher__platform" aria-label="Platform">
+      <%= link_to bulletins_path(script_name: ""), class: "switcher__foot" do %>
+        <%= inline_svg_tag "lucide/megaphone.svg", class: "lucide", size: "16px" %> Announcements
+      <% end %>
+      <%= link_to tickets_path(script_name: ""), class: "switcher__foot" do %>
+        <%= inline_svg_tag "lucide/life-buoy.svg", class: "lucide", size: "16px" %> Support
+      <% end %>
+    </nav>
+
     <footer class="switcher__footer">
       <%= link_to circles_path(script_name: ""), class: "switcher__foot" do %>
         <%= inline_svg_tag "lucide/message-square.svg", class: "lucide", size: "16px" %> All circles

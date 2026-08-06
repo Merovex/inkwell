@@ -138,6 +138,13 @@
     grid-template-columns: 1fr 1fr;
     background: color-mix(in oklab, var(--ink) 4%, var(--surface-raised));
   }
+  /* Platform doors (announcements, support) — a second foot row above the
+     personal footer, untinted so the two rows read as separate registers. */
+  .switcher__platform {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    border-block-start: var(--border-size-1) solid color-mix(in oklab, var(--ink) 8%, transparent);
+  }
   .switcher__foot {
     display: inline-flex;
     align-items: center;

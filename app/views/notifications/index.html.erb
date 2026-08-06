@@ -16,6 +16,7 @@
             href: notification.url,
             title: notification.title,
             title_tag: "span",
+            icon: notification.icon,
             avatar_user: notification.actor,
             avatar: notification.actor.present?,
             date: "#{time_ago_in_words(notification.created_at)} ago" %>
