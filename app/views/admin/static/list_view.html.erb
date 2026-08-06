@@ -7,14 +7,15 @@
   <button type="button" class="menu__item" role="menuitem">Board settings</button>
 <% end %>
 
+<%# Convention (2026-08-06): an index page's "New X" action lives in the
+    canvas head's upper right — render canvas_head with `menu: false do` and
+    the button--primary link (see admin/posts/index). The toolbar below is
+    for filters and secondary actions only. (This demo page keeps the ⋯-menu
+    variant above, so the New button isn't shown in its head.) %>
 <header class="perma-header">
   <h1 class="perma-header__title">Message Board</h1>
   <div class="perma-header__content">
     <nav class="perma-header__toolbar" aria-label="Filters">
-      <a class="button button--primary button--small" href="#">
-        <%= inline_svg_tag "lucide/plus.svg", class: "lucide", size: "16px" %> New message
-      </a>
-
       <%# category filter — active segment + a dropdown of categories %>
       <div class="button-group">
         <button type="button" class="button-group__btn is-active">All messages</button>

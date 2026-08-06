@@ -1,16 +1,13 @@
 <% content_for :title, "Collections — Inkwell" %>
 
-<%= render "admin/shared/canvas_head", crumbs: [["Collections", nil]] %>
+<%= render "admin/shared/canvas_head", crumbs: [["Collections", nil]], menu: false do %>
+  <%= link_to new_admin_collection_path, class: "button button--primary" do %>
+    <%= inline_svg_tag "lucide/plus.svg", class: "lucide", size: "16px" %> New collection
+  <% end %>
+<% end %>
 
 <header class="perma-header">
   <h1 class="perma-header__title">Collections</h1>
-  <div class="perma-header__content">
-    <nav class="perma-header__toolbar" aria-label="Actions">
-      <%= link_to new_admin_collection_path, class: "button button--primary button--small" do %>
-        <%= inline_svg_tag "lucide/plus.svg", class: "lucide", size: "16px" %> New collection
-      <% end %>
-    </nav>
-  </div>
 </header>
 
 <% if @collections.any? %>

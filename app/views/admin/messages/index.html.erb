@@ -1,19 +1,20 @@
 <% content_for :title, "Forum — Inkwell" %>
 
-<%= render "admin/shared/canvas_head", crumbs: [["Forum", nil]] %>
+<%= render "admin/shared/canvas_head", crumbs: [["Forum", nil]], menu: false do %>
+  <%= link_to new_admin_message_path, class: "button button--primary" do %>
+    <%= inline_svg_tag "lucide/plus.svg", class: "lucide", size: "16px" %> New message
+  <% end %>
+<% end %>
 
 <header class="perma-header">
   <h1 class="perma-header__title">Forum</h1>
-  <div class="perma-header__content">
-    <nav class="perma-header__toolbar" aria-label="Actions">
-      <% if allowed_to?(:manage, Category) %>
+  <% if allowed_to?(:manage, Category) %>
+    <div class="perma-header__content">
+      <nav class="perma-header__toolbar" aria-label="Actions">
         <%= link_to "Edit categories", admin_categories_path, class: "button button--small" %>
-      <% end %>
-      <%= link_to new_admin_message_path, class: "button button--primary button--small" do %>
-        <%= inline_svg_tag "lucide/plus.svg", class: "lucide", size: "16px" %> New message
-      <% end %>
-    </nav>
-  </div>
+      </nav>
+    </div>
+  <% end %>
 </header>
 
 <% if (@drafts_count + @scheduled_count).positive? %>

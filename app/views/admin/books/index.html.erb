@@ -1,6 +1,10 @@
 <% content_for :title, "Books — Inkwell" %>
 
-<%= render "admin/shared/canvas_head", crumbs: [["Books", nil]] %>
+<%= render "admin/shared/canvas_head", crumbs: [["Books", nil]], menu: false do %>
+  <%= link_to new_admin_book_path, class: "button button--primary" do %>
+    <%= inline_svg_tag "lucide/plus.svg", class: "lucide", size: "16px" %> New book
+  <% end %>
+<% end %>
 
 <div data-controller="filter" data-filter-unit-value="book">
   <header class="perma-header">
@@ -14,9 +18,6 @@
                  data-action="input->filter#apply keydown.esc->filter#clear">
           <label class="filter-by-text__hotkey">Filter… <kbd class="kbd">F</kbd></label>
         </div>
-        <%= link_to new_admin_book_path, class: "button button--primary button--small" do %>
-          <%= inline_svg_tag "lucide/plus.svg", class: "lucide", size: "16px" %> New book
-        <% end %>
       </nav>
     </div>
   </header>

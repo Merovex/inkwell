@@ -1,16 +1,13 @@
 <% content_for :title, "Post Drafts — Inkwell" %>
 
-<%= render "admin/shared/canvas_head", crumbs: [["Posts", admin_posts_path], ["Post Drafts", nil]] %>
+<%= render "admin/shared/canvas_head", crumbs: [["Posts", admin_posts_path], ["Post Drafts", nil]], menu: false do %>
+  <%= link_to new_admin_post_path, class: "button button--primary" do %>
+    <%= inline_svg_tag "lucide/plus.svg", class: "lucide", size: "16px" %> New post
+  <% end %>
+<% end %>
 
 <header class="perma-header">
   <h1 class="perma-header__title">Post Drafts</h1>
-  <div class="perma-header__content">
-    <nav class="perma-header__toolbar" aria-label="Actions">
-      <%= link_to new_admin_post_path, class: "button button--primary button--small" do %>
-        <%= inline_svg_tag "lucide/plus.svg", class: "lucide", size: "16px" %> New post
-      <% end %>
-    </nav>
-  </div>
 </header>
 
 <% if @posts.any? %>

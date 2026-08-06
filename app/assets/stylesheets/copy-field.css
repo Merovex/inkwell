@@ -11,7 +11,9 @@
     align-items: stretch;
     inline-size: 100%;
     overflow: hidden;
-    background: var(--canvas);
+    /* The same filled-well treatment as .field__control — one field paradigm
+       everywhere (the Copy button segment stays transparent on top of it). */
+    background: var(--site-bg);
     border: var(--border-size-1) solid var(--line);
     border-radius: var(--radius-ui);
   }
