@@ -227,14 +227,32 @@ class Exporter
       rich_text&.to_s&.gsub(/<!-- (?:BEGIN|END) [^>]*-->\n?/m, "")
     end
 
+    # No public display needs more than this; authors upload raw camera/stock
+    # files (the merovex hero banner shipped at 491KB before the cap).
+    IMAGE_LIMIT = [ 1920, 1920 ].freeze
+
     # Pulls a blob into assets/images/ and returns its workspace-relative
     # path (the form the contract's cover/avatar fields carry), nil if absent.
+    # Raster images are capped to IMAGE_LIMIT and transcoded to WebP —
+    # preserving the source format backfires (vips re-encodes AVIF far larger
+    # than the original). Non-variable blobs (SVG) and any processing failure
+    # fall back to the raw bytes — a fat image beats a broken build.
     def copy_image(attachment, prefix)
       return nil unless attachment&.attached?
 
-      filename = "#{prefix}-#{attachment.blob.filename.sanitized}"
-      workspace.join("assets/images").tap(&:mkpath)
-        .join(filename).binwrite(attachment.blob.download)
+      bytes, ext = image_payload(attachment)
+      filename = "#{prefix}-#{File.basename(attachment.blob.filename.sanitized, '.*')}#{ext}"
+      workspace.join("assets/images").tap(&:mkpath).join(filename).binwrite(bytes)
       "images/#{filename}"
+    end
+
+    def image_payload(attachment)
+      original_ext = File.extname(attachment.blob.filename.sanitized)
+      return [ attachment.blob.download, original_ext ] unless attachment.blob.variable?
+      variant = attachment.variant(resize_to_limit: IMAGE_LIMIT, format: :webp, saver: { quality: 82 })
+      [ variant.processed.download, ".webp" ]
+    rescue ActiveStorage::Error, ActiveStorage::FileNotFoundError => error
+      Rails.logger.warn("[exporter] variant failed for #{attachment.blob.filename}: #{error.message}")
+      [ attachment.blob.download, original_ext ]
     end
 end

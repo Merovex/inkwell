@@ -93,7 +93,9 @@
     </div>
     {{ with $featured }}
     <div class="fk-hero-art fk-hero-art-cover">
-      <img src="{{ site.Home.RelPermalink }}{{ .cover }}" alt="Cover of {{ .title }}" loading="eager">
+      {{/* fetchpriority=high on the eager hero art: it's the LCP element, and
+           without the hint it queues behind the stylesheets on mobile. */}}
+      <img src="{{ site.Home.RelPermalink }}{{ .cover }}" alt="Cover of {{ .title }}" loading="eager" fetchpriority="high">
     </div>
     {{ end }}
     {{/* data-hero-art=portrait swaps the featured cover for the author's own
@@ -101,14 +103,14 @@
          avatar; rendered only when one exists, else the cover stands in. */}}
     {{ with or $author.hero_image $author.avatar }}
     <div class="fk-hero-art fk-hero-art-portrait">
-      <img src="{{ site.Home.RelPermalink }}{{ . }}" alt="Portrait of {{ $author.name }}" loading="eager">
+      <img src="{{ site.Home.RelPermalink }}{{ . }}" alt="Portrait of {{ $author.name }}" loading="eager" fetchpriority="high">
     </div>
     {{ end }}
     {{/* data-hero-art=image shows a custom picture the author uploaded in the
          designer's hero pane (site.hero_image) — neither book nor portrait. */}}
     {{ with $site.hero_image }}
     <div class="fk-hero-art fk-hero-art-image">
-      <img src="{{ site.Home.RelPermalink }}{{ . }}" alt="{{ $site.name }}" loading="eager">
+      <img src="{{ site.Home.RelPermalink }}{{ . }}" alt="{{ $site.name }}" loading="eager" fetchpriority="high">
     </div>
     {{ end }}
     <ul class="fk-hero-art fk-hero-art-fan">
