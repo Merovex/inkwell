@@ -2,6 +2,15 @@
 
 Append-only. Newest first. Format defined in [[CLAUDE]] (`CLAUDE.md`).
 
+## [2026-08-06] build | Performance pass: 70 → 86 mobile, fonts now vendored (zero third-party)
+- **CLS fix (the 70→86)**: every contract image now renders through the theme's one `img` partial, stamping real width/height from the exporter's new `data/image_sizes.json` (vips-measured at export). CLS 0.228 → 0.031. The active hero background (hero_bg axis) is eager+fetchpriority=high — it's the LCP element; the CSS-hidden variant stays lazy.
+- **Fonts vendored, Option A**: all 22 pairings downloaded ONCE by `vendor/filibuster/bin/vendor-fonts` (subset css2 per pairing, woff2s into `assets/fonts/files/`, urls rewritten same-origin) and committed — builds never touch Google. Fonts live in Hugo `assets/` (publish-on-reference): each build carries only its pairing (~600KB all subsets; visitors fetch ~115KB latin). Designer preview keeps the Google link (live pairing switching; owner-approved). The rejected alternative — Rails fetching at export (FontKit) — was built then reverted: owner wants the pipeline network-free.
+- **HOUSE RULE (owner, emphatic): never inline CSS** — the eight theme modules were briefly concatenated+inlined for PSI's render-blocking audit and reverted same day; linked files are the law (comment in baseof.html; memory saved).
+- Also: image quality wound down (webp q72; banners 1280px/q55 — scrimmed), Worker cache-control 1h → 1d+SWR-1w, `site:rebuild`/`site:status` rake tasks + `bin/rebuild`/`bin/build_job` kamal wrappers, valid_email2 initializer moved to after_initialize (killed the prod boot warning), generator meta now "Kindred Quill".
+- Next levers if chasing >86: srcset responsive images, AVIF dual-format (via the img partial), CF Insights beacon toggle (owner's dashboard), fingerprinted asset URLs (owner floated — enables immutable caching).
+- pages touched: (log only)
+- refs: ../vendor/filibuster/bin/vendor-fonts, ../vendor/filibuster/layouts/_partials/img.html, ../app/models/exporter.rb, ../edge/src/index.js
+
 ## [2026-08-05] fix | Live-fire publishing shook out three bugs (www.merovex.press is serving static)
 - **Born-published posts never triggered a rebuild**: the posts controller creates+publishes in one transaction, which commits as a CREATE — `after_update_commit` never fired. Now `after_create_commit :schedule_site_build_if_born_published` covers it (distinct method name deliberately: a second after_*_commit registering the same symbol silently replaces the first — that trap ate the first fix attempt).
 - **Post/book lists sorted reverse-alphabetically, not by date**: Hugo's content-adapter `AddPage` only honors dates nested under a `"dates"` dict; the top-level `"date"` key was silently dropped, every page got a zero date, and `.ByDate.Reverse` fell through to the title tiebreak. Fixed in the posts and books `_content.gotmpl` adapters.

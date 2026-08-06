@@ -1,0 +1,68 @@
+#!/usr/bin/env ruby
+# One-time (re-runnable) developer task: vendor every font pairing from
+# data/theme.json into assets/fonts/ so builds never touch Google.
+#
+#   assets/fonts/<pairing-id>.css   — @font-face rules, same-origin urls
+#   assets/fonts/files/<name>.woff2 — the font files, shared across pairings
+#
+# For each pairing: subset the manifest's fonts_url to its display+body
+# families, fetch Google's css2 with a woff2-capable UA (Google only serves
+# woff2 + unicode-range splits to browsers that claim support), download the
+# referenced files, rewrite urls relative. Idempotent — existing files are
+# kept (Google's filenames carry the version, e.g. .../v33/…).
+#
+# Run from the theme root:  bin/vendor-fonts
+require "json"
+require "net/http"
+require "fileutils"
+require "uri"
+
+ROOT = File.expand_path("..", __dir__)
+UA = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+
+manifest = JSON.parse(File.read(File.join(ROOT, "data/theme.json")))
+fonts_url = manifest.fetch("fonts_url")
+axis = manifest.fetch("axes").find { |a| a["key"] == "font" } or abort "no font axis"
+base, query = fonts_url.split("?", 2)
+
+def fetch(url)
+  uri = URI(url)
+  response = Net::HTTP.start(uri.host, uri.port, use_ssl: true) do |http|
+    http.get(uri.request_uri, { "User-Agent" => UA })
+  end
+  abort "#{url} answered #{response.code}" unless response.is_a?(Net::HTTPSuccess)
+  response.body
+end
+
+css_dir = File.join(ROOT, "assets/fonts")
+files_dir = File.join(css_dir, "files")
+FileUtils.mkdir_p(files_dir)
+
+axis.fetch("options").each do |option|
+  wanted = [ option.fetch("display"), option.fetch("body") ].map { |name| name.tr(" ", "+") }
+  keep = query.split("&").select do |segment|
+    segment.start_with?("family=") &&
+      wanted.include?(segment.delete_prefix("family=").split(":").first)
+  end
+  abort "#{option['id']}: families #{wanted} not in fonts_url" if keep.empty?
+
+  css = fetch("#{base}?#{keep.join("&")}&display=swap")
+  downloaded = 0
+  rewritten = css.gsub(%r{url\((https://fonts\.gstatic\.com/[^)]+\.woff2)\)}) do
+    url = Regexp.last_match(1)
+    filename = url.split("/s/").last.tr("/", "-")
+    path = File.join(files_dir, filename)
+    unless File.exist?(path)
+      File.binwrite(path, fetch(url))
+      downloaded += 1
+    end
+    "url(files/#{filename})"
+  end
+  abort "#{option['id']}: css2 answered without woff2" unless rewritten.include?("url(files/")
+
+  File.write(File.join(css_dir, "#{option['id']}.css"), rewritten)
+  puts "#{option['id'].ljust(12)} #{option['display']} + #{option['body']} (#{downloaded} new files)"
+end
+
+total = Dir[File.join(files_dir, "*.woff2")].sum { |f| File.size(f) }
+puts "\n#{Dir[File.join(css_dir, '*.css')].size} pairings, #{Dir[File.join(files_dir, '*.woff2')].size} font files, #{total / 1024}KB"

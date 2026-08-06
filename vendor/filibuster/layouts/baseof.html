@@ -25,33 +25,29 @@
        and WebSite JSON-LD. */}}
   {{ partial "seo.html" . }}
   <meta name="theme-color" content="#0b0f1d">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  {{/* Every genre pairing from verkilo.com/typography. The designer preview
-       loads them all (live font switching); a real build subsets the URL to
-       the design's chosen pairing — the fonts CSS is render-blocking and on
-       mobile the full 44-family declaration costs real FCP. */}}
-  {{ $fontsURL := hugo.Data.theme.fonts_url }}
+  {{/* Fonts: every pairing is VENDORED into the theme (assets/fonts/<id>.css
+       + files/*.woff2 — see bin/vendor-fonts), so a real build serves its
+       pairing same-origin and makes no third-party font requests. Fonts live
+       in assets/ (publish-on-reference), so a build carries only its own
+       pairing's files. The designer preview keeps Google's full declaration —
+       live font switching needs all pairings (owner-approved trade-off). */}}
+  {{ $fontCSS := "" }}
   {{ if not site.Params.preview }}
-    {{ $fontAxis := dict }}
-    {{ range $theme.axes }}{{ if eq .key "font" }}{{ $fontAxis = . }}{{ end }}{{ end }}
-    {{ $choice := (index $design "font") | default $fontAxis.default }}
-    {{ $opt := index (where ($fontAxis.options | default slice) "id" $choice) 0 }}
-    {{ with $opt }}
-      {{ $wanted := slice (replace .display " " "+") (replace .body " " "+") }}
-      {{ $base := index (split $fontsURL "?") 0 }}
-      {{ $query := index (split $fontsURL "?") 1 }}
-      {{ $keep := slice }}
-      {{ range split $query "&" }}
-        {{ if hasPrefix . "family=" }}
-          {{ $name := index (split (strings.TrimPrefix "family=" .) ":") 0 }}
-          {{ if in $wanted $name }}{{ $keep = $keep | append . }}{{ end }}
-        {{ end }}
+    {{ with resources.Get (printf "fonts/%s.css" (index $design "font")) }}
+      {{/* Reference each woff2 the css names so Hugo publishes it. */}}
+      {{ range findRE `files/[^)]+\.woff2` .Content }}
+        {{ $published := (resources.Get (printf "fonts/%s" .)).RelPermalink }}
       {{ end }}
-      {{ if $keep }}{{ $fontsURL = printf "%s?%s&display=swap" $base (delimit $keep "&") }}{{ end }}
+      {{ $fontCSS = .RelPermalink }}
     {{ end }}
   {{ end }}
-  <link href="{{ $fontsURL }}" rel="stylesheet">
+  {{ with $fontCSS }}
+  <link rel="stylesheet" href="{{ . }}">
+  {{ else }}
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="{{ hugo.Data.theme.fonts_url }}" rel="stylesheet">
+  {{ end }}
   {{/* The stylesheet, split into small modules so HTTP/2/3 fetches them in
        parallel and caches each independently (edit one, the rest stay warm).
        FILENAME ORDER IS CASCADE ORDER — <link>s apply in DOM order regardless
