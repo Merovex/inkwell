@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.2].define(version: 2026_08_05_234500) do
+ActiveRecord::Schema[8.2].define(version: 2026_08_06_001000) do
   create_table "account_users", force: :cascade do |t|
     t.integer "account_id", null: false
     t.integer "user_id", null: false
@@ -30,6 +30,8 @@ ActiveRecord::Schema[8.2].define(version: 2026_08_05_234500) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.text "design"
+    t.string "site_build_status"
+    t.datetime "site_built_at"
     t.index ["domain"], name: "index_accounts_on_domain", unique: true
     t.index ["name"], name: "index_accounts_on_name", unique: true
     t.index ["owner_id"], name: "index_accounts_on_owner_id"

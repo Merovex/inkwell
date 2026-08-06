@@ -290,9 +290,19 @@ fresh double opt-in, unsubscribed never.
    DMARC `p=reject`, inbound only (DNS side).
 2. Verify the SES cutover in production, then cancel Postmark.
 3. Replace the hardcoded display name with a per-tenant value.
-4. Create the `kindredquill.com` sending identities (three subdomains,
-   DNS record sets together) and migrate merovex.press onto platform
-   identities as tenant one.
+4. Migrate merovex.press onto platform identities as tenant one. The
+   IDENTITY half is done (2026-08-05, verified in headers: all three
+   streams sign kindredquill.com subdomains; receive-only root
+   Verified; tidy-up remaining — pull `*.merovex.press` identities,
+   cancel Postmark, delete the provisioner key). The TENANT half is
+   NOT: Tenant Zero means Merovex Press onboarded through the real
+   product path — static-site onboarding for their domain (today the
+   site root is still the legacy dynamically-served merovex.press) and
+   self-serve email configuration (per-Site From name replacing the
+   hardcoded one, the site tenant, the paused-state surface). Until
+   that onboarding exists and Merovex Press has been through it,
+   tenant one hasn't migrated — the single-author assumptions are
+   still in the code.
 5. Create the dedicated AWS account for `verify.*` before the first
    third-party list import; move stream 1 into it (a credential
    change — the From follows `ses.transactional_from`).

@@ -35,6 +35,10 @@
     </div>
     <div class="designer__topbar-side u-cluster">
       <p class="designer__status" data-designer-target="status" aria-live="polite">Loading preview&hellip;</p>
+      <%# The LIVE site's build state (SiteBuildJob) — distinct from the preview above. %>
+      <p class="designer__status u-text-muted">
+        Site: <%= Current.account.site_build_status || "not published" %><%= " · #{l Current.account.site_built_at, format: :short}" if Current.account.site_built_at %>
+      </p>
       <%= render "help" %>
       <button type="button" class="button" data-action="designer#reset">Discard changes</button>
       <button type="button" class="button button--primary" data-action="designer#save">Save</button>

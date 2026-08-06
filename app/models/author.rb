@@ -33,6 +33,9 @@ class Author < ApplicationRecord
 
   # A persona is public the instant it's saved and has no draft regime — edits
   # amend the current version in place; the world always sees the latest.
+  # Mutable like Site: amends bypass the Record trigger, so rebuild from here.
+  after_update_commit -> { SiteBuildJob.schedule(record.bucket) if record&.bucket_type == "Account" }
+
   def mutable? = true
 
   # name doubles as the slug title (Record#to_slug) and the avatar-helper name.

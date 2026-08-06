@@ -41,6 +41,10 @@ class Site < ApplicationRecord
 
   delegate :contact_email, :contact_email=, to: :account, allow_nil: true
 
+  # Mutable: edits amend in place, so the Record-level rebuild trigger never
+  # fires — the static site rebuilds from here instead.
+  after_update_commit -> { SiteBuildJob.schedule(record.bucket) if record&.bucket_type == "Account" }
+
   def mutable? = true
 
   # A Site is only ever an Account's (the press's public identity), so its

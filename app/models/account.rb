@@ -75,6 +75,9 @@ class Account < ApplicationRecord
   end
 
   # The public site's address: the custom domain, else the apex slug path.
+  # A saved SiteDesigner design re-publishes the static site.
+  after_update_commit -> { SiteBuildJob.schedule(self) }, if: :saved_change_to_design?
+
   def public_address
     domain || [ AccountHost.apex_host, slug ].compact.join("/")
   end

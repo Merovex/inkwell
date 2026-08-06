@@ -78,6 +78,14 @@ class Record < ApplicationRecord
     recordable_class.where(record_id: id).order(:id)
   end
 
+  # The static-site rebuild trigger (docs/phase-2-static-serving.md §2.3):
+  # a revision or trash/restore on a Site's public content re-publishes the
+  # static build. Only record-row UPDATES fire — draft churn amends the
+  # version row in place and never moves the cursor, so drafts don't build.
+  # Mutable types (Site, Author) hook their own models for the same reason.
+  STATIC_SITE_TYPES = %w[ Site Post Book Series Collection Author ].freeze
+  after_update_commit :schedule_site_build
+
   # Insert the next immutable version and repoint the cursor. Returns the
   # version (unsaved, with errors, when invalid — the cursor then stays put).
   def revise(event:, creator: Current.user, **changes)
@@ -188,5 +196,10 @@ class Record < ApplicationRecord
   private
     def destroy_versions
       versions.find_each(&:destroy)
+    end
+
+    def schedule_site_build
+      return unless bucket_type == "Account" && STATIC_SITE_TYPES.include?(recordable_type)
+      SiteBuildJob.schedule(bucket)
     end
 end
