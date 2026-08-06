@@ -51,12 +51,23 @@
     box-shadow: var(--elevation-flyout);
   }
   .subnav__menu a {
+    display: flex;
+    align-items: center;
+    gap: calc(var(--u-pad) / 3);
     padding: var(--size-2);
     border-radius: var(--radius-ui);
     color: var(--ink);
     text-decoration: none;
   }
   .subnav__menu a:hover { background: color-mix(in oklab, var(--ink) 4%, transparent); }
+
+  /* Hairline between a quick action (New post) and the section links. */
+  .subnav__menu hr {
+    align-self: stretch;
+    border: 0;
+    border-block-start: var(--border-size-1) solid var(--line);
+    margin-block: calc(var(--u-pad) / 4);
+  }
 
   @media (max-width: 48em) { /* --breakpoint-md */
     .subnav__inner { justify-content: flex-start; }

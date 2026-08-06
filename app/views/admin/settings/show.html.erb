@@ -14,7 +14,9 @@
   <section class="settings__section" aria-label="Site identity">
     <%= render "admin/shared/error_summary", model: @site %>
 
-    <%= form_with model: @site, url: admin_settings_path, method: :patch, multipart: true, class: "u-full-width" do |f| %>
+    <%# dirty-form: Save wakes up only once something changes. %>
+    <%= form_with model: @site, url: admin_settings_path, method: :patch, multipart: true, class: "u-full-width",
+          data: { controller: "dirty-form", action: "input->dirty-form#dirty change->dirty-form#dirty" } do |f| %>
       <% identity_panel = capture do %>
         <div class="field logo-upload">
           <% if @site.logo.attached? %>
@@ -22,18 +24,20 @@
           <% else %>
             <span class="logo-upload__placeholder" aria-hidden="true">No logo</span>
           <% end %>
-          <%# A styled label opens the (hidden) picker — like the avatar control. %>
-          <label class="button">
-            <%= @site.logo.attached? ? "Change logo…" : "Upload a logo…" %>
-            <%= f.file_field :logo, accept: Site::LOGO_CONTENT_TYPES.join(","), hidden: true %>
-          </label>
-          <% if @site.logo.attached? %>
-            <label class="logo-upload__remove">
-              <%= check_box_tag "site[remove_logo]", "1" %>
-              Remove logo and use the wordmark
+          <div class="logo-upload__controls">
+            <%# A styled label opens the (hidden) picker — like the avatar control. %>
+            <label class="button">
+              <%= @site.logo.attached? ? "Change logo…" : "Upload a logo…" %>
+              <%= f.file_field :logo, accept: Site::LOGO_CONTENT_TYPES.join(","), hidden: true %>
             </label>
-          <% end %>
-          <p class="field__hint u-text-muted">Shown in the public site header. JPG, PNG, AVIF, WebP, or SVG, up to <%= Site::LOGO_MAX_SIZE / 1.megabyte %> MB.</p>
+            <% if @site.logo.attached? %>
+              <label class="logo-upload__remove">
+                <%= check_box_tag "site[remove_logo]", "1" %>
+                Remove logo and use the wordmark
+              </label>
+            <% end %>
+            <p class="field__hint u-text-muted">Shown in the public site header. JPG, PNG, AVIF, WebP, or SVG, up to <%= Site::LOGO_MAX_SIZE / 1.megabyte %> MB.</p>
+          </div>
         </div>
 
         <div class="field-row">
@@ -110,7 +114,8 @@
             { id: "email", label: "Email", href: admin_sending_domains_path },
           ], aria_label: "Settings sections", selected: params[:tab] %>
 
-      <%= f.submit "Save", class: "button button--primary" %>
+      <%= f.submit "Save", class: "button button--primary u-margin-block-start",
+            data: { dirty_form_target: "submit" } %>
     <% end %>
   </section>
 </div>

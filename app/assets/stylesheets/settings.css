@@ -53,28 +53,36 @@
     justify-items: stretch;
   }
 
-  /* Logo upload — a centered preview + a styled "Change…" button, mirroring the
-     user-avatar control (no raw file input, no redundant "Logo" label). */
+  /* Logo upload — a media row using the panel's full width: generous preview
+     on the left, controls stacked beside it (no raw file input, no redundant
+     "Logo" label). Wraps to a stack on narrow screens. */
   .logo-upload {
     display: flex;
-    flex-direction: column;
+    flex-direction: row; /* beats .field's column (same specificity, later sheet) */
+    flex-wrap: wrap;
     align-items: center;
-    text-align: center;
     gap: var(--u-pad);
   }
   .logo-upload__preview {
-    max-block-size: var(--size-10);
-    max-inline-size: var(--size-13);
+    max-block-size: var(--size-11);
+    max-inline-size: var(--size-14);
     object-fit: contain;
   }
   .logo-upload__placeholder {
     display: inline-grid;
     place-items: center;
-    inline-size: var(--size-12);
-    block-size: var(--size-9);
+    inline-size: var(--size-13);
+    block-size: var(--size-10);
     border-radius: var(--radius-ui);
     background: color-mix(in oklab, var(--ink) 6%, var(--canvas));
     color: var(--ink-muted);
+  }
+  .logo-upload__controls {
+    display: flex;
+    flex: 1 1 20ch;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: calc(var(--u-pad) / 2);
   }
   .logo-upload__remove {
     display: inline-flex;

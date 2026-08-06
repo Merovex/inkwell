@@ -37,7 +37,9 @@ export default class extends Controller {
     const { available, mine, taken, suggestion } = await response.json()
     if (mine) return this.#clear()
 
+    // Problems wear the error-alert shape; good news stays a quiet hint.
     this.statusTarget.hidden = false
+    this.statusTarget.className = available ? "field__hint" : "alert alert--danger"
     if (available) {
       this.statusTarget.textContent = "Available."
       this.#offer(null)

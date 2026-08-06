@@ -12,6 +12,12 @@
         <details class="subnav__group" name="subnav">
           <summary class="subnav__tab">Publish</summary>
           <div class="subnav__menu">
+            <%# The most frequent action, one step from anywhere; the other
+                three content types don't earn a shortcut (less frequent). %>
+            <%= link_to new_admin_post_path do %>
+              <%= inline_svg_tag "lucide/plus.svg", class: "lucide", size: "16px" %> New post
+            <% end %>
+            <hr>
             <%= link_to "Posts", admin_posts_path %>
             <%= link_to "Books", admin_books_path %>
             <%= link_to "Series", admin_series_index_path %>
