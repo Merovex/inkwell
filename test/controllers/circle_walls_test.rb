@@ -209,6 +209,34 @@ class CircleWallsTest < ActionDispatch::IntegrationTest
       circle_wall_thread_path(circles(:writers), message.record)
   end
 
+  test "a beat has a comment thread: count on the card, modal with composer" do
+    pulse = Current.with_bucket(circles(:writers)) do
+      Record.originate(Pulse.new(question: "How goes it?", creator: users(:alice),
+        cadence: "weekly", days_of_week: (1 << 1), ask_at_minutes: 540))
+    end.recordable
+    beat = Current.with_bucket(circles(:writers)) do
+      Record.originate(Beat.new(content: "<p>Well enough</p>", asked_on: Date.current,
+        creator: users(:bob)), parent: pulse.record)
+    end.recordable
+
+    sign_in_as users(:alice)
+    get circle_wall_path(circles(:writers))
+    assert_select ".wall__card:first-of-type a[href=?]",
+      circle_wall_thread_path(circles(:writers), beat.record_id), text: /0 comments/
+
+    get circle_wall_thread_path(circles(:writers), beat.record_id)
+    assert_response :success
+    assert_select ".modal__title", text: "How goes it?"
+    assert_select ".modal__body .prose", text: /Well enough/
+    assert_select ".wall-thread__composer form[action=?]",
+      circle_record_comments_path(circles(:writers), beat.record_id)
+
+    post circle_record_comments_path(circles(:writers), beat.record_id),
+      params: { back: "wall", comment: { content: "<p>Glad to hear</p>" } }
+    follow_redirect!
+    assert_select ".comments .list__item", minimum: 1
+  end
+
   test "the thread modal carries the message, boosts, comments, and the composer" do
     message = create_discussion(title: "Discuss me")
     sign_in_as users(:bob)

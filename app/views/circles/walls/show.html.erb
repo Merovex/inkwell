@@ -76,6 +76,7 @@
         <% record = @beat_records[beat.record_id] %>
         <%= render "beat_card", circle: @circle, record: record, beat: beat,
               pulse_record: @pulse_records[record.parent_id],
+              comment_count: @comment_counts[record.id].to_i,
               boosts: @boosts_by_record.fetch(record.id, []) %>
       <% end %>
     <% end %>

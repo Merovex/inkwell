@@ -2,6 +2,12 @@
 
 Append-only. Newest first. Format defined in [[CLAUDE]] (`CLAUDE.md`).
 
+## [2026-08-06] build | Wall: beats are commentable + edit-in-modal
+- **Comments on Beats**: the spine already allowed it (comments hang off any circle record); the wall now shows the affordance — beat cards carry the comment-count door, and the thread modal serves Beats too (question as the modal title, generalized @subject). Comment plumbing (back=wall streams, live count broadcast, reply notifications with "a Pulse answer" copy) all worked untouched — the record-generic design paying out.
+- **Edit-in-modal**: the card menu's Edit fetches the composer into the wall's modal (`circles/walls/edits#show`, author-gated); saves submit the ordinary messages#update with back=wall → land back on the wall. Save/Never mind live in the modal footer driving the form by id. Byline finalized: "name · Title" then the time_ago receipt on its own line. Scroll-lock experiment on modals added then reverted at Ben's call (native behavior stands).
+- pages touched: (log only)
+- refs: ../app/controllers/circles/walls/threads_controller.rb, ../app/controllers/circles/walls/edits_controller.rb, ../app/views/circles/walls/
+
 ## [2026-08-06] build | Wall polish round: inline titles, card menus, tooltips, standard-view parity
 - **Inline heading**: card titles ride the byline ("name · time · Title"), still real h3s. Trap found: the base reset `img, svg { display: block }` breaks any icon in inline flow (never seen before — every other icon lives in a flex row); `.wall__title .lucide` re-inlines.
 - **Card context menu** (⋯, capability-gated): author = Edit + trash, circle owner = trash, member = none. The viewer's CAPABILITIES (not identity) join the cache key, so menus never leak across roles while same-role viewers share fragments.

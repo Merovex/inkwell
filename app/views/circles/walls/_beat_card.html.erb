@@ -1,10 +1,10 @@
-<%# locals: (circle:, record:, beat:, pulse_record:, boosts:) %>
+<%# locals: (circle:, record:, beat:, pulse_record:, comment_count:, boosts:) %>
 <%# A pulse answer as a wall story: the answerer's byline, the QUESTION as
     the title (the door to that ask-day on the pulse page), the answer
-    clamped like any card body, boost chips live like a message's. Cached on
-    the beat version + answerer + pulse version + boosts. %>
+    clamped like any card body, comments + boost chips live like a message's.
+    Cached on the beat version + answerer + pulse version + count + boosts. %>
 <% pulse = pulse_record.recordable %>
-<% cache [ "wall-beat", beat, record.creator, pulse, boosts ] do %>
+<% cache [ "wall-beat", beat, record.creator, pulse, comment_count, boosts ] do %>
   <article class="wall__card">
     <header class="wall__byline">
       <span class="avatar" aria-hidden="true"><%= avatar_content(record.creator) %></span>
@@ -23,6 +23,8 @@
     </header>
     <div class="prose u-clamp wall__body"><%= beat.content %></div>
     <footer class="wall__footer">
+      <%# Opens the beat's thread modal; live comment broadcasts replace it. %>
+      <%= render "circles/walls/comment_count", record: record, count: comment_count %>
       <%= link_to circle_pulse_path(circle, pulse_record, day: beat.asked_on.iso8601) do %>
         <%= inline_svg_tag "lucide/activity.svg", class: "lucide", size: "14px" %>
         Pulse check · <%= l beat.asked_on, format: :short %>

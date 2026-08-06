@@ -8,7 +8,7 @@
     <dialog class="modal wall-thread" data-dialog-target="modal" data-action="click->dialog#backdrop"
             aria-labelledby="wall-thread-title">
       <div class="modal__header">
-        <span class="modal__title" id="wall-thread-title"><%= @message.title %></span>
+        <span class="modal__title" id="wall-thread-title"><%= @title %></span>
         <button type="button" class="button button--icon button--ghost" data-action="dialog#close" aria-label="Close">
           <%= inline_svg_tag "lucide/x.svg", class: "lucide", size: "20px" %>
         </button>
@@ -20,11 +20,11 @@
           <span>
             <span class="u-text-strong"><%= @record.creator.display_name %></span>
             <span class="wall__meta">·
-              <%= time_ago_tag(@message.published_at || @message.created_at) %>
+              <%= time_ago_tag(@subject.try(:published_at) || @subject.created_at) %>
             </span>
           </span>
         </p>
-        <div class="prose"><%= @message.content %></div>
+        <div class="prose"><%= @subject.content %></div>
 
         <%# The boost strip is its own turbo frame: submits redirect to the
             message page and only the strip swaps, so the modal stays put. %>

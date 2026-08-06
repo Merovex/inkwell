@@ -23,7 +23,10 @@ module Circles
 
       prepare_messages(@items.filter_map { |i| i[:message] })
       prepare_beats(@items.filter_map { |i| i[:beat] })
-      @boosts_by_record = Boost.where(record_id: @records_by_message.values.map(&:id) + @beat_records.keys)
+      item_record_ids = @records_by_message.values.map(&:id) + @beat_records.keys
+      @comment_counts = @circle.records.active.comments
+        .where(parent_id: item_record_ids).group(:parent_id).count
+      @boosts_by_record = Boost.where(record_id: item_record_ids)
         .includes(creator: { avatar_attachment: :blob }).group_by(&:record_id)
 
       # First page only: the Commons affixes the platform's announcements, and
@@ -67,9 +70,6 @@ module Circles
         records = Record.where(id: messages.map(&:record_id))
           .includes(:bucket, creator: { avatar_attachment: :blob }).index_by(&:id)
         @records_by_message = messages.index_with { |message| records[message.record_id] }
-
-        @comment_counts = @circle.records.active.comments
-          .where(parent_id: records.keys).group(:parent_id).count
       end
 
       # A beat's card needs its record (answerer) and its pulse (the title).
