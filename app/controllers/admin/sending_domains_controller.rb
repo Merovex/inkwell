@@ -6,6 +6,7 @@
 class Admin::SendingDomainsController < Admin::BaseController
   def index
     load_domains
+    repoll_if_stale
   end
 
   def create
@@ -33,5 +34,13 @@ class Admin::SendingDomainsController < Admin::BaseController
   private
     def load_domains
       @domains = Current.account.sending_domains.connected.order(:domain)
+    end
+
+    # Same revival as Admin::CustomDomainsController#repoll_if_stale: the poll
+    # dies ~2.6h after connect, DNS lands on the author's clock, and this page
+    # is where they come to check.
+    def repoll_if_stale
+      return unless @domains.any? { |d| d.verifying? && (d.last_checked_at.nil? || d.last_checked_at < 10.minutes.ago) }
+      SendingDomainStatusJob.perform_later(Current.account)
     end
 end

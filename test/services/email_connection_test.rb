@@ -112,6 +112,17 @@ class EmailConnectionTest < ActiveSupport::TestCase
     assert_match(/already connected/, result.error)
   end
 
+  test "connect refuses a second domain while one is connected" do
+    accounts(:merovex).sending_domains.create!(domain: "news.merovex.press", status: "live")
+
+    result = EmailConnection.connect(account: accounts(:merovex), input: "mail.merovex.press", client: FakeClient.new)
+    assert_not result.ok?
+    assert_match(/Disconnect news\.merovex\.press first/, result.error)
+
+    # The SAME domain stays connectable — the retry/adopt path.
+    assert EmailConnection.connect(account: accounts(:merovex), input: "news.merovex.press", client: FakeClient.new).ok?
+  end
+
   test "connect surfaces a bad domain as an error, not an exception" do
     result = EmailConnection.connect(account: accounts(:merovex), input: "not a domain", client: FakeClient.new)
     assert_not result.ok?

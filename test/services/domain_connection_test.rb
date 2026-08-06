@@ -59,6 +59,18 @@ class DomainConnectionTest < ActiveSupport::TestCase
     assert_equal 0, accounts(:merovex).custom_domains.count
   end
 
+  test "connect refuses a second domain while one is connected" do
+    fake = FakeClient.new
+    DomainConnection.connect(account: accounts(:merovex), input: "merovex.press", client: fake)
+
+    result = DomainConnection.connect(account: accounts(:merovex), input: "other.example", client: fake)
+    assert_not result.ok?
+    assert_match(/Disconnect merovex\.press first/, result.error)
+
+    # Reconnecting the SAME apex reuses its rows — the retry path.
+    assert DomainConnection.connect(account: accounts(:merovex), input: "merovex.press", client: fake).ok?
+  end
+
   test "connect surfaces a bad domain as an error, not an exception" do
     result = DomainConnection.connect(account: accounts(:merovex), input: "not a domain", client: FakeClient.new)
     assert_not result.ok?

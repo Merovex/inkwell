@@ -92,9 +92,12 @@
       </section>
     <% end %>
 
+    <%# One sending domain per site (EmailConnection enforces it) — the connect
+        card only appears when nothing is connected. %>
+    <% if @domains.none? %>
     <section class="card" aria-label="Connect a sending domain">
       <header class="card__header">
-        <h2 class="card__title"><%= @domains.any? ? "Connect a different sending domain" : "Send from your own domain" %></h2>
+        <h2 class="card__title">Send from your own domain</h2>
       </header>
       <div class="card__body u-stack">
         <p class="u-text-muted">Connect a subdomain of a domain you own (e.g.
@@ -113,6 +116,7 @@
         <% end %>
       </div>
     </section>
+    <% end %>
   </div>
   <% end %>
 

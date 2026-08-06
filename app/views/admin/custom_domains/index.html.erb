@@ -81,9 +81,12 @@
     </section>
   <% end %>
 
+    <%# One domain per site (DomainConnection enforces it) — the connect card
+        only appears when nothing is connected. %>
+    <% if @domains.none? %>
     <section class="card" aria-label="Connect a domain">
       <header class="card__header">
-        <h2 class="card__title"><%= @domains.any? ? "Connect a different domain" : "Connect your domain" %></h2>
+        <h2 class="card__title">Connect your domain</h2>
       </header>
       <div class="card__body u-stack">
         <p class="u-text-muted">Enter the domain you own (e.g. <code>merovex.press</code>). We register it and its
@@ -99,6 +102,7 @@
         <% end %>
       </div>
     </section>
+    <% end %>
   </div>
   <% end %>
 

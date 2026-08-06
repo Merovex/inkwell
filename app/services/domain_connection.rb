@@ -30,6 +30,11 @@ class DomainConnection
     if (taken = hostnames.find { |h| claimed_elsewhere?(h) })
       return failure("#{taken} is already connected to another site")
     end
+    # One domain per site. Reconnecting the same apex reuses its rows (the
+    # retry path); a different one needs a disconnect first.
+    if (current = @account.custom_domains.connected.where.not(hostname: hostnames).first)
+      return failure("Disconnect #{current.hostname.delete_prefix("www.")} first — a site serves from one domain")
+    end
 
     domains = hostnames.map { |hostname| provision(hostname, canonical: hostname == parsed.canonical) }
     CustomDomainStatusJob.set(wait: 30.seconds).perform_later(@account)

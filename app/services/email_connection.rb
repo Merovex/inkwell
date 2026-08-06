@@ -54,6 +54,11 @@ class EmailConnection
     return failure("Connect a subdomain like news.#{hostname} — sending from the bare domain would tie your root domain's email reputation to the newsletter") unless subdomain?(hostname)
     return failure("That's our domain — connect a subdomain of a domain you own") if ours?(hostname)
     return failure("#{hostname} is already connected to another site") if claimed_elsewhere?(hostname)
+    # One sending domain per site. Reconnecting the SAME domain stays allowed —
+    # that's the retry/adopt path; a different one needs a disconnect first.
+    if (current = @account.sending_domains.connected.where.not(domain: hostname).first)
+      return failure("Disconnect #{current.domain} first — a site sends from one domain")
+    end
 
     tokens = @client.create_identity(hostname, config_set: marketing_config_set)
     mail_from = "#{MAIL_FROM_PREFIX}.#{hostname}"

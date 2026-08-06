@@ -5,6 +5,7 @@
 class Admin::CustomDomainsController < Admin::BaseController
   def index
     load_domains
+    repoll_if_stale
   end
 
   def create
@@ -31,7 +32,17 @@ class Admin::CustomDomainsController < Admin::BaseController
 
   private
     def load_domains
-      @domains = Current.account.custom_domains.connected.order(:canonical => :desc, :hostname => :asc)
+      @domains = Current.account.custom_domains.connected.order(canonical: :desc, hostname: :asc)
       @cname_target = Rails.configuration.x.cloudflare.cname_target
+    end
+
+    # The status poll re-enqueues itself for only ~2.6h after connect; authors
+    # publish DNS on their own clock, so a row can validate after the poll
+    # dies and freeze at "verifying". The author checking this page is the
+    # natural retry signal — restart the poll when the row's gone stale (the
+    # job touches last_checked_at every pass, so this can't storm).
+    def repoll_if_stale
+      return unless @domains.any? { |d| d.verifying? && (d.last_checked_at.nil? || d.last_checked_at < 10.minutes.ago) }
+      CustomDomainStatusJob.perform_later(Current.account)
     end
 end
