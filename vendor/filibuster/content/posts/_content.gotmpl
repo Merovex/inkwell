@@ -3,11 +3,13 @@
 {{ if ne (int ($data.contract_version | default 0)) (int hugo.Data.theme.contract_version) }}
   {{ errorf "posts.json: theme expects contract_version %v, got %v" hugo.Data.theme.contract_version $data.contract_version }}
 {{ end }}
+{{/* Hugo's content adapter only honors dates nested under "dates" — a
+     top-level "date" is silently dropped and pages sort as zero-date. */}}
 {{ range $data.posts }}
   {{ $.AddPage (dict
       "path" .slug
       "title" .title
-      "date" (time .published_at)
+      "dates" (dict "date" (time .published_at))
       "content" (dict "mediaType" "text/html" "value" .body_html)
       "params" .
   ) }}

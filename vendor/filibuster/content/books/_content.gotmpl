@@ -7,11 +7,12 @@
 {{ if ne (int ($data.contract_version | default 0)) (int hugo.Data.theme.contract_version) }}
   {{ errorf "books.json: theme expects contract_version %v, got %v" hugo.Data.theme.contract_version $data.contract_version }}
 {{ end }}
+{{/* Dates nest under "dates" — a top-level "date" is silently dropped. */}}
 {{ range $data.books }}
   {{ $.AddPage (dict
       "path" .slug
       "title" .title
-      "date" (time .publication_date)
+      "dates" (dict "date" (time .publication_date))
       "content" (dict "mediaType" "text/html" "value" .description_html)
       "params" .
   ) }}

@@ -2,6 +2,15 @@
 
 Append-only. Newest first. Format defined in [[CLAUDE]] (`CLAUDE.md`).
 
+## [2026-08-05] fix | Live-fire publishing shook out three bugs (www.merovex.press is serving static)
+- **Born-published posts never triggered a rebuild**: the posts controller creates+publishes in one transaction, which commits as a CREATE — `after_update_commit` never fired. Now `after_create_commit :schedule_site_build_if_born_published` covers it (distinct method name deliberately: a second after_*_commit registering the same symbol silently replaces the first — that trap ate the first fix attempt).
+- **Post/book lists sorted reverse-alphabetically, not by date**: Hugo's content-adapter `AddPage` only honors dates nested under a `"dates"` dict; the top-level `"date"` key was silently dropped, every page got a zero date, and `.ByDate.Reverse` fell through to the title tiebreak. Fixed in the posts and books `_content.gotmpl` adapters.
+- **Generator signature**: `disableHugoGeneratorInject = true` in the exporter's hugo.toml; baseof.html emits `<meta name="generator" content="Kindred Quill">` on every page.
+- State of the world: **www.merovex.press serves the static build live** (its CNAME + TXT validated and Cloudflare went active); apex still serves the dynamic Rails site until the A-record flip. The static theme degrades gracefully — newsletter is a mailto: fallback, so no broken forms.
+- Also this session: Domain tab in System settings (see prior entry), poll job now backfills the DV-TXT records Cloudflare mints asynchronously.
+- pages touched: (log only)
+- refs: ../app/models/record.rb, ../vendor/filibuster/content/posts/_content.gotmpl, ../vendor/filibuster/content/books/_content.gotmpl, ../app/models/exporter.rb, ../app/jobs/custom_domain_status_job.rb
+
 ## [2026-08-05] build | Domain tab in System settings — self-serve custom-domain onboarding wired to the build
 - **Domain joined the System settings tab bar** (Identity | About | Privacy | Terms | Domain). The connect/disconnect forms can't nest inside the settings form, so the Domain tab is a *link segment* to `admin/custom_domains`, which wears the identical chrome — same h1, same five-segment control with Domain active and the other four linking back via `?tab=` deep-links. `segmented_tabs` learned `href:` entries (link segments outside the Stimulus roving-tabindex) and `selected:`.
 - **The domain field now drives the build**: `Account` schedules `SiteBuildJob` on `saved_change_to_domain?` — the go-live stamp re-renders every asset/link against `https://<domain>/`; `DomainConnection.disconnect` clears the bridged `account.domain`, which re-renders back to the slug-path baseURL. One field → baseof's baseURL → KV/DNS, end to end.
