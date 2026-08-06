@@ -2,6 +2,9 @@
 
 Append-only. Newest first. Format defined in [[CLAUDE]] (`CLAUDE.md`).
 
+## [2026-08-06] note | Deployed: 98 mobile (FCP 1.5s, LCP 2.3s) — 98/100/100/100, linked CSS intact
+- The vendored-fonts build landed: 70 → 86 → **98**. Remaining 2pts = lab noise + the CF Insights beacon (owner's dashboard toggle). No further score-chasing warranted.
+
 ## [2026-08-06] build | Performance pass: 70 → 86 mobile, fonts now vendored (zero third-party)
 - **CLS fix (the 70→86)**: every contract image now renders through the theme's one `img` partial, stamping real width/height from the exporter's new `data/image_sizes.json` (vips-measured at export). CLS 0.228 → 0.031. The active hero background (hero_bg axis) is eager+fetchpriority=high — it's the LCP element; the CSS-hidden variant stays lazy.
 - **Fonts vendored, Option A**: all 22 pairings downloaded ONCE by `vendor/filibuster/bin/vendor-fonts` (subset css2 per pairing, woff2s into `assets/fonts/files/`, urls rewritten same-origin) and committed — builds never touch Google. Fonts live in Hugo `assets/` (publish-on-reference): each build carries only its pairing (~600KB all subsets; visitors fetch ~115KB latin). Designer preview keeps the Google link (live pairing switching; owner-approved). The rejected alternative — Rails fetching at export (FontKit) — was built then reverted: owner wants the pipeline network-free.

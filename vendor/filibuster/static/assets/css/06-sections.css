@@ -84,9 +84,15 @@ html[data-cards="carousel"] .fk-series-list.is-dragging {
   user-select: none;
 }
 html[data-cards="carousel"] .fk-series-list img { -webkit-user-drag: none; }
-/* Edge treatment: cards entering/leaving the band fade and shrink.
-   Scroll-driven animation — pure CSS, degrades to no-fade where the
-   timeline isn't supported. */
+/* Edge treatment: the band dissolves at its ends via a MASK on the scroll
+   container, and cards shrink slightly as they enter/leave (scroll-driven,
+   degrades to no-shrink where the timeline isn't supported). The fade must
+   NOT be per-card opacity: that fails WCAG contrast on the edge cards'
+   still-interactive title links (audited at 0.3 opacity = ~2:1). */
+html[data-cards="carousel"] .fk-series-list {
+  mask-image: linear-gradient(to right,
+    transparent, black 2.5rem, black calc(100% - 2.5rem), transparent);
+}
 @supports (animation-timeline: view()) {
   html[data-cards="carousel"] .fk-series,
   html[data-cards="carousel"] .fk-series:nth-child(even) {
@@ -94,8 +100,8 @@ html[data-cards="carousel"] .fk-series-list img { -webkit-user-drag: none; }
     animation-timeline: view(inline);
   }
   @keyframes fk-carousel-edge {
-    0%, 100% { opacity: 0.3; transform: scale(0.92); }
-    18%, 82% { opacity: 1; transform: scale(1); }
+    0%, 100% { transform: scale(0.92); }
+    18%, 82% { transform: scale(1); }
   }
 }
 html[data-cards="carousel"] .fk-series,
