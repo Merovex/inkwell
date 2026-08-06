@@ -3,12 +3,45 @@ require "test_helper"
 class AdminSendingDomainsTest < ActionDispatch::IntegrationTest
   include ActiveJob::TestHelper
 
+  # Answers every poll with the given statuses (the job test's fake, local so
+  # this file runs standalone).
+  class FakeSes
+    def initialize(dkim_status:, mail_from_status:) = (@dkim, @mail_from = dkim_status, mail_from_status)
+
+    def get_identity(domain)
+      Ses::Client::Identity.new(dkim_tokens: %w[ tok1 tok2 tok3 ],
+        dkim_status: @dkim, mail_from_status: @mail_from)
+    end
+  end
+
   test "index revives a dead status poll for a stale verifying domain" do
     accounts(:merovex).sending_domains.create!(domain: "news.merovex.press", status: "verifying",
       last_checked_at: 3.hours.ago)
     sign_in_as users(:admin)
 
     assert_enqueued_with(job: SendingDomainStatusJob) { get admin_sending_domains_path }
+  end
+
+  test "the check badge re-polls inline and reports the verification" do
+    accounts(:merovex).sending_domains.create!(domain: "news.merovex.press", status: "verifying",
+      last_checked_at: Time.current)
+    SendingDomainStatusJob.client_override = FakeSes.new(dkim_status: "SUCCESS", mail_from_status: "SUCCESS")
+    sign_in_as users(:admin)
+
+    post admin_sending_domain_check_path
+    assert_redirected_to admin_sending_domains_path
+    assert_match(/verified/, flash[:notice])
+    assert accounts(:merovex).sending_domains.reload.all?(&:live?)
+  ensure
+    SendingDomainStatusJob.client_override = nil
+  end
+
+  test "a verifying domain shows the retry check badge" do
+    accounts(:merovex).sending_domains.create!(domain: "news.merovex.press", status: "verifying",
+      last_checked_at: Time.current)
+    sign_in_as users(:admin)
+    get admin_sending_domains_path
+    assert_select "form[action=?] button.check-badge", admin_sending_domain_check_path
   end
 
   test "index renders the sending address, handle form, and connect form" do

@@ -2,6 +2,15 @@
 
 Append-only. Newest first. Format defined in [[CLAUDE]] (`CLAUDE.md`).
 
+## [2026-08-06] build | Domain-tab polish: one domain per site, dead-poll revival, retry badge, composer frame back
+- **Provisioned live**: kindredquill.email identity created in SES via `email:provision` (new `inkwell-ses-tenancy` IAM policy on the runtime user — the long-term shape; inkwell-provisioner slated for deletion). Rake creds now honor AWS_PROFILE (explicit `credentials: nil` suppresses the SDK chain — must omit the key). news.merovex.press connected + adopted through the Email tab in production; tenant `site-W8YRHR` live.
+- **One domain per site** (Ben): connect card hidden when a domain exists; enforced in DomainConnection + EmailConnection ("Disconnect X first"); same-domain reconnect stays allowed (retry/adopt path).
+- **Dead-poll revival**: the status polls die ~2.6h after connect (20 attempts, 600s cap) and rows freeze at "verifying" — the bug behind the stale merovex.press "Waiting for DNS". Both index pages now re-enqueue the poll when a verifying row is >10min stale.
+- **Check badge**: "Waiting for DNS" is now a button (`shared/check_badge`, rotate-ccw lucide icon) POSTing `admin/*_domain_check` — runs the poll inline, redirect reports the outcome.
+- **Composer frame restored** (Ben: borderless rich text "unnerving"; About field is the reference): dropped the frameless override in lexxy-theme.css so the gem's default lexxy-editor frame shows in the post composer.
+- pages touched: (log only)
+- refs: ../app/services/email_connection.rb, ../app/services/domain_connection.rb, ../app/controllers/admin/custom_domain_checks_controller.rb, ../app/views/shared/_check_badge.html.erb, ../app/assets/stylesheets/lexxy-theme.css, ../lib/tasks/email.rake
+
 ## [2026-08-06] build | Per-site SES tenants + BYOD sending domains + handles shipped
 - Morning questions locked (recorded in [[email-tenant-byod-plan]]): MAIL FROM `bounce.<domain>`; shared From is **`<handle>@kindredquill.email` — the apex, superseding `mail.`**, handle user-chosen with limits (NOT slug), fallback `noreply@`; tab label "Email"; platform stamping folded in ("each account [is] a tenant… so their reputation falls into their own tenant").
 - Data: `accounts.ses_tenant_provisioned_at` + unique `accounts.handle`; `sending_domains` table (CustomDomain's email twin). `Account#ses_tenant_name` = `site-<slug>` (derived, never stored); `#broadcast_address`/`#broadcast_from` resolve BYOD → handle → noreply; handle limits = 3–30 chars, lowercase/digits/hyphens, reserved list.

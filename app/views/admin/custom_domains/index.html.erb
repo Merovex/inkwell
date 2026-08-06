@@ -23,7 +23,7 @@
         <% if all_live %>
           <span class="badge badge--success">Live</span>
         <% else %>
-          <span class="badge badge--warning">Waiting for DNS</span>
+          <%= render "shared/check_badge", url: admin_custom_domain_check_path %>
         <% end %>
       </header>
 

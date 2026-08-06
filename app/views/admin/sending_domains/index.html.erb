@@ -43,7 +43,7 @@
           <% if domain.live? %>
             <span class="badge badge--success">Verified</span>
           <% else %>
-            <span class="badge badge--warning">Waiting for DNS</span>
+            <%= render "shared/check_badge", url: admin_sending_domain_check_path %>
           <% end %>
         </header>
 

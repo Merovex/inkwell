@@ -1,7 +1,7 @@
 /*
- * Composer — the borderless write/edit surface for a recordable (posts,
- * messages): big bare title input + frameless Lexxy editor whose toolbar
- * runs the full width under a hairline.
+ * Composer — the write/edit surface for a recordable (posts, messages): big
+ * bare title input above a framed Lexxy editor (the gem's default border,
+ * matching every other rich_textarea — see lexxy-theme.css).
  *
  * Structure (BEM): form.composer > .composer__title [+ .composer__category]
  * + lexxy-editor
@@ -59,9 +59,8 @@
      bar; the floor keeps the prompt readable on narrow screens. */
   .composer__category { inline-size: clamp(var(--size-13), 25%, 100%); }
 
-  /* Editor frame-stripping lives in lexxy-theme.css — it must be UNLAYERED to
-     beat the gem's unlayered frame (CLAUDE.md cascade hazards). Only the
-     layout role stays here: grow to fill the composer's remaining height
+  /* The editor's frame comes from the gem (see lexxy-theme.css). Only the
+     layout role lives here: grow to fill the composer's remaining height
      (down to the viewport bottom on .canvas--fill pages); the flex item's
      content min-height then pushes the page taller only once the prose
      overflows — no fixed calc to tune. */

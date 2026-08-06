@@ -53,25 +53,20 @@
 }
 
 /*
- * Composer: frameless editor. These declarations MUST be unlayered and load
- * after the gem sheet (CLAUDE.md cascade hazards): the gem sets the frame on
- * :where(lexxy-editor) UNLAYERED, which beats any @layer rule — composer.css
- * once carried these in @layer components, where they silently lost.
+ * Composer: the editor wears the gem's default frame — the same border every
+ * other rich_textarea gets (the settings About field is the reference; a
+ * borderless rich-text surface reads as broken — decided 2026-08-06,
+ * reversing the earlier frameless look). The gem frames :where(lexxy-editor)
+ * UNLAYERED, so restoring it means NOT overriding it: no frame rules here.
  */
-.composer lexxy-editor {
-  background: transparent;
-  border: none;
-  border-radius: 0;
-  /* Keep the text off the edges now the frame is gone; inline inset lines the
-     body up with the title above. */
-  --lexxy-editor-padding: var(--u-pad);
-}
 
 /*
  * Write/read typography parity: the composer body types at the rhythm .prose
  * renders — the reading line-height and paragraph spacing — so what you write
- * is exactly what readers see. Unlayered for the same reason as the frame
- * rules above. Compact editors (comments, chat) keep Lexxy's tighter rhythm.
+ * is exactly what readers see. MUST be unlayered and load after the gem sheet
+ * (CLAUDE.md cascade hazards): the gem's unlayered frame rules beat any
+ * @layer rule — these once sat in composer.css's @layer components, where
+ * they silently lost. Compact editors (comments, chat) keep Lexxy's rhythm.
  */
 .composer lexxy-editor {
   line-height: var(--font-lineheight-4);

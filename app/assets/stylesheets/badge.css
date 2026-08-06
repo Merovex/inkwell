@@ -20,4 +20,17 @@
   .badge--success { background: var(--success-surface); color: var(--success-ink); }
   .badge--warning { background: var(--warning-surface); color: var(--warning-ink); }
   .badge--danger  { background: var(--danger-surface);  color: var(--danger-ink); }
+
+  /* .check-badge — the "Waiting for DNS" badge as a real retry button
+     (shared/check_badge): rotate-ccw icon + status text, POSTs a fresh status
+     check. Hover/focus deepen the pill so it reads as pressable. */
+  .check-badge {
+    border: 0;
+    font-family: inherit;
+    cursor: pointer;
+  }
+  .check-badge:hover,
+  .check-badge:focus-visible {
+    background: color-mix(in oklab, var(--warning-surface) 80%, var(--warning-ink));
+  }
 }

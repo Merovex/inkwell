@@ -39,5 +39,4 @@ class UserTest < ActiveSupport::TestCase
     assert_not user.valid?
     assert_match(/smaller than 5 MB/, user.errors[:avatar].to_sentence)
   end
-
 end

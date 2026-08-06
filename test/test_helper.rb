@@ -22,7 +22,5 @@ module ActiveSupport
     # Mirror the middleware's resolution: tests run inside the fixture
     # account unless they say otherwise (Current resets between tests).
     setup { Current.account = accounts(:merovex) }
-
-
   end
 end

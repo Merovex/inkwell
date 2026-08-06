@@ -1,0 +1,10 @@
+<%# The "Waiting for DNS" badge as a real retry button (.check-badge in
+    badge.css): rotate-ccw icon + status text. POSTs to `url` — a *_check
+    resource whose create re-runs the status poll inline, so the redirect
+    reports the outcome immediately. The visible text is the accessible name;
+    the button semantics + icon carry the "press to re-check" affordance. %>
+<%# locals: (url:, label: "Waiting for DNS") %>
+<%= button_to url, class: "badge badge--warning check-badge", title: "Check again now" do %>
+  <%= inline_svg_tag "lucide/rotate-ccw.svg", class: "lucide", size: "14px" %>
+  <span><%= label %></span>
+<% end %>

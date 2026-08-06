@@ -3,6 +3,16 @@ require "test_helper"
 class AdminCustomDomainsTest < ActionDispatch::IntegrationTest
   include ActiveJob::TestHelper
 
+  # Answers every poll with the given statuses (the job test's fake, local so
+  # this file runs standalone).
+  class FakeCloudflare
+    def initialize(status:, ssl_status:) = (@status, @ssl_status = status, ssl_status)
+
+    def get_custom_hostname(id)
+      Cloudflare::CustomHostname.new("id" => id, "status" => @status, "ssl" => { "status" => @ssl_status })
+    end
+  end
+
   test "index revives a dead status poll for a stale verifying domain" do
     accounts(:merovex).custom_domains.create!(hostname: "www.merovex.press", canonical: true,
       status: "verifying", cloudflare_id: "id", last_checked_at: 3.hours.ago)
@@ -17,6 +27,20 @@ class AdminCustomDomainsTest < ActionDispatch::IntegrationTest
     sign_in_as users(:admin)
 
     assert_no_enqueued_jobs(only: CustomDomainStatusJob) { get admin_custom_domains_path }
+  end
+
+  test "the check badge re-polls inline and reports the flip" do
+    accounts(:merovex).custom_domains.create!(hostname: "www.merovex.press", canonical: true,
+      status: "verifying", cloudflare_id: "id", last_checked_at: Time.current)
+    CustomDomainStatusJob.client_override = FakeCloudflare.new(status: "active", ssl_status: "active")
+    sign_in_as users(:admin)
+
+    post admin_custom_domain_check_path
+    assert_redirected_to admin_custom_domains_path
+    assert_match(/live/, flash[:notice])
+    assert accounts(:merovex).custom_domains.reload.all?(&:live?)
+  ensure
+    CustomDomainStatusJob.client_override = nil
   end
 
   test "index renders the connect form" do

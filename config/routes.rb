@@ -302,6 +302,12 @@ Rails.application.routes.draw do
       resources :sending_domains, only: %i[index create destroy]
       resource :handle, only: :update
 
+      # The "Try again" badge on a verifying domain: POST creates a fresh
+      # status check — the poll runs inline and the redirect reports the
+      # outcome, instead of the author waiting on the background cadence.
+      resource :custom_domain_check, only: :create
+      resource :sending_domain_check, only: :create
+
       # The SiteDesigner (ADR 0022, docs/site-designer.md): the author designs
       # the public site against a live preview. The working design lives in
       # localStorage until Save (PATCH designer) graduates it to the account,
