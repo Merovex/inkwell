@@ -12,7 +12,7 @@
       <%= f.text_area :content, value: @chat_line.content.to_plain_text, rows: 2, class: "chat__input",
             aria: { label: "Chat line" },
             data: { controller: "chat-composer", action: "keydown.enter->chat-composer#send" } %>
-      <div class="u-cluster">
+      <div class="form__action">
         <%= f.submit "Save changes", class: "button button--primary" %>
         <%= link_to "Never mind", admin_chatroom_path, class: "button" %>
       </div>

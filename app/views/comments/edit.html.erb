@@ -16,7 +16,7 @@
                   autosave_key_value: "Record/#{@record.id}/edit",
                   autosave_revision_value: @record.recordable_id } do |f| %>
       <%= f.rich_textarea :content, "aria-label": "Comment" do %><%= mention_prompt(@record.bucket) %><% end %>
-      <div class="u-cluster">
+      <div class="form__action">
         <%= f.submit "Save changes", class: "button button--primary" %>
         <%= link_to "Never mind", commentable_path(@parent), class: "button" %>
       </div>

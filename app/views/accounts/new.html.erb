@@ -10,7 +10,9 @@
     <%= form_with model: @account, url: accounts_path, class: "field" do |f| %>
       <%= f.label :name, "Site name", class: "field__label" %>
       <%= f.text_field :name, class: "field__control", placeholder: "Merovex Press", required: true, autofocus: true, autocomplete: "off" %>
-      <%= f.submit "Create site", class: "button button--primary u-full-width", style: "margin-block-start: var(--u-pad);" %>
+      <div class="form__action">
+        <%= f.submit "Create site", class: "button button--primary u-full-width" %>
+      </div>
     <% end %>
   </div>
 </div>

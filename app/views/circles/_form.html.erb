@@ -13,7 +13,7 @@
           placeholder: "What's this circle for?" %>
   </div>
 
-  <div class="u-cluster">
+  <div class="form__action">
     <%= f.submit submit, class: "button button--primary" %>
     <%= link_to "Cancel", (circle.persisted? ? circle_path(circle) : circles_path), class: "button" %>
   </div>

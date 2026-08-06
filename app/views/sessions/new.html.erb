@@ -22,7 +22,9 @@
           </div>
           <span class="field__hint">Enter the eight letters from your email — pasting the code works too.</span>
         </div>
-        <%= f.submit "Sign in", class: "button button--primary u-full-width", style: "margin-block-start: var(--u-pad);" %>
+        <div class="form__action">
+          <%= f.submit "Sign in", class: "button button--primary u-full-width" %>
+        </div>
       <% end %>
 
       <%= link_to "Use a different email", new_session_path, class: "u-text-muted" %>
@@ -36,7 +38,9 @@
         <%= invisible_captcha %>
         <%= f.label :email_address, "Email", class: "field__label" %>
         <%= f.email_field :email_address, class: "field__control", placeholder: "you@example.com", required: true, autofocus: true, autocomplete: "email" %>
-        <%= f.submit "Send magic link", class: "button button--primary", style: "margin-block-start: var(--u-pad);" %>
+        <div class="form__action">
+          <%= f.submit "Send magic link", class: "button button--primary" %>
+        </div>
       <% end %>
 
       <%= link_to "Have an invite code? Sign up", new_signup_path, class: "u-text-muted" %>

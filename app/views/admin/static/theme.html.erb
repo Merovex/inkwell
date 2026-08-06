@@ -231,9 +231,11 @@
             <input class="field__control" id="sg-dis" type="text" value="Read-only" disabled>
           </div>
 
-          <div class="u-cluster u-cluster-between">
-            <button class="button button--ghost">Cancel</button>
+          <%# Every form ends its buttons in a .form__action block — it owns
+              the breathing room above the actions (never margins on buttons). %>
+          <div class="form__action">
             <button class="button button--primary">Save</button>
+            <button class="button button--ghost">Cancel</button>
           </div>
         </div>
       </div>

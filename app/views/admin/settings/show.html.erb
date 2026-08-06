@@ -114,8 +114,9 @@
             { id: "email", label: "Email", href: admin_sending_domains_path },
           ], aria_label: "Settings sections", selected: params[:tab] %>
 
-      <%= f.submit "Save", class: "button button--primary u-margin-block-start",
-            data: { dirty_form_target: "submit" } %>
+      <div class="form__action">
+        <%= f.submit "Save", class: "button button--primary", data: { dirty_form_target: "submit" } %>
+      </div>
     <% end %>
   </section>
 </div>

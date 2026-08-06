@@ -19,7 +19,9 @@
         <%= f.email_field :email_address, class: "field__control", placeholder: "you@example.com", required: true,
               autofocus: @signup.invite_code.present?, autocomplete: "email" %>
       </div>
-      <%= f.submit "Sign up", class: "button button--primary u-full-width" %>
+      <div class="form__action">
+        <%= f.submit "Sign up", class: "button button--primary u-full-width" %>
+      </div>
     <% end %>
 
     <%= link_to "Already have an account? Sign in", new_session_path, class: "u-text-muted" %>

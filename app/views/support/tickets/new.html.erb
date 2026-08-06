@@ -17,7 +17,7 @@
     <%= f.label :content, "The details", class: "field__label" %>
     <%= f.rich_textarea :content, "aria-label": "The details" %>
   </div>
-  <div class="u-cluster">
+  <div class="form__action">
     <%= f.submit "Open ticket", class: "button button--primary" %>
     <%= link_to "Cancel", tickets_path, class: "button button--ghost" %>
   </div>
