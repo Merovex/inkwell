@@ -52,13 +52,12 @@
     {{ end }}
   {{ end }}
   <link href="{{ $fontsURL }}" rel="stylesheet">
-  {{/* The stylesheet, split into small modules so HTTP/2/3 fetches them in
-       parallel and caches each independently (edit one, the rest stay warm).
-       FILENAME ORDER IS CASCADE ORDER — <link>s apply in DOM order regardless
-       of which finishes downloading first — so keep the numeric prefixes. */}}
-  {{ range slice "01-reset" "02-fonts" "03-palettes" "04-layout" "05-hero" "06-sections" "07-content" "08-chrome" }}
-  <link rel="stylesheet" href="{{ site.Home.RelPermalink }}assets/css/{{ . }}.css">
-  {{ end }}
+  {{/* The stylesheet, split into small modules for authoring, concatenated
+       (FILENAME ORDER IS CASCADE ORDER — keep the numeric prefixes), minified,
+       and INLINED: ~7KB of CSS in the page beats eight render-blocking
+       requests on mobile (PSI measured the request chain at ~1.3s). */}}
+  {{ $bundle := resources.Match "css/*.css" | resources.Concat "css/bundle.css" | minify }}
+  <style>{{ $bundle.Content | safeCSS }}</style>
   {{/* Custom heading/body override (site.json fonts — the designer's escape
        valve past the pairings). Families load at regular weight only:
        variant axes differ per family and one missing variant 400s the whole

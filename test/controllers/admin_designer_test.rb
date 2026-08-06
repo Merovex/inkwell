@@ -4,6 +4,10 @@ require "test_helper"
 # from the theme manifest, and the stateless preview that builds a posted
 # design against real content through the exporter + Hugo pipeline.
 class AdminDesignerTest < ActionDispatch::IntegrationTest
+  # The preview page's markup minus the <head> — the theme inlines its whole
+  # stylesheet there, so fk-* class assertions must not grep the CSS.
+  def page_markup = response.body.split("</head>", 2).last
+
   test "the designer is admin-only: a member gets a 404" do
     sign_in_as users(:bob)
 
@@ -121,7 +125,7 @@ class AdminDesignerTest < ActionDispatch::IntegrationTest
     # button.visible false removes the CTA entirely (no newsletter fallback).
     post admin_designer_preview_path, params: { design: {}, nav: { button: { visible: false } } }, as: :json
     get admin_designer_preview_file_path(path: nil)
-    assert_no_match(/fk-nav-cta/, response.body)
+    assert_no_match(/fk-nav-cta/, page_markup)
   end
 
   test "the preview builds the posted design against published content" do
@@ -180,8 +184,8 @@ class AdminDesignerTest < ActionDispatch::IntegrationTest
     assert_response :no_content
     get admin_designer_preview_file_path(path: nil)
     assert_match(/data-books="?no"?[ >]/, response.body)
-    assert_no_match(/fk-books/, response.body)
-    assert_no_match(/Series by/, response.body)
+    assert_no_match(/fk-books/, page_markup)
+    assert_no_match(/Series by/, page_markup)
     # Only home visibility toggles: the Books nav link (and the books/series
     # pages behind it) stay.
     assert_match(%r{books/"?>Books<}, response.body)
@@ -190,9 +194,9 @@ class AdminDesignerTest < ActionDispatch::IntegrationTest
     post admin_designer_preview_path, params: { design: { hero_home: "no", bio_home: "no" } }, as: :json
     assert_response :no_content
     get admin_designer_preview_file_path(path: nil)
-    assert_no_match(/fk-hero /, response.body)
-    assert_no_match(/fk-author-band/, response.body)
-    assert_match(/fk-books/, response.body)
+    assert_no_match(/fk-hero /, page_markup)
+    assert_no_match(/fk-author-band/, page_markup)
+    assert_match(/fk-books/, page_markup)
   end
 
   test "the hero copy source picks what the hero says" do
@@ -264,7 +268,7 @@ class AdminDesignerTest < ActionDispatch::IntegrationTest
       params: { design: {}, sections: %w[bio hero books posts authors newsletter] }, as: :json
     assert_response :no_content
     get admin_designer_preview_file_path(path: nil)
-    assert_operator response.body.index("fk-author-band"), :<, response.body.index("fk-hero "),
+    assert_operator page_markup.index("fk-author-band"), :<, page_markup.index("fk-hero "),
       "biography should render before the hero"
 
     # Dropping a section through the order block is refused — visibility
@@ -387,15 +391,15 @@ class AdminDesignerTest < ActionDispatch::IntegrationTest
     assert_response :no_content
     get admin_designer_preview_file_path(path: nil)
     # The logo replaces the wordmark; the site title survives as its alt.
-    assert_match(/fk-brand-logo/, response.body)
-    assert_match(/alt="?Merovex Press"?/, response.body)
-    assert_no_match(/fk-brand-name/, response.body)
+    assert_match(/fk-brand-logo/, page_markup)
+    assert_match(/alt="?Merovex Press"?/, page_markup)
+    assert_no_match(/fk-brand-name/, page_markup)
 
     # title_as_alt: false shows the title beside the logo, alt empties.
     post admin_designer_preview_path, params: { design: {}, nav: { title_as_alt: false } }, as: :json
     get admin_designer_preview_file_path(path: nil)
-    assert_match(/fk-brand-name"?>Merovex Press</, response.body)
-    assert_match(/fk-brand-lockup/, response.body)
+    assert_match(/fk-brand-name"?>Merovex Press</, page_markup)
+    assert_match(/fk-brand-lockup/, page_markup)
 
     delete admin_designer_image_path(slot: :logo)
     assert_response :no_content

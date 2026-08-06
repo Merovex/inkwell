@@ -230,6 +230,9 @@ class Exporter
     # No public display needs more than this; authors upload raw camera/stock
     # files (the merovex hero banner shipped at 491KB before the cap).
     IMAGE_LIMIT = [ 1920, 1920 ].freeze
+    # Banners render behind the hero scrim, so they take a far harder squeeze —
+    # noisy stock photography (starfields!) barely compresses at display quality.
+    BANNER_LIMIT = [ 1280, 1280 ].freeze
 
     # Pulls a blob into assets/images/ and returns its workspace-relative
     # path (the form the contract's cover/avatar fields carry), nil if absent.
@@ -240,16 +243,17 @@ class Exporter
     def copy_image(attachment, prefix)
       return nil unless attachment&.attached?
 
-      bytes, ext = image_payload(attachment)
+      bytes, ext = image_payload(attachment, prefix)
       filename = "#{prefix}-#{File.basename(attachment.blob.filename.sanitized, '.*')}#{ext}"
       workspace.join("assets/images").tap(&:mkpath).join(filename).binwrite(bytes)
       "images/#{filename}"
     end
 
-    def image_payload(attachment)
+    def image_payload(attachment, prefix)
       original_ext = File.extname(attachment.blob.filename.sanitized)
       return [ attachment.blob.download, original_ext ] unless attachment.blob.variable?
-      variant = attachment.variant(resize_to_limit: IMAGE_LIMIT, format: :webp, saver: { quality: 82 })
+      limit, quality = prefix == "banner" ? [ BANNER_LIMIT, 55 ] : [ IMAGE_LIMIT, 72 ]
+      variant = attachment.variant(resize_to_limit: limit, format: :webp, saver: { quality: quality })
       [ variant.processed.download, ".webp" ]
     rescue ActiveStorage::Error, ActiveStorage::FileNotFoundError => error
       Rails.logger.warn("[exporter] variant failed for #{attachment.blob.filename}: #{error.message}")

@@ -133,11 +133,14 @@ function headersFor(object, key, buildId) {
   }
   h.set("etag", object.httpEtag);
   h.set("x-kq-build", buildId);
+  // Assets live at STABLE urls whose bytes change when a build publishes, so
+  // no `immutable` — a day of freshness plus a week of serve-stale-while-
+  // revalidating keeps repeat visits fast without freezing rebuilds out.
   h.set(
     "cache-control",
     extOf(key) === "html"
       ? "public, max-age=0, must-revalidate"
-      : "public, max-age=3600",
+      : "public, max-age=86400, stale-while-revalidate=604800",
   );
   return h;
 }
