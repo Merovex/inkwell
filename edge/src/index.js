@@ -21,6 +21,13 @@ const TYPES = {
   pdf: "application/pdf",
 };
 
+// The standard KindredQuill location: on these hosts the first path segment
+// is the account slug (docs/phase-2-static-serving.md §2.5 "apex slug
+// paths") — every site is servable here with no KV entry and no DNS.
+// Custom domains still resolve through the HOSTNAMES KV.
+const PLATFORM_HOSTS = new Set(["sites.kindredquill.com"]);
+const SLUG = /^\/([A-Za-z0-9_-]{1,32})(\/.*)?$/;
+
 export default {
   async fetch(request, env) {
     if (request.method !== "GET" && request.method !== "HEAD") {
@@ -35,13 +42,22 @@ export default {
       .split(":")[0]
       .toLowerCase();
 
-    const slug = await env.HOSTNAMES.get(host, { cacheTtl: 300 });
-    if (!slug) return plain404("No site is configured for this domain.");
+    let slug;
+    let pathname = url.pathname;
+    if (PLATFORM_HOSTS.has(host)) {
+      const m = pathname.match(SLUG);
+      if (!m) return plain404("Sites live at /<site-code>/ on this host.");
+      slug = m[1].toUpperCase();
+      pathname = m[2] || "/";
+    } else {
+      slug = await env.HOSTNAMES.get(host, { cacheTtl: 300 });
+      if (!slug) return plain404("No site is configured for this domain.");
+    }
 
     const buildId = await buildIdFor(slug, env);
     if (!buildId) return plain404("This site has not been published yet.");
 
-    const key = keyForPath(url.pathname);
+    const key = keyForPath(pathname);
     if (!key) return plain404("Not found.");
 
     const prefix = `sites/${slug}/builds/${buildId}/`;

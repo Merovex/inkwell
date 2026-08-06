@@ -1,12 +1,17 @@
-<% content_for :title, "Custom domain — Inkwell" %>
+<% content_for :title, "Domain — System settings — Inkwell" %>
 
-<%= render "admin/shared/canvas_head", crumbs: [["Settings", admin_settings_path], ["Custom domain", nil]] %>
+<%= render "admin/shared/canvas_head", crumbs: [["System settings", admin_settings_path], ["Domain", nil]] %>
 
 <header class="perma-header">
-  <h1 class="perma-header__title">Custom domain</h1>
+  <h1 class="perma-header__title">System settings</h1>
 </header>
 
-<div class="settings u-stack u-stack-double u-margin-block-start u-center u-center-narrow">
+<%# The Domain tab of System settings — a sibling page wearing the same
+    segmented control (its forms can't nest inside the settings form). The
+    other four segments link back, deep-linking their tab. %>
+<div class="settings u-stack u-stack-double u-margin-block-start settings--wide u-center">
+  <% domain_panel = capture do %>
+  <div class="u-stack u-stack-double">
   <% if @domains.any? %>
     <% canonical = @domains.find(&:canonical?) || @domains.first %>
     <% apex = canonical.hostname.delete_prefix("www.") %>
@@ -66,4 +71,14 @@
       <%= f.submit "Connect domain", class: "button button--primary" %>
     <% end %>
   </section>
+  </div>
+  <% end %>
+
+  <%= segmented_tabs [
+        { id: "identity", label: "Identity", href: admin_settings_path },
+        { id: "about", label: "About", href: admin_settings_path(tab: "about") },
+        { id: "privacy", label: "Privacy", href: admin_settings_path(tab: "privacy") },
+        { id: "terms", label: "Terms", href: admin_settings_path(tab: "terms") },
+        { id: "domain", label: "Domain", panel: domain_panel, narrow: true },
+      ], aria_label: "Settings sections" %>
 </div>

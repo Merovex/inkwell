@@ -33,6 +33,7 @@
     font: inherit;
     font-weight: var(--font-weight-6);
     white-space: nowrap;
+    text-decoration: none;         /* a segment may be a link to a sibling page */
     cursor: pointer;
     transition: color var(--speed-quick) var(--ease-3);
   }

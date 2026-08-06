@@ -76,4 +76,16 @@ class DomainConnectionTest < ActiveSupport::TestCase
     assert_includes fake.deleted_hostnames, domain.cloudflare_id
     assert domain.reload.disconnected?
   end
+
+  test "disconnect un-bridges account.domain and reschedules the build" do
+    fake = FakeClient.new
+    DomainConnection.connect(account: accounts(:merovex), input: "merovex.press", client: fake)
+    accounts(:merovex).update!(domain: "merovex.press") # the go-live stamp
+    domain = accounts(:merovex).custom_domains.find_by(hostname: "merovex.press")
+
+    assert_enqueued_with(job: SiteBuildJob, args: [ accounts(:merovex) ]) do
+      DomainConnection.disconnect(domain: domain, client: fake)
+    end
+    assert_nil accounts(:merovex).reload.domain
+  end
 end

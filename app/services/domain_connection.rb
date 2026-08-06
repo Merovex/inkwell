@@ -42,6 +42,9 @@ class DomainConnection
     @client.kv_delete(@domain.hostname)
     @client.delete_custom_hostname(@domain.cloudflare_id) if @domain.cloudflare_id.present?
     @domain.update!(status: "disconnected")
+    # Un-bridge the legacy account.domain the go-live stamped, so builds fall
+    # back to the slug-path baseURL (the clear itself schedules the rebuild).
+    @account.update!(domain: nil) if @account.domain == @domain.hostname.delete_prefix("www.")
     Result.new(ok: true, domains: [ @domain ])
   rescue Cloudflare::Client::Error => error
     failure(error.message)

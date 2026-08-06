@@ -20,7 +20,16 @@ class SiteBuildJob < ApplicationJob
   def perform(account)
     account.update_columns(site_build_status: "building")
 
-    workspace = Exporter.new(account, base_url: "https://#{account.public_address}/").export!
+    # The build's canonical home: the custom domain when connected, else the
+    # standard slug path on the platform host (the Worker's PLATFORM_HOSTS
+    # slug routing) — baseURL and serving location must agree or asset URLs
+    # point away from where the reader is.
+    base_url = if account.domain.present?
+      "https://#{account.domain}/"
+    else
+      "https://#{Rails.configuration.x.cloudflare.cname_target}/#{account.slug}/"
+    end
+    workspace = Exporter.new(account, base_url: base_url).export!
     output = Renderer.new(workspace).render!
     Publisher.new(account).publish!(output)
 

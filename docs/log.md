@@ -2,6 +2,22 @@
 
 Append-only. Newest first. Format defined in [[CLAUDE]] (`CLAUDE.md`).
 
+## [2026-08-05] build | Domain tab in System settings — self-serve custom-domain onboarding wired to the build
+- **Domain joined the System settings tab bar** (Identity | About | Privacy | Terms | Domain). The connect/disconnect forms can't nest inside the settings form, so the Domain tab is a *link segment* to `admin/custom_domains`, which wears the identical chrome — same h1, same five-segment control with Domain active and the other four linking back via `?tab=` deep-links. `segmented_tabs` learned `href:` entries (link segments outside the Stimulus roving-tabindex) and `selected:`.
+- **The domain field now drives the build**: `Account` schedules `SiteBuildJob` on `saved_change_to_domain?` — the go-live stamp re-renders every asset/link against `https://<domain>/`; `DomainConnection.disconnect` clears the bridged `account.domain`, which re-renders back to the slug-path baseURL. One field → baseof's baseURL → KV/DNS, end to end.
+- The onboarding stack itself (Hostname, CustomDomain, DomainConnection, CustomDomainStatusJob, DomainMailer) predated this — it was built and tested but unreachable from any nav and disconnected from the pipeline.
+- Still gated on ops: the `cloudflare.api_token` credential is unset — connect fails at the Cloudflare call until it lands.
+- pages touched: (log only)
+- refs: ../app/helpers/tabs_helper.rb, ../app/views/admin/custom_domains/index.html.erb, ../app/views/admin/settings/show.html.erb, ../app/models/account.rb, ../app/services/domain_connection.rb
+
+## [2026-08-05] build | Merovex Press serves statically — the standard location is live
+- **The full chain works in production**: publish/design-save → SiteBuildJob (Exporter → pinned Hugo → Publisher) → `sites/W8YRHR/builds/<id>/` in R2 → pointer flip → the `kindredquill-edge` Worker → **https://sites.kindredquill.com/W8YRHR/ answering 200** (home, /books/, index.xml verified). ~17s build for the whole Merovex site.
+- **Slug-path routing added to the Worker** (§2.5's "apex slug paths", the owner's intermediate step): on PLATFORM_HOSTS (sites.kindredquill.com) the first path segment is the account slug — every domain-less Site gets a working public URL the moment it publishes, zero KV entries, zero DNS. Custom domains still resolve via HOSTNAMES KV. Deployed via `pnpm wrangler deploy`.
+- **baseURL now agrees with the serving location** (SiteBuildJob): domain connected → `https://<domain>/`; else the standard slug URL — asset URLs can't point away from where the reader stands. Known correct-but-odd interim: W8YRHR's build targets merovex.press (its final home), so the slug-URL view pulls assets from the still-dynamic domain until cut-over.
+- **merovex.press cut-over just got simpler**: it lives in the SAME Cloudflare account (mariah/tosana), so no CF-for-SaaS needed — KV entries (apex + www → W8YRHR), Worker routes on the merovex.press zone, flip the DNS records to Proxied. Rollback = un-proxy.
+- pages touched: (log only)
+- refs: ../edge/src/index.js, ../app/jobs/site_build_job.rb
+
 ## [2026-08-05] build | The publish pipeline's missing third — Publisher + SiteBuildJob, proven against R2
 - **Tenant Zero's static half, correctly scoped by the owner** ("We already have the Site created with the data. We need to get it so the site is generated via Hugo to R2 then let them configure DNS"): the survey found FAR more built than phase-2's forward-looking sections implied — Exporter ✓, Renderer ✓, the complete edge Worker ✓ (HOSTNAMES KV → pointer.json → per-build R2 prefix, deployed config in edge/), and the whole custom-domain onboarding UI ✓ (DomainConnection, Cloudflare::Client, cert + KV provisioning, CNAME target sites.kindredquill.com). The only missing piece: nothing ever UPLOADED.
 - **`Publisher`** (the §5.4 third stage): syncs a rendered build to `sites/<slug>/builds/<id>/` via R2's S3 API (aws-sdk-s3, endpoint off config.x.cloudflare.account_id), content-type via Marcel + cache split (60s HTML / immutable assets — the per-build prefix makes everything immutable), writes `pointer.json` LAST (the atomic flip the Worker reads), reaps beyond the newest 3. **`SiteBuildJob`**: Exporter → Renderer → Publisher, 30s debounce, Solid Queue per-account concurrency, status stamped on accounts (`site_build_status`/`site_built_at`, surfaced in the designer topbar); failure = alert + previous build keeps serving.

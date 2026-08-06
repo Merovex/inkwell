@@ -76,12 +76,15 @@
         </div>
       <% end %>
 
+      <%# Domain is a sibling page in the same control (its connect/disconnect
+          forms can't nest inside this form); ?tab= deep-links back from it. %>
       <%= segmented_tabs [
             { id: "identity", label: "Identity", panel: identity_panel },
             { id: "about", label: "About", panel: about_panel },
             { id: "privacy", label: "Privacy", panel: privacy_panel },
             { id: "terms", label: "Terms", panel: terms_panel },
-          ], aria_label: "Settings sections" %>
+            { id: "domain", label: "Domain", href: admin_custom_domains_path },
+          ], aria_label: "Settings sections", selected: params[:tab] %>
 
       <%= f.submit "Save", class: "button button--primary" %>
     <% end %>

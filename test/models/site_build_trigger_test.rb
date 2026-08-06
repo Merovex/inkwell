@@ -21,4 +21,13 @@ class SiteBuildTriggerTest < ActiveSupport::TestCase
       accounts(:merovex).update!(design: { "design" => {} })
     end
   end
+
+  test "a domain change schedules the site build (go-live stamp and disconnect clear)" do
+    assert_enqueued_with(job: SiteBuildJob, args: [ accounts(:merovex) ]) do
+      accounts(:merovex).update!(domain: "example.press")
+    end
+    assert_enqueued_with(job: SiteBuildJob, args: [ accounts(:merovex) ]) do
+      accounts(:merovex).update!(domain: nil)
+    end
+  end
 end
