@@ -1,0 +1,33 @@
+<% content_for :title, "Support — Inkwell" %>
+
+<%= render "admin/shared/canvas_head", crumbs: [["Support", nil]] %>
+
+<header class="perma-header">
+  <h1 class="perma-header__title">Support</h1>
+  <div class="perma-header__content u-cluster u-cluster-between">
+    <p class="u-text-muted">Your tickets — we reply right here, and the bell rings you.</p>
+    <%= link_to "New ticket", new_ticket_path, class: "button button--primary" %>
+  </div>
+</header>
+
+<% if @tickets.any? %>
+  <div class="list">
+    <% @tickets.each do |ticket| %>
+      <%= render "shared/list_item",
+            href: ticket_path(ticket.record),
+            title: ticket.title,
+            avatar: false,
+            badge: ticket.status.capitalize,
+            badge_variant: { "open" => "accent", "pending" => "warning", "resolved" => "success" }[ticket.status],
+            date: ticket.created_at.strftime("%b %-d, %Y"),
+            comment_count: ticket.record.comments.size %>
+    <% end %>
+  </div>
+<% else %>
+  <div class="empty">
+    <span class="empty__icon"><%= inline_svg_tag "lucide/message-square.svg", class: "lucide", size: "40px" %></span>
+    <p class="empty__title">No tickets yet</p>
+    <p class="empty__text">Stuck, confused, or found something broken? Open a ticket and we'll sort it out together.</p>
+    <div class="empty__actions"><%= link_to "New ticket", new_ticket_path, class: "button button--primary" %></div>
+  </div>
+<% end %>

@@ -49,6 +49,24 @@ Rails.application.routes.draw do
     # only — this is the App's mail, not any Site's.
     resources :missives, only: %i[index show destroy], module: :support
 
+    # The App's help desk (Tickets). User side at /support: your own tickets,
+    # bucketed to you (the Goals pattern); the thread is Comments on the
+    # spine, so the nested routes mirror the circles' comment shape. Staff
+    # side: the queue at /admin/tickets (bare app host, root-gated like
+    # /jobs); a status change is a revision, updated through the nested
+    # singular status resource — CRUD, no custom verbs.
+    scope module: :support do
+      resources :tickets, path: "support", only: %i[index new create show] do
+        resources :comments, only: %i[new create]
+      end
+      resources :comments, path: "support/comments", only: %i[edit update destroy], as: :support_comments
+      scope path: "/admin", as: :desk do
+        resources :tickets, only: :index, controller: "desk_tickets" do
+          resource :status, only: :update, controller: "statuses"
+        end
+      end
+    end
+
     # The bell: opening the flyout marks everything read; the index is the
     # full 30-day window behind the flyout's "See all".
     resources :notifications, only: :index

@@ -9,7 +9,7 @@
 # the announcement stays). Sources nullify on destruction; removing
 # notifications is an explicit act on the revoke/decline path only.
 class Notification < ApplicationRecord
-  KINDS = %w[ invited invitation_accepted mentioned boosted pulse_asked replied ].freeze
+  KINDS = %w[ invited invitation_accepted mentioned boosted pulse_asked replied ticket_opened ].freeze
   # Email-worthy kinds. Nothing notification-shaped is time-sensitive: these
   # roll up into digest emails (NotificationDigestJob) — and reading in-app
   # first cancels the email (the bell beat us to it). The rest (acceptances,
@@ -69,6 +69,9 @@ class Notification < ApplicationRecord
     when "replied" # source: the new comment's Record — rings the thread (Replies)
       { actor: source.creator, url: record_path_for(source),
         title: "#{source.creator.display_name} commented on #{thread_for(source.parent)}" }
+    when "ticket_opened" # source: the Ticket's Record — rings root staff, bell-only
+      { actor: source.creator, url: record_path_for(source),
+        title: "#{source.creator.display_name} opened a support ticket: “#{source.recordable.title}”" }
     end
   end
   private_class_method :copy_for
@@ -85,6 +88,14 @@ class Notification < ApplicationRecord
       when "Message" then routes.admin_message_path(record, script_name: script_name)
       when "Comment" then "#{record_path_for(record.parent)}#comment_#{record.id}"
       else record.bucket.admin_path
+      end
+    elsif record.bucket_type == "User"
+      # The help desk: tickets live on the requester's own bucket. One URL
+      # serves requester and staff (Support::TicketsController lets root in).
+      case record.recordable_type
+      when "Ticket"  then routes.ticket_path(record)
+      when "Comment" then "#{record_path_for(record.parent)}#comment_#{record.id}"
+      else routes.tickets_path
       end
     else
       circle = record.bucket

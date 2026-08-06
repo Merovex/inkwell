@@ -54,6 +54,7 @@ class Record < ApplicationRecord
   scope :drips, -> { where(recordable_type: "Drip") }
   scope :drops, -> { where(recordable_type: "Drop") }
   scope :goals, -> { where(recordable_type: "Goal") }
+  scope :tickets, -> { where(recordable_type: "Ticket") }
   scope :tallies, -> { where(recordable_type: "Tally") }
 
   before_destroy :destroy_versions

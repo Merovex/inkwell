@@ -1,0 +1,3 @@
+<%# locals: (ticket:) %>
+<% variant = { "open" => "accent", "pending" => "warning", "resolved" => "success", "closed" => nil }[ticket.status] %>
+<span class="badge<%= " badge--#{variant}" if variant %>"><%= ticket.status.capitalize %></span>

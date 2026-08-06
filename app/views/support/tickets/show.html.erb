@@ -1,0 +1,30 @@
+<% content_for :title, "#{@ticket.title} — Support — Inkwell" %>
+
+<%= render "admin/shared/canvas_head",
+      crumbs: [["Support", tickets_path], [@ticket.title, nil]] %>
+
+<header class="perma-header u-center u-center-prose">
+  <h1 class="perma-header__title"><%= @ticket.title %></h1>
+  <p class="perma-header__content u-text-muted">
+    <%= render "support/tickets/status_badge", ticket: @ticket %>
+    · <span class="u-text-strong"><%= @record.creator.display_name %></span>
+    · <time datetime="<%= @record.created_at.to_date.iso8601 %>"><%= l @record.created_at.to_date, format: :long %></time>
+  </p>
+  <% if Current.user&.root? %>
+    <%# Staff controls: each status move is a revision (the audit trail). %>
+    <div class="perma-header__toolbar u-margin-block-start-half">
+      <% (Ticket::STATUSES - [ @ticket.status ]).each do |status| %>
+        <%= button_to "Mark #{status}", desk_ticket_status_path(@record, status: status),
+              method: :patch, class: "button button--small" %>
+      <% end %>
+    </div>
+  <% end %>
+</header>
+
+<article class="prose">
+  <%= @ticket.content %>
+</article>
+
+<div class="u-center u-center-prose u-margin-block-start-double">
+  <%= render "admin/comments/comments", record: @record %>
+</div>

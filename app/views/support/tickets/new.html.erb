@@ -1,0 +1,24 @@
+<% content_for :title, "New ticket — Support — Inkwell" %>
+
+<%= render "admin/shared/canvas_head", crumbs: [["Support", tickets_path], ["New ticket", nil]] %>
+
+<header class="perma-header u-center u-center-prose">
+  <h1 class="perma-header__title">New ticket</h1>
+  <p class="perma-header__content u-text-muted">Tell us what's wrong — screenshots and details help.</p>
+</header>
+
+<%= form_with model: @ticket, url: tickets_path, class: "u-center u-center-prose u-stack" do |f| %>
+  <%= render "admin/shared/error_summary", model: @ticket %>
+  <div class="field">
+    <%= f.label :title, "What's this about?", class: "field__label" %>
+    <%= f.text_field :title, class: "field__control", required: true, autofocus: true %>
+  </div>
+  <div class="field">
+    <%= f.label :content, "The details", class: "field__label" %>
+    <%= f.rich_textarea :content, "aria-label": "The details" %>
+  </div>
+  <div class="u-cluster">
+    <%= f.submit "Open ticket", class: "button button--primary" %>
+    <%= link_to "Cancel", tickets_path, class: "button button--ghost" %>
+  </div>
+<% end %>

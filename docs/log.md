@@ -2,6 +2,23 @@
 
 Append-only. Newest first. Format defined in [[CLAUDE]] (`CLAUDE.md`).
 
+## [2026-08-05] refactor | One comment system — CommentActions concern
+- **Owner caught me copy-pasting a fourth comment surface** ("why don't you look at all the duplication and refactor to a single solution"). The audit: four byte-identical `comments/new.html.erb` templates (posts, forum, circles, support) and three near-identical controller bodies, diverging only in scoping/auth/redirect — while the bucket-aware CommentsHelper existed precisely to make one implementation possible.
+- **`CommentActions` concern** now owns the whole CRUD shape (new/create/edit/update/destroy + comment_params): originate-under-parent, Mentions+Replies (Mentions no-op outside circle buckets, so they fire uniformly), redirects through `commentable_path`, shared templates at `app/views/comments/{new,edit}`. The five controllers (admin posts/messages/comments, circles, support) slim to scoping + authorization only.
+- Unifications riding along: create-failure redirect gains the `new_comment` anchor everywhere; admin comment update now fires Mentions (no-op today); and a latent bug died — the support controller called `Record#trash!`, which doesn't exist (`#trash` does; the shared destroy always did).
+- Suite 620 green.
+- pages touched: (log only)
+- refs: ../app/controllers/concerns/comment_actions.rb, ../app/views/comments/, ../app/controllers/{admin,circles,support}/
+
+## [2026-08-05] build | The help desk pivots in-app: Ticket + Comments, no mail-in
+- **Owner redirected the desk mid-build** (twice rightly objecting to unapproved shape choices — first the Missive reuse, then the flat-inbox downsizing of the Covenant port): "logically, we don't need mail-in for support. User just clicks Support and the ticket is created. And we can use Comment against Ticket (like Message). Identical shape." Covenant's Ticket ports; its Customer collapses into **User**; its Reply collapses into the existing **Comment**.
+- **`Ticket`**: recordable on the spine, **bucketed to the requester** (the Goals pattern — someone else's ticket is indistinguishable from a missing one), title + Action Text content (the Comment content-carry pattern), immutable — status moves (`open/pending/resolved/closed`) are revisions via a nested `resource :status` (CRUD, no custom verbs). `resolved_at` stamped for the future auto-close.
+- **The thread is plain Comments**: `CommentsHelper` grew the User-bucket branch, so the shared composer/partials/turbo-frames work unchanged — and **Mentions + Replies notifications light up for free** (staff reply → requester's bell + daily digest). New bell-only `ticket_opened` kind rings root staff on open; `Notification.record_path_for` gained the User-bucket branch.
+- **Surfaces**: `/support` (any signed-in user: your tickets, composer, thread) + `/admin/tickets` (root-gated queue, status tabs) — one ticket URL serves both (root passes the bucket wall inside the documented unscoped escape). "Support" in the avatar menu for everyone; "Support desk" for root.
+- **support@ work PAUSED, not removed**: the whole mail-in stack (mailbox, ingress, AWS receipt pipeline, platform Missives inbox) stays as built earlier today, decommission deferred on owner's word. Suite 620 green.
+- pages touched: (log only)
+- refs: ../app/models/ticket.rb, ../app/controllers/support/, ../app/views/support/, ../app/helpers/comments_helper.rb, ../app/models/notification.rb, ../db/migrate/20260805234500_create_tickets.rb
+
 ## [2026-08-05] build | support@ mail-in shipped — Action Mailbox → Missives
 - **Rails side complete** (Covenant's TicketsMailbox as prior art, minus threading): Action Mailbox installed (redundant Active Storage migration discarded); `SupportMailbox` lands inbound mail as a **born-confirmed** Missive (double opt-in guards outbound confirmation mail; inbound sends nothing) on the designated account (`mailin.account_slug`, default first account) inside the ADR 0017 tenancy context. Own-domain drop (bounce loops), no autoresponder ever (backscatter), HTML stripped to the 5,000-char text contract, `source_message_id` unique index dedupes SNS re-wraps (Action Mailbox's checksum index already drops byte-identical redeliveries). 4 mailbox tests; suite 612.
 - **Ingress**: `aws-actionmailbox-ses` gem (validates SNS signatures, auto-confirms subscription, reads raw mail from S3 via `s3_client_options` on the existing ses.* keys — inkwell-ses gained `s3:GetObject` inline, its send-only managed policy untouched). Activated by `mailin.sns_topic_arn`.
