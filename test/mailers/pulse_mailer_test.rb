@@ -10,9 +10,9 @@ class PulseMailerTest < ActionMailer::TestCase
     email = PulseMailer.ask(pulse, users(:bob), Date.current)
 
     assert_equal [ users(:bob).email_address ], email.to
-    # Platform bulk identity (stream 2, docs/email-architecture.md): user bulk
-    # never rides the verification identity, and the root never sends.
-    assert_equal [ "noreply@news.merovex.press" ], email.from
+    # Platform bulk identity (stream 2, docs/email-architecture.md): its own
+    # notify.* identity — never the verification one, never the root.
+    assert_equal [ "noreply@notify.kindredquill.com" ], email.from
     assert_match "What did you ship?", email.html_part.decoded
     # The question is the subject; the body links back to the pulse to answer.
     assert_equal "What did you ship?", email.subject

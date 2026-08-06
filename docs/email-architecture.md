@@ -262,11 +262,10 @@ ships, both gates are needed.
   second-provider *identity*, not a paid subscription. The DeliveryEvent
   pipeline still watches magic-link time-to-delivery as the early-warning
   signal.
-- **Interim stream-2 identity.** User bulk (digests, Pulse asks)
-  currently signs `d=news.merovex.press` because it must never ride the
-  verification identity and `notify.*` doesn't exist yet. Mixing User
-  and Subscriber audiences on one identity is a known interim smell;
-  resolved when the platform identities are created.
+- ~~Interim stream-2 identity~~ **Resolved** (same day): with the
+  kindredquill identities verified, user bulk signs its own
+  `notify.kindredquill.com` (`ses.notify_from`, credential-optional) —
+  the User/Subscriber audience mix is gone.
 
 ---
 

@@ -4,7 +4,7 @@ class ApplicationMailer < ActionMailer::Base
   # posture). support@ stays inbound-only. The address follows the ses
   # credential so the eventual verify.* identity is a credential change.
   default from: email_address_with_name(
-    Rails.application.credentials.dig(:ses, :transactional_from).presence || "noreply@auth.merovex.press",
+    Rails.application.credentials.dig(:ses, :transactional_from).presence || "noreply@verify.kindredquill.com",
     "Inkwell"
   )
   layout "mailer"
@@ -45,7 +45,7 @@ class ApplicationMailer < ActionMailer::Base
     def marketing_from(setting)
       address =
         if self.class.delivery_method == :ses_v2
-          Rails.application.credentials.dig(:ses, :marketing_from)
+          Rails.application.credentials.dig(:ses, :marketing_from).presence || "noreply@news.kindredquill.com"
         else
           Rails.application.credentials.dig(:postmark, :marketing_from).presence || "newsletter@merovex.press"
         end
@@ -62,12 +62,11 @@ class ApplicationMailer < ActionMailer::Base
     end
 
     # Platform bulk mail to Users (notification digests, Pulse asks) — the
-    # platform's own voice, not a Site's. INTERIM: rides the news.merovex.press
-    # identity because it must never ride the verification identity
-    # (docs/email-architecture.md stream 2) and notify.* doesn't exist yet;
-    # moves to notify.kindredquill.com with the platform migration.
+    # platform's own voice on its own identity: stream 2 signs
+    # notify.kindredquill.com (docs/email-architecture.md), never the
+    # verification identity and no longer the Subscriber identity.
     def platform_bulk_from
-      address = Rails.application.credentials.dig(:ses, :marketing_from).presence || "noreply@news.merovex.press"
+      address = Rails.application.credentials.dig(:ses, :notify_from).presence || "noreply@notify.kindredquill.com"
       email_address_with_name(address, "Inkwell")
     end
 end
