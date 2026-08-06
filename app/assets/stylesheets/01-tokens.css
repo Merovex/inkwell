@@ -95,6 +95,7 @@
   /* --- structural colors (light) --- */
   --neutral-bg: var(--color-mountain-mist-200); /* fallback when no account tint is set */
   --tint: var(--neutral-bg);                    /* rotating account tint slots in here */
+  --tint-soft: var(--color-mountain-mist-300);  /* the tint ramp's pill stop (one step past the page bg) */
   --site-bg: var(--tint);                       /* the outer page */
   --canvas: #ffffff;                            /* card / article surface */
   --ink: var(--color-mountain-mist-900);        /* primary text */
@@ -191,11 +192,11 @@
   --stat-accent-ink: #fff;
 }
 
-[data-tint="olive"] { --tint: oklch(96.6% 0.005 106.5);   --tint-strong: #4d7c0f; --tint-strong-dark: #bef264; } /* olive-100 · lime-700/300 */
-[data-tint="taupe"] { --tint: oklch(96%   0.002  17.2);   --tint-strong: #e11d48; --tint-strong-dark: #fda4af; } /* taupe-100 · rose-600/300 */
-[data-tint="mauve"] { --tint: oklch(96%   0.003 325.6);   --tint-strong: #c026d3; --tint-strong-dark: #f0abfc; } /* mauve-100 · fuchsia-600/300 */
-[data-tint="mist"]  { --tint: oklch(96.3% 0.002 197.1);   --tint-strong: #0f766e; --tint-strong-dark: #5eead4; } /* mist-100 · teal-700/300 */
-[data-tint="zinc"]  { --tint: oklch(96.7% 0.001 286.375); --tint-strong: #7c3aed; --tint-strong-dark: #c4b5fd; } /* zinc-100 · violet-600/300 */
+[data-tint="olive"] { --tint: oklch(96.6% 0.005 106.5);   --tint-soft: var(--color-olive-200); --tint-strong: #4d7c0f; --tint-strong-dark: #bef264; } /* olive-100 · lime-700/300 */
+[data-tint="taupe"] { --tint: oklch(96%   0.002  17.2);   --tint-soft: var(--color-taupe-200); --tint-strong: #e11d48; --tint-strong-dark: #fda4af; } /* taupe-100 · rose-600/300 */
+[data-tint="mauve"] { --tint: oklch(96%   0.003 325.6);   --tint-soft: var(--color-mauve-200); --tint-strong: #c026d3; --tint-strong-dark: #f0abfc; } /* mauve-100 · fuchsia-600/300 */
+[data-tint="mist"]  { --tint: oklch(96.3% 0.002 197.1);   --tint-soft: var(--color-mist-200);  --tint-strong: #0f766e; --tint-strong-dark: #5eead4; } /* mist-100 · teal-700/300 */
+[data-tint="zinc"]  { --tint: oklch(96.7% 0.001 286.375); --tint-soft: var(--color-zinc-200);  --tint-strong: #7c3aed; --tint-strong-dark: #c4b5fd; } /* zinc-100 · violet-600/300 */
 [data-tint] { --site-bg: var(--tint); --stat-accent: var(--tint-strong); }
 
 /* Dark mode lifts the stat accent to a -300 so it pops on the dark canvas

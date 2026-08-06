@@ -6,21 +6,11 @@
 <section id="comments" class="comments" aria-label="Comments">
   <% comments = record.comments %>
   <% if comments.any? %>
-    <h2 class="comments__heading"><%= pluralize(comments.size, "comment") %></h2>
+    <h2 class="comments__heading" id="comments-heading"><%= pluralize(comments.size, "comment") %></h2>
   <% end %>
   <div class="list">
     <%= render partial: "admin/comments/comment", collection: comments %>
 
-    <%= turbo_frame_tag "new_comment" do %>
-      <div class="list__item comment">
-        <span class="avatar list__avatar" aria-hidden="true"><%= avatar_content(Current.user) %></span>
-
-        <div class="comment__content">
-          <%= link_to "Add your comment…", new_commentable_comment_path(record), class: "comment__prompt" %>
-        </div>
-
-        <div class="list__action comment__actions"></div>
-      </div>
-    <% end %>
+    <%= render "admin/comments/prompt", record: record %>
   </div>
 </section>

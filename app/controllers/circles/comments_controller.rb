@@ -32,5 +32,13 @@ module Circles
       def require_moderate
         raise ActiveRecord::RecordNotFound unless @record.moderatable_by?(Current.user)
       end
+
+      # The Wall's thread modal posts with back=wall: the saved comment lands
+      # back in the modal (its frame follows this redirect), not on the
+      # message page.
+      def after_comment_path
+        return super unless params[:back] == "wall"
+        circle_wall_thread_path(@circle, @parent)
+      end
   end
 end

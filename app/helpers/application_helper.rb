@@ -39,7 +39,11 @@ module ApplicationHelper
   # otherwise the monogram.
   def avatar_content(user)
     if user.avatar.attached?
-      image_tag user.avatar.variant(:thumb), alt: user.display_name, class: "avatar__img"
+      # The proxy PATH, not the URL: background renders (Turbo broadcasts —
+      # boost chips, bell rows) have no request host, so the url form points
+      # at the renderer's placeholder host (example.org) and breaks the image.
+      image_tag rails_storage_proxy_path(user.avatar.variant(:thumb)),
+        alt: user.display_name, class: "avatar__img"
     else
       avatar_initials(user)
     end

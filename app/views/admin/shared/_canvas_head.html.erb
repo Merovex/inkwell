@@ -1,10 +1,11 @@
-<%# locals: (crumbs: [], menu_id: "canvas-menu", menu: true, edit_href: nil) %>
+<%# locals: (crumbs: [], menu_id: "canvas-menu", menu: true, edit_href: nil, action_href: nil, action_label: nil) %>
 <%# Standard canvas head: breadcrumb (left) + contextual actions (right). %>
 <%# crumbs is an array of [label, href]; a nil href marks the current page. %>
 <%# With menu: true (default) the block yields menu items into the ... popover; %>
 <%# with menu: false the block yields buttons rendered directly (e.g. Save/Publish). %>
 <%# edit_href puts an Edit link beside the menu — the most common action, %>
-<%# pulled out of the popover (Basecamp-style). %>
+<%# pulled out of the popover (Basecamp-style). action_href/action_label is %>
+<%# one more pulled-out button beside it (e.g. the circle page's Wall toggle). %>
 <div class="canvas__head">
   <div class="canvas__head-start">
     <% if Current.account %>
@@ -30,6 +31,9 @@
   <% if actions.present? %>
     <% if menu %>
       <div class="canvas__head-actions">
+        <% if action_href %>
+          <%= link_to action_label, action_href, class: "button button--ghost canvas__head-action" %>
+        <% end %>
         <% if edit_href %>
           <%= link_to "Edit", edit_href, class: "button button--ghost canvas__head-action" %>
         <% end %>

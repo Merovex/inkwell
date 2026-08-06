@@ -2,6 +2,44 @@
 
 Append-only. Newest first. Format defined in [[CLAUDE]] (`CLAUDE.md`).
 
+## [2026-08-06] build | Wall iteration 5: pending-pulse pin in the account tint
+- An unanswered pulse ask pins at the TOP of the personal stack (above drafts + scheduled): "Pulse check: <question> — Share your answer" → the pulse page. Only for respondents (subscription-scoped); dissolves once your Beat for last_asked_on exists — any thread change is a new version row, so the recount stays honest.
+- The three affixed row shapes consolidated per the recurrence rule: `.wall__pin` base + `--announce` (accent: bulletins) / `--scheduled` (warning) / `--pulse` modifiers.
+- **New semantic token `--tint-soft`** (Ben: "their tint color at the right color level"): the active tint ramp's 200 stop, per [data-tint], fallback mountain-mist-300 — the pulse pin wears the account's own palette, distinct from platform accent.
+- Gotcha for tests: pulse subscriptions are created by the pulses CONTROLLER at setup (`@pulse.subscribe(@circle.members)`), not the model — a bare originated Pulse has no respondents.
+- pages touched: (log only)
+- refs: ../app/controllers/circles/walls_controller.rb, ../app/assets/stylesheets/wall.css, ../app/assets/stylesheets/01-tokens.css
+
+## [2026-08-06] build + fix | Wall iteration 4: live counts, broadcast avatars, symmetric toggle
+- **Live comment counts**: the card's count link is a broadcast target (`_comment_count`, own dom id); `Comment` after_create_commit re-broadcasts the parent card's count — creates/edits/trash all commit version rows, so ONE hook covers them all. Gotcha: Turbo broadcasts inject the broadcasting model as an implicit partial local — strict-locals partials must name it (`comment: nil`).
+- **Broadcast avatar fix**: background renders (ApplicationController.renderer) emit absolute URLs on the placeholder host example.org → broken images in broadcast chips AND live bell rows. `avatar_content` now emits `rails_storage_proxy_path` (path form) — correct in requests and jobs alike.
+- **Symmetric view toggle**: canvas_head grew `action_href`/`action_label` (the edit_href generalized); the standard circle page shows "Wall view" as a visible head button, matching the Wall's "Standard view".
+- Design discussion (no code): pulses on the wall — grouped one-card-per-ask-day, pending-pulse row ABOVE scheduled (accent, top of personal stack, answer-modal later). Ben "liking" the Wall model.
+- pages touched: (log only)
+- refs: ../app/models/comment.rb, ../app/views/circles/walls/_comment_count.html.erb, ../app/helpers/application_helper.rb, ../app/views/admin/shared/_canvas_head.html.erb
+
+## [2026-08-06] build | Wall iteration 3: comments stream in place; boosts broadcast live
+- **Comment create → Turbo Streams** (all surfaces via CommentActions; redirect kept as no-JS fallback): page threads insert above the composer frame + reset it to the prompt (extracted `admin/comments/_prompt`); the wall modal appends to its list + swaps a fresh pinned composer (autosave clears its draft on submit-end first). One stream template, id-targeted — absent ids no-op, so the surfaces can't double-insert.
+- **Boost broadcasts**: Boost after_create/destroy_commit → `broadcast_*_to [circle, :wall]`; walls subscribe (`turbo_stream_from @circle, :wall`); chips land in the card's always-rendered `dom_id(record, :wall_boosts)` container, each in a wall-scoped id wrapper so removal can pluck it (modal strip copies would collide otherwise). Circle buckets only. Title links now open the thread modal too.
+- pages touched: (log only)
+- refs: ../app/views/comments/create.turbo_stream.erb, ../app/controllers/concerns/comment_actions.rb, ../app/models/boost.rb, ../app/views/circles/walls/
+
+## [2026-08-06] build | Wall iteration 2: published-only stream, your-scheduled strip, drafts link, boost chips
+- Stream is published-only (`Message.current_in(...).published`, cursor still on record ids) — scheduled/drafts no longer leak into the feed.
+- First page affixes, top to bottom: "You have X drafts" link (→ Discussions), YOUR scheduled messages as warning-tinted rows (clock + title + "Posts on <local time>", → message page), Commons bulletins. All per-viewer bits live outside the card cache.
+- Cards show the boost chips themselves (shared `admin/boosts/_boost` grew a `removable:` local — inert on cards, interactive in the thread modal); card cache keys on the boost records, not the count.
+- Thread modal carries the full boost strip (its own self-swapping frame — no back=wall needed).
+- Ben on the scheduled strip style: "perfect."
+- pages touched: (log only)
+- refs: ../app/controllers/circles/walls_controller.rb, ../app/views/circles/walls/, ../app/views/admin/boosts/_boost.html.erb, ../app/assets/stylesheets/wall.css
+
+## [2026-08-06] build | Wall iteration: 5-line clamp + thread modal with growing composer
+- Cards clamp at 5 lines (`.wall__body` sets `--u-clamp-lines` on the existing u-clamp utility); the title still click-throughs to the full message page.
+- A card's comments link fetches `circles/walls/threads#show` into the wall's "modal" frame (the goals-today dialog pattern): full message + comments in the scrolling body, the comment composer pinned as the footer, growing with its editor to at most half the modal's height ceiling (dvh math — a % can't resolve against a content-driven dialog height), then scrolling internally.
+- Comment plumbing: `CommentActions#create` grew an `after_comment_path` hook; the circles controller returns to the thread modal when `back=wall` rides the form, so a saved comment re-renders the modal in place instead of navigating to the message page.
+- pages touched: (log only)
+- refs: ../app/controllers/circles/walls/threads_controller.rb, ../app/views/circles/walls/threads/show.html.erb, ../app/controllers/concerns/comment_actions.rb, ../app/assets/stylesheets/wall.css
+
 ## [2026-08-06] build | Commons + Wall: the town square and its feed-candidate view
 - **Commons**: ONE platform-wide circle (circles.commons boolean, partial unique index — the singleton is a DB fact). Everyone belongs: real membership rows (Ben's call), `Circle.provision_commons(owner:)` console-run seats existing users (idempotent, insert_all), `User#join_commons` after_create_commit seats newcomers. No cap (`full?` short-circuits), no invitations (policy), no leaving (memberships controller + hidden menu item).
 - **Wall** (swap-in candidate — "so I can get an idea of whether I like it"; standard circle page stays default): `/circles/:id/wall`, full-bodied message cards newest-first, click-through to threads (no FB-style inline expansion, per Ben), lazy turbo-frame cursor pagination (`before_id` on the records spine — frame id = requested cursor so responses slot in; `target: "_top"` so card links escape the frame). Commons wall affixes latest 3 published Bulletins on top. Linked from the circle ⋯ menu ("Wall view (preview)").

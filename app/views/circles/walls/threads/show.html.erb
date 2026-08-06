@@ -1,0 +1,49 @@
+<%# The wall's thread modal: full message on top, comments following, the
+    composer pinned as the footer (growing to at most half the modal —
+    .wall-thread in wall.css). Fetched into the wall's "modal" frame; the
+    composer posts back here (back=wall) so a saved comment re-renders the
+    modal in place. %>
+<%= turbo_frame_tag "modal" do %>
+  <span data-controller="dialog" data-dialog-open-value="true">
+    <dialog class="modal wall-thread" data-dialog-target="modal" data-action="click->dialog#backdrop"
+            aria-labelledby="wall-thread-title">
+      <div class="modal__header">
+        <span class="modal__title" id="wall-thread-title"><%= @message.title %></span>
+        <button type="button" class="button button--icon button--ghost" data-action="dialog#close" aria-label="Close">
+          <%= inline_svg_tag "lucide/x.svg", class: "lucide", size: "20px" %>
+        </button>
+      </div>
+
+      <div class="modal__body u-stack">
+        <p class="wall__byline">
+          <span class="avatar" aria-hidden="true"><%= avatar_content(@record.creator) %></span>
+          <span>
+            <span class="u-text-strong"><%= @record.creator.display_name %></span>
+            <span class="wall__meta">·
+              <time datetime="<%= (@message.published_at || @message.created_at).iso8601 %>"><%= time_ago_in_words(@message.published_at || @message.created_at) %> ago</time>
+            </span>
+          </span>
+        </p>
+        <div class="prose"><%= @message.content %></div>
+
+        <%# The boost strip is its own turbo frame: submits redirect to the
+            message page and only the strip swaps, so the modal stays put. %>
+        <%= render "admin/boosts/boosts", record: @record %>
+
+        <%# Always present (even empty) so the comment-create stream has a
+            list to append the first comment to; the heading starts hidden
+            and the stream replaces it with the live count. %>
+        <% comments = @record.comments %>
+        <section class="comments" aria-label="Comments">
+          <%= content_tag :h2, pluralize(comments.size, "comment"),
+                class: "comments__heading", id: "modal-comments-heading", hidden: comments.none? %>
+          <div class="list" id="modal-comments-list">
+            <%= render partial: "admin/comments/comment", collection: comments %>
+          </div>
+        </section>
+      </div>
+
+      <%= render "composer", record: @record %>
+    </dialog>
+  </span>
+<% end %>

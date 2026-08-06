@@ -1,8 +1,9 @@
-<%# locals: (circle:, record:, message:, comment_count:, boost_count:) %>
-<%# One wall story: byline, title (the door to the thread), full rich body,
-    counts. Cached on the version + author + counts — a comment or boost mints
-    a fresh key; message versions are immutable, so edits do too. %>
-<% cache [ "wall-card", message, record.creator, comment_count, boost_count ] do %>
+<%# locals: (circle:, record:, message:, comment_count:, boosts:) %>
+<%# One wall story: byline, title (the door to the thread), clamped rich body,
+    comment count + the boost chips themselves. Cached on the version + author
+    + count + boosts — a comment or any boost change mints a fresh key;
+    message versions are immutable, so edits do too. %>
+<% cache [ "wall-card", message, record.creator, comment_count, boosts ] do %>
   <article class="wall__card">
     <header class="wall__byline">
       <span class="avatar" aria-hidden="true"><%= avatar_content(record.creator) %></span>
@@ -13,16 +14,19 @@
         </span>
       </span>
     </header>
-    <h3 class="wall__title"><%= link_to message.title, circle_message_path(circle, record) %></h3>
-    <div class="prose"><%= message.content %></div>
+    <%# Title and comments both open the thread modal; the full message page
+        stays reachable from inside it (comment edit menus, permalinks). %>
+    <h3 class="wall__title"><%= link_to message.title, circle_wall_thread_path(circle, record),
+          data: { turbo_frame: "modal" } %></h3>
+    <div class="prose u-clamp wall__body"><%= message.content %></div>
     <footer class="wall__footer">
-      <%= link_to circle_message_path(circle, record) do %>
-        <%= inline_svg_tag "lucide/message-square.svg", class: "lucide", size: "14px" %>
-        <%= pluralize(comment_count, "comment") %>
-      <% end %>
-      <% if boost_count.positive? %>
-        <span><%= inline_svg_tag "lucide/rocket.svg", class: "lucide", size: "14px" %> <%= boost_count %></span>
-      <% end %>
+      <%# Opens the thread modal; live comment broadcasts replace it in place. %>
+      <%= render "circles/walls/comment_count", record: record, count: comment_count %>
+      <%# The boosts themselves, read-only — boosting happens in the thread
+          modal. Always-rendered container: live broadcasts append here. %>
+      <span class="wall__chips" id="<%= dom_id(record, :wall_boosts) %>">
+        <%= render partial: "circles/walls/boost_chip", collection: boosts, as: :boost %>
+      </span>
     </footer>
   </article>
 <% end %>

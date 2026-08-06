@@ -102,10 +102,13 @@ Rails.application.routes.draw do
       # Every circle on the platform (not just yours) — browse-only discovery.
       collection { get :all }
       # The Wall (2026-08-06): the circle's feed-presentation candidate —
-      # full-bodied messages newest-first, lazy-loading more on scroll; the
+      # message cards newest-first (clamped), lazy-loading more on scroll; the
       # Commons wall affixes published Bulletins on top. Swappable from the
-      # circle page while the presentation is judged.
+      # circle page while the presentation is judged. A card's comments open
+      # the thread as a modal (fetched into the wall's "modal" frame); comment
+      # submits return there via back=wall.
       resource :wall, only: :show, module: :circles
+      resources :threads, only: :show, module: "circles/walls", as: :wall_threads
       resources :messages, only: %i[index show new create edit update destroy], module: :circles do
         collection { get :archived }
         member do

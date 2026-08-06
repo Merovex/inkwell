@@ -1,9 +1,10 @@
 <% content_for :title, "#{@circle.name} — Circle" %>
 
+<%# The Wall toggle rides the head as a visible button — the same switch the
+    Wall offers back ("Standard view"). %>
 <%= render "admin/shared/canvas_head", crumbs: [["Circles", circles_path], [@circle.name, nil]],
+      action_href: circle_wall_path(@circle), action_label: "Wall view",
       edit_href: (edit_circle_path(@circle) if allowed_to?(:manage, @circle)) do %>
-  <%# The Wall — the feed presentation candidate, swappable while it's judged. %>
-  <%= link_to "Wall view (preview)", circle_wall_path(@circle), class: "menu__item" %>
   <%# The membership page: roster + invitations (any member may invite). %>
   <%= link_to "Membership", circle_members_path(@circle), class: "menu__item" %>
   <%# No exit from the Commons — it's the town square. %>

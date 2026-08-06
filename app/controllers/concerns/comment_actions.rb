@@ -21,7 +21,12 @@ module CommentActions
       Record.originate(@comment, parent: @parent)
       Mentions.deliver_for(@comment.record)
       Replies.deliver_for(@comment.record)
-      redirect_to helpers.commentable_path(@parent, anchor: "comment_#{@comment.record_id}")
+      respond_to do |format|
+        # Streams append the comment in place — the page's thread or the wall
+        # modal — with no full re-render; the redirect is the no-JS fallback.
+        format.turbo_stream { render "comments/create" }
+        format.html { redirect_to after_comment_path }
+      end
     else
       redirect_to helpers.commentable_path(@parent, anchor: "new_comment"), alert: "Comment can't be blank."
     end
@@ -52,5 +57,12 @@ module CommentActions
   private
     def comment_params
       params.expect(comment: [ :content ])
+    end
+
+    # Where a saved comment lands the browser: the thread on the parent's
+    # page. Contexts with their own thread surface (the Wall's modal)
+    # override.
+    def after_comment_path
+      helpers.commentable_path(@parent, anchor: "comment_#{@comment.record_id}")
     end
 end

@@ -16,11 +16,14 @@
   <h1 class="perma-header__title"><%= @circle.name %></h1>
 </header>
 
+<%# Live updates: boost broadcasts land on the cards' chip strips. %>
+<%= turbo_stream_from @circle, :wall %>
+
 <div class="wall">
   <% if @bulletins&.any? %>
     <section class="wall__affixed" aria-label="Announcements">
       <% @bulletins.each do |bulletin| %>
-        <%= link_to bulletin_path(bulletin.record.to_slug, script_name: ""), class: "wall__bulletin" do %>
+        <%= link_to bulletin_path(bulletin.record.to_slug, script_name: ""), class: "wall__pin wall__pin--announce" do %>
           <%= inline_svg_tag "lucide/megaphone.svg", class: "lucide", size: "16px" %>
           <span class="u-text-strong"><%= bulletin.title %></span>
           <% if bulletin.published_at %>
@@ -31,10 +34,41 @@
     </section>
   <% end %>
 
+  <% if @pending_pulse %>
+    <%# The one actionable pin: the circle asked, you haven't answered. %>
+    <section class="wall__affixed" aria-label="Pulse check">
+      <%= link_to circle_pulse_path(@circle, @pending_pulse.record_id), class: "wall__pin wall__pin--pulse" do %>
+        <%= inline_svg_tag "lucide/activity.svg", class: "lucide", size: "16px" %>
+        <span class="u-text-strong">Pulse check: <%= @pending_pulse.question %></span>
+        <span class="wall__meta">Share your answer</span>
+      <% end %>
+    </section>
+  <% end %>
+
+  <% if @drafts_count.to_i.positive? %>
+    <p class="wall__meta"><%= link_to "You have #{pluralize(@drafts_count, "draft")}", circle_messages_path(@circle) %></p>
+  <% end %>
+
+  <% if @scheduled&.any? %>
+    <%# YOUR pending appointments — visible to you alone until they post. %>
+    <section class="wall__affixed" aria-label="Your scheduled messages">
+      <% @scheduled.each do |message| %>
+        <%= link_to circle_message_path(@circle, message.record_id), class: "wall__pin wall__pin--scheduled" do %>
+          <%= inline_svg_tag "lucide/clock.svg", class: "lucide", size: "16px" %>
+          <span class="u-text-strong"><%= message.title %></span>
+          <span class="wall__meta">Posts on
+            <time datetime="<%= message.published_at.iso8601 %>" data-controller="local-time"
+                  data-local-time-datetime-value="<%= message.published_at.iso8601 %>"><%= message.published_at.strftime("%b %-d at %H:%M") %></time>
+          </span>
+        <% end %>
+      <% end %>
+    </section>
+  <% end %>
+
   <%= turbo_frame_tag frame_id, target: "_top" do %>
     <% @records.each do |record| %>
       <%= render "card", circle: @circle, record: record, message: @messages_by_record[record],
-            comment_count: @comment_counts[record.id].to_i, boost_count: @boost_counts[record.id].to_i %>
+            comment_count: @comment_counts[record.id].to_i, boosts: @boosts_by_record.fetch(record.id, []) %>
     <% end %>
     <% if @records.empty? && params[:before_id].blank? %>
       <p class="u-text-muted">Nothing on the wall yet — start the first discussion.</p>
@@ -49,3 +83,7 @@
     <% end %>
   <% end %>
 </div>
+
+<%# The thread modal lands here (a card's comments link fetches
+    circles/walls/threads#show into this frame). %>
+<%= turbo_frame_tag "modal" %>
