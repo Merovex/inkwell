@@ -9,7 +9,7 @@
 # the announcement stays). Sources nullify on destruction; removing
 # notifications is an explicit act on the revoke/decline path only.
 class Notification < ApplicationRecord
-  KINDS = %w[ invited invitation_accepted mentioned boosted pulse_asked replied ticket_opened ].freeze
+  KINDS = %w[ invited invitation_accepted mentioned boosted pulse_asked replied ticket_opened bulletin_published ].freeze
   # Email-worthy kinds. Nothing notification-shaped is time-sensitive: these
   # roll up into digest emails (NotificationDigestJob) — and reading in-app
   # first cancels the email (the bell beat us to it). The rest (acceptances,
@@ -72,6 +72,9 @@ class Notification < ApplicationRecord
     when "ticket_opened" # source: the Ticket's Record — rings root staff, bell-only
       { actor: source.creator, url: record_path_for(source),
         title: "#{source.creator.display_name} opened a support ticket: “#{source.recordable.title}”" }
+    when "bulletin_published" # source: the Bulletin's Record — platform announcement, bell-only
+      { actor: source.creator, url: routes.bulletin_path(source.to_slug),
+        title: "Announcement: #{source.recordable.title}" }
     end
   end
   private_class_method :copy_for

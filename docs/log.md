@@ -2,6 +2,15 @@
 
 Append-only. Newest first. Format defined in [[CLAUDE]] (`CLAUDE.md`).
 
+## [2026-08-06] build | Bulletins: platform announcements on the spine (nil bucket), bell fan-out
+- **Bulletin** (Basecamp's bulletin): title + rich body, full Publishable ladder (draft → scheduled → published, shared scheduler, versions). Root-authored at /support/bulletins (posts-composer mirror, gated like the desk); readers at /bulletins + /bulletins/:slug ("An announcement from <name> at Kindred Quill").
+- **Platform records**: records.bucket now nullable; `Record::PLATFORM_TYPES` (Bulletin) get a NIL bucket via the type-aware belongs_to default — an explicit `bucket: nil` at create can NOT beat `default:` (it fires whenever the association is nil), so the default proc itself decides by type. Presence still validated for every other type.
+- **Fan-out**: first publish (either path — Publish button or PublishLaterJob) → BulletinAnnounceJob rings every user's bell except the author's. `bulletin_published` kind is NOT in Notification::EMAILED — bell-only, no email, by construction. Edits of published bulletins don't re-ring (job dedupes on existing notifications).
+- **Routing trap**: tickets' `path: "support"` wildcard (GET /support/:id) swallowed /support/bulletins as a ticket id — bulletins must be declared first in the scope.
+- Platform reads declare `Current.allowing_unscoped_tenancy` (reader + desk + job), per the tripwire.
+- pages touched: (log only)
+- refs: ../app/models/bulletin.rb, ../app/models/record.rb, ../app/jobs/bulletin_announce_job.rb, ../app/models/notification.rb, ../app/controllers/support/bulletins_controller.rb, ../app/controllers/bulletins_controller.rb, ../config/routes.rb
+
 ## [2026-08-06] build | Handle URLs: sites.kindredquill.com/<handle>, claim moved to Identity with typeahead
 - The handle graduates to the platform identity (Buttondown shape, both surfaces): `sites.kindredquill.com/<handle>` AND `<handle>@kindredquill.email`. Worker platform-host branch resolves `handle:<name>` → slug from the HOSTNAMES KV (no collision: handles have no dots, hostnames always do) before falling back to the slug path; `HandleRouteJob` syncs the alias on change (delete old, put new). **Worker needs a wrangler deploy.**
 - Builds re-base on the handle: `SiteBuildJob` baseURL = platform host + (handle || slug); handle change triggers rebuild + alias re-point (Account after_update_commit pair).

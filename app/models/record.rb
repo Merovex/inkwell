@@ -11,15 +11,23 @@ class Record < ApplicationRecord
   has_many :notifications, as: :source, dependent: :nullify
 
   # Content types that may live in the envelope; grows as recordables are added.
-  RECORDABLE_TYPES = %w[ Post Comment ChatLine Message Book Series Collection Author Drip Drop Site Pulse Beat Goal Tally ]
+  RECORDABLE_TYPES = %w[ Post Comment ChatLine Message Book Series Collection Author Drip Drop Site Pulse Beat Goal Tally Bulletin ]
+  # Platform content belongs to the App itself, not any bucket — a NIL bucket
+  # is its tenancy (originate with an explicit bucket: nil).
+  PLATFORM_TYPES = %w[ Bulletin ].freeze
 
   delegated_type :recordable, types: RECORDABLE_TYPES, optional: true
   belongs_to :creator, class_name: "User", default: -> { Current.user }
   # Tenancy is stamped at birth and never changes: the bucket that owns this
   # record — an Account (the site) or a Circle. The active bucket is whichever
   # namespace set Current.bucket; account space leaves it unset, so we fall back
-  # to Current.account (the site is always the default owner).
-  belongs_to :bucket, polymorphic: true, default: -> { Current.bucket || Current.account }
+  # to Current.account (the site is always the default owner). Platform types
+  # are the one exception — no bucket at all, and the default must decide that
+  # HERE: `default:` fires whenever the association is nil, so an explicit
+  # `bucket: nil` at create can never beat it.
+  belongs_to :bucket, polymorphic: true, optional: true,
+    default: -> { Current.bucket || Current.account unless PLATFORM_TYPES.include?(recordable_type) }
+  validates :bucket, presence: true, unless: -> { PLATFORM_TYPES.include?(recordable_type) }
 
   # Self-referential threading: a comment's record will parent to the record it
   # comments on; same mechanism for any future child content.
@@ -56,13 +64,15 @@ class Record < ApplicationRecord
   scope :goals, -> { where(recordable_type: "Goal") }
   scope :tickets, -> { where(recordable_type: "Ticket") }
   scope :tallies, -> { where(recordable_type: "Tally") }
+  scope :bulletins, -> { where(recordable_type: "Bulletin") }
 
   before_destroy :destroy_versions
 
   # Birth of a record: the row must exist before its first version can carry
   # record_id, then the cursor points at that version — one transaction. The
   # record's creator is the first version's author, always. Child content
-  # (comments) passes the record it hangs from as parent.
+  # (comments) passes the record it hangs from as parent. Platform types get
+  # their nil bucket from the bucket default above — by type, not by caller.
   def self.originate(version, parent: nil)
     transaction do
       create!(recordable_type: version.class.name, creator: version.creator, parent: parent).tap do |record|

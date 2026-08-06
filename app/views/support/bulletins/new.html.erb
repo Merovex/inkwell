@@ -1,0 +1,8 @@
+<% content_for :title, "New bulletin — Inkwell" %>
+<% content_for :canvas_class, "canvas--fill" %>
+
+<%= render "admin/shared/canvas_head", crumbs: [["Bulletins", support_bulletins_path], ["New bulletin", nil]], menu: false do %>
+  <%= render "composer_actions", bulletin: @bulletin %>
+<% end %>
+
+<%= render "form", bulletin: @bulletin, url: support_bulletins_path %>

@@ -24,20 +24,18 @@
           <% else %>
             <span class="logo-upload__placeholder" aria-hidden="true">No logo</span>
           <% end %>
-          <div class="logo-upload__controls">
-            <%# A styled label opens the (hidden) picker — like the avatar control. %>
-            <label class="button">
-              <%= @site.logo.attached? ? "Change logo…" : "Upload a logo…" %>
-              <%= f.file_field :logo, accept: Site::LOGO_CONTENT_TYPES.join(","), hidden: true %>
+          <%# A styled label opens the (hidden) picker — like the avatar control. %>
+          <label class="button">
+            <%= @site.logo.attached? ? "Change logo…" : "Upload a logo…" %>
+            <%= f.file_field :logo, accept: Site::LOGO_CONTENT_TYPES.join(","), hidden: true %>
+          </label>
+          <% if @site.logo.attached? %>
+            <label class="logo-upload__remove">
+              <%= check_box_tag "site[remove_logo]", "1" %>
+              Remove logo and use the wordmark
             </label>
-            <% if @site.logo.attached? %>
-              <label class="logo-upload__remove">
-                <%= check_box_tag "site[remove_logo]", "1" %>
-                Remove logo and use the wordmark
-              </label>
-            <% end %>
-            <p class="field__hint u-text-muted">Shown in the public site header. JPG, PNG, AVIF, WebP, or SVG, up to <%= Site::LOGO_MAX_SIZE / 1.megabyte %> MB.</p>
-          </div>
+          <% end %>
+          <p class="field__hint u-text-muted">Shown in the public site header. JPG, PNG, AVIF, WebP, or SVG, up to <%= Site::LOGO_MAX_SIZE / 1.megabyte %> MB.</p>
         </div>
 
         <div class="field-row">

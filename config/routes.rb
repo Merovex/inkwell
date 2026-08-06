@@ -56,6 +56,12 @@ Rails.application.routes.draw do
     # /jobs); a status change is a revision, updated through the nested
     # singular status resource — CRUD, no custom verbs.
     scope module: :support do
+      # Platform bulletins (announcements to every user, docs/log 2026-08-06):
+      # authored here by root staff; publish/schedule ride the Publishable
+      # ladder. Declared BEFORE tickets — its path: "support" wildcard (GET
+      # /support/:id) would otherwise swallow /support/bulletins as a ticket
+      # id. Readers get the top-level /bulletins below.
+      resources :bulletins, path: "support/bulletins", only: %i[index new create edit update], as: :support_bulletins
       resources :tickets, path: "support", only: %i[index new create show] do
         resources :comments, only: %i[new create]
       end
@@ -66,6 +72,9 @@ Rails.application.routes.draw do
         end
       end
     end
+
+    # Announcements, readable by any signed-in user — the bell links here.
+    resources :bulletins, only: %i[index show]
 
     # The bell: opening the flyout marks everything read; the index is the
     # full 30-day window behind the flyout's "See all".

@@ -1,0 +1,17 @@
+<% content_for :title, "#{@bulletin.title} — Inkwell" %>
+
+<%= render "admin/shared/canvas_head", crumbs: [["Announcements", bulletins_path], [@bulletin.title, nil]] %>
+
+<article class="u-stack u-stack-double">
+  <header class="perma-header">
+    <h1 class="perma-header__title"><%= @bulletin.title %></h1>
+    <p class="u-text-muted">An announcement from <%= @record.creator.display_name %> at Kindred Quill<%
+      %><% if @bulletin.published_at %> •
+      <time datetime="<%= @bulletin.published_at.iso8601 %>"><%= l @bulletin.published_at.to_date, format: :long %></time><% end %></p>
+  </header>
+
+  <div class="u-cluster u-cluster-top">
+    <span class="avatar list__avatar" aria-hidden="true"><%= avatar_content(@record.creator) %></span>
+    <div class="prose u-flow"><%= @bulletin.content %></div>
+  </div>
+</article>

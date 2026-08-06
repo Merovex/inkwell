@@ -1,0 +1,35 @@
+<% content_for :title, "Bulletins — Inkwell" %>
+
+<%= render "admin/shared/canvas_head", crumbs: [["Bulletins", nil]], menu: false do %>
+  <%= link_to new_support_bulletin_path, class: "button button--primary" do %>
+    <%= inline_svg_tag "lucide/plus.svg", class: "lucide", size: "16px" %> New bulletin
+  <% end %>
+<% end %>
+
+<header class="perma-header">
+  <h1 class="perma-header__title">Bulletins</h1>
+</header>
+
+<% if @bulletins.any? %>
+  <div class="list">
+    <% @bulletins.each do |bulletin| %>
+      <%= render "shared/list_item",
+            href: edit_support_bulletin_path(bulletin.record),
+            title: bulletin.title,
+            avatar_user: bulletin.record.creator,
+            author: bulletin.record.creator.display_name,
+            date: (l(bulletin.published_at.to_date, format: :short) if bulletin.published?),
+            badge: (bulletin.status unless bulletin.published?),
+            badge_variant: ("warning" if bulletin.scheduled?),
+            scheduled_at: (bulletin.published_at if bulletin.scheduled?),
+            excerpt: plain_excerpt(bulletin.content) %>
+    <% end %>
+  </div>
+<% else %>
+  <div class="empty">
+    <span class="empty__icon"><%= inline_svg_tag "lucide/inbox.svg", class: "lucide", size: "40px" %></span>
+    <p class="empty__title">No bulletins yet</p>
+    <p class="empty__text">Announce a change to every user on the platform.</p>
+    <div class="empty__actions"><%= link_to "New bulletin", new_support_bulletin_path, class: "button button--primary" %></div>
+  </div>
+<% end %>

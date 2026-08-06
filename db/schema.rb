@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.2].define(version: 2026_08_06_140100) do
+ActiveRecord::Schema[8.2].define(version: 2026_08_06_210001) do
   create_table "account_users", force: :cascade do |t|
     t.integer "account_id", null: false
     t.integer "user_id", null: false
@@ -228,6 +228,20 @@ ActiveRecord::Schema[8.2].define(version: 2026_08_06_140100) do
     t.integer "complained_count", default: 0, null: false
     t.integer "unsubscribed_count", default: 0, null: false
     t.index ["record_id"], name: "index_broadcasts_on_record_id", unique: true
+  end
+
+  create_table "bulletins", force: :cascade do |t|
+    t.string "title", null: false
+    t.string "status", default: "drafted", null: false
+    t.datetime "published_at"
+    t.datetime "pinned_at"
+    t.integer "record_id"
+    t.integer "creator_id", null: false
+    t.integer "body_id", null: false
+    t.string "event", default: "created", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["record_id"], name: "index_bulletins_on_record_id"
   end
 
   create_table "categories", force: :cascade do |t|
@@ -564,8 +578,8 @@ ActiveRecord::Schema[8.2].define(version: 2026_08_06_140100) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.datetime "purge_after"
-    t.string "bucket_type", null: false
-    t.integer "bucket_id", null: false
+    t.string "bucket_type"
+    t.integer "bucket_id"
     t.datetime "archived_at"
     t.index ["bucket_type", "bucket_id", "recordable_type"], name: "index_records_on_bucket_and_recordable_type"
     t.index ["creator_id"], name: "index_records_on_creator_id"

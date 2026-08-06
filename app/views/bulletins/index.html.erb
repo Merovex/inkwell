@@ -1,0 +1,27 @@
+<% content_for :title, "Announcements — Inkwell" %>
+
+<%= render "admin/shared/canvas_head", crumbs: [["Announcements", nil]] %>
+
+<header class="perma-header">
+  <h1 class="perma-header__title">Announcements</h1>
+</header>
+
+<% if @bulletins.any? %>
+  <div class="list">
+    <% @bulletins.each do |bulletin| %>
+      <%= render "shared/list_item",
+            href: bulletin_path(bulletin.record.to_slug),
+            title: bulletin.title,
+            avatar_user: bulletin.record.creator,
+            author: bulletin.record.creator.display_name,
+            date: l(bulletin.published_at.to_date, format: :short),
+            excerpt: plain_excerpt(bulletin.content) %>
+    <% end %>
+  </div>
+<% else %>
+  <div class="empty">
+    <span class="empty__icon"><%= inline_svg_tag "lucide/inbox.svg", class: "lucide", size: "40px" %></span>
+    <p class="empty__title">No announcements yet</p>
+    <p class="empty__text">Platform news lands here — and rings your bell.</p>
+  </div>
+<% end %>
