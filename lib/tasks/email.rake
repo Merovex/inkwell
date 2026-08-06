@@ -18,7 +18,12 @@ namespace :email do
   IDENTITIES = {
     "verify.kindredquill.com" => { config_set: "inkwell-transactional", tenant: "platform-auth" },
     "notify.kindredquill.com" => { config_set: "inkwell-marketing",     tenant: "platform-circles" },
-    "news.kindredquill.com"   => { config_set: "inkwell-marketing",     tenant: nil } # site tenants attach later
+    "news.kindredquill.com"   => { config_set: "inkwell-marketing",     tenant: nil }, # site tenants attach later
+    # The ROOT is a receive-only identity: SES email receiving only accepts
+    # mail for recipient domains that are VERIFIED identities in the account
+    # (verkilo.com in this account exists for the same reason). It still never
+    # sends — no config set, no MAIL FROM, SPF -all stands.
+    "kindredquill.com"        => { config_set: nil, tenant: nil, mail_from: false }
   }.freeze
 
   TENANTS = %w[ platform-auth platform-circles ].freeze
@@ -74,13 +79,17 @@ namespace :email do
 
     IDENTITIES.each do |domain, opts|
       if dry
-        puts "would create identity #{domain} (default config set #{opts[:config_set]}) + MAIL FROM bounce.#{domain}"
+        extras = opts[:mail_from] == false ? "receive-only, no MAIL FROM" :
+                 "default config set #{opts[:config_set]}, MAIL FROM bounce.#{domain}"
+        puts "would create identity #{domain} (#{extras})"
         dkim[domain] = %w[ token1 token2 token3 ]
         next
       end
 
       begin
-        resp = ses.create_email_identity(email_identity: domain, configuration_set_name: opts[:config_set])
+        params = { email_identity: domain }
+        params[:configuration_set_name] = opts[:config_set] if opts[:config_set]
+        resp = ses.create_email_identity(**params)
         dkim[domain] = resp.dkim_attributes.tokens
         puts "created identity #{domain}"
       rescue Aws::SESV2::Errors::AlreadyExistsException
@@ -90,11 +99,14 @@ namespace :email do
       end
 
       # Custom MAIL FROM aligns SPF with the subdomain (the runbook pattern).
-      ses.put_email_identity_mail_from_attributes(
-        email_identity: domain,
-        mail_from_domain: "bounce.#{domain}",
-        behavior_on_mx_failure: "USE_DEFAULT_VALUE"
-      )
+      # Receive-only identities (the root) skip it — they never send.
+      unless opts[:mail_from] == false
+        ses.put_email_identity_mail_from_attributes(
+          email_identity: domain,
+          mail_from_domain: "bounce.#{domain}",
+          behavior_on_mx_failure: "USE_DEFAULT_VALUE"
+        )
+      end
     end
 
     TENANTS.each do |name|
@@ -134,15 +146,17 @@ namespace :email do
     puts <<~DNS
 
       ── DNS records to publish for kindredquill.com ─────────────────────────
-      #{IDENTITIES.keys.map do |domain|
+      #{IDENTITIES.map do |domain, opts|
           tokens = dkim[domain]
-          [
-            tokens.map { |t| "#{t}._domainkey.#{domain}.  CNAME  #{t}.dkim.amazonses.com." },
-            "bounce.#{domain}.  MX   10 #{feedback_host}.",
-            %(bounce.#{domain}.  TXT  "v=spf1 include:amazonses.com -all"),
-            %(_dmarc.#{domain}.  TXT  "v=DMARC1; p=quarantine; rua=mailto:support@kindredquill.com"),
-            ""
-          ]
+          lines = tokens.map { |t| "#{t}._domainkey.#{domain}.  CNAME  #{t}.dkim.amazonses.com." }
+          unless opts[:mail_from] == false
+            lines += [
+              "bounce.#{domain}.  MX   10 #{feedback_host}.",
+              %(bounce.#{domain}.  TXT  "v=spf1 include:amazonses.com -all"),
+              %(_dmarc.#{domain}.  TXT  "v=DMARC1; p=quarantine; rua=mailto:support@kindredquill.com")
+            ]
+          end
+          lines + [ "" ]
         end.flatten.join("\n")}
       # Root lock (docs/email-architecture.md — the root never sends):
       kindredquill.com.  TXT  "v=spf1 -all"
@@ -253,6 +267,32 @@ namespace :email do
         3. re-run this task if the subscription shows pending, to re-request
         4. LAST: add DNS  kindredquill.com.  MX  10 inbound-smtp.#{region}.amazonaws.com.
     NEXT
+  end
+
+  desc "Show the ACTIVE receipt rule set and every rule in it (read-only)"
+  task inspect_inbound: :environment do
+    region = ENV["AWS_REGION"].presence || Rails.application.credentials.dig(:ses, :region)
+    creds  = Aws::Credentials.new(
+      ENV["AWS_ACCESS_KEY_ID"].presence  || Rails.application.credentials.dig(:ses, :access_key_id),
+      ENV["AWS_SECRET_ACCESS_KEY"].presence || Rails.application.credentials.dig(:ses, :secret_access_key)
+    )
+    ses = Aws::SES::Client.new(region:, credentials: creds)
+    active = ses.describe_active_receipt_rule_set
+    if active.metadata.nil?
+      puts "NO active receipt rule set — inbound mail is rejected at RCPT."
+      next
+    end
+    puts "active set: #{active.metadata.name}"
+    active.rules.each do |rule|
+      puts "  rule #{rule.name.inspect} enabled=#{rule.enabled} recipients=#{rule.recipients.inspect}"
+      rule.actions.each do |a|
+        if a.s3_action
+          puts "    → S3 bucket=#{a.s3_action.bucket_name} prefix=#{a.s3_action.object_key_prefix.inspect} topic=#{a.s3_action.topic_arn}"
+        else
+          puts "    → #{a.to_h.compact.keys.join(", ")}"
+        end
+      end
+    end
   end
 
   desc "Add the support receipt rule to an already-active rule set (ACTIVE_SET=name)"

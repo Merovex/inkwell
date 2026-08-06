@@ -29,6 +29,10 @@
   <div class="menu menu--user" popover id="user-menu">
     <button type="button" class="menu__item">My Profile</button>
     <%= link_to "Settings", user_settings_path, class: "menu__item" %>
+    <% if Current.user&.root? %>
+      <%# Platform staff: the App's support inbox (app host, never slugged). %>
+      <%= link_to "Support inbox", missives_path(script_name: ""), class: "menu__item" %>
+    <% end %>
     <hr class="menu__separator">
     <div class="menu__row">
       <button type="button" class="menu__item theme-toggle" data-mode="light"

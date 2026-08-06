@@ -44,6 +44,11 @@ Rails.application.routes.draw do
     # Solid Queue dashboard — platform staff only (Admin::JobsBaseController
     # gates on root); app host only, so tenant domains never even route it.
     mount MissionControl::Jobs::Engine, at: "/jobs"
+    # The platform support inbox: support@kindredquill.com mail-in, root
+    # staff only (Support::MissivesController gates like /jobs). App host
+    # only — this is the App's mail, not any Site's.
+    resources :missives, only: %i[index show destroy], module: :support
+
     # The bell: opening the flyout marks everything read; the index is the
     # full 30-day window behind the flyout's "See all".
     resources :notifications, only: :index
@@ -316,7 +321,7 @@ Rails.application.routes.draw do
       # Contact-form submissions (Missives) — domain-admin only. Read the feed +
       # its Trash tab; destroy purges one outright. There's no create/edit — they
       # arrive from the public /contact form and are confirmed by double opt-in.
-      resources :missives, only: %i[index destroy]
+      resources :missives, only: %i[index show destroy]
 
       # Public-site traffic dashboard (Ahoy) — domain-admin only.
       resource :analytics, only: :show

@@ -17,15 +17,24 @@ class SupportMailbox < ApplicationMailbox
   # Never ingest our own sending identities (bounce loops, misdirected DSNs).
   OWN_DOMAINS = /(?:\.|@)(?:kindredquill\.com|merovex\.press)\z/i
 
+  # SES writes one of these to the bucket every time a receipt rule is
+  # created/updated — operational noise, not support mail.
+  SES_SETUP_PROBE = /\Ano-reply-aws@amazon\.com\z/i
+
   def process
     return if sender_email.blank? || sender_email.match?(OWN_DOMAINS)
+    return if sender_email.match?(SES_SETUP_PROBE)
 
-    # All queries run inside the designated account's tenancy (ADR 0017 guard).
-    Current.with_account(support_account) do
+    # Platform mail: no account (the App's inbox), so the tenancy guard needs
+    # the deliberate escape hatch (ADR 0017) — and Current.without_account,
+    # or the belongs_to default would claim any ambient account for the row.
+    Current.without_account do
+    Current.allowing_unscoped_tenancy do
       break if mail.message_id.present? &&
-               Current.account.missives.exists?(source_message_id: mail.message_id)
+               Missive.platform.exists?(source_message_id: mail.message_id)
 
-      Current.account.missives.create!(
+      Missive.create!(
+        account: nil,
         name: sender_name.presence || sender_email,
         email_address: sender_email,
         subject: mail.subject.presence || "(no subject)",
@@ -34,20 +43,13 @@ class SupportMailbox < ApplicationMailbox
         confirmed_at: Time.current
       )
     end
+    end
   rescue ActiveRecord::RecordInvalid, ActiveRecord::RecordNotUnique => e
     # Spam with a 6k-char body or a race on the unique index — drop it quietly.
     Rails.logger.info("SupportMailbox dropped #{mail.message_id}: #{e.message}")
   end
 
   private
-    # Platform support lands on the designated account's Missive feed
-    # (mailin.account_slug credential; defaults to the first account — Merovex
-    # Press as tenant one). Revisit when there's a platform account proper.
-    def support_account
-      slug = Rails.application.credentials.dig(:mailin, :account_slug)
-      (slug.present? && Account.find_by(slug: slug)) || Account.order(:id).first
-    end
-
     def sender_email
       @sender_email ||= Array(mail.from).first.to_s.strip.downcase
     end

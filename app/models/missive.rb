@@ -19,8 +19,13 @@ class Missive < ApplicationRecord
   TRASH_DAYS     = 60   # then hidden in Trash until this age, then purged
   UNCONFIRMED_TTL = 7.days # never-confirmed submissions swept after this
 
-  # Whose site's contact form this arrived through.
-  belongs_to :account, default: -> { Current.account }
+  # Whose site's contact form this arrived through — or nil for PLATFORM
+  # support mail (support@kindredquill.com via SupportMailbox), which belongs
+  # to the App and is read by root staff at /missives, not any Site's admin.
+  belongs_to :account, optional: true, default: -> { Current.account }
+
+  # The platform support inbox (root staff only; see Support::MissivesController).
+  scope :platform, -> { where(account_id: nil) }
 
   normalizes :email_address, with: -> { it.strip.downcase }
 

@@ -1,14 +1,14 @@
-<% content_for :title, "Missives — Inkwell" %>
+<% content_for :title, "Support inbox — Inkwell" %>
 
-<%= render "admin/shared/canvas_head", crumbs: [["Missives", nil]] %>
+<%= render "admin/shared/canvas_head", crumbs: [["Support inbox", nil]] %>
 
 <header class="perma-header">
-  <h1 class="perma-header__title">Missives</h1>
+  <h1 class="perma-header__title">Support inbox</h1>
   <div class="perma-header__content">
-    <%# One state at a time; each tab links to that state's view. %>
+    <p class="u-text-muted">Mail to support@kindredquill.com — the App's inbox, not any Site's.</p>
     <nav class="perma-header__toolbar" aria-label="Message states">
-      <% Admin::MissivesController::STATES.each do |state| %>
-        <%= link_to admin_missives_path(state: state),
+      <% Support::MissivesController::STATES.each do |state| %>
+        <%= link_to missives_path(state: state),
               class: "button button--small#{' button--primary' if state == @state}",
               aria: { current: ("page" if state == @state) } do %>
           <%= state == "trashed" ? "Trash" : "Recent" %>
@@ -23,12 +23,11 @@
   <div class="list">
     <% @missives.each do |missive| %>
       <% actions = capture do %>
-        <%# Reply opens the admin's own mail client, pre-composed as a reply. %>
         <%= link_to missive_reply_mailto(missive), class: "button button--small" do %>
           <%= inline_svg_tag "lucide/message-square.svg", class: "lucide", size: "16px" %> Reply
         <% end %>
         <% if @state == "active" %>
-          <%= button_to admin_missive_path(missive, state: @state), method: :delete,
+          <%= button_to missive_path(missive), method: :delete,
                 class: "button button--icon button--ghost", title: "Move to Trash",
                 "aria-label": "Move message from #{missive.name} to Trash",
                 form: { data: { turbo_confirm: "Move this message to Trash?" } } do %>
@@ -37,7 +36,7 @@
         <% end %>
       <% end %>
       <%= render "shared/list_item",
-            href: admin_missive_path(missive),
+            href: missive_path(missive),
             title: missive.subject,
             avatar: false,
             author: "#{missive.name} <#{missive.email_address}>",
@@ -49,13 +48,7 @@
 <% else %>
   <div class="empty">
     <span class="empty__icon"><%= inline_svg_tag "lucide/inbox.svg", class: "lucide", size: "40px" %></span>
-    <p class="empty__title">No <%= @state == "trashed" ? "trashed" : "recent" %> missives</p>
-    <p class="empty__text">
-      <% if @state == "trashed" %>
-        Trashed missives and those older than 30 days rest here until they're purged at 60 days.
-      <% else %>
-        Confirmed contact messages from the last 30 days appear here, newest first.
-      <% end %>
-    </p>
+    <p class="empty__title"><%= @state == "trashed" ? "Trash is empty" : "No messages" %></p>
+    <p class="empty__text">Mail sent to support@kindredquill.com lands here.</p>
   </div>
 <% end %>
