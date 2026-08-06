@@ -1,0 +1,48 @@
+/*
+ * .copy-field — a read-only value in an input-look well with a Copy button
+ * segmented on the end; the clipboard controller reveals the u-copied-veil.
+ * Structure (BEM): .copy-field > .copy-field__value + .copy-field__button
+ * Markup lives in the shared partial: app/views/shared/_copy_field.html.erb.
+ */
+@layer components {
+  .copy-field {
+    position: relative;               /* the veil covers this box */
+    display: flex;
+    align-items: stretch;
+    inline-size: 100%;
+    overflow: hidden;
+    background: var(--canvas);
+    border: var(--border-size-1) solid var(--line);
+    border-radius: var(--radius-ui);
+  }
+
+  .copy-field__value {
+    flex: 1 1 auto;
+    min-inline-size: 0;               /* let the text ellipsis in the flex row */
+    padding-block: calc(var(--u-pad) / 2);
+    padding-inline: calc(var(--u-pad) / 1.5);
+    border: none;
+    background: transparent;
+    color: var(--ink);
+    font: inherit;
+    font-family: var(--font-mono, ui-monospace, monospace);
+    font-size: var(--font-size-0);
+    text-overflow: ellipsis;
+  }
+  .copy-field__value:focus { outline: none; }
+
+  .copy-field__button {
+    flex: 0 0 auto;
+    border: none;
+    border-inline-start: var(--border-size-1) solid var(--line);
+    border-radius: 0;
+    padding-inline: var(--u-pad);
+    background: transparent;
+    color: var(--accent);
+    font: inherit;
+    font-weight: var(--font-weight-6);
+    cursor: pointer;
+  }
+  .copy-field__button:hover { background: color-mix(in oklab, var(--canvas), var(--ink) 6%); }
+  .copy-field__button:focus-visible { outline: var(--border-size-2) solid var(--accent); outline-offset: calc(-1 * var(--border-size-2)); }
+}

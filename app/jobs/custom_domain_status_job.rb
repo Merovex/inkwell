@@ -30,7 +30,11 @@ class CustomDomainStatusJob < ApplicationJob
     def refresh(domain)
       hostname = cf_client.get_custom_hostname(domain.cloudflare_id)
       domain.cloudflare_status = hostname.status
-      domain.update!(ssl_status: hostname.ssl_status, last_checked_at: Time.current)
+      # Cloudflare mints the DV-TXT record asynchronously (ssl "initializing"
+      # at creation) — backfill it so the DNS instructions can render.
+      domain.update!(ssl_status: hostname.ssl_status, last_checked_at: Time.current,
+        txt_name: hostname.txt_name || domain.txt_name,
+        txt_value: hostname.txt_value || domain.txt_value)
       domain.update!(status: "live") if domain.provisioned?
     rescue Cloudflare::Client::Error => error
       Rails.logger.warn("[custom-domain] poll failed for #{domain.hostname}: #{error.message}")

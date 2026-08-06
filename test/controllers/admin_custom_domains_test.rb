@@ -14,7 +14,8 @@ class AdminCustomDomainsTest < ActionDispatch::IntegrationTest
     sign_in_as users(:admin)
     get admin_custom_domains_path
     assert_response :success
-    assert_select "code", text: "_cf-custom-hostname.www.merovex.press"
-    assert_match Rails.configuration.x.cloudflare.cname_target, response.body
+    assert_select ".field__label", text: /_cf-custom-hostname\.www\.merovex\.press/
+    assert_select ".copy-field__value[value=?]", "tv"
+    assert_select ".copy-field__value[value=?]", Rails.configuration.x.cloudflare.cname_target
   end
 end

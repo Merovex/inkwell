@@ -11,66 +11,94 @@
     other four segments link back, deep-linking their tab. %>
 <div class="settings u-stack u-stack-double u-margin-block-start settings--wide u-center">
   <% domain_panel = capture do %>
-  <div class="u-stack u-stack-double">
+  <div class="u-stack u-stack-double u-full-width">
   <% if @domains.any? %>
     <% canonical = @domains.find(&:canonical?) || @domains.first %>
     <% apex = canonical.hostname.delete_prefix("www.") %>
+    <% all_live = @domains.all?(&:live?) %>
 
-    <section class="settings__section" aria-label="Connected domain">
-      <h2 class="settings__section-title"><%= apex %></h2>
-      <ul class="settings__list">
-        <% @domains.each do |domain| %>
-          <li>
-            <code><%= domain.hostname %></code>
-            <span class="badge badge--<%= domain.live? ? "ok" : "pending" %>"><%= domain.status %></span>
-            <% unless domain.live? %><span class="u-text-muted">SSL: <%= domain.ssl_status || "pending" %></span><% end %>
-          </li>
+    <section class="card" aria-label="Connected domain">
+      <header class="card__header u-cluster u-cluster-between">
+        <h2 class="card__title"><%= apex %></h2>
+        <% if all_live %>
+          <span class="badge badge--success">Live</span>
+        <% else %>
+          <span class="badge badge--warning">Waiting for DNS</span>
         <% end %>
-      </ul>
+      </header>
 
-      <% unless @domains.all?(&:live?) %>
-        <div class="settings__callout">
-          <h3>Add these DNS records at your registrar</h3>
-          <p class="u-text-muted">Type, name, value — that's what every registrar's form asks for.</p>
-
-          <p><strong>Record 1</strong> — Type: <code>CNAME</code> · Name: <code>www</code> ·
-             Target: <code><%= @cname_target %></code></p>
-
+      <div class="card__body u-stack">
+        <dl class="u-stack u-stack-half">
           <% @domains.each do |domain| %>
-            <% next if domain.txt_name.blank? %>
-            <p><strong>TXT for <%= domain.hostname %></strong> — Type: <code>TXT</code> ·
-               Name: <code><%= domain.txt_name %></code> ·
-               Value: <code><%= domain.txt_value %></code></p>
+            <div class="u-cluster">
+              <dt><code><%= domain.hostname %></code></dt>
+              <dd class="u-cluster u-cluster-tight">
+                <span class="badge badge--<%= { "live" => "success", "error" => "danger" }.fetch(domain.status, "warning") %>"><%= domain.status %></span>
+                <% unless domain.live? %>
+                  <span class="u-text-muted">certificate <%= (domain.ssl_status || "pending").humanize.downcase %></span>
+                <% end %>
+              </dd>
+            </div>
           <% end %>
+        </dl>
 
-          <p class="u-text-muted">
-            The bare <code><%= apex %></code> (no <code>www</code>) can't be a plain CNAME at most
-            registrars — point <code>www</code> as above and set up an apex → <code>www</code> redirect,
-            or use your registrar's ALIAS/flattening if it has one. We'll email you when the certificate
-            is live (usually within an hour).
-          </p>
-        </div>
-      <% end %>
+        <% unless all_live %>
+          <div class="u-stack">
+            <h3>Add these records where <%= apex %>'s DNS lives</h3>
 
-      <%= button_to "Disconnect this domain", admin_custom_domain_path(canonical), method: :delete, class: "button",
-            data: { turbo_confirm: "Disconnect #{apex}? Your site stops serving there until you reconnect." } %>
+            <%= render "shared/copy_field",
+                  label: "CNAME — name: www",
+                  value: @cname_target,
+                  hint: "Points www.#{apex} at your site." %>
+
+            <%= render "shared/copy_field",
+                  label: "ALIAS or flattened CNAME — name: @ (the bare #{apex})",
+                  value: @cname_target,
+                  hint: "Most DNS hosts call this ALIAS, ANAME, or CNAME flattening. If yours has none of " \
+                        "those at the root, set up a redirect from #{apex} to www.#{apex} instead." %>
+
+            <% @domains.each do |domain| %>
+              <% next if domain.txt_name.blank? %>
+              <%= render "shared/copy_field",
+                    label: "TXT — name: #{domain.txt_name}",
+                    value: domain.txt_value,
+                    hint: "Proves you control #{domain.hostname} so the certificate can issue before any traffic moves." %>
+            <% end %>
+
+            <% if @domains.all? { |d| d.txt_name.blank? } %>
+              <p class="u-text-muted">The TXT verification records are still being issued — check back in a minute.</p>
+            <% end %>
+
+            <p class="u-text-muted">We'll email you when the certificate is live (usually within the hour).</p>
+          </div>
+        <% end %>
+      </div>
+
+      <footer class="card__footer">
+        <%= button_to "Disconnect this domain", admin_custom_domain_path(canonical), method: :delete, class: "button",
+              data: { turbo_confirm: "Disconnect #{apex}? Your site stops serving there until you reconnect." } %>
+      </footer>
     </section>
   <% end %>
 
-  <section class="settings__section" aria-label="Connect a domain">
-    <h2 class="settings__section-title"><%= @domains.any? ? "Connect a different domain" : "Connect your domain" %></h2>
-    <p class="u-text-muted">Enter the domain you own (e.g. <code>merovex.press</code>). We register it and its
-       <code>www</code>, and give you the DNS records to add.</p>
+    <section class="card" aria-label="Connect a domain">
+      <header class="card__header">
+        <h2 class="card__title"><%= @domains.any? ? "Connect a different domain" : "Connect your domain" %></h2>
+      </header>
+      <div class="card__body u-stack">
+        <p class="u-text-muted">Enter the domain you own (e.g. <code>merovex.press</code>). We register it and its
+           <code>www</code>, and give you the DNS records to add.</p>
 
-    <%= form_with url: admin_custom_domains_path, method: :post, class: "settings" do |f| %>
-      <div class="field">
-        <%= f.label :hostname, "Domain", class: "field__label" %>
-        <%= f.text_field :hostname, class: "field__control", placeholder: "merovex.press",
-              autocapitalize: "off", autocorrect: "off", spellcheck: "false" %>
+        <%= form_with url: admin_custom_domains_path, method: :post, class: "u-stack" do |f| %>
+          <div class="field">
+            <%= f.label :hostname, "Domain", class: "field__label" %>
+            <%= f.text_field :hostname, class: "field__control", placeholder: "merovex.press",
+                  autocapitalize: "off", autocorrect: "off", spellcheck: "false" %>
+          </div>
+          <div><%= f.submit "Connect domain", class: "button button--primary" %></div>
+        <% end %>
       </div>
-      <%= f.submit "Connect domain", class: "button button--primary" %>
-    <% end %>
-  </section>
+    </section>
   </div>
   <% end %>
 

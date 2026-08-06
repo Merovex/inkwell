@@ -141,6 +141,15 @@
       </div>
     </section>
 
+    <%# ---- Copy field (shared/_copy_field) ---- %>
+    <section class="sg-section">
+      <p class="sg-h">Copy field — <code>render "shared/copy_field", label:, value:, hint:</code></p>
+      <%= render "shared/copy_field",
+            label: "CNAME — name: www",
+            value: "sites.kindredquill.com",
+            hint: "A read-only value with a one-click Copy; the veil confirms." %>
+    </section>
+
     <%# ---- Cards ---- %>
     <section class="sg-section">
       <p class="sg-h">Cards</p>
