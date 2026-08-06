@@ -41,7 +41,7 @@
     </nav>
 
     <header class="fk-book-header">
-      <img class="fk-book-cover" src="{{ site.Home.RelPermalink }}{{ .Params.cover }}" alt="Cover of {{ .Title }}">
+      {{ partial "img.html" (dict "class" "fk-book-cover" "src" .Params.cover "alt" (printf "Cover of %s" .Title) "loading" "eager") }}
       <div>
         <p class="fk-kicker">{{ with $series }}{{ .title }} &middot; {{ end }}Book {{ .Params.position }} &middot; {{ substr .Params.publication_date 0 4 }}</p>
         <h1>{{ .Title }}</h1>

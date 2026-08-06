@@ -12,8 +12,8 @@
       {{ $a := . }}
       <li class="fk-author-card">
         {{ with $a.avatar }}
-        <img class="fk-author-portrait" src="{{ site.Home.RelPermalink }}{{ . }}"
-             alt="Portrait of {{ $a.name }}" loading="lazy">
+        {{ partial "img.html" (dict "class" "fk-author-portrait" "src" .
+             "alt" (printf "Portrait of %s" $a.name)) }}
         {{ end }}
         <p class="fk-author-name">{{ $a.name }}</p>
         {{ with $a.tagline }}<p class="fk-author-tagline">{{ . }}</p>{{ end }}

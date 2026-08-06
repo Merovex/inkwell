@@ -1,3 +1,5 @@
+require "vips" # measured dimensions ride image_sizes.json (not only variants)
+
 # Phase 2's exporter (docs/hugo-build-pipeline.md §4): assembles one
 # account's build workspace — the versioned JSON transport that Hugo themes
 # consume, the referenced image blobs, the generated hugo.toml (the one
@@ -33,6 +35,8 @@ class Exporter
     write "series.json", series_json
     write "collections.json", collections_json
     write "posts.json",  posts_json
+    # Written LAST — populated as the builders above copy images.
+    write "image_sizes.json", image_sizes
     write_hugo_config
     link_theme
     workspace
@@ -246,7 +250,22 @@ class Exporter
       bytes, ext = image_payload(attachment, prefix)
       filename = "#{prefix}-#{File.basename(attachment.blob.filename.sanitized, '.*')}#{ext}"
       workspace.join("assets/images").tap(&:mkpath).join(filename).binwrite(bytes)
-      "images/#{filename}"
+      "images/#{filename}".tap { |path| measure(path, bytes) }
+    end
+
+    # Pixel dimensions of every exported image, keyed by contract path — the
+    # theme's img partial stamps them as width/height attributes so the browser
+    # reserves layout space before the file arrives (the CLS fix). Unreadable
+    # buffers (SVG) just aren't measured; the attributes are omitted.
+    def image_sizes
+      @image_sizes ||= {}
+    end
+
+    def measure(path, bytes)
+      image = Vips::Image.new_from_buffer(bytes, "")
+      image_sizes[path] = [ image.width, image.height ]
+    rescue Vips::Error
+      nil
     end
 
     def image_payload(attachment, prefix)

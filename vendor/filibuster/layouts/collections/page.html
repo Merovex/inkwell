@@ -39,7 +39,7 @@
     </nav>
 
     <header class="fk-book-header">
-      {{ with $first }}<img class="fk-book-cover" src="{{ site.Home.RelPermalink }}{{ .cover }}" alt="Cover of {{ .title }}">{{ end }}
+      {{ with $first }}{{ partial "img.html" (dict "class" "fk-book-cover" "src" .cover "alt" (printf "Cover of %s" .title) "loading" "eager") }}{{ end }}
       <div>
         <p class="fk-kicker">A collection &middot; {{ len $installments }} {{ if eq (len $installments) 1 }}book{{ else }}books{{ end }}</p>
         <h1>{{ .Title }}</h1>

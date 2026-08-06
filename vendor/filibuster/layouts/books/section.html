@@ -44,7 +44,7 @@
         {{ range $b := $g.books }}
         <li>
           <a href="{{ site.Home.RelPermalink }}books/{{ $b.slug }}/">
-            {{ with $b.cover }}<img src="{{ site.Home.RelPermalink }}{{ . }}" alt="Cover of {{ $b.title }}" loading="lazy">{{ end }}
+            {{ with $b.cover }}{{ partial "img.html" (dict "src" . "alt" (printf "Cover of %s" $b.title)) }}{{ end }}
             <span class="fk-cover-title">{{ $b.title }}</span>
             <span class="fk-cover-meta">{{ with $b.position }}Book {{ . }} &middot; {{ end }}{{ substr $b.publication_date 0 4 }}</span>
           </a>

@@ -21,7 +21,7 @@
        only the first, the fan variant fans them all. */}}
   <a class="fk-series-cover" href="{{ site.Home.RelPermalink }}{{ $kind }}/{{ $s.slug }}/" tabindex="-1" aria-hidden="true">
     {{ range $installments }}{{ with .cover }}
-    <img src="{{ site.Home.RelPermalink }}{{ . }}" alt="" loading="lazy">
+    {{ partial "img.html" (dict "src" . "alt" "") }}
     {{ end }}{{ end }}
   </a>
   {{ end }}

@@ -142,7 +142,8 @@
       {{ $titleAsAlt := ne $nav.title_as_alt false }}
       <a class="fk-brand{{ if and $site.logo (not $titleAsAlt) }} fk-brand-lockup{{ end }}" href="{{ site.Home.RelPermalink }}">
         {{- with $site.logo -}}
-        <img class="fk-brand-logo" src="{{ site.Home.RelPermalink }}{{ . }}" alt="{{ if $titleAsAlt }}{{ $site.name }}{{ end }}">
+        {{- $logoAlt := "" }}{{ if $titleAsAlt }}{{ $logoAlt = $site.name }}{{ end -}}
+        {{- partial "img.html" (dict "class" "fk-brand-logo" "src" . "alt" $logoAlt "loading" "eager") -}}
         {{- if not $titleAsAlt }}<span class="fk-brand-name">{{ $site.name }}</span>{{ end -}}
         {{- else -}}
         {{ $site.name }}<span class="fk-brand-sub">{{ $author.name }}</span>

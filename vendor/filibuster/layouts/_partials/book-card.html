@@ -8,7 +8,7 @@
 <article class="fk-series" aria-labelledby="book-{{ $i }}-title">
   {{ with $b.cover }}
   <a class="fk-series-cover" href="{{ site.Home.RelPermalink }}books/{{ $b.slug }}/" tabindex="-1" aria-hidden="true">
-    <img src="{{ site.Home.RelPermalink }}{{ . }}" alt="" loading="lazy">
+    {{ partial "img.html" (dict "src" . "alt" "") }}
   </a>
   {{ end }}
   <div class="fk-series-body">

@@ -2,8 +2,8 @@
 <section class="fk-author-band" aria-labelledby="author-title">
   <div class="fk-shell fk-author-inner">
     {{ with $author.avatar }}
-    <img class="fk-portrait fk-portrait-band" src="{{ site.Home.RelPermalink }}{{ . }}"
-         alt="Portrait of {{ $author.name }}" loading="lazy">
+    {{ partial "img.html" (dict "class" "fk-portrait fk-portrait-band" "src" .
+         "alt" (printf "Portrait of %s" $author.name)) }}
     {{ end }}
     <div>
       <h2 id="author-title" class="fk-section-title">{{ $author.name }}</h2>

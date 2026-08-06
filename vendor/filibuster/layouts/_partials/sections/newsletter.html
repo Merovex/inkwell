@@ -15,7 +15,7 @@
 <section class="fk-newsletter-band" aria-labelledby="newsletter-heading">
   {{/* Photo backdrop: the uploaded signup photo, else the author photo. */}}
   <div class="fk-newsletter-bg" aria-hidden="true">
-    {{ with or $site.newsletter_photo $author.avatar }}<img src="{{ site.Home.RelPermalink }}{{ . }}" alt="" loading="lazy">{{ end }}
+    {{ with or $site.newsletter_photo $author.avatar }}{{ partial "img.html" (dict "src" . "alt" "") }}{{ end }}
   </div>
   <div class="fk-shell">
     <div class="fk-newsletter-card">

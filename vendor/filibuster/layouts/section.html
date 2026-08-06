@@ -29,7 +29,7 @@
       <ol class="fk-title-list">
         {{ range .Pages.ByDate.Reverse }}
         <li class="fk-title-item">
-          {{ with .Params.cover }}<img src="{{ site.Home.RelPermalink }}{{ . }}" alt="Cover of {{ $.Title }}" loading="lazy">{{ end }}
+          {{ with .Params.cover }}{{ partial "img.html" (dict "src" . "alt" (printf "Cover of %s" $.Title)) }}{{ end }}
           <div>
             <a class="fk-title-name" href="{{ .RelPermalink }}">{{ .Title }}</a>
             <span class="fk-title-meta">{{ with .Params.publication_date }}{{ substr . 0 4 }}{{ end }}</span>
