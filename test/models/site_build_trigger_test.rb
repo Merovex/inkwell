@@ -16,6 +16,14 @@ class SiteBuildTriggerTest < ActiveSupport::TestCase
     end
   end
 
+  test "a born-published post schedules the site build" do
+    post = Post.new(title: "Hello", creator: users(:admin),
+      status: "published", published_at: Time.current)
+    assert_enqueued_with(job: SiteBuildJob, args: [ accounts(:merovex) ]) do
+      Record.originate(post) # create + publish in one transaction
+    end
+  end
+
   test "a saved design schedules the site build" do
     assert_enqueued_with(job: SiteBuildJob, args: [ accounts(:merovex) ]) do
       accounts(:merovex).update!(design: { "design" => {} })

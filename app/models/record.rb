@@ -83,8 +83,17 @@ class Record < ApplicationRecord
   # static build. Only record-row UPDATES fire — draft churn amends the
   # version row in place and never moves the cursor, so drafts don't build.
   # Mutable types (Site, Author) hook their own models for the same reason.
+  #
+  # Born-published content (create + publish in one transaction — e.g. the
+  # posts controller's publish-at-create) commits as a CREATE, so the update
+  # callback never fires; the create hook catches exactly that case. Types
+  # without published? (Site at account birth) stay quiet.
+  # Distinct method names — a second after_*_commit registering the same
+  # method would silently replace the first. originate's create+update in one
+  # transaction commits as a CREATE, so only the create hook sees new records.
   STATIC_SITE_TYPES = %w[ Site Post Book Series Collection Author ].freeze
   after_update_commit :schedule_site_build
+  after_create_commit :schedule_site_build_if_born_published
 
   # Insert the next immutable version and repoint the cursor. Returns the
   # version (unsaved, with errors, when invalid — the cursor then stays put).
@@ -201,5 +210,12 @@ class Record < ApplicationRecord
     def schedule_site_build
       return unless bucket_type == "Account" && STATIC_SITE_TYPES.include?(recordable_type)
       SiteBuildJob.schedule(bucket)
+    end
+
+    # Born-published content (create + publish in one transaction, e.g. the
+    # posts controller's publish-at-create) builds; drafts stay quiet, as do
+    # types without published? (Site at account birth).
+    def schedule_site_build_if_born_published
+      schedule_site_build if recordable.try(:published?)
     end
 end
