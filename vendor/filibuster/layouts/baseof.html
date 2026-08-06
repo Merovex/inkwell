@@ -18,6 +18,9 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  {{/* Hugo's own generator inject is disabled in the exporter's hugo.toml —
+       the platform signs the page. */}}
+  <meta name="generator" content="Kindred Quill">
   {{/* Emits <title>, meta description, canonical, Open Graph, Twitter card,
        and WebSite JSON-LD. */}}
   {{ partial "seo.html" . }}

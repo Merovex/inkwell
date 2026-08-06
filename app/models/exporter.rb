@@ -67,6 +67,10 @@ class Exporter
         # Payload dates (books/posts) can be ahead of build time.
         buildFuture = true
 
+        # The platform signs the page, not the tool (baseof.html emits its
+        # own Kindred Quill generator meta).
+        disableHugoGeneratorInject = true
+
         disableKinds = ["taxonomy", "term"]
 
         [params]
