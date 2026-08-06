@@ -1,0 +1,15 @@
+/*
+ * .form__action — the action row ending a form: the submit beside its Cancel.
+ * The block owns the breathing room between a form's last field and its
+ * buttons — spacing lives here, never on the buttons themselves (no inline
+ * margins, no utility margins on submits). Documented in the style guide.
+ */
+@layer components {
+  .form__action {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: calc(var(--u-pad) / 2);
+    margin-block-start: var(--u-pad);
+  }
+}
