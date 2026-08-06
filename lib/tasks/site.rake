@@ -1,4 +1,13 @@
 namespace :site do
+  desc "Queue a static-site rebuild — site:rebuild[SLUG], or every account when no slug given"
+  task :rebuild, [ :slug ] => :environment do |_t, args|
+    accounts = args[:slug].presence ? [ Account.find_by!(slug: args[:slug].upcase) ] : Account.all
+    accounts.each do |account|
+      SiteBuildJob.schedule(account)
+      puts "queued #{account.slug} (builds in ~30s)"
+    end
+  end
+
   desc "Latest static-site build job and each account's build status"
   task status: :environment do
     if SolidQueue::Job.table_exists? # dev runs without the queue database
