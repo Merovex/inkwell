@@ -1,0 +1,11 @@
+Your sending domain is verified.
+
+<%= @account.name %>'s newsletter and drip emails now send from:
+
+  noreply@<%= @sending_domain.domain %>
+
+Your own domain, with DKIM and SPF aligned. Keep the DKIM CNAME records and
+the <%= @sending_domain.mail_from_domain %> MX and TXT records in your DNS —
+removing them stops your mail verifying.
+
+— Kindred Quill

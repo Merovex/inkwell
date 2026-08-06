@@ -46,23 +46,31 @@ still have their own isolated reputation and their own auto-pause.
 |---|---|---|---|
 | `platform-auth` | `verify.kindredquill.com` | Strict | Magic links, account confirmation |
 | `platform-circles` | `notify.kindredquill.com` | Standard | At-mentions, digests, Pulse |
-| `site-<account_id>` | `news.kindredquill.com` (shared) | Standard | Subscriber confirmations, onboarding drips, broadcasts |
+| `site-<slug>` | `kindredquill.email` (shared) | Standard | Subscriber confirmations, onboarding drips, broadcasts |
 
-One tenant per paying Site, all sharing the `news.` identity. Authors with
-their own sending domain get that domain associated with their existing
-tenant — the tenant boundary doesn't change, only the identity does.
+One tenant per paying Site, all sharing the customer-lane identity —
+`kindredquill.email` per [[email-tenant-byod-plan]] (2026-08-06; this table
+originally said `news.kindredquill.com`, which is now KQ's own marketing
+identity only, and `site-<account_id>`, before the derived-from-slug
+decision). Authors with their own sending domain get that domain associated
+with their existing tenant — the tenant boundary doesn't change, only the
+identity does.
 
 Strict on auth is deliberate. Auth should pause loudly and early rather
 than quietly degrade, and its bounce rate should be near zero anyway.
 
 ## What changes in the app
 
-1. `SendingTenant` (or a column on Account) storing the SES tenant name
-   and current status.
-2. Tenant provisioning on Site creation: create the tenant, associate the
-   shared `news.` identity, set the reputation policy.
-3. Every send passes the tenant name. Auth and Circle mail use the two
-   platform tenants; Site mail uses the author's.
+1. ~~`SendingTenant` (or a column on Account)~~ → shipped as
+   `accounts.ses_tenant_provisioned_at`; the name is derived
+   (`Account#ses_tenant_name`, `site-<slug>`).
+2. Tenant provisioning on broadcast-email purchase (not Site creation):
+   `EmailConnection.provision_tenant` creates the tenant and associates the
+   shared identity + both config sets. Reputation policy set in console
+   (not in aws-sdk-sesv2 1.105).
+3. Every send passes the tenant name — shipped 2026-08-06: platform mailers
+   stamp the two platform tenants in their defaults; site mail merges
+   `site_tenant_options` once provisioned.
 4. EventBridge → webhook → existing DeliveryEvent pipeline, so tenant
    pause and reputation findings land as events alongside bounces.
 5. Author-visible state for "your sending is paused," since SES will now

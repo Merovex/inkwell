@@ -1,0 +1,127 @@
+<% content_for :title, "Email — System settings — Inkwell" %>
+
+<%= render "admin/shared/canvas_head", crumbs: [["System settings", admin_settings_path], ["Email", nil]] %>
+
+<header class="perma-header">
+  <h1 class="perma-header__title">System settings</h1>
+</header>
+
+<%# The Email tab of System settings — a sibling page wearing the same
+    segmented control (its forms can't nest inside the settings form), like
+    the Domain tab. The other segments link back, deep-linking their tab. %>
+<div class="settings u-stack u-stack-double u-margin-block-start settings--wide u-center">
+  <% email_panel = capture do %>
+  <div class="u-stack u-stack-double u-full-width">
+    <section class="card" aria-label="Sending address">
+      <header class="card__header">
+        <h2 class="card__title">Sending address</h2>
+      </header>
+      <div class="card__body u-stack">
+        <p>Your newsletter and drip emails send as
+           <strong><%= Current.account.site.site_name %></strong>
+           <code><%= Current.account.broadcast_address %></code>.</p>
+
+        <%= form_with url: admin_handle_path, method: :patch, class: "u-stack" do |f| %>
+          <div class="field">
+            <%= f.label :handle, "Handle", class: "field__label" %>
+            <%= f.text_field :handle, value: Current.account.handle, class: "field__control",
+                  placeholder: "yourname", autocapitalize: "off", autocorrect: "off", spellcheck: "false" %>
+            <p class="field__hint u-text-muted">The name before the @ on the shared address —
+               <code>yourname@<%= Account.shared_sending_domain %></code>. 3–30 characters:
+               lowercase letters, numbers, and hyphens. Leave blank to use
+               <code>noreply</code>.</p>
+          </div>
+          <div><%= f.submit "Save handle", class: "button" %></div>
+        <% end %>
+      </div>
+    </section>
+
+    <% @domains.each do |domain| %>
+      <section class="card" aria-label="Connected sending domain">
+        <header class="card__header u-cluster u-cluster-between">
+          <h2 class="card__title"><%= domain.domain %></h2>
+          <% if domain.live? %>
+            <span class="badge badge--success">Verified</span>
+          <% else %>
+            <span class="badge badge--warning">Waiting for DNS</span>
+          <% end %>
+        </header>
+
+        <div class="card__body u-stack">
+          <% if domain.live? %>
+            <p class="u-text-muted">Emails send from <code>noreply@<%= domain.domain %></code> —
+               your own domain, DKIM and SPF aligned. Keep the records below in your DNS.</p>
+          <% else %>
+            <div class="u-stack">
+              <h3>Add these records where <%= domain.domain %>'s DNS lives</h3>
+
+              <% domain.dkim_records.each_with_index do |record, index| %>
+                <%= render "shared/copy_field",
+                      label: "CNAME — name: #{record[:name]}",
+                      value: record[:value],
+                      hint: index.zero? ? "The three CNAME records prove your domain signs its mail (DKIM)." : nil %>
+              <% end %>
+
+              <%= render "shared/copy_field",
+                    label: "MX — name: #{domain.mail_from_domain}",
+                    value: domain.mail_from_mx_value,
+                    hint: "Returns bounces to Amazon SES so bad addresses stop getting mail." %>
+
+              <%= render "shared/copy_field",
+                    label: "TXT — name: #{domain.mail_from_domain}",
+                    value: domain.spf_value,
+                    hint: "SPF — authorizes SES to send for #{domain.mail_from_domain}." %>
+
+              <%= render "shared/copy_field",
+                    label: "TXT — name: #{domain.dmarc_name} (recommended)",
+                    value: domain.dmarc_value,
+                    hint: "DMARC — tells inboxes what to do with mail that fails the checks above. " \
+                          "Skip it if #{domain.domain.split(".", 2).last} already publishes a DMARC policy." %>
+
+              <p class="u-text-muted">We'll email you when the domain verifies (DNS usually
+                 propagates within the hour). Until then your emails keep sending from the
+                 shared address above.</p>
+            </div>
+          <% end %>
+        </div>
+
+        <footer class="card__footer">
+          <%= button_to "Disconnect this domain", admin_sending_domain_path(domain), method: :delete, class: "button",
+                data: { turbo_confirm: "Disconnect #{domain.domain}? Your emails go back to sending from the shared address." } %>
+        </footer>
+      </section>
+    <% end %>
+
+    <section class="card" aria-label="Connect a sending domain">
+      <header class="card__header">
+        <h2 class="card__title"><%= @domains.any? ? "Connect a different sending domain" : "Send from your own domain" %></h2>
+      </header>
+      <div class="card__body u-stack">
+        <p class="u-text-muted">Connect a subdomain of a domain you own (e.g.
+           <code>news.merovex.press</code>) and your emails send from
+           <code>noreply@</code> it instead of the shared address. A subdomain —
+           not the bare domain — keeps your root domain's email reputation
+           separate from the newsletter's.</p>
+
+        <%= form_with url: admin_sending_domains_path, method: :post, class: "u-stack" do |f| %>
+          <div class="field">
+            <%= f.label :domain, "Sending subdomain", class: "field__label" %>
+            <%= f.text_field :domain, class: "field__control", placeholder: "news.merovex.press",
+                  autocapitalize: "off", autocorrect: "off", spellcheck: "false" %>
+          </div>
+          <div><%= f.submit "Connect domain", class: "button button--primary" %></div>
+        <% end %>
+      </div>
+    </section>
+  </div>
+  <% end %>
+
+  <%= segmented_tabs [
+        { id: "identity", label: "Identity", href: admin_settings_path },
+        { id: "about", label: "About", href: admin_settings_path(tab: "about") },
+        { id: "privacy", label: "Privacy", href: admin_settings_path(tab: "privacy") },
+        { id: "terms", label: "Terms", href: admin_settings_path(tab: "terms") },
+        { id: "domain", label: "Domain", href: admin_custom_domains_path },
+        { id: "email", label: "Email", panel: email_panel, narrow: true },
+      ], aria_label: "Settings sections" %>
+</div>

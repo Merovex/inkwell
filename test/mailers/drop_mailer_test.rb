@@ -23,11 +23,12 @@ class DropMailerTest < ActionMailer::TestCase
     end
   end
 
-  test "sends from the marketing identity and carries a one-click unsubscribe" do
+  test "sends from the site's broadcast address and carries a one-click unsubscribe" do
     accounts(:merovex).update!(contact_email: "press@example.com")
     email = DropMailer.step(@stream, @drop)
 
-    assert_equal [ "newsletter@merovex.press" ], email.from
+    # No handle claimed and no BYOD domain live → the shared-lane fallback.
+    assert_equal [ "noreply@#{Account.shared_sending_domain}" ], email.from
     assert_equal [ "press@example.com" ], email.reply_to
     assert_match %r{/newsletter/unsubscribe/}, email["List-Unsubscribe"].to_s
     assert_equal "List-Unsubscribe=One-Click", email["List-Unsubscribe-Post"].to_s
@@ -45,5 +46,13 @@ class DropMailerTest < ActionMailer::TestCase
     tags = settings[:email_tags].index_by { |t| t[:name] }
     assert_equal @drop.record_id.to_s, tags["drop_record_id"][:value]
     assert_equal @sub.id.to_s, tags["subscriber_id"][:value]
+  end
+
+  test "stamps the site tenant once the account's tenant is provisioned" do
+    assert_nil DropMailer.step(@stream, @drop).delivery_method.settings[:tenant_name]
+
+    @sub.account.update!(ses_tenant_provisioned_at: Time.current)
+    email = DropMailer.step(@stream, @drop)
+    assert_equal @sub.account.ses_tenant_name, email.delivery_method.settings[:tenant_name]
   end
 end

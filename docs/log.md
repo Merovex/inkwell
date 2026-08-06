@@ -2,6 +2,24 @@
 
 Append-only. Newest first. Format defined in [[CLAUDE]] (`CLAUDE.md`).
 
+## [2026-08-06] build | Per-site SES tenants + BYOD sending domains + handles shipped
+- Morning questions locked (recorded in [[email-tenant-byod-plan]]): MAIL FROM `bounce.<domain>`; shared From is **`<handle>@kindredquill.email` — the apex, superseding `mail.`**, handle user-chosen with limits (NOT slug), fallback `noreply@`; tab label "Email"; platform stamping folded in ("each account [is] a tenant… so their reputation falls into their own tenant").
+- Data: `accounts.ses_tenant_provisioned_at` + unique `accounts.handle`; `sending_domains` table (CustomDomain's email twin). `Account#ses_tenant_name` = `site-<slug>` (derived, never stored); `#broadcast_address`/`#broadcast_from` resolve BYOD → handle → noreply; handle limits = 3–30 chars, lowercase/digits/hyphens, reserved list.
+- Services: `Ses::Client` (thin SESv2 wrapper, `app/services/ses/`, mirrors Cloudflare::Client), `EmailConnection` (provision_tenant / connect / disconnect — subdomain-required gate, DKIM tokens back, MAIL FROM, tenant association, adopt-existing-identity path for news.merovex.press), `SendingDomainStatusJob` poll (mirrors CustomDomainStatusJob), `DomainMailer.email_live`.
+- Mailers: `marketing_from` (hardcoded "Ben Wilson") replaced by `Account#broadcast_from`; broadcast/drip/subscriber mail merges `site_tenant_options`; platform stamps: session/missive/domain → `platform-auth`, pulse/notification → `platform-circles`.
+- **Gem gotcha**: aws-actionmailer-ses 1.2.0 whitelists 3 SendEmail keys; `tenant_name` would hit the client constructor and raise. Fixed by prepend in `config/initializers/ses_tenant_delivery.rb` (aws-sdk-sesv2 1.105's send_email accepts tenant_name).
+- UI: sixth "Email" segment across the System-settings tab bars; `admin/sending_domains` (status card, DNS copy_fields, connect/disconnect) + `admin/handle` (PATCH). Rake: `kindredquill.email` apex identity added to `email:provision` (its records go in its OWN CF zone).
+- Tests: 651 runs green (email_connection, sending_domain_status_job, admin_sending_domains, ses_tenant_delivery, account handle/broadcast; drop/subscriber mailer Froms updated to the shared lane).
+- **Ops gate before deploy**: run `email:provision` + publish kindredquill.email DNS; ensure `ses.transactional_from`/`notify_from` credentials point at identities associated with the platform tenants (stamped sends from an un-associated identity FAIL) — or associate the legacy merovex.press identities to the tenants as a bridge.
+- pages touched: [[email-tenant-byod-plan]], [[ses-tenants]], index.md
+- refs: ../app/services/email_connection.rb, ../app/services/ses/client.rb, ../app/jobs/sending_domain_status_job.rb, ../app/models/account.rb, ../app/models/sending_domain.rb, ../config/initializers/ses_tenant_delivery.rb, ../lib/tasks/email.rake
+
+## [2026-08-06] decision | Email tenants + BYOD plan approved; kindredquill.email bought
+- Plan written to [[email-tenant-byod-plan]] ahead of a context clear — approved decisions (tenant = derived site-<slug>, purchase-gated provisioning, BYOD first-class, shared lane on mail.kindredquill.email, subdomain-only), full build steps, morning questions, ops list, and the adjacent-state map. Build starts on Ben's morning go.
+- Also this session: carousel edge fade moved from per-card opacity (WCAG fail at 0.3 on interactive cards) to a container mask — same dissolve, full text contrast.
+- pages touched: [[email-tenant-byod-plan]], index.md
+- refs: ../vendor/filibuster/static/assets/css/06-sections.css
+
 ## [2026-08-06] note | Deployed: 98 mobile (FCP 1.5s, LCP 2.3s) — 98/100/100/100, linked CSS intact
 - The vendored-fonts build landed: 70 → 86 → **98**. Remaining 2pts = lab noise + the CF Insights beacon (owner's dashboard toggle). No further score-chasing warranted.
 

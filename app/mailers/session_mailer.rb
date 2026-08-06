@@ -1,8 +1,11 @@
 class SessionMailer < ApplicationMailer
   # Route through the transactional configuration set — bounce/complaint events
-  # only, no open/click tracking (SES leaves magic-link mail unmodified).
+  # only, no open/click tracking (SES leaves magic-link mail unmodified). The
+  # platform-auth tenant stamp keeps sign-in mail's reputation in its own
+  # container, guarded Strict (docs/ses-tenants.md).
   default delivery_method_options: {
-    configuration_set_name: Rails.application.credentials.dig(:ses, :transactional_config_set)
+    configuration_set_name: Rails.application.credentials.dig(:ses, :transactional_config_set),
+    tenant_name: "platform-auth"
   }
 
   SUBJECTS = {

@@ -11,6 +11,7 @@ renamed, or superseded. See [[CLAUDE]] (`CLAUDE.md`) for conventions.
 Polished research/design (modeled on Basecamp's Fizzy). See [[domain-vocabulary]]
 for canonical naming.
 
+- [email-tenant-byod-plan.md](email-tenant-byod-plan.md) — SHIPPED 2026-08-06: per-site SES tenants + BYOD sending domains + kindredquill.email shared lane with author handles (doc carries the locked decisions + ops gate)
 - [data-model.md](data-model.md) — delegated-type (`Recording`/`Recordable`) content model
 - [schema.rb](schema.rb) — notional Rails schema for the data model
 - [account-creation-concern.md](account-creation-concern.md) — `Account::Foundable` + `Signup` flow

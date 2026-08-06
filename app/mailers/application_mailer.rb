@@ -35,21 +35,20 @@ class ApplicationMailer < ActionMailer::Base
       AccountHost.public_url_options(account)
     end
 
-    # Newsletter mail sends under Ben Wilson's name from whichever identity
-    # this mailer's delivery pipe has verified: the SES marketing sender
-    # (ses.marketing_from, news.merovex.press) when the class rides :ses_v2,
-    # otherwise the Postmark-verified identity (postmark.marketing_from, or
-    # newsletter@merovex.press). An ESP rejects a From it hasn't verified, so
-    # the address must follow the pipe. The account's contact address becomes
-    # Reply-To on the caller so replies still reach the press.
-    def marketing_from(setting)
-      address =
-        if self.class.delivery_method == :ses_v2
-          Rails.application.credentials.dig(:ses, :marketing_from).presence || "noreply@news.kindredquill.com"
-        else
-          Rails.application.credentials.dig(:postmark, :marketing_from).presence || "newsletter@merovex.press"
-        end
-      "Ben Wilson <#{address}>"
+    # Site broadcast mail speaks with the site's own voice: Account#broadcast_from
+    # resolves the live BYOD sending domain, else <handle>@ the shared lane
+    # (docs/email-tenant-byod-plan.md — supersedes the hardcoded personal name
+    # the old marketing_from carried). The account's contact address becomes
+    # Reply-To on the caller so replies still reach the site. NB the warm-standby
+    # Postmark pipe has not verified these Froms — a provider flip must
+    # re-verify there first.
+    def broadcast_from(account) = account.broadcast_from
+
+    # Once the site's SES tenant exists, its sends declare it so reputation
+    # accrues there — merged into each mailer's delivery_method_options
+    # (association is passive; only the stamp attributes the send).
+    def site_tenant_options(account)
+      account.ses_tenant_provisioned? ? { tenant_name: account.ses_tenant_name } : {}
     end
 
     # Bulk newsletter mail (post broadcasts, drip steps) must ride Postmark's

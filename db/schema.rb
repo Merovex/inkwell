@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.2].define(version: 2026_08_06_001000) do
+ActiveRecord::Schema[8.2].define(version: 2026_08_06_140100) do
   create_table "account_users", force: :cascade do |t|
     t.integer "account_id", null: false
     t.integer "user_id", null: false
@@ -32,7 +32,10 @@ ActiveRecord::Schema[8.2].define(version: 2026_08_06_001000) do
     t.text "design"
     t.string "site_build_status"
     t.datetime "site_built_at"
+    t.datetime "ses_tenant_provisioned_at"
+    t.string "handle"
     t.index ["domain"], name: "index_accounts_on_domain", unique: true
+    t.index ["handle"], name: "index_accounts_on_handle", unique: true
     t.index ["name"], name: "index_accounts_on_name", unique: true
     t.index ["owner_id"], name: "index_accounts_on_owner_id"
     t.index ["slug"], name: "index_accounts_on_slug", unique: true
@@ -571,6 +574,19 @@ ActiveRecord::Schema[8.2].define(version: 2026_08_06_001000) do
     t.index ["recordable_type", "recordable_id"], name: "index_records_on_recordable_type_and_recordable_id", unique: true
   end
 
+  create_table "sending_domains", force: :cascade do |t|
+    t.integer "account_id", null: false
+    t.string "domain", null: false
+    t.string "status", default: "pending", null: false
+    t.json "dkim_tokens"
+    t.string "mail_from_domain"
+    t.datetime "last_checked_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id"], name: "index_sending_domains_on_account_id"
+    t.index ["domain"], name: "index_sending_domains_on_domain", unique: true
+  end
+
   create_table "series", force: :cascade do |t|
     t.string "title", null: false
     t.string "status", default: "drafted", null: false
@@ -732,6 +748,7 @@ ActiveRecord::Schema[8.2].define(version: 2026_08_06_001000) do
   add_foreign_key "pulse_subscriptions", "users"
   add_foreign_key "records", "records", column: "parent_id"
   add_foreign_key "records", "users", column: "creator_id"
+  add_foreign_key "sending_domains", "accounts"
   add_foreign_key "sessions", "users"
   add_foreign_key "sign_in_codes", "users"
   add_foreign_key "sites", "records"

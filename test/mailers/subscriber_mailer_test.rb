@@ -43,17 +43,18 @@ class SubscriberMailerTest < ActionMailer::TestCase
     end
   end
 
-  test "confirmation sends from the marketing identity and replies to the contact email" do
+  test "confirmation sends from the site's broadcast address and replies to the contact email" do
     accounts(:merovex).update!(contact_email: "press@example.com")
     subscriber = Subscriber.create!(email_address: "reader@example.com")
 
     email = SubscriberMailer.confirmation(subscriber, subscriber.generate_token_for(:confirmation))
 
-    # From must be the Postmark-verified merovex.press identity, not the raw
-    # contact address; replies still route to the press.
+    # From must be the site's own broadcast address (shared lane here — no
+    # handle, no BYOD), not the raw contact address; replies still route to
+    # the site.
     assert_equal [ "press@example.com" ], email.reply_to
     assert_not_equal [ "press@example.com" ], email.from
-    assert_equal [ "newsletter@merovex.press" ], email.from
+    assert_equal [ "noreply@#{Account.shared_sending_domain}" ], email.from
     # Transactional stream, never the bulk Broadcast stream.
     assert_equal "outbound", email["message-stream"].value
   end

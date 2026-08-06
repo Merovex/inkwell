@@ -12,13 +12,20 @@
 #     Route 53).
 #   - Tenant reputation policy (Strict/Standard): not in aws-sdk-sesv2 1.105 —
 #     set per tenant in the console until an SDK bump exposes it.
-#   - Site tenants (`site-<account_id>`): provisioned by the app when a Site
-#     is created, not here. This task owns only the platform layer.
+#   - Site tenants (`site-<slug>`): provisioned by EmailConnection when the
+#     author buys broadcast email, not here. This task owns the platform layer.
 namespace :email do
   IDENTITIES = {
     "verify.kindredquill.com" => { config_set: "inkwell-transactional", tenant: "platform-auth" },
     "notify.kindredquill.com" => { config_set: "inkwell-marketing",     tenant: "platform-circles" },
-    "news.kindredquill.com"   => { config_set: "inkwell-marketing",     tenant: nil }, # site tenants attach later
+    "news.kindredquill.com"   => { config_set: "inkwell-marketing",     tenant: nil }, # KQ's own marketing to authors
+    # The SHARED customer lane (docs/email-tenant-byod-plan.md): every site
+    # without a BYOD domain sends <handle>@kindredquill.email. A separate
+    # registrable domain — Gmail/Yahoo score reputation at that level, so
+    # customer bulk never shares one with auth mail. Its DNS lives in the
+    # kindredquill.email Cloudflare zone. Site tenants associate with this
+    # identity at provision time (EmailConnection.provision_tenant).
+    "kindredquill.email"      => { config_set: "inkwell-marketing",     tenant: nil },
     # The ROOT is a receive-only identity: SES email receiving only accepts
     # mail for recipient domains that are VERIFIED identities in the account
     # (verkilo.com in this account exists for the same reason). It still never
@@ -145,7 +152,8 @@ namespace :email do
     feedback_host = "feedback-smtp.#{region}.amazonses.com"
     puts <<~DNS
 
-      ── DNS records to publish for kindredquill.com ─────────────────────────
+      ── DNS records to publish (kindredquill.com zone; kindredquill.email
+      ── records go in ITS OWN Cloudflare zone) ──────────────────────────────
       #{IDENTITIES.map do |domain, opts|
           tokens = dkim[domain]
           lines = tokens.map { |t| "#{t}._domainkey.#{domain}.  CNAME  #{t}.dkim.amazonses.com." }

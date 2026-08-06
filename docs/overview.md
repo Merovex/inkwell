@@ -44,11 +44,15 @@ and the August community arc:
 - **Boosts & @mentions** across circle content — mentions by typed token or
   Lexxy's `@`-prompt (User as Action Text attachable, avatar+name chip);
   comment replies ring the thread everywhere comments exist.
-- **Email** ([[email-architecture]], CANONICAL) — all-SES; the root never
-  sends. Four audience streams: transactional signs `auth.merovex.press`
-  ("Inkwell"), user bulk + subscriber mail sign `news.merovex.press`
-  (notify.* and the dedicated verify.* AWS account come with the platform
-  migration). Postmark = dormant warm-standby, cancellation pending.
+- **Email** ([[email-architecture]], CANONICAL; tenancy + BYOD shipped
+  2026-08-06 per [[email-tenant-byod-plan]]) — all-SES; the root never sends.
+  Per-site SES tenants (`site-<slug>`, provisioned on broadcast-email
+  purchase) isolate every site's reputation; platform mail stamps
+  platform-auth/-circles. Site broadcast From = live BYOD sending domain
+  (Email tab, subdomain-only) else `<handle>@kindredquill.email` (author
+  handle, `noreply@` fallback). Deploy gated on `email:provision` +
+  kindredquill.email DNS + From-identity/tenant associations (ops list in the
+  plan doc). Postmark = dormant warm-standby, cancellation pending.
   Owner-facing metrics are in-app now: broadcasts overview chart + per-send
   detail (links, recipient milestones) + roster reactivation — the ESP
   console is no longer part of the Site owner's loop.

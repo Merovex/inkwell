@@ -295,6 +295,13 @@ Rails.application.routes.draw do
       # down (KV keys and custom hostnames both, freeing the allowance).
       resources :custom_domains, only: %i[index create destroy]
 
+      # The Email tab (docs/email-tenant-byod-plan.md): BYOD sending domains —
+      # index shows the sending address + DNS instructions; create provisions
+      # the SES identity; destroy deletes it. The handle is the author's chosen
+      # local part on the shared sending lane (<handle>@kindredquill.email).
+      resources :sending_domains, only: %i[index create destroy]
+      resource :handle, only: :update
+
       # The SiteDesigner (ADR 0022, docs/site-designer.md): the author designs
       # the public site against a live preview. The working design lives in
       # localStorage until Save (PATCH designer) graduates it to the account,

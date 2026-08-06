@@ -1,0 +1,10 @@
+<h1>Your sending domain is verified</h1>
+
+<p><strong><%= @account.name %></strong>'s newsletter and drip emails now send
+   from <code>noreply@<%= @sending_domain.domain %></code> — your own domain,
+   with DKIM and SPF aligned.</p>
+
+<p>Keep the DKIM CNAME records and the <code><%= @sending_domain.mail_from_domain %></code>
+   MX and TXT records in your DNS — removing them stops your mail verifying.</p>
+
+<p>— Kindred Quill</p>

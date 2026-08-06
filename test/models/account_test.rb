@@ -43,4 +43,47 @@ class AccountTest < ActiveSupport::TestCase
       Account.create!(name: "Copycat", owner: users(:bob), domain: "merovex.press")
     end
   end
+
+  test "handle normalizes, enforces the limits, and refuses reserved words" do
+    account = accounts(:merovex)
+
+    account.update!(handle: "  Merovex  ")
+    assert_equal "merovex", account.handle
+
+    assert_not account.update(handle: "ab")               # too short
+    assert_not account.update(handle: "-edge-hyphens-")   # bad shape
+    assert_not account.update(handle: "has space")
+    assert_not account.update(handle: "noreply")          # reserved
+    assert account.update(handle: "")                     # un-claim → nil
+    assert_nil account.handle
+  end
+
+  test "handle is unique across accounts" do
+    accounts(:merovex).update!(handle: "merovex")
+    other = Account.create_with_owner(name: "Other Press", owner: users(:bob))
+    assert_not other.update(handle: "merovex")
+  end
+
+  test "ses tenant name derives from the slug; provisioned? follows the stamp" do
+    account = accounts(:merovex)
+    assert_equal "site-TESTAC", account.ses_tenant_name
+    assert_not account.ses_tenant_provisioned?
+    account.update!(ses_tenant_provisioned_at: Time.current)
+    assert account.ses_tenant_provisioned?
+  end
+
+  test "broadcast address prefers the live BYOD domain, then handle, then noreply" do
+    account = accounts(:merovex)
+    assert_equal "noreply@#{Account.shared_sending_domain}", account.broadcast_address
+
+    account.update!(handle: "merovex")
+    assert_equal "merovex@#{Account.shared_sending_domain}", account.broadcast_address
+
+    account.sending_domains.create!(domain: "news.merovex.press", status: "live")
+    assert_equal "noreply@news.merovex.press", account.broadcast_address
+  end
+
+  test "broadcast_from wraps the address in the site name" do
+    assert_match(/\A"?Merovex Press"? <noreply@/, accounts(:merovex).broadcast_from)
+  end
 end
