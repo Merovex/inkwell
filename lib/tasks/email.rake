@@ -15,6 +15,41 @@
 #   - Site tenants (`site-<slug>`): provisioned by EmailConnection when the
 #     author buys broadcast email, not here. This task owns the platform layer.
 namespace :email do
+  # Credential resolution for every task here: explicit AWS_* env wins, else a
+  # named profile (AWS_PROFILE=kq-admin — the SDK reads ~/.aws/credentials
+  # itself, no CLI needed; returns nil so the SDK default chain resolves it),
+  # else the app's ses.* key. Admin one-offs (IAM-restricted provisioner, see
+  # 2026-08-06 kindredquill.email AccessDenied) ride the first two.
+  def email_task_credentials
+    if ENV["AWS_ACCESS_KEY_ID"].present?
+      Aws::Credentials.new(ENV["AWS_ACCESS_KEY_ID"], ENV["AWS_SECRET_ACCESS_KEY"])
+    elsif ENV["AWS_PROFILE"].present?
+      nil
+    else
+      Aws::Credentials.new(
+        Rails.application.credentials.dig(:ses, :access_key_id),
+        Rails.application.credentials.dig(:ses, :secret_access_key)
+      )
+    end
+  end
+
+  def email_task_region
+    ENV["AWS_REGION"].presence || Rails.application.credentials.dig(:ses, :region)
+  end
+
+  # True when no usable credential source exists (nil creds = profile mode,
+  # which the SDK validates itself).
+  def email_task_credentials_missing?
+    (creds = email_task_credentials) && creds.access_key_id.blank?
+  end
+
+  # Client constructor options. An explicitly-passed `credentials: nil`
+  # SUPPRESSES the SDK's default provider chain (the option counts as set), so
+  # profile mode must omit the key entirely for AWS_PROFILE to resolve.
+  def email_task_client_options
+    { region: email_task_region, credentials: email_task_credentials }.compact
+  end
+
   IDENTITIES = {
     "verify.kindredquill.com" => { config_set: "inkwell-transactional", tenant: "platform-auth" },
     "notify.kindredquill.com" => { config_set: "inkwell-marketing",     tenant: "platform-circles" },
@@ -37,14 +72,11 @@ namespace :email do
 
   desc "Read-only probe: whose key is this, and can it see SES identities/tenants/config sets?"
   task preflight: :environment do
-    region = ENV["AWS_REGION"].presence || Rails.application.credentials.dig(:ses, :region)
-    creds  = Aws::Credentials.new(
-      ENV["AWS_ACCESS_KEY_ID"].presence  || Rails.application.credentials.dig(:ses, :access_key_id),
-      ENV["AWS_SECRET_ACCESS_KEY"].presence || Rails.application.credentials.dig(:ses, :secret_access_key)
-    )
-    abort "No credentials found (ses.* in Rails credentials, or AWS_* env)." if creds.access_key_id.blank?
+    region = email_task_region
+    creds  = email_task_credentials
+    abort "No credentials found (ses.* in Rails credentials, AWS_* env, or AWS_PROFILE)." if email_task_credentials_missing?
 
-    ses = Aws::SESV2::Client.new(region:, credentials: creds)
+    ses = Aws::SESV2::Client.new(**email_task_client_options)
     probe = lambda do |label, &check|
       result = check.call
       puts "  ✓ #{label}#{result ? " — #{result}" : ""}"
@@ -53,7 +85,7 @@ namespace :email do
     end
 
     begin
-      who = Aws::STS::Client.new(region:, credentials: creds).get_caller_identity
+      who = Aws::STS::Client.new(**email_task_client_options).get_caller_identity
       puts "key belongs to: #{who.arn} (account #{who.account}, region #{region})"
       puts "→ that IAM principal's policies are what the *IF* hangs on."
     rescue Aws::Errors::ServiceError => e
@@ -69,19 +101,16 @@ namespace :email do
 
   desc "Create the kindredquill.com SES identities + platform tenants; print the DNS records"
   task provision: :environment do
-    # The app's ses.* credentials by default; override with AWS_ACCESS_KEY_ID /
-    # AWS_SECRET_ACCESS_KEY (+ optional AWS_REGION) to run one-off with an
-    # admin key when the sending key's IAM policy is send-only.
-    region = ENV["AWS_REGION"].presence || Rails.application.credentials.dig(:ses, :region)
-    creds  = Aws::Credentials.new(
-      ENV["AWS_ACCESS_KEY_ID"].presence  || Rails.application.credentials.dig(:ses, :access_key_id),
-      ENV["AWS_SECRET_ACCESS_KEY"].presence || Rails.application.credentials.dig(:ses, :secret_access_key)
-    )
+    # The app's ses.* credentials by default; override with AWS_* env or
+    # AWS_PROFILE to run one-off with an admin key when the sending key's IAM
+    # policy is restricted.
+    region = email_task_region
+    creds  = email_task_credentials
     dry = ENV["DRY_RUN"].present?
-    abort "No ses credentials configured (needed unless DRY_RUN=1)." if !dry && creds.access_key_id.blank?
+    abort "No ses credentials configured (needed unless DRY_RUN=1)." if !dry && email_task_credentials_missing?
 
-    ses = dry ? nil : Aws::SESV2::Client.new(region:, credentials: creds)
-    account_id = dry ? "<account>" : Aws::STS::Client.new(region:, credentials: creds).get_caller_identity.account
+    ses = dry ? nil : Aws::SESV2::Client.new(**email_task_client_options)
+    account_id = dry ? "<account>" : Aws::STS::Client.new(**email_task_client_options).get_caller_identity.account
     dkim = {} # domain => tokens
 
     IDENTITIES.each do |domain, opts|
@@ -191,13 +220,10 @@ namespace :email do
 
   desc "Provision the support@ inbound stack: SNS topic, receipt rule → S3, activate"
   task provision_inbound: :environment do
-    region = ENV["AWS_REGION"].presence || Rails.application.credentials.dig(:ses, :region)
-    creds  = Aws::Credentials.new(
-      ENV["AWS_ACCESS_KEY_ID"].presence  || Rails.application.credentials.dig(:ses, :access_key_id),
-      ENV["AWS_SECRET_ACCESS_KEY"].presence || Rails.application.credentials.dig(:ses, :secret_access_key)
-    )
+    region = email_task_region
+    creds  = email_task_credentials
     dry = ENV["DRY_RUN"].present?
-    abort "No credentials (ses.* or AWS_* env; needed unless DRY_RUN=1)." if !dry && creds.access_key_id.blank?
+    abort "No credentials (ses.*, AWS_* env, or AWS_PROFILE; needed unless DRY_RUN=1)." if !dry && email_task_credentials_missing?
 
     if dry
       puts "would create SNS topic #{INBOUND_TOPIC}, subscribe #{INGRESS_ENDPOINT},"
@@ -206,7 +232,7 @@ namespace :email do
       next
     end
 
-    sns = Aws::SNS::Client.new(region:, credentials: creds)
+    sns = Aws::SNS::Client.new(**email_task_client_options)
     topic_arn = sns.create_topic(name: INBOUND_TOPIC).topic_arn # idempotent by name
     puts "topic: #{topic_arn}"
 
@@ -225,7 +251,7 @@ namespace :email do
       puts "subscription requested for #{INGRESS_ENDPOINT} (confirms once the deployed app answers)"
     end
 
-    ses = Aws::SES::Client.new(region:, credentials: creds) # receipt rules are the classic API
+    ses = Aws::SES::Client.new(**email_task_client_options) # receipt rules are the classic API
     begin
       ses.create_receipt_rule_set(rule_set_name: INBOUND_RULE_SET)
       puts "created rule set #{INBOUND_RULE_SET}"
@@ -279,12 +305,7 @@ namespace :email do
 
   desc "Show the ACTIVE receipt rule set and every rule in it (read-only)"
   task inspect_inbound: :environment do
-    region = ENV["AWS_REGION"].presence || Rails.application.credentials.dig(:ses, :region)
-    creds  = Aws::Credentials.new(
-      ENV["AWS_ACCESS_KEY_ID"].presence  || Rails.application.credentials.dig(:ses, :access_key_id),
-      ENV["AWS_SECRET_ACCESS_KEY"].presence || Rails.application.credentials.dig(:ses, :secret_access_key)
-    )
-    ses = Aws::SES::Client.new(region:, credentials: creds)
+    ses = Aws::SES::Client.new(**email_task_client_options)
     active = ses.describe_active_receipt_rule_set
     if active.metadata.nil?
       puts "NO active receipt rule set — inbound mail is rejected at RCPT."
@@ -306,14 +327,11 @@ namespace :email do
   desc "Add the support receipt rule to an already-active rule set (ACTIVE_SET=name)"
   task adopt_inbound_rule: :environment do
     set = ENV.fetch("ACTIVE_SET")
-    region = ENV["AWS_REGION"].presence || Rails.application.credentials.dig(:ses, :region)
-    creds  = Aws::Credentials.new(
-      ENV["AWS_ACCESS_KEY_ID"].presence  || Rails.application.credentials.dig(:ses, :access_key_id),
-      ENV["AWS_SECRET_ACCESS_KEY"].presence || Rails.application.credentials.dig(:ses, :secret_access_key)
-    )
-    sns = Aws::SNS::Client.new(region:, credentials: creds)
+    region = email_task_region
+    creds  = email_task_credentials
+    sns = Aws::SNS::Client.new(**email_task_client_options)
     topic_arn = sns.create_topic(name: INBOUND_TOPIC).topic_arn
-    ses = Aws::SES::Client.new(region:, credentials: creds)
+    ses = Aws::SES::Client.new(**email_task_client_options)
     rule = {
       name: "kindredquill-support",
       enabled: true,
