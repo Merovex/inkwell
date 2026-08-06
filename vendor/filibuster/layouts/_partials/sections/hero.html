@@ -75,8 +75,24 @@
 {{ if eq $source "custom" }}{{ with $hero.lede_html }}{{ $ledeHtml = . }}{{ end }}{{ end }}
 <section class="fk-hero" aria-labelledby="hero-title">
   <div class="fk-hero-bg" aria-hidden="true">
-    {{ with $featured }}{{ partial "img.html" (dict "class" "fk-hero-bg-self" "src" .cover "alt" "") }}{{ end }}
-    {{ with $site.banner }}{{ partial "img.html" (dict "class" "fk-hero-bg-banner" "src" . "alt" "") }}{{ end }}
+    {{/* The ACTIVE background (hero_bg axis) is the hero's — usually the
+         page's — largest paint, i.e. the LCP element: eager + high priority.
+         The inactive variant is CSS-hidden and stays lazy (costs nothing). */}}
+    {{ $bg := index $design "hero_bg" }}
+    {{ with $featured }}
+      {{ if eq $bg "cover" }}
+        {{ partial "img.html" (dict "class" "fk-hero-bg-self" "src" .cover "alt" "" "loading" "eager" "fetchpriority" "high") }}
+      {{ else }}
+        {{ partial "img.html" (dict "class" "fk-hero-bg-self" "src" .cover "alt" "") }}
+      {{ end }}
+    {{ end }}
+    {{ with $site.banner }}
+      {{ if eq $bg "banner" }}
+        {{ partial "img.html" (dict "class" "fk-hero-bg-banner" "src" . "alt" "" "loading" "eager" "fetchpriority" "high") }}
+      {{ else }}
+        {{ partial "img.html" (dict "class" "fk-hero-bg-banner" "src" . "alt" "") }}
+      {{ end }}
+    {{ end }}
   </div>
   <div class="fk-shell fk-hero-inner">
     <div class="fk-hero-copy">

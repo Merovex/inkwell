@@ -18,6 +18,3 @@
   [[module.mounts]]
     source = "data"
     target = "data"
-  [[module.mounts]]
-    source = "assets"
-    target = "assets"
