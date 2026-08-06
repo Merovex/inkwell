@@ -2,9 +2,12 @@
 
 <%= render "admin/shared/canvas_head", crumbs: [["Circles", circles_path], [@circle.name, nil]],
       edit_href: (edit_circle_path(@circle) if allowed_to?(:manage, @circle)) do %>
+  <%# The Wall — the feed presentation candidate, swappable while it's judged. %>
+  <%= link_to "Wall view (preview)", circle_wall_path(@circle), class: "menu__item" %>
   <%# The membership page: roster + invitations (any member may invite). %>
   <%= link_to "Membership", circle_members_path(@circle), class: "menu__item" %>
-  <% unless allowed_to?(:manage, @circle) %>
+  <%# No exit from the Commons — it's the town square. %>
+  <% unless allowed_to?(:manage, @circle) || @circle.commons? %>
     <hr class="menu__separator">
     <%# A member's own exit (Basecamp's "Leave this project"). Owners never
         see it — they delete or hand off, they don't abandon. %>

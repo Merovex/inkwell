@@ -1,0 +1,28 @@
+<%# locals: (circle:, record:, message:, comment_count:, boost_count:) %>
+<%# One wall story: byline, title (the door to the thread), full rich body,
+    counts. Cached on the version + author + counts — a comment or boost mints
+    a fresh key; message versions are immutable, so edits do too. %>
+<% cache [ "wall-card", message, record.creator, comment_count, boost_count ] do %>
+  <article class="wall__card">
+    <header class="wall__byline">
+      <span class="avatar" aria-hidden="true"><%= avatar_content(record.creator) %></span>
+      <span>
+        <span class="u-text-strong"><%= record.creator.display_name %></span>
+        <span class="wall__meta">·
+          <time datetime="<%= (message.published_at || message.created_at).iso8601 %>"><%= time_ago_in_words(message.published_at || message.created_at) %> ago</time>
+        </span>
+      </span>
+    </header>
+    <h3 class="wall__title"><%= link_to message.title, circle_message_path(circle, record) %></h3>
+    <div class="prose"><%= message.content %></div>
+    <footer class="wall__footer">
+      <%= link_to circle_message_path(circle, record) do %>
+        <%= inline_svg_tag "lucide/message-square.svg", class: "lucide", size: "14px" %>
+        <%= pluralize(comment_count, "comment") %>
+      <% end %>
+      <% if boost_count.positive? %>
+        <span><%= inline_svg_tag "lucide/rocket.svg", class: "lucide", size: "14px" %> <%= boost_count %></span>
+      <% end %>
+    </footer>
+  </article>
+<% end %>

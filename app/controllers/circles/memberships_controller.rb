@@ -4,7 +4,9 @@
 module Circles
   class MembershipsController < BaseController
     def destroy
-      if @circle.owner_id == Current.user.id
+      if @circle.commons?
+        redirect_to circle_path(@circle), alert: "The Commons is everyone's — there's no leaving it."
+      elsif @circle.owner_id == Current.user.id
         redirect_to circle_path(@circle), alert: "You own this circle — hand it off or delete it instead."
       else
         @circle.circle_memberships.find_by!(user_id: Current.user.id).destroy

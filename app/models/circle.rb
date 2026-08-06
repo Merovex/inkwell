@@ -85,9 +85,31 @@ class Circle < ApplicationRecord
     [ member_limit, MEMBER_HARD_CAP ].compact.min
   end
 
-  # At capacity? Counts every seat, owner included.
+  # At capacity? Counts every seat, owner included. The Commons never fills —
+  # the whole platform is its membership.
   def full?
+    return false if commons?
     circle_memberships.count >= seat_cap
+  end
+
+  # The town square: the ONE platform-wide circle (partial unique index).
+  # Everyone belongs — invitation-free, cap-free, no leaving; new users join
+  # at signup (User#join_commons). Bulletins affix to its Wall.
+  def self.commons = find_by(commons: true)
+
+  # Console-run once (like Tenant Zero): create the Commons and seat every
+  # existing user. Idempotent — re-running seats only whoever's missing.
+  def self.provision_commons(owner:)
+    transaction do
+      commons = find_by(commons: true) || create_with_owner(name: "Commons", owner: owner,
+        commons: true, description: "Everyone on Kindred Quill — announcements, questions, and shop talk.")
+      seats = User.where.not(id: commons.circle_memberships.select(:user_id)).pluck(:id).map do |user_id|
+        { circle_id: commons.id, user_id: user_id, role: "member",
+          created_at: Time.current, updated_at: Time.current }
+      end
+      CircleMembership.insert_all(seats) if seats.any?
+      commons
+    end
   end
 
   # The members as the avatar cluster reads them: owner first, then by name.

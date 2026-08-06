@@ -43,6 +43,11 @@ class User < ApplicationRecord
 
   normalizes :email_address, with: -> { it.strip.downcase }
 
+  # Everyone's in the Commons (the town square) from their first moment —
+  # invitation-free, cap-free (Circle.provision_commons seated everyone
+  # earlier). Nil-safe: environments without a Commons just skip it.
+  after_create_commit :join_commons
+
   # Uniqueness is enforced by the unique index on email_address; nothing surfaces
   # a duplicate to a user (setup can't dup, signup reuses), so no validation here.
   validates :email_address, presence: true, format: { with: URI::MailTo::EMAIL_REGEXP }
@@ -99,6 +104,10 @@ class User < ApplicationRecord
   end
 
   private
+    def join_commons
+      Circle.commons&.circle_memberships&.create!(user: self)
+    end
+
     def acceptable_avatar
       return unless avatar.attached?
 

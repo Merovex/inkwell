@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.2].define(version: 2026_08_06_210001) do
+ActiveRecord::Schema[8.2].define(version: 2026_08_06_230000) do
   create_table "account_users", force: :cascade do |t|
     t.integer "account_id", null: false
     t.integer "user_id", null: false
@@ -293,6 +293,8 @@ ActiveRecord::Schema[8.2].define(version: 2026_08_06_210001) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.text "description"
+    t.boolean "commons", default: false, null: false
+    t.index ["commons"], name: "index_circles_on_commons", unique: true, where: "commons"
     t.index ["owner_id"], name: "index_circles_on_owner_id"
     t.index ["slug"], name: "index_circles_on_slug", unique: true
   end

@@ -39,9 +39,12 @@
     background: color-mix(in oklab, var(--brand-strong), black 15%);
     border-color: color-mix(in oklab, var(--brand-strong), black 15%);
   }
-  /* Muted inline text (e.g. a "(5)" count) inherits the dark --ink-muted, which
-     is near-invisible on the filled teal. Dim the button's own white instead. */
-  .button--primary .u-text-muted { color: color-mix(in oklab, var(--on-brand), transparent 30%); }
+  /* A parenthetical count inside a button (the filter rows' "(5)"). NOT a
+     utility: u-text-muted can't be re-colored from here — utilities out-layer
+     components, so a `.button--primary .u-text-muted` override silently loses
+     (the trap this replaces). An element deriving from currentColor is quiet
+     on every variant and stays legible on the primary's dark fill. */
+  .button__count { color: color-mix(in oklab, currentColor 70%, transparent); }
 
   .button--ghost {
     background: transparent;

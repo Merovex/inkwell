@@ -1,0 +1,57 @@
+/*
+ * .wall — a circle's feed presentation CANDIDATE (2026-08-06; the sectioned
+ * circle page remains the default while this is judged). Full-bodied message
+ * cards, newest first; a lazy turbo-frame tail loads the next page on scroll.
+ * Single-sourced markup: circles/walls/show + _card.
+ */
+@layer components {
+  .wall {
+    display: flex;
+    flex-direction: column;
+    gap: var(--u-pad);
+    max-inline-size: var(--measure-prose);
+    margin-inline: auto;
+  }
+  /* Frames are plumbing, not layout — cards read as direct children. */
+  .wall turbo-frame { display: contents; }
+
+  .wall__card {
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--u-pad) / 2);
+    padding: var(--u-pad);
+    border: var(--border-size-1) solid var(--line);
+    border-radius: var(--radius-2);
+    background: var(--canvas);
+  }
+
+  .wall__byline { display: flex; align-items: center; gap: calc(var(--u-pad) / 2); }
+  .wall__meta { color: var(--ink-muted); font-size: var(--font-size-0); }
+
+  .wall__title a { color: inherit; text-decoration: none; }
+  .wall__title a:hover { text-decoration: underline; }
+
+  .wall__footer { display: flex; align-items: center; gap: var(--u-pad); font-size: var(--font-size-0); }
+  .wall__footer a { display: inline-flex; align-items: center; gap: calc(var(--u-pad) / 4); color: var(--ink-muted); }
+  .wall__footer span { display: inline-flex; align-items: center; gap: calc(var(--u-pad) / 4); color: var(--ink-muted); }
+
+  /* Affixed announcements (the Commons only): quiet rows above the stream. */
+  .wall__affixed {
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--u-pad) / 4);
+  }
+  .wall__bulletin {
+    display: flex;
+    align-items: center;
+    gap: calc(var(--u-pad) / 2);
+    padding: calc(var(--u-pad) / 2) var(--u-pad);
+    border: var(--border-size-1) solid var(--line);
+    border-radius: var(--radius-ui);
+    background: var(--accent-soft);
+    color: var(--ink);
+    text-decoration: none;
+  }
+  .wall__bulletin:hover { background: color-mix(in oklab, var(--accent-soft), var(--ink) 6%); }
+  .wall__bulletin .wall__meta { margin-inline-start: auto; }
+}

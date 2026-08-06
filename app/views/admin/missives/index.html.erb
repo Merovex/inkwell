@@ -12,7 +12,7 @@
               class: "button button--small#{' button--primary' if state == @state}",
               aria: { current: ("page" if state == @state) } do %>
           <%= state == "trashed" ? "Trash" : "Recent" %>
-          <span class="u-text-muted">(<%= @counts[state].to_i %>)</span>
+          <span class="button__count">(<%= @counts[state].to_i %>)</span>
         <% end %>
       <% end %>
     </nav>

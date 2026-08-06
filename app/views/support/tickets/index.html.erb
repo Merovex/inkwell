@@ -1,12 +1,24 @@
 <% content_for :title, "Support — Inkwell" %>
 
-<%= render "admin/shared/canvas_head", crumbs: [["Support", nil]] %>
+<%= render "admin/shared/canvas_head", crumbs: [["Support", nil]], menu: false do %>
+  <%= link_to new_ticket_path, class: "button button--primary" do %>
+    <%= inline_svg_tag "lucide/plus.svg", class: "lucide", size: "16px" %> New ticket
+  <% end %>
+<% end %>
 
 <header class="perma-header">
   <h1 class="perma-header__title">Support</h1>
-  <div class="perma-header__content u-cluster u-cluster-between">
+  <div class="perma-header__content">
     <p class="u-text-muted">Your tickets — we reply right here, and the bell rings you.</p>
-    <%= link_to "New ticket", new_ticket_path, class: "button button--primary" %>
+    <nav class="perma-header__toolbar" aria-label="Ticket states">
+      <% Ticket::STATUSES.each do |state| %>
+        <%= link_to tickets_path(state: state),
+              class: "button button--small#{' button--primary' if state == @state}",
+              aria: { current: ("page" if state == @state) } do %>
+          <%= state.capitalize %> <span class="button__count">(<%= @counts[state].to_i %>)</span>
+        <% end %>
+      <% end %>
+    </nav>
   </div>
 </header>
 
@@ -23,11 +35,13 @@
             comment_count: ticket.record.comments.size %>
     <% end %>
   </div>
-<% else %>
+<% elsif @counts.values.sum.zero? %>
   <div class="empty">
     <span class="empty__icon"><%= inline_svg_tag "lucide/message-square.svg", class: "lucide", size: "40px" %></span>
     <p class="empty__title">No tickets yet</p>
     <p class="empty__text">Stuck, confused, or found something broken? Open a ticket and we'll sort it out together.</p>
     <div class="empty__actions"><%= link_to "New ticket", new_ticket_path, class: "button button--primary" %></div>
   </div>
+<% else %>
+  <p class="u-text-muted">No <%= @state %> tickets.</p>
 <% end %>

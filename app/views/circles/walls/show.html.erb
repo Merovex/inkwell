@@ -1,0 +1,51 @@
+<% content_for :title, "#{@circle.name} Wall — Circle" %>
+
+<%# The frame id must match what the requesting lazy frame asked for, so
+    paginated responses slot into place; the first page renders bare. %>
+<% frame_id = params[:before_id].present? ? "wall-page-#{params[:before_id]}" : "wall-page-first" %>
+
+<%= render "admin/shared/canvas_head",
+      crumbs: [["Circles", circles_path], [@circle.name, circle_path(@circle)], ["Wall", nil]], menu: false do %>
+  <%= link_to new_circle_message_path(@circle), class: "button button--primary" do %>
+    <%= inline_svg_tag "lucide/plus.svg", class: "lucide", size: "16px" %> New message
+  <% end %>
+  <%= link_to "Standard view", circle_path(@circle), class: "button" %>
+<% end %>
+
+<header class="perma-header">
+  <h1 class="perma-header__title"><%= @circle.name %></h1>
+</header>
+
+<div class="wall">
+  <% if @bulletins&.any? %>
+    <section class="wall__affixed" aria-label="Announcements">
+      <% @bulletins.each do |bulletin| %>
+        <%= link_to bulletin_path(bulletin.record.to_slug, script_name: ""), class: "wall__bulletin" do %>
+          <%= inline_svg_tag "lucide/megaphone.svg", class: "lucide", size: "16px" %>
+          <span class="u-text-strong"><%= bulletin.title %></span>
+          <% if bulletin.published_at %>
+            <span class="wall__meta"><%= l bulletin.published_at.to_date, format: :short %></span>
+          <% end %>
+        <% end %>
+      <% end %>
+    </section>
+  <% end %>
+
+  <%= turbo_frame_tag frame_id, target: "_top" do %>
+    <% @records.each do |record| %>
+      <%= render "card", circle: @circle, record: record, message: @messages_by_record[record],
+            comment_count: @comment_counts[record.id].to_i, boost_count: @boost_counts[record.id].to_i %>
+    <% end %>
+    <% if @records.empty? && params[:before_id].blank? %>
+      <p class="u-text-muted">Nothing on the wall yet — start the first discussion.</p>
+    <% end %>
+    <% if @more %>
+      <%# Scrolling this into view fetches the next page; its response's
+          matching frame replaces the placeholder. %>
+      <%= turbo_frame_tag "wall-page-#{@records.last.id}", target: "_top", loading: :lazy,
+            src: circle_wall_path(@circle, before_id: @records.last.id) do %>
+        <p class="u-text-muted">Loading more…</p>
+      <% end %>
+    <% end %>
+  <% end %>
+</div>

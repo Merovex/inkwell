@@ -51,4 +51,31 @@ class CircleTest < ActiveSupport::TestCase
     assert_not_includes circle.messages.map(&:title), messages(:welcome).title
     assert_not_includes accounts(:merovex).messages.map(&:title), "Welcome to the circle"
   end
+
+  test "provision_commons seats every user, is idempotent, and never fills" do
+    commons = Circle.provision_commons(owner: users(:alice))
+
+    assert commons.commons?
+    assert_equal User.count, commons.circle_memberships.count
+    assert_equal "owner", commons.circle_memberships.find_by(user: users(:alice)).role
+    assert_not commons.full?
+
+    assert_no_difference -> { CircleMembership.count } do
+      Circle.provision_commons(owner: users(:alice))
+    end
+  end
+
+  test "a new user joins the Commons at creation" do
+    Circle.provision_commons(owner: users(:alice))
+
+    newcomer = User.create!(email_address: "newcomer@example.com")
+    assert Circle.commons.member?(newcomer)
+  end
+
+  test "only one Commons can exist — the index is the law" do
+    Circle.provision_commons(owner: users(:alice))
+    assert_raises ActiveRecord::RecordNotUnique do
+      Circle.create!(name: "Second Commons", commons: true, owner: users(:bob))
+    end
+  end
 end

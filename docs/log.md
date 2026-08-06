@@ -2,6 +2,15 @@
 
 Append-only. Newest first. Format defined in [[CLAUDE]] (`CLAUDE.md`).
 
+## [2026-08-06] build | Commons + Wall: the town square and its feed-candidate view
+- **Commons**: ONE platform-wide circle (circles.commons boolean, partial unique index — the singleton is a DB fact). Everyone belongs: real membership rows (Ben's call), `Circle.provision_commons(owner:)` console-run seats existing users (idempotent, insert_all), `User#join_commons` after_create_commit seats newcomers. No cap (`full?` short-circuits), no invitations (policy), no leaving (memberships controller + hidden menu item).
+- **Wall** (swap-in candidate — "so I can get an idea of whether I like it"; standard circle page stays default): `/circles/:id/wall`, full-bodied message cards newest-first, click-through to threads (no FB-style inline expansion, per Ben), lazy turbo-frame cursor pagination (`before_id` on the records spine — frame id = requested cursor so responses slot in; `target: "_top"` so card links escape the frame). Commons wall affixes latest 3 published Bulletins on top. Linked from the circle ⋯ menu ("Wall view (preview)").
+- **Caching**: each card fragment-caches on [message version, author, comment count, boost count] — versions are immutable so edits mint new keys; counts ride the key so activity busts it. First taste of the "cache the circles" direction; HTTP caching deliberately avoided (forms + etags = stale CSRF).
+- Ordering: chronological v1 (Ben's call); activity-bump noted as a possible layer later.
+- **Ops**: console-run `Circle.provision_commons(owner: User.root.first)` in production.
+- pages touched: (log only)
+- refs: ../app/models/circle.rb, ../app/models/user.rb, ../app/controllers/circles/walls_controller.rb, ../app/views/circles/walls/, ../app/assets/stylesheets/wall.css, ../app/policies/circle_policy.rb
+
 ## [2026-08-06] build | Bulletins: platform announcements on the spine (nil bucket), bell fan-out
 - **Bulletin** (Basecamp's bulletin): title + rich body, full Publishable ladder (draft → scheduled → published, shared scheduler, versions). Root-authored at /support/bulletins (posts-composer mirror, gated like the desk); readers at /bulletins + /bulletins/:slug ("An announcement from <name> at Kindred Quill").
 - **Platform records**: records.bucket now nullable; `Record::PLATFORM_TYPES` (Bulletin) get a NIL bucket via the type-aware belongs_to default — an explicit `bucket: nil` at create can NOT beat `default:` (it fires whenever the association is nil), so the default proc itself decides by type. Presence still validated for every other type.

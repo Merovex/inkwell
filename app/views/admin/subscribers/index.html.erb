@@ -11,7 +11,7 @@
         <%= link_to admin_subscribers_path(state: state),
               class: "button button--small#{' button--primary' if state == @state}",
               aria: { current: ("page" if state == @state) } do %>
-          <%= state.capitalize %> <span class="u-text-muted">(<%= @counts[state].to_i %>)</span>
+          <%= state.capitalize %> <span class="button__count">(<%= @counts[state].to_i %>)</span>
         <% end %>
       <% end %>
       <%= link_to admin_subscribers_path(state: @state, format: :csv), class: "button button--small" do %>

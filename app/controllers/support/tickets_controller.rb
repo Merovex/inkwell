@@ -8,7 +8,12 @@ class Support::TicketsController < ApplicationController
   before_action { Current.bucket = Current.user }
 
   def index
-    @tickets = Ticket.current_in(ticket_records.listed).order(created_at: :desc)
+    # One state at a time, open by default — closed history stays a click
+    # away, not in the default view (the Subscribers pattern).
+    @state = Ticket::STATUSES.include?(params[:state]) ? params[:state] : "open"
+    scope = Ticket.current_in(ticket_records.listed)
+    @counts = scope.group(:status).count
+    @tickets = scope.where(status: @state).order(created_at: :desc)
   end
 
   def new
