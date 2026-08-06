@@ -26,14 +26,25 @@
   }
 
   .wall__byline { display: flex; align-items: center; gap: calc(var(--u-pad) / 2); }
+  .wall__byline > div { min-inline-size: 0; }
+  /* The author's ⋯ menu, far right of the byline. */
+  .wall__actions { margin-inline-start: auto; flex-shrink: 0; }
   .wall__meta { color: var(--ink-muted); font-size: var(--font-size-0); }
 
+  /* The title rides the byline inline — a real heading, sized to the line.
+     The icon must re-inline too: the base reset blocks every svg, which
+     breaks the flow (icons elsewhere live in flex rows and never notice). */
+  .wall__title { display: inline; margin: 0; font-size: var(--font-size-1); }
   .wall__title a { color: inherit; text-decoration: none; }
   .wall__title a:hover { text-decoration: underline; }
+  .wall__title .lucide { display: inline-block; vertical-align: text-bottom; }
+  /* The receipt drops to its own line under name · title. */
+  .wall__when { display: block; }
 
   /* Card bodies clamp at five lines — the thread modal and the message page
      carry the full text. */
   .wall__body { --u-clamp-lines: 5; }
+
 
   .wall__footer { display: flex; flex-wrap: wrap; align-items: center; gap: calc(var(--u-pad) / 2); font-size: var(--font-size-0); }
   .wall__footer a { display: inline-flex; align-items: center; gap: calc(var(--u-pad) / 4); color: var(--ink-muted); }

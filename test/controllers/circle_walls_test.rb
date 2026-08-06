@@ -96,6 +96,75 @@ class CircleWallsTest < ActionDispatch::IntegrationTest
     end
     get circle_wall_path(circles(:writers))
     assert_select ".wall__pin--pulse", count: 0
+
+    # The answer rides the wall as its own card — newest, so first — wearing
+    # the QUESTION as its title and deep-linking its ask-day.
+    day_link = circle_pulse_path(circles(:writers), pulse.record_id, day: pulse.last_asked_on.iso8601)
+    assert_select ".wall__card:first-of-type .wall__title a[href=?]", day_link,
+      text: /What did you work on\?/
+    assert_select ".wall__card:first-of-type .wall__body", text: /Wrote plenty/
+
+    # A second answer is its own card — Beats and Messages, reverse chrono.
+    Current.with_bucket(circles(:writers)) do
+      Record.originate(Beat.new(content: "<p>Me too</p>", asked_on: pulse.last_asked_on,
+        creator: users(:alice)), parent: pulse.record)
+    end
+    get circle_wall_path(circles(:writers))
+    assert_select ".wall__title a", text: /What did you work on\?/, count: 2
+    assert_select ".wall__card:first-of-type .wall__body", text: /Me too/
+
+    # The pulse page's ?day= deep link still works; a past day offers no composer.
+    day_path = circle_pulse_path(circles(:writers), pulse.record_id, day: pulse.last_asked_on.iso8601)
+    get day_path
+    assert_response :success
+    assert_select "#beats .list__item", 2
+    travel 3.days do
+      get day_path
+      assert_select "#beats time[datetime=?]", pulse.last_asked_on.iso8601
+      assert_select "form[action=?]", circle_pulse_beats_path(circles(:writers), pulse.record_id), count: 0
+    end
+  end
+
+  test "the card menu follows capability: author edits+trashes, owner trashes, member sees none" do
+    message = create_discussion(title: "Mine", creator: users(:bob))
+
+    sign_in_as users(:bob) # the author
+    get circle_wall_path(circles(:writers))
+    assert_select ".wall__card:first-of-type .wall__actions a.menu__item[href=?][data-turbo-frame=modal]",
+      circle_wall_edit_path(circles(:writers), message.record), text: "Edit"
+    assert_select ".wall__card:first-of-type .wall__actions form[action=?]",
+      circle_message_path(circles(:writers), message.record)
+
+    sign_in_as users(:alice) # circle owner, not the author — moderate only
+    get circle_wall_path(circles(:writers))
+    assert_select ".wall__card:first-of-type .wall__actions a.menu__item", text: "Edit", count: 0
+    assert_select ".wall__card:first-of-type .wall__actions form[action=?]",
+      circle_message_path(circles(:writers), message.record)
+
+    carol = User.create!(email_address: "carol@example.com")
+    circles(:writers).circle_memberships.create!(user: carol)
+    sign_in_as carol # plain member — no menu anywhere
+    get circle_wall_path(circles(:writers))
+    assert_select ".wall__actions", count: 0
+  end
+
+  test "the edit modal serves the author, saves back to the wall, and 404s others" do
+    message = create_discussion(title: "Mine", creator: users(:bob))
+
+    sign_in_as users(:bob)
+    get circle_wall_edit_path(circles(:writers), message.record)
+    assert_response :success
+    assert_select "turbo-frame#modal dialog form[action=?]",
+      circle_message_path(circles(:writers), message.record)
+
+    patch circle_message_path(circles(:writers), message.record),
+      params: { back: "wall", message: { title: "Mine, revised", content: "<p>better</p>" } }
+    assert_redirected_to circle_wall_path(circles(:writers))
+    assert_equal "Mine, revised", message.record.reload.recordable.title
+
+    sign_in_as users(:alice) # owner may moderate, not edit
+    get circle_wall_edit_path(circles(:writers), message.record)
+    assert_response :not_found
   end
 
   test "the standard circle page offers the Wall toggle as a visible head button" do

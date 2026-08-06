@@ -1,23 +1,46 @@
 <%# locals: (circle:, record:, message:, comment_count:, boosts:) %>
 <%# One wall story: byline, title (the door to the thread), clamped rich body,
-    comment count + the boost chips themselves. Cached on the version + author
-    + count + boosts — a comment or any boost change mints a fresh key;
-    message versions are immutable, so edits do too. %>
-<% cache [ "wall-card", message, record.creator, comment_count, boosts ] do %>
+    comment count + the boost chips themselves, and — for whoever may act on
+    it — a ⋯ context menu. Cached on the version + author + count + boosts +
+    the viewer's CAPABILITIES (not identity), so the menu never leaks across
+    roles but same-role viewers still share one fragment. %>
+<% can_edit = record.editable_by?(Current.user) %>
+<% can_trash = record.moderatable_by?(Current.user) %>
+<% cache [ "wall-card", message, record.creator, comment_count, boosts, can_edit, can_trash ] do %>
   <article class="wall__card">
     <header class="wall__byline">
       <span class="avatar" aria-hidden="true"><%= avatar_content(record.creator) %></span>
-      <span>
+      <div>
+        <%# Name · Title on one line (the title still a real heading, opening
+            the thread modal); the receipt underneath. %>
         <span class="u-text-strong"><%= record.creator.display_name %></span>
-        <span class="wall__meta">·
-          <time datetime="<%= (message.published_at || message.created_at).iso8601 %>"><%= time_ago_in_words(message.published_at || message.created_at) %> ago</time>
-        </span>
-      </span>
+        <span class="wall__meta">·</span>
+        <h3 class="wall__title"><%= link_to message.title, circle_wall_thread_path(circle, record),
+              data: { turbo_frame: "modal" } %></h3>
+        <span class="wall__meta wall__when"><%= time_ago_tag(message.published_at || message.created_at) %></span>
+      </div>
+      <% if can_edit || can_trash %>
+        <div class="wall__actions">
+          <button type="button" class="button button--icon button--ghost"
+                  popovertarget="wall-menu-<%= record.id %>" aria-label="Message actions">
+            <%= inline_svg_tag "lucide/ellipsis-vertical.svg", class: "lucide", size: "18px" %>
+          </button>
+          <div class="menu" popover id="wall-menu-<%= record.id %>" data-controller="anchored-popover">
+            <% if can_edit %>
+              <%# Opens the edit composer in the wall's modal. %>
+              <%= link_to "Edit", circle_wall_edit_path(circle, record), class: "menu__item",
+                    data: { turbo_frame: "modal" } %>
+            <% end %>
+            <% if can_trash %>
+              <% if can_edit %><hr class="menu__separator"><% end %>
+              <%= button_to "Move to trash", circle_message_path(circle, record), method: :delete,
+                    class: "menu__item",
+                    form: { data: { turbo_confirm: "Move “#{message.title}” to the trash?" } } %>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
     </header>
-    <%# Title and comments both open the thread modal; the full message page
-        stays reachable from inside it (comment edit menus, permalinks). %>
-    <h3 class="wall__title"><%= link_to message.title, circle_wall_thread_path(circle, record),
-          data: { turbo_frame: "modal" } %></h3>
     <div class="prose u-clamp wall__body"><%= message.content %></div>
     <footer class="wall__footer">
       <%# Opens the thread modal; live comment broadcasts replace it in place. %>

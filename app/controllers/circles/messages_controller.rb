@@ -80,7 +80,8 @@ module Circles
         # New/edited words that are live get scanned; idempotency in Mentions
         # keeps repeat scans from double-ringing.
         Mentions.deliver_for(@record) if @message.published?
-        redirect_to circle_message_path(@circle, @record)
+        # The Wall's edit modal submits back=wall — land where you started.
+        redirect_to params[:back] == "wall" ? circle_wall_path(@circle) : circle_message_path(@circle, @record)
       else
         render :edit, status: :unprocessable_entity
       end

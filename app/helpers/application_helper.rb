@@ -35,6 +35,15 @@ module ApplicationHelper
     content.to_plain_text.to_s.truncate(length, separator: " ")
   end
 
+  # Relative time with the receipt on hover: "3 hours ago" whose title (the
+  # native tooltip) carries the absolute timestamp. Every time-ago should
+  # render through this. suffix: "" for contexts that phrase it themselves
+  # (the bell's bare "5 minutes", a drip's time-until).
+  def time_ago_tag(time, suffix: " ago")
+    tag.time "#{time_ago_in_words(time)}#{suffix}",
+      datetime: time.iso8601, title: l(time, format: :long)
+  end
+
   # What goes inside an .avatar: the uploaded picture when there is one,
   # otherwise the monogram.
   def avatar_content(user)

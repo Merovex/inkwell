@@ -19,7 +19,7 @@
             icon: notification.icon,
             avatar_user: notification.actor,
             avatar: notification.actor.present?,
-            date: "#{time_ago_in_words(notification.created_at)} ago" %>
+            date: time_ago_tag(notification.created_at) %>
     <% end %>
   </div>
 <% else %>

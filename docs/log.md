@@ -2,6 +2,33 @@
 
 Append-only. Newest first. Format defined in [[CLAUDE]] (`CLAUDE.md`).
 
+## [2026-08-06] build | Wall polish round: inline titles, card menus, tooltips, standard-view parity
+- **Inline heading**: card titles ride the byline ("name · time · Title"), still real h3s. Trap found: the base reset `img, svg { display: block }` breaks any icon in inline flow (never seen before — every other icon lives in a flex row); `.wall__title .lucide` re-inlines.
+- **Card context menu** (⋯, capability-gated): author = Edit + trash, circle owner = trash, member = none. The viewer's CAPABILITIES (not identity) join the cache key, so menus never leak across roles while same-role viewers share fragments.
+- **time_ago_tag helper**: every relative time is now a `<time>` whose title tooltips the absolute timestamp (localized); swapped across all 8 render sites incl. broadcast-rendered bell rows.
+- **Standard-view parity**: the circle home's Discussions preview is published-only, same as the wall (drafts/scheduled were leaking into the shared surface even styled as normal rows).
+- pages touched: (log only)
+- refs: ../app/views/circles/walls/_card.html.erb, ../app/assets/stylesheets/wall.css, ../app/helpers/application_helper.rb, ../app/controllers/circles_controller.rb
+
+## [2026-08-06] build | Wall iterations 8–9 (settled): BEATS and Messages, reverse chrono
+- Iteration 8 tried the-Pulse-as-the-card (one card, answers previewed inside); Ben judged it live and revised: **Beats and Messages as the cards, reverse chrono** — iteration 7's shape restored and now settled. Each Beat is its own card (answerer byline, QUESTION as title deep-linking its ask-day, clamped answer, live boost chips); the Pulse itself doesn't appear in the stream (the pending pin + beat cards carry it).
+- Net arc today: grouped-by-day → per-beat → per-pulse → per-beat (final). The swap-in candidate view earned its keep.
+- pages touched: (log only)
+- refs: ../app/controllers/circles/walls_controller.rb, ../app/views/circles/walls/_beat_card.html.erb
+
+## [2026-08-06] build | Wall iteration 7: Beats as individual cards (question = title), day deep-links
+- Ben's call, superseding iteration 6's grouping: each Beat is its OWN wall card — answerer byline, the pulse QUESTION as the title, answer clamped like any body, live boost chips (the record-generic boost broadcast covers beats for free). Simpler feed too: beats ride the cursor at their own record ids, no group anchoring.
+- Pulse page grew `?day=` deep links (wall cards target their ask-day): defensive ISO parse, date in the answers heading, and the composer only renders on the CURRENT occurrence — a past day's composer would silently answer today (beats controller stamps current occurrence).
+- `_pulse_card` (grouped) deleted with its CSS; `_beat_card` replaces it.
+- pages touched: (log only)
+- refs: ../app/controllers/circles/walls_controller.rb, ../app/views/circles/walls/_beat_card.html.erb, ../app/controllers/circles/pulses_controller.rb
+
+## [2026-08-06] build | Wall iteration 6: pulse answers on the wall, grouped per ask-day
+- The wall now merges two feeds on ONE record-id cursor: published messages at their own record, and pulse answers grouped one-card-per-(pulse, asked_on) anchored at the NEWEST answer's record id — a fresh answer floats its day to the top (Ben: "my answer should be at the top", and it is). Page = top-10 of the merged candidates; a group renders whole on whichever page its anchor falls.
+- `_pulse_card`: activity icon + question + ask date, that day's answers stacked as avatar+clamped previews, "N answers" footer → the pulse page. Cached on [pulse version, day, answer set].
+- pages touched: (log only)
+- refs: ../app/controllers/circles/walls_controller.rb, ../app/views/circles/walls/_pulse_card.html.erb
+
 ## [2026-08-06] build | Wall iteration 5: pending-pulse pin in the account tint
 - An unanswered pulse ask pins at the TOP of the personal stack (above drafts + scheduled): "Pulse check: <question> — Share your answer" → the pulse page. Only for respondents (subscription-scoped); dissolves once your Beat for last_asked_on exists — any thread change is a new version row, so the recount stays honest.
 - The three affixed row shapes consolidated per the recurrence rule: `.wall__pin` base + `--announce` (accent: bulletins) / `--scheduled` (warning) / `--pulse` modifiers.

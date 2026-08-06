@@ -66,18 +66,27 @@
   <% end %>
 
   <%= turbo_frame_tag frame_id, target: "_top" do %>
-    <% @records.each do |record| %>
-      <%= render "card", circle: @circle, record: record, message: @messages_by_record[record],
-            comment_count: @comment_counts[record.id].to_i, boosts: @boosts_by_record.fetch(record.id, []) %>
+    <% @items.each do |item| %>
+      <% if (message = item[:message]) %>
+        <% record = @records_by_message[message] %>
+        <%= render "card", circle: @circle, record: record, message: message,
+              comment_count: @comment_counts[record.id].to_i, boosts: @boosts_by_record.fetch(record.id, []) %>
+      <% else %>
+        <% beat = item[:beat] %>
+        <% record = @beat_records[beat.record_id] %>
+        <%= render "beat_card", circle: @circle, record: record, beat: beat,
+              pulse_record: @pulse_records[record.parent_id],
+              boosts: @boosts_by_record.fetch(record.id, []) %>
+      <% end %>
     <% end %>
-    <% if @records.empty? && params[:before_id].blank? %>
+    <% if @items.empty? && params[:before_id].blank? %>
       <p class="u-text-muted">Nothing on the wall yet — start the first discussion.</p>
     <% end %>
     <% if @more %>
       <%# Scrolling this into view fetches the next page; its response's
           matching frame replaces the placeholder. %>
-      <%= turbo_frame_tag "wall-page-#{@records.last.id}", target: "_top", loading: :lazy,
-            src: circle_wall_path(@circle, before_id: @records.last.id) do %>
+      <%= turbo_frame_tag "wall-page-#{@cursor}", target: "_top", loading: :lazy,
+            src: circle_wall_path(@circle, before_id: @cursor) do %>
         <p class="u-text-muted">Loading more…</p>
       <% end %>
     <% end %>

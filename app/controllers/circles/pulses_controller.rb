@@ -25,7 +25,11 @@ module Circles
     end
 
     def show
-      @occurrence = @pulse.current_occurrence || Time.zone.today
+      # ?day= deep-links a specific ask-day (the wall's pulse cards); the
+      # composer only offers answering on the CURRENT occurrence — past days
+      # are read-only history.
+      @current_occurrence = @pulse.current_occurrence || Time.zone.today
+      @occurrence = requested_day || @current_occurrence
       @beats = @pulse.beats_on(@occurrence)
       @my_beat = @beats.find_by(creator_id: Current.user.id)
     end
@@ -52,6 +56,13 @@ module Circles
       def set_pulse
         @record = @circle.records.active.where(recordable_type: "Pulse").find(params[:id])
         @pulse = @record.recordable
+      end
+
+      # ?day= parsed defensively: garbage reads as no request, not a 500.
+      def requested_day
+        Date.iso8601(params[:day].to_s)
+      rescue Date::Error
+        nil
       end
 
       # The composer submits selected weekdays as an array; fold them into the

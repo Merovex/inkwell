@@ -75,6 +75,21 @@ class CirclesTest < ActionDispatch::IntegrationTest
     assert_select ".list .list__title", text: "Welcome to the circle"
   end
 
+  test "the home preview is published-only — no drafts or scheduled, even the author's" do
+    create_discussion(creator: users(:bob), status: :drafted, title: "Drafty")
+    Current.with_bucket(circles(:writers)) do
+      message = Message.new(title: "Way out", content: "later", creator: users(:bob), status: :drafted)
+      Record.originate(message)
+      message.schedule(at: 2.days.from_now, creator: users(:bob))
+    end
+
+    sign_in_as users(:bob)
+    get circle_path(circles(:writers))
+    assert_select ".list .list__title", text: "Drafty", count: 0
+    assert_select ".list .list__title", text: "Way out", count: 0
+    assert_select ".list .list__title", text: "Welcome to the circle"
+  end
+
   test "the circle home links to all discussions once past the preview count" do
     sign_in_as users(:bob)
     circle = circles(:writers)

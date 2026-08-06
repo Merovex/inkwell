@@ -54,9 +54,10 @@ class CirclesController < Circles::BaseController
     @pulse = @circle.pulse
     # The pulse preview's answer cards: the latest three, any occurrence.
     @pulse_beats = @pulse ? @pulse.beats.first(3) : []
-    # Scheduled discussions wait in their own view; the home previews the
-    # conversation as it stands (posted + in-progress).
-    visible = @circle.discussions_visible_to(Current.user).where.not(status: :scheduled)
+    # Published only — the Wall's rule: drafts and scheduled are their
+    # author's business and live in the Discussions list (and the Wall's own
+    # strip), never the home preview.
+    visible = @circle.messages.published
     @discussions = visible.limit(PREVIEW_COUNT)
     @discussions_count = visible.count
     # The header's avatar cluster (owner first); the full roster lives on

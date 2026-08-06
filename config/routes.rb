@@ -109,6 +109,9 @@ Rails.application.routes.draw do
       # submits return there via back=wall.
       resource :wall, only: :show, module: :circles
       resources :threads, only: :show, module: "circles/walls", as: :wall_threads
+      # The wall's edit surface for a message: the composer as a modal
+      # (fetched into the wall's "modal" frame); saves return to the wall.
+      resources :edits, path: "wall/edits", only: :show, module: "circles/walls", as: :wall_edits
       resources :messages, only: %i[index show new create edit update destroy], module: :circles do
         collection { get :archived }
         member do

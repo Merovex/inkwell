@@ -51,7 +51,7 @@
         <li class="mrow u-surface">
           <span class="mrow__label"><%= row[:subscriber].email_address %></span>
           <span class="u-text-muted"><%= link_to row[:drip].title, admin_drip_path(row[:drip].record) %></span>
-          <span class="mrow__meta u-text-muted"><%= time_ago_in_words(row[:send_at]) %></span>
+          <span class="mrow__meta u-text-muted"><%= time_ago_tag(row[:send_at], suffix: "") %></span>
         </li>
       <% end %>
     </ul>

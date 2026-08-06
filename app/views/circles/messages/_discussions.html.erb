@@ -12,7 +12,7 @@
     <% comments = comment_records[discussion.record_id] || [] %>
     <% activity = capture do %>
       <% if comments.any? %>
-        <%= pluralize(comments.size, "comment") %> · <%= time_ago_in_words(comments.last.created_at) %> ago
+        <%= pluralize(comments.size, "comment") %> · <%= time_ago_tag(comments.last.created_at) %>
         <%= render "shared/avatar_group", users: comments.map(&:creator).uniq, limit: 5, size: "small" %>
       <% end %>
     <% end %>
