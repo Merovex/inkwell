@@ -23,7 +23,10 @@
 
   /* .check-badge — the "Waiting for DNS" badge as a real retry button
      (shared/check_badge): rotate-ccw icon + status text, POSTs a fresh status
-     check. Hover/focus deepen the pill so it reads as pressable. */
+     check. Hover/focus deepen the pill so it reads as pressable; while the
+     check is in flight (Turbo disables the submitter for the duration) the
+     icon spins counter-clockwise so the press visibly did something even
+     though the result arrives with the redirect. */
   .check-badge {
     border: 0;
     font-family: inherit;
@@ -32,5 +35,13 @@
   .check-badge:hover,
   .check-badge:focus-visible {
     background: color-mix(in oklab, var(--warning-surface) 80%, var(--warning-ink));
+  }
+  .check-badge[disabled] { cursor: default; }
+  .check-badge[disabled] .lucide {
+    animation: check-badge-spin var(--speed-slow) linear infinite;
+  }
+  @keyframes check-badge-spin { to { rotate: -1turn; } }
+  @media (prefers-reduced-motion: reduce) {
+    .check-badge[disabled] .lucide { animation: none; }
   }
 }
