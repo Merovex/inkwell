@@ -40,6 +40,9 @@ class Site < ApplicationRecord
   validate :acceptable_images
 
   delegate :contact_email, :contact_email=, to: :account, allow_nil: true
+  # The handle (the account's Kindred Quill name: platform URL + shared-lane
+  # From) rides the same settings form the same way.
+  delegate :handle, :handle=, to: :account, allow_nil: true
 
   # Mutable: edits amend in place, so the Record-level rebuild trigger never
   # fires — the static site rebuilds from here instead.

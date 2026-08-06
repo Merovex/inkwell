@@ -1,6 +1,8 @@
 require "test_helper"
 
 class AccountTest < ActiveSupport::TestCase
+  include ActiveJob::TestHelper
+
   test "slug is generated on create, letter-first, and stable thereafter" do
     account = Account.create!(name: "Second Press", owner: users(:bob))
 
@@ -85,5 +87,20 @@ class AccountTest < ActiveSupport::TestCase
 
   test "broadcast_from wraps the address in the site name" do
     assert_match(/\A"?Merovex Press"? <noreply@/, accounts(:merovex).broadcast_from)
+  end
+
+  test "suggest_handle offers a base-{4d} variant that is actually free" do
+    suggestion = Account.suggest_handle("merovex")
+    assert_match(/\Amerovex-\d{4}\z/, suggestion)
+    assert_not Account.exists?(handle: suggestion)
+  end
+
+  test "a handle change reschedules the build and re-points the edge alias" do
+    account = accounts(:merovex)
+    assert_enqueued_with(job: SiteBuildJob) do
+      assert_enqueued_with(job: HandleRouteJob, args: [ account, nil ]) do
+        account.update!(handle: "merovex")
+      end
+    end
   end
 end

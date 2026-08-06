@@ -2,6 +2,15 @@
 
 Append-only. Newest first. Format defined in [[CLAUDE]] (`CLAUDE.md`).
 
+## [2026-08-06] build | Handle URLs: sites.kindredquill.com/<handle>, claim moved to Identity with typeahead
+- The handle graduates to the platform identity (Buttondown shape, both surfaces): `sites.kindredquill.com/<handle>` AND `<handle>@kindredquill.email`. Worker platform-host branch resolves `handle:<name>` → slug from the HOSTNAMES KV (no collision: handles have no dots, hostnames always do) before falling back to the slug path; `HandleRouteJob` syncs the alias on change (delete old, put new). **Worker needs a wrangler deploy.**
+- Builds re-base on the handle: `SiteBuildJob` baseURL = platform host + (handle || slug); handle change triggers rebuild + alias re-point (Account after_update_commit pair).
+- Claim UI moved Email → Identity: `handle` delegates through Site (same pattern as contact_email) and saves with the settings form (account save now non-bang, errors imported onto site). Typeahead: `resource :handle_availability` + `handle_check` Stimulus (debounced, stale-response-guarded); taken → counter-offers `Account.suggest_handle` = `base-{4d}` (random 4-digit tail). RESERVED_HANDLES extended with URL-path words (assets, sites, dev, staging, preview, cdn, static…).
+- Email tab: sending-address card is read-only, links to Identity to claim.
+- Deferred by Ben: #3 "dev." staging preview (build with drafts, tokened URL, deleted from bucket after publish) — "Let's do #1 first, then discuss #3".
+- pages touched: (log only)
+- refs: ../edge/src/index.js, ../app/jobs/handle_route_job.rb, ../app/jobs/site_build_job.rb, ../app/models/account.rb, ../app/models/site.rb, ../app/controllers/admin/handle_availabilities_controller.rb, ../app/javascript/controllers/handle_check_controller.js
+
 ## [2026-08-06] build | Domain-tab polish: one domain per site, dead-poll revival, retry badge, composer frame back
 - **Provisioned live**: kindredquill.email identity created in SES via `email:provision` (new `inkwell-ses-tenancy` IAM policy on the runtime user — the long-term shape; inkwell-provisioner slated for deletion). Rake creds now honor AWS_PROFILE (explicit `credentials: nil` suppresses the SDK chain — must omit the key). news.merovex.press connected + adopted through the Email tab in production; tenant `site-W8YRHR` live.
 - **One domain per site** (Ben): connect card hidden when a domain exists; enforced in DomainConnection + EmailConnection ("Disconnect X first"); same-domain reconnect stays allowed (retry/adopt path).

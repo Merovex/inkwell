@@ -48,6 +48,25 @@
           <p class="field__hint u-text-muted">Sits beside the site name in the page title.</p>
         </div>
 
+        <%# The account's Kindred Quill name (delegated through Site): the
+            platform URL segment and the shared sending address's local part.
+            The handle-check controller asks /admin/handle_availability as you
+            type and counter-offers a free variant when taken. %>
+        <div class="field" data-controller="handle-check"
+             data-handle-check-url-value="<%= admin_handle_availability_path %>">
+          <%= f.label :handle, "Handle", class: "field__label" %>
+          <%= f.text_field :handle, class: "field__control", placeholder: "yourname",
+                autocapitalize: "off", autocorrect: "off", spellcheck: "false",
+                data: { handle_check_target: "input", action: "input->handle-check#check" } %>
+          <p class="field__hint u-text-muted">Your Kindred Quill name — your site lives at
+             <code><%= Rails.configuration.x.cloudflare.cname_target %>/<%= @site.handle.presence || "yourname" %></code>
+             and newsletters can send from <code><%= @site.handle.presence || "yourname" %>@<%= Account.shared_sending_domain %></code>.
+             3–30 characters: lowercase letters, numbers, and hyphens.</p>
+          <p class="field__hint" data-handle-check-target="status" aria-live="polite" hidden></p>
+          <button type="button" class="button" hidden
+                  data-handle-check-target="suggest" data-action="handle-check#applySuggestion"></button>
+        </div>
+
         <div class="field">
           <%= f.label :contact_email, "Contact email", class: "field__label" %>
           <%= f.email_field :contact_email, class: "field__control", placeholder: "hello@merovex.press" %>

@@ -300,7 +300,11 @@ Rails.application.routes.draw do
       # the SES identity; destroy deletes it. The handle is the author's chosen
       # local part on the shared sending lane (<handle>@kindredquill.email).
       resources :sending_domains, only: %i[index create destroy]
-      resource :handle, only: :update
+
+      # The Identity tab's handle typeahead: show answers "is this handle
+      # free?" (and counter-offers a suggestion when it isn't). The handle
+      # itself saves through the settings form (Site delegates to account).
+      resource :handle_availability, only: :show
 
       # The "Try again" badge on a verifying domain: POST creates a fresh
       # status check — the poll runs inline and the redirect reports the

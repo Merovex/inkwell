@@ -21,13 +21,15 @@ class SiteBuildJob < ApplicationJob
     account.update_columns(site_build_status: "building")
 
     # The build's canonical home: the custom domain when connected, else the
-    # standard slug path on the platform host (the Worker's PLATFORM_HOSTS
-    # slug routing) — baseURL and serving location must agree or asset URLs
-    # point away from where the reader is.
+    # platform host path — the handle when claimed (the Worker resolves it
+    # through the handle KV alias), else the slug (served with no KV at all).
+    # baseURL and serving location must agree or asset URLs point away from
+    # where the reader is; both platform paths serve, links canonicalize
+    # toward whichever the build embeds.
     base_url = if account.domain.present?
       "https://#{account.domain}/"
     else
-      "https://#{Rails.configuration.x.cloudflare.cname_target}/#{account.slug}/"
+      "https://#{Rails.configuration.x.cloudflare.cname_target}/#{account.handle.presence || account.slug}/"
     end
     workspace = Exporter.new(account, base_url: base_url).export!
     output = Renderer.new(workspace).render!

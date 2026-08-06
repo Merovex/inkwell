@@ -63,18 +63,9 @@ class AdminSendingDomainsTest < ActionDispatch::IntegrationTest
     assert_select ".field__label", text: /bounce\.news\.merovex\.press/
   end
 
-  test "claiming a handle updates the sending address" do
+  test "without a handle or BYOD domain the card points at Identity to claim one" do
     sign_in_as users(:admin)
-    patch admin_handle_path, params: { handle: "merovex" }
-    assert_redirected_to admin_sending_domains_path
-    assert_equal "merovex", accounts(:merovex).reload.handle
-  end
-
-  test "a reserved handle is refused with the validation message" do
-    sign_in_as users(:admin)
-    patch admin_handle_path, params: { handle: "noreply" }
-    assert_redirected_to admin_sending_domains_path
-    assert_match(/reserved/, flash[:alert])
-    assert_nil accounts(:merovex).reload.handle
+    get admin_sending_domains_path
+    assert_select "a[href=?]", admin_settings_path, text: "Identity"
   end
 end

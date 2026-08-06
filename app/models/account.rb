@@ -31,25 +31,42 @@ class Account < ApplicationRecord
 
   validates :name, presence: true, uniqueness: { case_sensitive: false }
 
-  # The author-chosen local part of the shared-lane From address —
-  # <handle>@kindredquill.email, Buttondown's shape. NULL until claimed; the
-  # shared lane falls back to noreply@ meanwhile. Reserved words keep the
-  # operational and deceptive local parts off the shared domain.
+  # The author-chosen Kindred Quill name — Buttondown's shape, on two
+  # surfaces: the shared-lane From (<handle>@kindredquill.email) and the
+  # platform URL (sites.kindredquill.com/<handle>). NULL until claimed; both
+  # surfaces fall back (noreply@, the slug path) meanwhile. Reserved words
+  # keep operational/deceptive local parts off the shared domain AND
+  # plausible root paths off the platform host.
   RESERVED_HANDLES = %w[
-    abuse admin administrator api billing bounce bounces contact help
-    hostmaster info inkwell kindredquill legal mail mailer-daemon marketing
-    moderator news newsletter noreply no-reply official postmaster privacy
-    root sales security staff subscribe support team unsubscribe verify
-    webmaster www
+    abuse admin administrator api app assets billing blog bounce bounces
+    cdn contact demo dev docs feed ftp help hostmaster info inkwell
+    kindredquill legal mail mailer-daemon marketing moderator news
+    newsletter noreply no-reply official postmaster preview privacy root
+    rss sales search security site sites smtp staff staging static status
+    subscribe support team test unsubscribe verify webmaster www
   ].freeze
+
+  HANDLE_FORMAT = /\A[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\z/
 
   normalizes :handle, with: ->(handle) { handle.strip.downcase.presence }
   validates :handle, allow_nil: true,
     length: { in: 3..30 },
-    format: { with: /\A[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\z/,
+    format: { with: HANDLE_FORMAT,
               message: "can use lowercase letters, numbers, and hyphens (not at the ends)" },
     exclusion: { in: RESERVED_HANDLES, message: "is reserved" },
     uniqueness: true
+
+  # A free variant of a wanted-but-taken handle: base-{4d}, a random 4-digit
+  # tail (the availability typeahead's counter-offer). Nil when five draws
+  # all collide — vanishingly unlikely, and the typeahead just stays silent.
+  def self.suggest_handle(base)
+    base = base.first(25) # leave room for "-1234" inside the 30-char cap
+    5.times do
+      candidate = "#{base}-#{format("%04d", SecureRandom.random_number(10_000))}"
+      return candidate unless RESERVED_HANDLES.include?(candidate) || exists?(handle: candidate)
+    end
+    nil
+  end
 
   # The moderation override for records in this bucket: an account admin. The
   # bucket-owner interface Record#moderatable_by? leans on (Circle answers this
@@ -104,6 +121,10 @@ class Account < ApplicationRecord
   # baseURL is the domain, so every asset/link must re-render against it.
   after_update_commit -> { SiteBuildJob.schedule(self) }, if: :saved_change_to_design?
   after_update_commit -> { SiteBuildJob.schedule(self) }, if: :saved_change_to_domain?
+  # A handle change moves the platform URL: rebuild (baseURL embeds the
+  # handle path) and re-point the edge alias (KV handle:<name> → slug).
+  after_update_commit -> { SiteBuildJob.schedule(self) }, if: :saved_change_to_handle?
+  after_update_commit :sync_handle_route, if: :saved_change_to_handle?
 
   def public_address
     domain || [ AccountHost.apex_host, slug ].compact.join("/")
@@ -145,5 +166,9 @@ class Account < ApplicationRecord
       site = Site.new(site_name: name, creator: owner)
       Current.with_account(self) { Record.originate(site) }
       site
+    end
+
+    def sync_handle_route
+      HandleRouteJob.perform_later(self, saved_change_to_handle.first)
     end
 end

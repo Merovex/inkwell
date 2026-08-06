@@ -20,18 +20,10 @@
         <p>Your newsletter and drip emails send as
            <strong><%= Current.account.site.site_name %></strong>
            <code><%= Current.account.broadcast_address %></code>.</p>
-
-        <%= form_with url: admin_handle_path, method: :patch, class: "u-stack" do |f| %>
-          <div class="field">
-            <%= f.label :handle, "Handle", class: "field__label" %>
-            <%= f.text_field :handle, value: Current.account.handle, class: "field__control",
-                  placeholder: "yourname", autocapitalize: "off", autocorrect: "off", spellcheck: "false" %>
-            <p class="field__hint u-text-muted">The name before the @ on the shared address —
-               <code>yourname@<%= Account.shared_sending_domain %></code>. 3–30 characters:
-               lowercase letters, numbers, and hyphens. Leave blank to use
-               <code>noreply</code>.</p>
-          </div>
-          <div><%= f.submit "Save handle", class: "button" %></div>
+        <% if Current.account.handle.blank? && Current.account.sending_domains.live.none? %>
+          <p class="u-text-muted">Claim a handle in
+             <%= link_to "Identity", admin_settings_path %> to send from your own
+             name on the shared address instead of <code>noreply</code>.</p>
         <% end %>
       </div>
     </section>

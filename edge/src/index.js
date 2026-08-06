@@ -47,7 +47,12 @@ export default {
     if (PLATFORM_HOSTS.has(host)) {
       const m = pathname.match(SLUG);
       if (!m) return plain404("Sites live at /<site-code>/ on this host.");
-      slug = m[1].toUpperCase();
+      // The segment is a claimed handle (KV alias "handle:<name>" → slug,
+      // written by the app's HandleRouteJob) or the raw slug — handle checked
+      // first, so a handle that happens to be slug-shaped still resolves.
+      slug =
+        (await env.HOSTNAMES.get(`handle:${m[1].toLowerCase()}`, { cacheTtl: 300 })) ||
+        m[1].toUpperCase();
       pathname = m[2] || "/";
     } else {
       slug = await env.HOSTNAMES.get(host, { cacheTtl: 300 });
