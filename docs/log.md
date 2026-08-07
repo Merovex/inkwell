@@ -2,6 +2,13 @@
 
 Append-only. Newest first. Format defined in [[CLAUDE]] (`CLAUDE.md`).
 
+## [2026-08-07] fix | siteverify "bad-request": Ruby 4's Net::HTTP sends no default Content-Type
+- Live Turnstile rejects with a REAL token logged `bad-request` — siteverify called our request malformed. Root cause: **Ruby 4 removed `supply_default_content_type`** from net/http, so `http.post(path, body)` ships a form body with NO Content-Type header (Ruby 3 defaulted it to x-www-form-urlencoded). `TurnstileVerifier#siteverify` now builds the request with `set_form_data` (sets body + header). Proven over the wire with Cloudflare's always-pass/always-fail test secrets. Repo-wide lesson: on Ruby 4, never `http.post(path, raw_body)` a form without an explicit Content-Type.
+- Also restored the real client IP on islands: the proxy hops rewrite X-Forwarded-For like they did X-Forwarded-Host (Rails logged Cloudflare egress IPs), collapsing every visitor into one rate-limit bucket and poisoning consent-log provenance. The Worker now sends `X-Island-IP` (from CF-Connecting-IP) and `IslandHost::Rewriter` restores it into XFF under the same island-auth gate.
+- Debugging pattern that paid off: `error-codes` logging in the verifier turned a blind fail-closed reject into a one-line diagnosis.
+- pages touched: (log only)
+- refs: ../app/services/turnstile_verifier.rb, ../lib/middleware/island_host.rb, ../edge/src/index.js
+
 ## [2026-08-07] fix | Island proxying was dead in prod: X-Forwarded-Host doesn't survive the hops
 - Live submit broke: POST /newsletter reached Rails (x-request-id proved it) but 404'd — the proxy hops in front of Rails (kamal-proxy/Thruster, app host behind Cloudflare) **rewrite X-Forwarded-Host from the Host header**, so Rails saw `app.kindredquill.com`, where the tenant-constrained newsletter routes don't exist. Rails honors XFH fine (verified with MockRequest); the header just never arrives intact.
 - Fix: the Worker also sends the tenant host as **`X-Island-Host`** (a header nothing rewrites) and new `IslandHost::Rewriter` middleware (before `AccountHost::Extractor`) copies it into XFH — **gated on the island-auth secret**, so tenant hosts can't be spoofed at the origin. Unprovisioned = rewrite off.

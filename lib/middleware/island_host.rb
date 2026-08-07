@@ -14,8 +14,15 @@ module IslandHost
     end
 
     def call(env)
-      host = env["HTTP_X_ISLAND_HOST"]
-      env["HTTP_X_FORWARDED_HOST"] = host if host.present? && authentic?(env)
+      if authentic?(env)
+        host = env["HTTP_X_ISLAND_HOST"]
+        env["HTTP_X_FORWARDED_HOST"] = host if host.present?
+        # The client IP suffers the same rewriting as the host: restore it so
+        # RemoteIp (and with it rate_limit buckets and the consent log) sees
+        # the visitor, not a Cloudflare egress IP shared by everyone.
+        ip = env["HTTP_X_ISLAND_IP"]
+        env["HTTP_X_FORWARDED_FOR"] = ip if ip.present?
+      end
       @app.call(env)
     end
 

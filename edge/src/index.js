@@ -127,8 +127,14 @@ async function proxyIsland(request, env, host, pathname, url) {
   // the island-auth secret.
   headers.set("x-island-host", host);
   headers.set("x-forwarded-proto", "https");
+  // Same story for the client IP: X-Forwarded-For gets rewritten by the
+  // proxy hops, so the CF-validated client IP also rides an island header
+  // (rate limits and the consent log need the visitor, not an egress IP).
   const clientIP = request.headers.get("cf-connecting-ip");
-  if (clientIP) headers.set("x-forwarded-for", clientIP);
+  if (clientIP) {
+    headers.set("x-forwarded-for", clientIP);
+    headers.set("x-island-ip", clientIP);
+  }
   if (env.ISLAND_AUTH) headers.set("x-island-auth", env.ISLAND_AUTH);
   return fetch(target, {
     method: request.method,

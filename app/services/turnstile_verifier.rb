@@ -56,7 +56,11 @@ class TurnstileVerifier
       http = Net::HTTP.new(VERIFY_URL.host, VERIFY_URL.port)
       http.use_ssl = true
       http.open_timeout = http.read_timeout = http.write_timeout = TIMEOUT
-      response = http.post(VERIFY_URL.path, URI.encode_www_form(secret: @secret, response: @token))
-      JSON.parse(response.body)
+      # set_form_data, not http.post(path, body): Ruby 4's Net::HTTP no longer
+      # supplies a default Content-Type, and a body without one gets a
+      # bad-request back from siteverify.
+      request = Net::HTTP::Post.new(VERIFY_URL.path)
+      request.set_form_data(secret: @secret, response: @token)
+      JSON.parse(http.request(request).body)
     end
 end
