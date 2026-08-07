@@ -49,6 +49,39 @@ class ExporterTest < ActiveSupport::TestCase
     assert_equal users(:alice).display_name, data("author")["name"]
   end
 
+  test "site.json carries no signup block until the account can send the confirmation" do
+    assert_nil data("site").dig("newsletter", "signup")
+  end
+
+  test "site.json wires the newsletter signup once SES is provisioned" do
+    accounts(:merovex).update!(ses_tenant_provisioned_at: Time.current)
+    workspace = Exporter.new(accounts(:merovex).reload).export!
+
+    signup = JSON.parse(workspace.join("data", "site.json").read).dig("newsletter", "signup")
+    assert signup["enabled"]
+    assert_equal Subscriber::HONEYPOT_FIELD, signup["honeypot_field"]
+  end
+
+  test "a provisioned account's built home renders the signup form, honeypot, and widget" do
+    skip "hugo binary not available" unless system("#{HUGO_BIN} version", out: File::NULL, err: File::NULL)
+
+    accounts(:merovex).update!(ses_tenant_provisioned_at: Time.current)
+    original_site_key = Rails.configuration.x.turnstile_site_key
+    Rails.configuration.x.turnstile_site_key = "public-sitekey"
+    workspace = Exporter.new(accounts(:merovex).reload).export!
+
+    home = Renderer.new(workspace).render!.join("index.html").read
+    assert_includes home, "/newsletter", "form posts to the island"
+    assert_includes home, %(name=#{Subscriber::HONEYPOT_FIELD}), "pinned honeypot is baked in"
+    assert_includes home, "public-sitekey", "Turnstile widget carries the contract's sitekey"
+    # The band's own mailto fallback yields to the form (the nav/hero "Get
+    # updates" CTAs still carry mailto links — a separate partial).
+    band = home[/fk-newsletter-band.*/m]
+    assert_not_includes band, "mailto:", "the band's mailto fallback yields to the real form"
+  ensure
+    Rails.configuration.x.turnstile_site_key = original_site_key
+  end
+
   private
     def data(name)
       JSON.parse(@workspace.join("data", "#{name}.json").read)

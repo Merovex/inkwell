@@ -39,6 +39,23 @@ html[data-newsletter="plane"] .fk-newsletter-icon-plane,
 html[data-newsletter="megaphone"] .fk-newsletter-icon-megaphone,
 html[data-newsletter="mailbox"] .fk-newsletter-icon-mailbox { display: block; }
 
+/* signup form (contract carries a signup block; otherwise the CTA stays a
+   mailto button): email + button row that wraps on small screens; the
+   Turnstile widget, when present, takes its own row. */
+.fk-newsletter-form {
+  display: flex; flex-wrap: wrap; justify-content: center; gap: 0.75rem;
+  margin-top: 1.25rem;
+}
+.fk-newsletter-input {
+  flex: 1 1 14rem; max-width: 22rem;
+  padding: 0.6rem 0.9rem; font: inherit; color: inherit;
+  background: var(--bg); border: 1px solid var(--line); border-radius: 0.5rem;
+}
+.fk-newsletter-form .cf-turnstile { flex-basis: 100%; display: flex; justify-content: center; }
+/* icon variants left-align the card copy; the form follows suit */
+html:is([data-newsletter="envelope"],[data-newsletter="plane"],[data-newsletter="megaphone"],[data-newsletter="mailbox"]) .fk-newsletter-form,
+html:is([data-newsletter="envelope"],[data-newsletter="plane"],[data-newsletter="megaphone"],[data-newsletter="mailbox"]) .fk-newsletter-form .cf-turnstile { justify-content: flex-start; }
+
 /* ---------- Footer ---------- */
 .fk-footer { border-top: 1px solid var(--line); background: var(--bg-alt); padding-block: 2rem; }
 .fk-footer-meta { text-align: center; color: var(--ink-muted); font-size: 0.9rem; }

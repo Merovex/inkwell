@@ -6,12 +6,16 @@
          four icons render; CSS reveals the match)
      Copy comes from site.json's newsletter block (headline / blurb /
      button_label) with fed defaults, so the band never renders empty.
-     The contract carries no newsletter service URL yet, so the CTA is a
-     mailto against site.json's contact_email. When the contract grows a
-     signup endpoint, the email field wires in here. */}}
+     When the contract carries a signup block (the account can send the
+     confirmation email — docs/newsletter-bot-protection-plan.md §3), the
+     CTA is a real form posting to the /newsletter island: email field,
+     hidden source, the pinned honeypot the server checks by the same name,
+     and the Turnstile widget when a sitekey rides the contract. Without a
+     signup block the CTA stays a mailto against site.json's contact_email. */}}
 {{ $site := hugo.Data.site }}
 {{ $author := hugo.Data.author }}
 {{ $nl := $site.newsletter | default dict }}
+{{ $signup := $nl.signup | default dict }}
 <section class="fk-newsletter-band" aria-labelledby="newsletter-heading">
   {{/* Photo backdrop: the uploaded signup photo, else the author photo. */}}
   <div class="fk-newsletter-bg" aria-hidden="true">
@@ -34,7 +38,32 @@
       <div class="fk-newsletter-copy">
         <h2 id="newsletter-heading">{{ or $nl.headline "Get new-release updates" }}</h2>
         <p>{{ with $nl.blurb }}{{ . }}{{ else }}{{ $site.tagline }} &mdash; hear about the next one first.{{ end }}</p>
+        {{ if $signup.enabled }}
+        <form class="fk-newsletter-form" method="post" action="{{ "newsletter" | relURL }}">
+          <label class="fk-visually-hidden" for="fk-newsletter-email">Email address</label>
+          <input class="fk-newsletter-input" type="email" id="fk-newsletter-email" name="email_address"
+                 required autocomplete="email" placeholder="you@example.com">
+          <input type="hidden" name="source" value="newsletter_band">
+          {{ with $signup.honeypot_field }}
+          {{/* Pinned honeypot — the server discards any submit that fills it.
+               Hidden from humans, AT, and the tab order; never type=hidden
+               (bots skip those). */}}
+          <div class="fk-visually-hidden" aria-hidden="true">
+            <label for="fk-newsletter-trap">Leave this field empty</label>
+            <input type="text" id="fk-newsletter-trap" name="{{ . }}" tabindex="-1" autocomplete="off">
+          </div>
+          {{ end }}
+          {{ with $signup.turnstile_sitekey }}
+          <div class="cf-turnstile" data-sitekey="{{ . }}"></div>
+          {{ end }}
+          <button class="fk-btn fk-btn-primary" type="submit">{{ or $nl.button_label "Join the list" }}</button>
+        </form>
+        {{ with $signup.turnstile_sitekey }}
+        <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+        {{ end }}
+        {{ else }}
         <a class="fk-btn fk-btn-primary" href="mailto:{{ $site.contact_email }}?subject=Newsletter%20signup">{{ or $nl.button_label "Join the list" }}</a>
+        {{ end }}
       </div>
     </div>
   </div>

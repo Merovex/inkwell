@@ -478,6 +478,10 @@ Rails.application.routes.draw do
     # Post-signup "check your inbox" page (minimal layout). Both a real opt-in and a
     # honeypot-tripped one redirect here, so the two are indistinguishable.
     get  "newsletter/sent" => "subscriptions#sent", as: :newsletter_sent
+    # Where blocked signups land (hygiene / rate limit / Turnstile) — a proxied
+    # island like sent, because the static site can't render a flash and
+    # GET /newsletter isn't on the Worker allowlist.
+    get  "newsletter/rejected" => "subscriptions#rejected", as: :newsletter_rejected
 
     # Contact form (anonymous, double opt-in) at /contact. create records an
     # unconfirmed Missive and emails a fixed-template confirmation; the token link

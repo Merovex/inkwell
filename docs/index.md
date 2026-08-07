@@ -29,6 +29,7 @@ for canonical naming.
 - [site-designer.md](site-designer.md) — SiteDesigner design plan: manifest-driven rail, Site-draft save semantics, preview = local Hugo build in an iframe, CSS foundation pass (layers, `mode` axis, mobile-first), build order (ADR 0022)
 - [site-designer-user-guide.md](site-designer-user-guide.md) — author-facing copy (seed of "How to use this page"): the three-rung brand ladder, header controls, palettes + light/dark mode + custom colors, the books section, font pairings
 - [saas-static-hosting-plan.md](saas-static-hosting-plan.md) — five-phase plan: static publish to Cloudflare R2 + Worker, multi-tenant SaaS (Fizzy pattern), BYODomain via CF for SaaS, per-tenant SES
+- [newsletter-bot-protection-plan.md](newsletter-bot-protection-plan.md) — PROPOSED: wire the Hugo newsletter band to `POST /newsletter` (Worker proxy island, same-origin) + stop bots before the confirmation send (pinned honeypot + Cloudflare Turnstile, fail-closed); scoring engine / Bot Management deferred
 
 ## Decisions (ADRs)
 

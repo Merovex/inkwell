@@ -123,9 +123,27 @@ class Exporter
         fonts: @design[:fonts],
         colors: resolve_colors(@design[:colors]),
         hero: @design[:hero],
-        newsletter: @design[:newsletter],
+        newsletter: newsletter_block,
         home: @design[:sections].present? ? { sections: @design[:sections] } : nil
       }.compact_blank
+    end
+
+    # The newsletter band's signup wiring (bot-protection plan §3): the theme
+    # renders a real form only when the account can actually send the
+    # confirmation email; otherwise it keeps its mailto fallback. The honeypot
+    # field name is the shared Subscriber constant so the baked form and the
+    # server can never drift. The island-auth secret is deliberately NOT here —
+    # nothing secret rides baked HTML.
+    def newsletter_block
+      block = (@design[:newsletter] || {}).to_h
+      if account.ses_tenant_provisioned?
+        block = block.merge(signup: {
+          enabled: true,
+          honeypot_field: Subscriber::HONEYPOT_FIELD,
+          turnstile_sitekey: TurnstileVerifier.site_key
+        }.compact_blank)
+      end
+      block.presence
     end
 
     def resolve_colors(colors)

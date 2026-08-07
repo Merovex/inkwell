@@ -47,6 +47,13 @@ class Subscriber < ApplicationRecord
   # deterministically rather than leaning on a DNS lookup.
   RESERVED_TLDS = %w[ test invalid localhost example ].freeze
 
+  # The pinned honeypot field on public signup forms — one fixed name shared
+  # by the controller and the export contract (Exporter#newsletter_block), so
+  # the static form and the server can never drift. Session-backed traps
+  # can't work on a form baked at build time; a fixed decoy field can. Named
+  # to look like a real profile field so bots fill it.
+  HONEYPOT_FIELD = "website"
+
   # The people, as opposed to the diagnostics: everyone who isn't a seed.
   # Roster counts count readers.
   scope :readers, -> { where(seed: false) }

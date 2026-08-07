@@ -2,6 +2,30 @@
 
 Append-only. Newest first. Format defined in [[CLAUDE]] (`CLAUDE.md`).
 
+## [2026-08-07] build | Newsletter bot protection implemented (plan items 1–5 + Worker island proxy)
+- **Rails**: `SubscriptionsController` sheds `invisible_captcha` for a hand-rolled pinned honeypot (`Subscriber::HONEYPOT_FIELD` = "website"), skips CSRF on `create` only, verifies Turnstile fail-closed via `TurnstileVerifier` (app/services; no `remoteip` until §2 fully lands), and gains the `rejected` island (`GET /newsletter/rejected`, minimal layout, vague copy) — all failure paths (hygiene, rate limit, Turnstile) land there. New `IslandProtected` concern: `X-Island-Auth` shared-secret check via `config.x.island_auth_secrets` (array = current+next rotation), `head :forbidden`, no-op when unprovisioned.
+- **Contract → Hugo**: `Exporter#newsletter_block` adds `signup: {enabled, honeypot_field, turnstile_sitekey}` when `ses_tenant_provisioned?`; the filibuster band renders a real form (posting `relURL "newsletter"`) with honeypot + optional Turnstile widget, else keeps the mailto CTA. Form CSS in 08-chrome.css.
+- **Worker (edge/)**: newsletter island allowlist proxies to `env.RAILS_ORIGIN` (custom-domain hosts only — the platform host has no Rails-side hostname mapping yet), forwarding `X-Forwarded-Host`/`-Proto`, `X-Forwarded-For` from `CF-Connecting-IP`, and `X-Island-Auth` from the Wrangler secret; `redirect: "manual"` so Rails redirects land back on the tenant host. Unset `RAILS_ORIGIN` = exactly the old static-only behavior. Rails side: Cloudflare ranges added to `trusted_proxies` (initializer, vendored 2026-08-07).
+- Keys land config.x-style (`turnstile.rb`, `island_auth.rb` initializers) so tests swap them without stubbing (the suite has none — minitest/mock isn't even bundled under minitest 6). Verify-bullet fixed: bad Turnstile → rejected page (visible block), honeypot → stealth discard.
+- Full suite green (706 runs). Known leftovers: nav/hero "Get updates" CTAs still mailto (separate partial); platform-host islands + §2a Worker rollout are ops/cut-over work.
+- pages touched: [[newsletter-bot-protection-plan]]
+- refs: ../app/controllers/subscriptions_controller.rb, ../app/controllers/concerns/island_protected.rb, ../app/services/turnstile_verifier.rb, ../app/models/exporter.rb, ../edge/src/index.js, ../vendor/filibuster/layouts/_partials/sections/newsletter.html
+
+## [2026-08-07] fix | Newsletter bot-protection plan — validation caught three gaps
+- Validated [[newsletter-bot-protection-plan]] against the code; revised in place. The big one: the plan claimed `invisible_captcha`'s timestamp/spinner traps "can't fire" on a static form — **backwards**. The gem treats a *missing* session timestamp as spam and the spinner param never matches without a session, so every legitimate session-less submit would be silently discarded. Spinner is global-only config, so the fix is dropping the gem from `SubscriptionsController` and hand-rolling the pinned honeypot check (gem stays intact on auth/contact controllers).
+- Gap 2: `create`'s rescue + rate-limit redirect to `GET /newsletter` (not an island) with a flash (needs a session). Fixed: new `GET /newsletter/rejected` island mirroring `sent`, one-line Worker allowlist addition.
+- Gap 3: behind the Worker, `request.remote_ip` is a Cloudflare egress IP — collapses rate-limit buckets, poisons consent-log provenance (ADR 0011), and a mismatched siteverify `remoteip` + fail-closed would block everyone. Fixed: new plan item — Worker forwards `CF-Connecting-IP` + Rails `RemoteIp` trusted-proxy config; omit `remoteip` from siteverify until wired.
+- Also: CSP note for `challenges.cloudflare.com`; flagged `POST /contact` as having the identical invisible_captcha problem (tracked with the contact island, not this plan).
+- pages touched: [[newsletter-bot-protection-plan]]
+- refs: ../app/controllers/subscriptions_controller.rb, invisible_captcha-2.3.0 lib/invisible_captcha/controller_ext.rb, phase-2-static-serving.md §2.5
+
+## [2026-08-07] note | Planned static newsletter form + bot protection
+- New design doc [[newsletter-bot-protection-plan]]: wire the Hugo newsletter band to Rails `POST /newsletter`, and stop bots at the door so bad addresses never trigger a bouncing confirmation send. Routing settled from [[phase-2-static-serving]] §2.5 — the Worker proxies `/newsletter` + `/newsletter/sent` as dynamic islands, so the form is same-origin (no CORS) and the success page stays on the tenant host.
+- Defense stack: double opt-in + config-set isolation + rate limit (already shipped) + **pinned honeypot** + **Cloudflare Turnstile** (free, fail-closed). Turnstile substitutes for a homegrown scoring engine — no HMAC rotation/scoring/release job. Deferred (with reasons): signals+outcome capture (survivorship trap — train on outcomes, not survivors), CF widget-API automation (only for self-serve domains), Bot Management (Enterprise).
+- Locked: CSRF skip on `create` (static page, no session), fixed honeypot name, one shared widget across tenant hosts. Tripwire = SES bounce rate + pending/confirmed ratio.
+- pages touched: [[newsletter-bot-protection-plan]], index.md
+- refs: ../app/controllers/subscriptions_controller.rb, ../app/models/exporter.rb, ../vendor/filibuster/layouts/_partials/sections/newsletter.html
+
 ## [2026-08-07] ingest | Documented the Wall, Commons, and Bulletins as concept pages
 - Synthesized the 2026-08-06 build log (Wall iterations 1–9 + polish) into durable pages: new [[circle-wall]] (feed/cursor, cards, thread+edit modals, live boost/comment broadcasts, affixed strips, the Commons singleton, all the CSS/broadcast gotchas) and [[bulletins]] (nil-bucket Publishable, bell-only fan-out, route-ordering trap).
 - Refreshed: [[circles]] (Wall/Commons pointers, published-only home preview), [[notifications]] (ticket_opened + bulletin_published kinds, per-kind icons, broadcast-avatar path-URL note), index.md, overview.md.

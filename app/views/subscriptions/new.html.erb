@@ -13,8 +13,13 @@
   <% end %>
 
   <%= form_with url: newsletter_path, method: :post, class: "press-form" do %>
-    <%# Honeypot + time-to-submit trap; invisible to humans, catches bots. %>
-    <%= invisible_captcha %>
+    <%# Pinned honeypot — invisible to humans, enticing to bots; a filled value
+        is silently discarded. The same fixed field the static form bakes in
+        (Subscriber::HONEYPOT_FIELD), out of AT and the tab order. %>
+    <div class="u-visually-hidden" aria-hidden="true">
+      <label for="<%= Subscriber::HONEYPOT_FIELD %>">Leave this field empty</label>
+      <%= text_field_tag Subscriber::HONEYPOT_FIELD, nil, tabindex: -1, autocomplete: "off" %>
+    </div>
     <%= hidden_field_tag :source, params[:source] || "newsletter_page" %>
     <label class="press-form__label" for="email_address">Email address</label>
     <div class="press-form__row">
@@ -22,5 +27,11 @@
             placeholder: "you@example.com", class: "press-form__input", autocomplete: "email" %>
       <%= submit_tag "Subscribe", class: "press-btn press-btn--primary" %>
     </div>
+    <% if TurnstileVerifier.site_key.present? %>
+      <div class="cf-turnstile" data-sitekey="<%= TurnstileVerifier.site_key %>"></div>
+      <% content_for :head do %>
+        <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+      <% end %>
+    <% end %>
   <% end %>
 </section>
