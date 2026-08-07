@@ -125,6 +125,10 @@ class Account < ApplicationRecord
   # handle path) and re-point the edge alias (KV handle:<name> → slug).
   after_update_commit -> { SiteBuildJob.schedule(self) }, if: :saved_change_to_handle?
   after_update_commit :sync_handle_route, if: :saved_change_to_handle?
+  # The SES-provisioning stamp is the export contract's newsletter-signup
+  # gate: flipping it turns the baked band's mailto CTA into the real form,
+  # so the site re-publishes on its own.
+  after_update_commit -> { SiteBuildJob.schedule(self) }, if: :saved_change_to_ses_tenant_provisioned_at?
 
   def public_address
     domain || [ AccountHost.apex_host, slug ].compact.join("/")
@@ -140,8 +144,9 @@ class Account < ApplicationRecord
 
   # This site's SES tenant, the container its sending reputation accrues in.
   # The name is derived — the slug is immutable — so only the provisioning
-  # moment persists. Created when the author buys broadcast email
-  # (EmailConnection.provision_tenant; console-run for Tenant Zero).
+  # moment persists. Provisioned automatically when the author connects a
+  # sending domain (EmailConnection#connect); console-run for accounts comped
+  # without one (Tenant Zero was).
   def ses_tenant_name = "site-#{slug}"
   def ses_tenant_provisioned? = ses_tenant_provisioned_at.present?
 

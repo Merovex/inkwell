@@ -4,12 +4,19 @@
 #
 #   provision_tenant: create the site-<slug> tenant + associate the shared
 #     identity and both config sets, so shared-lane sends attribute the moment
-#     the tenant exists. Idempotent; callable from console (Tenant Zero is
-#     comped) and later by the purchase flow. Stamps ses_tenant_provisioned_at.
+#     the tenant exists. Idempotent; runs automatically inside connect (below)
+#     and stays console-callable (Tenant Zero was comped that way). Stamps
+#     ses_tenant_provisioned_at — the newsletter-signup gate in the export
+#     contract, so flipping it schedules a site rebuild (Account hook) and
+#     the baked band grows its form without an operator step.
 #   connect: validate (subdomain required — the apex is refused so the
-#     author's root-domain reputation stays isolated) → CreateEmailIdentity
-#     (DKIM tokens come back) → MAIL FROM bounce.<domain> → associate the
-#     identity with the site's tenant → persist "verifying" → enqueue the poll.
+#     author's root-domain reputation stays isolated) → provision the tenant
+#     and the account's Turnstile widget when missing (connecting a sending
+#     domain IS the "this author uses our email" moment, and the widget
+#     travels with the tenant because signup never ships without the bot
+#     front door) → CreateEmailIdentity (DKIM tokens come back) → MAIL FROM
+#     bounce.<domain> → associate the identity with the site's tenant →
+#     persist "verifying" → enqueue the poll.
 #   disconnect: DeleteEmailIdentity, mark the row disconnected.
 class EmailConnection
   Result = Struct.new(:ok, :sending_domain, :error, keyword_init: true) do
@@ -22,9 +29,11 @@ class EmailConnection
   def self.disconnect(...) = new(...).disconnect
   def self.provision_tenant(account, client: Ses::Client.new) = new(account: account, client: client).provision_tenant
 
-  def initialize(account: nil, input: nil, sending_domain: nil, client: Ses::Client.new)
+  def initialize(account: nil, input: nil, sending_domain: nil, client: Ses::Client.new,
+                 turnstile_client: nil)
     @account = account || sending_domain&.account
     @client = client
+    @turnstile_client = turnstile_client
     @input = input
     @sending_domain = sending_domain
   end
@@ -60,17 +69,28 @@ class EmailConnection
       return failure("Disconnect #{current.domain} first — a site sends from one domain")
     end
 
+    # First email for this account: provision the tenant and its Turnstile
+    # widget right here, so the newsletter signup switches on with no console
+    # step (a rebuild is scheduled by the stamp itself). Hard gate on the
+    # widget, same reasoning as DomainConnection: a connected sending domain
+    # is a fully working one.
+    unless @account.ses_tenant_provisioned?
+      provisioned = provision_tenant
+      return provisioned unless provisioned.ok?
+    end
+    turnstile.provision
+
     tokens = @client.create_identity(hostname, config_set: marketing_config_set)
     mail_from = "#{MAIL_FROM_PREFIX}.#{hostname}"
     @client.set_mail_from(hostname, mail_from)
-    @client.associate_identity(@account.ses_tenant_name, hostname) if @account.ses_tenant_provisioned?
+    @client.associate_identity(@account.ses_tenant_name, hostname)
 
     domain = @account.sending_domains.find_or_initialize_by(domain: hostname)
     domain.update!(status: "verifying", dkim_tokens: tokens, mail_from_domain: mail_from,
       last_checked_at: Time.current)
     SendingDomainStatusJob.set(wait: 30.seconds).perform_later(@account)
     Result.new(ok: true, sending_domain: domain)
-  rescue Ses::Client::Error => error
+  rescue Ses::Client::Error, Cloudflare::Client::Error => error
     failure(error.message)
   end
 
@@ -98,6 +118,13 @@ class EmailConnection
 
     def claimed_elsewhere?(hostname)
       SendingDomain.connected.where(domain: hostname).where.not(account_id: @account.id).exists?
+    end
+
+    # Injectable for tests, like the SES client; the widget calls fail the
+    # connect through the shared rescue below.
+    def turnstile
+      @turnstile ||= TurnstileConnection.new(account: @account,
+        client: @turnstile_client || Cloudflare::Client.new)
     end
 
     def marketing_config_set = Rails.application.credentials.dig(:ses, :marketing_config_set)

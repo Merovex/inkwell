@@ -31,6 +31,24 @@ class EmailConnectionTest < ActiveSupport::TestCase
     def delete_identity(domain) = @deleted_identities << domain
   end
 
+  # connect also provisions the account's Turnstile widget (the signup front
+  # door travels with the tenant), so it takes a fake Cloudflare client too.
+  class FakeTurnstileClient
+    attr_reader :widgets
+
+    def initialize = @widgets = {}
+
+    def create_turnstile_widget(name:, domains:)
+      sitekey = "sk-#{name}"
+      @widgets[sitekey] = domains.dup
+      Cloudflare::TurnstileWidget.new("sitekey" => sitekey, "secret" => "secret-#{name}", "domains" => domains)
+    end
+  end
+
+  class BrokenTurnstileClient
+    def create_turnstile_widget(**) = raise(Cloudflare::Client::Error, "turnstile says no")
+  end
+
   test "provision_tenant creates the tenant, associates the shared lane, and stamps the account" do
     fake = FakeClient.new
     account = accounts(:merovex)
@@ -68,7 +86,8 @@ class EmailConnectionTest < ActiveSupport::TestCase
 
     result = nil
     assert_enqueued_with(job: SendingDomainStatusJob) do
-      result = EmailConnection.connect(account: account, input: "News.Merovex.Press", client: fake)
+      result = EmailConnection.connect(account: account, input: "News.Merovex.Press", client: fake,
+        turnstile_client: FakeTurnstileClient.new)
     end
 
     assert result.ok?
@@ -83,10 +102,34 @@ class EmailConnectionTest < ActiveSupport::TestCase
     assert_equal "bounce.news.merovex.press", domain.mail_from_domain
   end
 
-  test "connect skips the tenant association when the tenant isn't provisioned yet" do
+  test "first email for an account: connect provisions tenant + widget and schedules the republish" do
     fake = FakeClient.new
-    EmailConnection.connect(account: accounts(:merovex), input: "news.merovex.press", client: fake)
-    assert_empty fake.identity_associations
+    turnstile = FakeTurnstileClient.new
+    account = accounts(:merovex)
+    assert_not account.ses_tenant_provisioned?
+
+    assert_enqueued_with(job: SiteBuildJob, args: [ account ]) do
+      assert EmailConnection.connect(account: account, input: "news.merovex.press",
+        client: fake, turnstile_client: turnstile).ok?
+    end
+
+    assert account.reload.ses_tenant_provisioned?, "tenant stamped"
+    assert_includes fake.tenants, account.ses_tenant_name
+    assert_includes fake.identity_associations, [ account.ses_tenant_name, "news.merovex.press" ],
+      "the new identity lands in the tenant, no console step"
+    assert account.turnstile_site_key.present?, "widget keys stamped alongside"
+  end
+
+  test "a failed widget provision fails the connect — hard gate, retryable" do
+    result = EmailConnection.connect(account: accounts(:merovex), input: "news.merovex.press",
+      client: FakeClient.new, turnstile_client: BrokenTurnstileClient.new)
+
+    assert_not result.ok?
+    assert_match(/turnstile says no/, result.error)
+
+    # The retry path: same domain reconnects once the widget call succeeds.
+    assert EmailConnection.connect(account: accounts(:merovex), input: "news.merovex.press",
+      client: FakeClient.new, turnstile_client: FakeTurnstileClient.new).ok?
   end
 
   test "connect refuses a bare apex — subdomain required" do
@@ -120,7 +163,8 @@ class EmailConnectionTest < ActiveSupport::TestCase
     assert_match(/Disconnect news\.merovex\.press first/, result.error)
 
     # The SAME domain stays connectable — the retry/adopt path.
-    assert EmailConnection.connect(account: accounts(:merovex), input: "news.merovex.press", client: FakeClient.new).ok?
+    assert EmailConnection.connect(account: accounts(:merovex), input: "news.merovex.press",
+      client: FakeClient.new, turnstile_client: FakeTurnstileClient.new).ok?
   end
 
   test "connect surfaces a bad domain as an error, not an exception" do
