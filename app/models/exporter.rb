@@ -140,7 +140,7 @@ class Exporter
         block = block.merge(signup: {
           enabled: true,
           honeypot_field: Subscriber::HONEYPOT_FIELD,
-          turnstile_sitekey: TurnstileVerifier.site_key
+          turnstile_sitekey: TurnstileVerifier.site_key_for(account)
         }.compact_blank)
       end
       block.presence

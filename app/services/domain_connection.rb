@@ -37,6 +37,11 @@ class DomainConnection
     end
 
     domains = hostnames.map { |hostname| provision(hostname, canonical: hostname == parsed.canonical) }
+    # Hard gate, deliberately: a connected domain is a fully working domain,
+    # and that includes its Turnstile registration — otherwise the signup form
+    # ships visibly broken on the new hostname. The apex entry covers www.
+    # (a Turnstile hostname covers its subdomains).
+    turnstile.register_hostname(parsed.apex)
     CustomDomainStatusJob.set(wait: 30.seconds).perform_later(@account)
     Result.new(ok: true, domains: domains)
   rescue Cloudflare::Client::Error => error
@@ -46,6 +51,9 @@ class DomainConnection
   def disconnect
     @client.kv_delete(@domain.hostname)
     @client.delete_custom_hostname(@domain.cloudflare_id) if @domain.cloudflare_id.present?
+    # A departed domain must not keep a slot on the widget's hostname
+    # allowance (same reasoning as the KV + custom-hostname pairing above).
+    turnstile.deregister_hostname(@domain.hostname.delete_prefix("www."))
     @domain.update!(status: "disconnected")
     # Un-bridge the legacy account.domain the go-live stamped, so builds fall
     # back to the slug-path baseURL (the clear itself schedules the rebuild).
@@ -75,6 +83,12 @@ class DomainConnection
 
     def claimed_elsewhere?(hostname)
       CustomDomain.connected.where(hostname: hostname).where.not(account_id: @account.id).exists?
+    end
+
+    # Same injected client, so tests fake one seam and the widget calls ride
+    # the same Cloudflare error path as the hostname + KV calls.
+    def turnstile
+      @turnstile ||= TurnstileConnection.new(account: @account, client: @client)
     end
 
     def failure(message) = Result.new(ok: false, error: message)

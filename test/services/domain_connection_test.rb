@@ -6,13 +6,14 @@ class DomainConnectionTest < ActiveSupport::TestCase
   # Records every call so tests can assert the KV-before-DNS ordering and the
   # disconnect teardown without touching the real Cloudflare API.
   class FakeClient
-    attr_reader :kv, :created, :deleted_hostnames, :deleted_kv
+    attr_reader :kv, :created, :deleted_hostnames, :deleted_kv, :widgets
 
     def initialize
       @kv = {}
       @created = []
       @deleted_hostnames = []
       @deleted_kv = []
+      @widgets = {}
     end
 
     def create_custom_hostname(hostname)
@@ -28,6 +29,24 @@ class DomainConnectionTest < ActiveSupport::TestCase
     def kv_put(hostname, slug) = @kv[hostname] = slug
     def kv_delete(hostname) = (@deleted_kv << hostname) && @kv.delete(hostname)
     def delete_custom_hostname(id) = @deleted_hostnames << id
+
+    def create_turnstile_widget(name:, domains:)
+      sitekey = "sk-#{name}"
+      @widgets[sitekey] = domains.dup
+      Cloudflare::TurnstileWidget.new("sitekey" => sitekey, "secret" => "secret-#{name}", "domains" => domains)
+    end
+
+    def add_turnstile_domain(sitekey, hostname)
+      @widgets.fetch(sitekey) << hostname unless @widgets.fetch(sitekey).include?(hostname)
+    end
+
+    def remove_turnstile_domain(sitekey, hostname) = @widgets.fetch(sitekey).delete(hostname)
+  end
+
+  # The widget calls ride the same client seam and error path as the
+  # hostname + KV calls — one bad call fails the whole connect (hard gate).
+  class BrokenTurnstileClient < FakeClient
+    def create_turnstile_widget(**) = raise(Cloudflare::Client::Error, "turnstile says no")
   end
 
   test "connect provisions apex + www, writes KV, and creates verifying rows" do
@@ -77,6 +96,39 @@ class DomainConnectionTest < ActiveSupport::TestCase
     assert result.error.present?
   end
 
+  test "connect provisions the account's Turnstile widget and registers the apex" do
+    fake = FakeClient.new
+    DomainConnection.connect(account: accounts(:merovex), input: "merovex.press", client: fake)
+
+    account = accounts(:merovex).reload
+    assert account.turnstile_site_key.present?, "widget keys stamped on the account"
+    assert account.turnstile_secret_key.present?
+    assert_includes fake.widgets.fetch(account.turnstile_site_key), "merovex.press"
+    assert_not_includes fake.widgets.fetch(account.turnstile_site_key), "www.merovex.press",
+      "the apex entry covers www — no slot wasted"
+  end
+
+  test "connect reuses the account's existing widget for a later domain" do
+    fake = FakeClient.new
+    accounts(:merovex).update!(turnstile_site_key: "sk-existing", turnstile_secret_key: "s3cret")
+    fake.widgets["sk-existing"] = [ "old.example" ]
+
+    DomainConnection.connect(account: accounts(:merovex), input: "merovex.press", client: fake)
+
+    assert_equal "sk-existing", accounts(:merovex).reload.turnstile_site_key
+    assert_equal %w[old.example merovex.press], fake.widgets["sk-existing"]
+  end
+
+  test "a failed Turnstile registration fails the connect — hard gate" do
+    result = DomainConnection.connect(account: accounts(:merovex), input: "merovex.press", client: BrokenTurnstileClient.new)
+
+    assert_not result.ok?
+    assert_match(/turnstile says no/, result.error)
+    # The hostname + KV work persists; reconnecting the same apex is the
+    # documented retry path and reuses those rows.
+    assert accounts(:merovex).custom_domains.exists?(hostname: "merovex.press")
+  end
+
   test "disconnect deletes the KV key and the custom hostname" do
     fake = FakeClient.new
     DomainConnection.connect(account: accounts(:merovex), input: "merovex.press", client: fake)
@@ -87,6 +139,8 @@ class DomainConnectionTest < ActiveSupport::TestCase
     assert_includes fake.deleted_kv, "www.merovex.press"
     assert_includes fake.deleted_hostnames, domain.cloudflare_id
     assert domain.reload.disconnected?
+    assert_not_includes fake.widgets.fetch(accounts(:merovex).reload.turnstile_site_key), "merovex.press",
+      "the apex frees its widget slot"
   end
 
   test "disconnect un-bridges account.domain and reschedules the build" do

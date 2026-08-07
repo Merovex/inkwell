@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.2].define(version: 2026_08_06_230000) do
+ActiveRecord::Schema[8.2].define(version: 2026_08_07_120000) do
   create_table "account_users", force: :cascade do |t|
     t.integer "account_id", null: false
     t.integer "user_id", null: false
@@ -34,6 +34,8 @@ ActiveRecord::Schema[8.2].define(version: 2026_08_06_230000) do
     t.datetime "site_built_at"
     t.datetime "ses_tenant_provisioned_at"
     t.string "handle"
+    t.string "turnstile_site_key"
+    t.string "turnstile_secret_key"
     t.index ["domain"], name: "index_accounts_on_domain", unique: true
     t.index ["handle"], name: "index_accounts_on_handle", unique: true
     t.index ["name"], name: "index_accounts_on_name", unique: true

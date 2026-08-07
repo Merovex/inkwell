@@ -53,33 +53,30 @@ class ExporterTest < ActiveSupport::TestCase
     assert_nil data("site").dig("newsletter", "signup")
   end
 
-  test "site.json wires the newsletter signup once SES is provisioned" do
-    accounts(:merovex).update!(ses_tenant_provisioned_at: Time.current)
+  test "site.json wires the newsletter signup — with the account's OWN sitekey — once SES is provisioned" do
+    accounts(:merovex).update!(ses_tenant_provisioned_at: Time.current, turnstile_site_key: "sk-merovex")
     workspace = Exporter.new(accounts(:merovex).reload).export!
 
     signup = JSON.parse(workspace.join("data", "site.json").read).dig("newsletter", "signup")
     assert signup["enabled"]
     assert_equal Subscriber::HONEYPOT_FIELD, signup["honeypot_field"]
+    assert_equal "sk-merovex", signup["turnstile_sitekey"]
   end
 
   test "a provisioned account's built home renders the signup form, honeypot, and widget" do
     skip "hugo binary not available" unless system("#{HUGO_BIN} version", out: File::NULL, err: File::NULL)
 
-    accounts(:merovex).update!(ses_tenant_provisioned_at: Time.current)
-    original_site_key = Rails.configuration.x.turnstile_site_key
-    Rails.configuration.x.turnstile_site_key = "public-sitekey"
+    accounts(:merovex).update!(ses_tenant_provisioned_at: Time.current, turnstile_site_key: "sk-merovex")
     workspace = Exporter.new(accounts(:merovex).reload).export!
 
     home = Renderer.new(workspace).render!.join("index.html").read
     assert_includes home, "/newsletter", "form posts to the island"
     assert_includes home, %(name=#{Subscriber::HONEYPOT_FIELD}), "pinned honeypot is baked in"
-    assert_includes home, "public-sitekey", "Turnstile widget carries the contract's sitekey"
+    assert_includes home, "sk-merovex", "Turnstile widget carries the account's sitekey"
     # The band's own mailto fallback yields to the form (the nav/hero "Get
     # updates" CTAs still carry mailto links — a separate partial).
     band = home[/fk-newsletter-band.*/m]
     assert_not_includes band, "mailto:", "the band's mailto fallback yields to the real form"
-  ensure
-    Rails.configuration.x.turnstile_site_key = original_site_key
   end
 
   private

@@ -27,8 +27,8 @@
             placeholder: "you@example.com", class: "press-form__input", autocomplete: "email" %>
       <%= submit_tag "Subscribe", class: "press-btn press-btn--primary" %>
     </div>
-    <% if TurnstileVerifier.site_key.present? %>
-      <div class="cf-turnstile" data-sitekey="<%= TurnstileVerifier.site_key %>"></div>
+    <% if (turnstile_site_key = TurnstileVerifier.site_key_for(Current.account)) %>
+      <div class="cf-turnstile" data-sitekey="<%= turnstile_site_key %>"></div>
       <% content_for :head do %>
         <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
       <% end %>

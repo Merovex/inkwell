@@ -33,7 +33,7 @@ class SubscriptionsController < PublicController
   end
 
   def create
-    unless TurnstileVerifier.new(params["cf-turnstile-response"]).verified?
+    unless TurnstileVerifier.new(params["cf-turnstile-response"], account: Current.account).verified?
       log_rejected_signup(reason: "turnstile")
       return redirect_to newsletter_rejected_path
     end

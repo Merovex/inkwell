@@ -177,13 +177,21 @@ Visually-hidden honeypot via a `u-` utility (per [[css-architecture]] /
 css-html-standards) — a text input hidden with `tabindex=-1` / `aria-hidden` /
 `autocomplete=off`, **not** `type=hidden`.
 
-### 6. Ops (Cloudflare, manual day one)
-One managed-mode Turnstile widget in the platform Cloudflare account. Register
-hostnames **`merovex.press` + `kindredquill.com`** (the apex-slug host). Sitekey
-→ app config (public); secret → Rails credentials. Generate the island-auth
-secret (`openssl rand -hex 32`) → Wrangler secret + Rails credentials. If the
-Worker sets a CSP on static pages, add `challenges.cloudflare.com` to
-`script-src` and `frame-src` for the Turnstile widget.
+### 6. Ops (Cloudflare)
+Widgets are **per-account and API-provisioned** (`TurnstileConnection` —
+custom-domain onboarding is self-serve, so widget registration can't be a
+manual step; keys are indexed on the account row, sharding is data entry not
+schema). `DomainConnection` provisions/updates the widget on connect as a
+**hard gate** and frees the slot on disconnect. Remaining manual work:
+- Add **Account → Turnstile → Edit** to the existing Cloudflare API token.
+- Tenant Zero backfill (domain connected before widgets existed):
+  `TurnstileConnection.provision(account)` from the console, then republish.
+- Generate the island-auth secret (`openssl rand -hex 32`) → Wrangler secret +
+  Rails credentials (`island_auth_secrets`).
+- If the Worker sets a CSP on static pages, add `challenges.cloudflare.com`
+  to `script-src` and `frame-src` for the Turnstile widget.
+An optional shared fallback pair (`turnstile.site_key`/`secret_key` in
+credentials) covers accounts awaiting provisioning; per-account keys win.
 
 ## Decisions locked
 - **Turnstile over a homegrown scoring engine** — buy Cloudflare's ML, defer the
@@ -196,7 +204,15 @@ Worker sets a CSP on static pages, add `challenges.cloudflare.com` to
 - **Failure UX = `GET /newsletter/rejected` island** (mirrors `sent`) — the
   old `newsletter_path` + flash redirect assumes a Rails-rendered page and a
   session, neither of which exists post-cutover.
-- **One shared widget** across tenant hosts (free-tier hostname budget is ample).
+- **One widget per account, keys indexed on the account row** (supersedes the
+  earlier "one shared widget": custom-domain onboarding is already self-serve,
+  so hostname registration had to be automated, and per-account widgets fall
+  out naturally — each gets its own hostname allowance, and the contract
+  already carries the sitekey per account). Free-tier ceiling becomes 20
+  widgets = ~20 signup-enabled accounts; revisit the tier before then.
+- **Turnstile registration is a hard gate on domain connect** — a connected
+  domain is a fully working domain; a soft failure would ship a visibly
+  broken signup form.
 - **Origin lockdown = shared-secret header now, network lockdown later** — the
   header closes the bypass with one concern and one Worker line; Tunnel/IP
   allowlisting is infra work deferred to the hosting hardening pass. The
@@ -211,10 +227,10 @@ Worker sets a CSP on static pages, add `challenges.cloudflare.com` to
   schema-coupling decision — needs explicit sign-off before building. Note the
   survivorship trap: survivors alone can't train a bot classifier (Turnstile
   deletes the negatives); the real training signal is *outcomes on survivors*.
-- **Cloudflare widget-API automation** for hostname registration — only needed
-  once custom-domain onboarding is **self-serve**; Tenant Zero is
-  operator-provisioned, so manual dashboard entry suffices. Self-serve custom
-  domains are deferred beyond Phase 2.5 ([[custom-domain-onboarding]]).
+- ~~**Cloudflare widget-API automation** for hostname registration~~ —
+  **shipped** (the deferral assumed operator-provisioned onboarding; it is in
+  fact self-serve, so `TurnstileConnection` + the `DomainConnection` hooks
+  landed with the implementation).
 - **Cloudflare Bot Management** (per-request bot score + JA3/JA4 + detection_ids)
   — the paid Enterprise version of the scoring engine; revisit only if/when an
   Enterprise contract happens anyway (e.g. the any-hostname Turnstile widget at

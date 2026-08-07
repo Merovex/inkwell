@@ -1,10 +1,11 @@
-# Cloudflare Turnstile keys for the public signup island (bot-protection
-# plan). Mirrored config.x-style — same pattern as app_host and
-# island_auth_secrets — so tests can swap them without decrypting
-# credentials. Sitekey is public (it rides the export contract and baked
-# HTML); the secret stays server-side for siteverify. Blank = verification
-# off; the static form only renders the widget when the sitekey is present,
-# so the widget and the check switch on together.
+# The SHARED-FALLBACK Turnstile pair (bot-protection plan): accounts own
+# their widgets (TurnstileConnection stamps per-account keys, which take
+# precedence — see TurnstileVerifier.site_key_for); this pair covers accounts
+# awaiting provisioning via a hand-made widget, and is how dev/test stay off.
+# Mirrored config.x-style — same pattern as app_host — so tests can swap
+# values without decrypting credentials. Sitekey is public; the secret stays
+# server-side for siteverify. Blank = verification off for accounts with no
+# widget of their own.
 Rails.application.config.x.turnstile_site_key =
   Rails.application.credentials.dig(:turnstile, :site_key)
 Rails.application.config.x.turnstile_secret_key =

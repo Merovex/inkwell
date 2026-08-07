@@ -2,6 +2,15 @@
 
 Append-only. Newest first. Format defined in [[CLAUDE]] (`CLAUDE.md`).
 
+## [2026-08-07] build | Per-account Turnstile widgets, API-provisioned (supersedes "one shared widget")
+- Ben's correction: custom-domain onboarding is already self-serve, so manual widget hostname entry was a broken assumption. Decisions: **hard gate** (a failed Turnstile registration fails the connect) and **keys indexed by account today** (sharding = data entry, never schema).
+- New `accounts.turnstile_site_key`/`turnstile_secret_key` columns; `TurnstileConnection` (the front-door twin of `EmailConnection.provision_tenant`): idempotent `provision` creates a managed-mode widget per account over its apexes + the platform apex, stamps the keys — **console-callable for the Tenant Zero backfill** (`TurnstileConnection.provision(account)`); `register_hostname`/`deregister_hostname` keep the list in sync.
+- `Cloudflare::Client` grows `create_turnstile_widget` + add/remove domain (GET→merge→PUT; no PATCH in the widget API; secret only returned on create). Token needs Account → Turnstile → Edit. `DomainConnection` registers the apex on connect (same client seam, same error path → hard gate) and frees the slot on disconnect.
+- Resolution is account-first with the config.x pair as shared fallback: `TurnstileVerifier.site_key_for/secret_key_for(account)` feed the controller, `Exporter` (contract carries the account's own sitekey), and the Rails `/newsletter` page.
+- Free-tier ceiling shifts: 20 widgets ≈ 20 signup-enabled accounts; plan notes revisiting the tier before then. Full suite green (713 runs).
+- pages touched: [[newsletter-bot-protection-plan]]
+- refs: ../app/services/turnstile_connection.rb, ../app/services/cloudflare/client.rb, ../app/services/domain_connection.rb, ../db/migrate/20260807120000_add_turnstile_widget_to_accounts.rb
+
 ## [2026-08-07] build | Newsletter bot protection implemented (plan items 1–5 + Worker island proxy)
 - **Rails**: `SubscriptionsController` sheds `invisible_captcha` for a hand-rolled pinned honeypot (`Subscriber::HONEYPOT_FIELD` = "website"), skips CSRF on `create` only, verifies Turnstile fail-closed via `TurnstileVerifier` (app/services; no `remoteip` until §2 fully lands), and gains the `rejected` island (`GET /newsletter/rejected`, minimal layout, vague copy) — all failure paths (hygiene, rate limit, Turnstile) land there. New `IslandProtected` concern: `X-Island-Auth` shared-secret check via `config.x.island_auth_secrets` (array = current+next rotation), `head :forbidden`, no-op when unprovisioned.
 - **Contract → Hugo**: `Exporter#newsletter_block` adds `signup: {enabled, honeypot_field, turnstile_sitekey}` when `ses_tenant_provisioned?`; the filibuster band renders a real form (posting `relURL "newsletter"`) with honeypot + optional Turnstile widget, else keeps the mailto CTA. Form CSS in 08-chrome.css.

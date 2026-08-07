@@ -45,7 +45,36 @@ module Cloudflare
       true
     end
 
+    # Turnstile widget lifecycle (bot-protection plan): one managed-mode
+    # widget per account, created by TurnstileConnection and kept in sync by
+    # DomainConnection. Adds Account → Turnstile → Edit to the token's
+    # required permissions. The create response is the ONLY place the widget
+    # secret is returned, so the caller must persist it immediately.
+    def create_turnstile_widget(name:, domains:)
+      TurnstileWidget.new(post("/accounts/#{account_id}/challenges/widgets",
+        { name: name, domains: domains, mode: "managed" }))
+    end
+
+    def add_turnstile_domain(sitekey, hostname) = update_turnstile_domains(sitekey) { |domains| domains | [ hostname ] }
+
+    def remove_turnstile_domain(sitekey, hostname) = update_turnstile_domains(sitekey) { |domains| domains - [ hostname ] }
+
     private
+      # The widget API has no PATCH: read the widget, transform its domain
+      # list, PUT the widget back (an unchanged list skips the write). Carried
+      # fields are the ones the PUT validates; the rest keep stored values.
+      def update_turnstile_domains(sitekey)
+        path = "/accounts/#{account_id}/challenges/widgets/#{sitekey}"
+        widget = get(path)
+        domains = yield(widget.fetch("domains"))
+        return true if domains.sort == widget["domains"].sort
+
+        request(Net::HTTP::Put, path,
+          json_body: widget.slice("name", "mode", "bot_fight_mode", "clearance_level", "offlabel", "region")
+            .merge("domains" => domains))
+        true
+      end
+
       def kv_path(hostname)
         "/accounts/#{account_id}/storage/kv/namespaces/#{kv_namespace_id}/values/#{ERB::Util.url_encode(hostname)}"
       end
