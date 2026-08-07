@@ -36,11 +36,19 @@ and the August community arc:
   invite-only author groups (golden invitation cards, membership page,
   owner-first rosters); Message discussions; **Pulse check-ins** on Eastern
   wall-clock schedules (`PulseTickJob`, answers as `Beat` cards).
+- **The Wall** ([[circle-wall]], candidate view built 2026-08-06) — a
+  reverse-chrono feed of a circle's Messages + Beats, thread/edit modals,
+  live boost/comment broadcasts, per-viewer affixed strips (pending pulse,
+  drafts, scheduled). Swappable with the sectioned circle page. Home is the
+  **Commons**, the one platform-wide circle everyone auto-joins.
+- **Bulletins** ([[bulletins]], built 2026-08-06) — root→everyone platform
+  announcements: a nil-bucket `Publishable` record, bell-only fan-out (no
+  email), authored at `/support/bulletins`, read at `/bulletins`.
 - **Goals & Tallies** ([[goals]]) — personal progress on the User bucket;
   rate vs project goals, display-card sets (heatmaps lead the grid).
 - **Notifications** ([[notifications]], [0024](decisions/0024-notifications-stamped-copy-digests.md)) —
-  stamped-copy rows, live bell (Turbo), tiered digests (4-hour /
-  daily-for-replies), 30-day shelf life.
+  stamped-copy rows with per-kind icons, live bell (Turbo), tiered digests
+  (4-hour / daily-for-replies), 30-day shelf life.
 - **Boosts & @mentions** across circle content — mentions by typed token or
   Lexxy's `@`-prompt (User as Action Text attachable, avatar+name chip);
   comment replies ring the thread everywhere comments exist.

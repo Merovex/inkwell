@@ -15,9 +15,14 @@ at `/circles/*`. A `Circle` is a **bucket** on the Record spine
 ([[0023-circles-cross-account-buckets]]) — its content rides the same
 versioning, trash, and comment machinery as site content.
 
+A circle can be viewed two ways: the sectioned home page, or **the Wall**, a
+reverse-chrono feed — see [[circle-wall]]. The **Commons** is a special
+platform-wide circle everyone belongs to (also documented in [[circle-wall]]).
+
 ## Membership
 
-- `CircleMembership` (one `owner`, members; `MEMBER_HARD_CAP = 150`).
+- `CircleMembership` (one `owner`, members; `MEMBER_HARD_CAP = 150`). The
+  Commons is the exception — cap-free, invite-free, no leaving.
 - **Invite-only is an invariant** — no toggle, no lock icon. The only door is
   a `CircleInvitation`, extendable by any member; the invitee sees a **golden
   invitation card** leading their circles deck (and standing in on the

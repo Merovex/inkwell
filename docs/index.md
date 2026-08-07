@@ -63,7 +63,9 @@ for canonical naming.
 
 - [domain-vocabulary](concepts/domain-vocabulary.md) — canonical names as shipped: User (global login) / Account ("site") / polymorphic bucket / Circle / Person (reader)
 - [circles](concepts/circles.md) — invite-only author groups: membership, pulses/beats, boosts, @mentions (incl. the Lexxy attachment-chip mechanics)
-- [notifications](concepts/notifications.md) — kinds table, bell + digest channels, URL stamping
+- [circle-wall](concepts/circle-wall.md) — the Wall (reverse-chrono feed of Messages + Beats, thread/edit modals, live boost/comment broadcasts) + the Commons singleton circle (candidate view, built 2026-08-06)
+- [bulletins](concepts/bulletins.md) — platform announcements: root→everyone, nil-bucket Publishable record, bell-only fan-out (built 2026-08-06)
+- [notifications](concepts/notifications.md) — kinds table, bell + digest channels, URL stamping, per-kind icons
 - [goals](concepts/goals.md) — Goals & Tallies on the User bucket; rate vs project; display-card sets
 - [merovex-press-public-site](concepts/merovex-press-public-site.md) — the public front-of-house (public layout, `press.css`, `PublicController`)
 - [app-menu](concepts/app-menu.md) — the Basecamp-style jump menu (native popover + type-to-filter)

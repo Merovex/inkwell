@@ -26,9 +26,17 @@ you (caller's responsibility).
 | `boosted` | boost on your message/comment/answer | bell only |
 | `pulse_asked` | pulse schedule fires | bell only (PulseMailer emails) |
 | `replied` | new comment on a thread you're in (author + prior commenters; everywhere comments exist, incl. site posts/forum) | **daily** digest |
+| `ticket_opened` | help-desk ticket opened | bell only (root staff) |
+| `bulletin_published` | a [[bulletins]] first-publishes | bell only (everyone but the author) |
 
 `EMAILED` lists the email-worthy kinds; `EMAILED_DAILY` the calm subset.
 Mention beats reply for the same comment (one row, the more specific ring).
+
+Each kind carries a lucide **icon** (`Notification::ICONS`), shown beside the
+row (and standing in for the avatar when no human acted — pulse asks,
+bulletins). `Notification#icon` falls back to the bell for unknown kinds.
+NB icons/avatars in **broadcast-rendered** rows must use path-form URLs
+(`rails_storage_proxy_path`) — a background render has no request host.
 
 ## Channels
 
