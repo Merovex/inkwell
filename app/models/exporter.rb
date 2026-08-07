@@ -130,15 +130,18 @@ class Exporter
 
     # The newsletter band's signup wiring (bot-protection plan §3): the theme
     # renders a real form only when the account can actually send the
-    # confirmation email; otherwise it keeps its mailto fallback. The honeypot
-    # field name is the shared Subscriber constant so the baked form and the
-    # server can never drift. The island-auth secret is deliberately NOT here —
-    # nothing secret rides baked HTML.
+    # confirmation email; otherwise it keeps its mailto fallback. provider
+    # names the theme partial that renders the form (ses-newsletter today;
+    # mailchimp etc. slot in beside it later). The honeypot field name is the
+    # shared Subscriber constant so the baked form and the server can never
+    # drift. The island-auth secret is deliberately NOT here — nothing secret
+    # rides baked HTML.
     def newsletter_block
       block = (@design[:newsletter] || {}).to_h
       if account.ses_tenant_provisioned?
         block = block.merge(signup: {
           enabled: true,
+          provider: "ses",
           honeypot_field: Subscriber::HONEYPOT_FIELD,
           turnstile_sitekey: TurnstileVerifier.site_key_for(account)
         }.compact_blank)

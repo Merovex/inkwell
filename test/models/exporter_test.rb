@@ -59,6 +59,7 @@ class ExporterTest < ActiveSupport::TestCase
 
     signup = JSON.parse(workspace.join("data", "site.json").read).dig("newsletter", "signup")
     assert signup["enabled"]
+    assert_equal "ses", signup["provider"], "provider picks the theme's form partial"
     assert_equal Subscriber::HONEYPOT_FIELD, signup["honeypot_field"]
     assert_equal "sk-merovex", signup["turnstile_sitekey"]
   end

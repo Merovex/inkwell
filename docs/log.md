@@ -7,6 +7,7 @@ Append-only. Newest first. Format defined in [[CLAUDE]] (`CLAUDE.md`).
 - **`/newsletter` is a static page again** — pre-cutover Rails served a signup page there; post-cutover it 404'd. The content adapter now declares `path: newsletter` with a `newsletter` layout rendering the same band partial (form or mailto fallback). Old links and typed URLs work.
 - **Test suite went red when ops provisioned `island_auth_secrets`** — the credentials file is shared across environments, so the suite booted with island auth enforced and 403'd every anonymous request (hazard flagged at design time, now real). Fix: the island_auth + turnstile initializers force their config.x values empty in test; tests opt in per-case. Lesson: production toggles that ride shared credentials must be explicitly neutralized in the test initializer path.
 - Note: live-site CSS updates lag up to a day behind a publish (assets: max-age=86400 at stable URLs, by design) — hard-refresh when eyeballing a fresh build.
+- **Form partial is provider-scoped** (Ben's call, anticipating Mailchimp et al.): the band delegates to `_partials/ses-newsletter.html`, chosen by the contract's new `signup.provider` field ("ses" today) — a `mailchimp-newsletter.html` sibling slots in with no band changes.
 - pages touched: (log only)
 - refs: ../vendor/filibuster/layouts/newsletter.html, ../vendor/filibuster/content/_content.gotmpl, ../vendor/filibuster/static/assets/css/08-chrome.css, ../config/initializers/island_auth.rb
 

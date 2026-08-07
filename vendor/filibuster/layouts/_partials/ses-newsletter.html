@@ -1,0 +1,33 @@
+{{/* The SES-backed signup form (docs/newsletter-bot-protection-plan.md):
+     posts to the Rails /newsletter island (Worker-proxied, double opt-in via
+     Amazon SES). Selected by sections/newsletter.html from the contract's
+     signup.provider — sibling providers (mailchimp-newsletter, …) follow the
+     same contract. Context: .signup (the contract's signup block), .nl (the
+     newsletter copy block). */}}
+{{ $signup := .signup }}
+{{ $nl := .nl }}
+<form class="fk-newsletter-form" method="post" action="{{ "newsletter" | relURL }}">
+  <label class="fk-visually-hidden" for="fk-newsletter-email">Email address</label>
+  <input class="fk-newsletter-input" type="email" id="fk-newsletter-email" name="email_address"
+         required autocomplete="email" placeholder="you@example.com">
+  <input type="hidden" name="source" value="newsletter_band">
+  {{ with $signup.honeypot_field }}
+  {{/* Pinned honeypot — the server discards any submit that fills it.
+       Hidden from humans, AT, and the tab order; never type=hidden
+       (bots skip those). */}}
+  <div class="fk-visually-hidden" aria-hidden="true">
+    <label for="fk-newsletter-trap">Leave this field empty</label>
+    <input type="text" id="fk-newsletter-trap" name="{{ . }}" tabindex="-1" autocomplete="off">
+  </div>
+  {{ end }}
+  {{ with $signup.turnstile_sitekey }}
+  {{/* interaction-only: the widget stays invisible while it solves in the
+       background, so the band reads as input + button; the box only
+       materializes for the rare visitor who must interact. */}}
+  <div class="cf-turnstile" data-sitekey="{{ . }}" data-appearance="interaction-only" data-size="flexible"></div>
+  {{ end }}
+  <button class="fk-btn fk-btn-primary" type="submit">{{ or $nl.button_label "Join the list" }}</button>
+</form>
+{{ with $signup.turnstile_sitekey }}
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+{{ end }}
