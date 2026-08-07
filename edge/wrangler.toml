@@ -6,7 +6,7 @@ workers_dev = false
 [vars]
 # Rails origin the dynamic islands proxy to (phase-2 §2.5). Empty = islands
 # stay off and the Worker serves static bytes only, exactly as before.
-RAILS_ORIGIN = ""
+RAILS_ORIGIN = "https://app.kindredquill.com"
 
 # Secrets (set with `wrangler secret put <NAME>`, never in this file):
 #   ISLAND_AUTH — the shared island-auth header value; the same secret lives
