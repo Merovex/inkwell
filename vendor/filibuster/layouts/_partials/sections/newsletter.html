@@ -54,7 +54,10 @@
           </div>
           {{ end }}
           {{ with $signup.turnstile_sitekey }}
-          <div class="cf-turnstile" data-sitekey="{{ . }}"></div>
+          {{/* interaction-only: the widget stays invisible while it solves in
+               the background, so the band reads as input + button; the box
+               only materializes for the rare visitor who must interact. */}}
+          <div class="cf-turnstile" data-sitekey="{{ . }}" data-appearance="interaction-only" data-size="flexible"></div>
           {{ end }}
           <button class="fk-btn fk-btn-primary" type="submit">{{ or $nl.button_label "Join the list" }}</button>
         </form>

@@ -2,6 +2,14 @@
 
 Append-only. Newest first. Format defined in [[CLAUDE]] (`CLAUDE.md`).
 
+## [2026-08-07] fix | Signup band polish + /newsletter page + shared-credentials test guard
+- **Band form styled to the theme's vocabulary**: input matches `.fk-btn` height/radius (44px target, `--btn-radius`), placeholder on `--ink-muted`, capture-row layout (input grows beside the button). Turnstile widget now `data-appearance="interaction-only"` — invisible while it solves in the background, so the band reads as input + button; the box only materializes when a visitor must interact. `.cf-turnstile:empty` hidden to avoid a ghost row pre-mount.
+- **`/newsletter` is a static page again** — pre-cutover Rails served a signup page there; post-cutover it 404'd. The content adapter now declares `path: newsletter` with a `newsletter` layout rendering the same band partial (form or mailto fallback). Old links and typed URLs work.
+- **Test suite went red when ops provisioned `island_auth_secrets`** — the credentials file is shared across environments, so the suite booted with island auth enforced and 403'd every anonymous request (hazard flagged at design time, now real). Fix: the island_auth + turnstile initializers force their config.x values empty in test; tests opt in per-case. Lesson: production toggles that ride shared credentials must be explicitly neutralized in the test initializer path.
+- Note: live-site CSS updates lag up to a day behind a publish (assets: max-age=86400 at stable URLs, by design) — hard-refresh when eyeballing a fresh build.
+- pages touched: (log only)
+- refs: ../vendor/filibuster/layouts/newsletter.html, ../vendor/filibuster/content/_content.gotmpl, ../vendor/filibuster/static/assets/css/08-chrome.css, ../config/initializers/island_auth.rb
+
 ## [2026-08-07] build | Turnstile secret encrypted at rest
 - `encrypts :turnstile_secret_key` on Account — Active Record encryption, first use in the app. Keys generated (`db:encryption:init`) and stored in credentials under `active_record_encryption`; test env carries fixed dummy keys in environments/test.rb so CI never needs the master key. Landed while zero rows carry a secret, so no `support_unencrypted_data` transition was needed.
 - Debugging unchanged: the model reader decrypts transparently (console shows plaintext); raw DB/backups see ciphertext; `inspect` auto-filters. Verified round-trip in dev. **Master-key custody now guards these rows** — losing credentials means reprovisioning widgets, not recovery.

@@ -40,21 +40,30 @@ html[data-newsletter="megaphone"] .fk-newsletter-icon-megaphone,
 html[data-newsletter="mailbox"] .fk-newsletter-icon-mailbox { display: block; }
 
 /* signup form (contract carries a signup block; otherwise the CTA stays a
-   mailto button): email + button row that wraps on small screens; the
-   Turnstile widget, when present, takes its own row. */
+   mailto button): a capture row — input grows beside the button, both on the
+   .fk-btn height/radius so the pair reads as one control; wraps on small
+   screens. The Turnstile widget rides interaction-only (invisible while it
+   solves in the background); when it does materialize it takes its own row. */
 .fk-newsletter-form {
-  display: flex; flex-wrap: wrap; justify-content: center; gap: 0.75rem;
-  margin-top: 1.25rem;
+  display: flex; flex-wrap: wrap; justify-content: center; align-items: stretch;
+  gap: 0.75rem; margin-top: 1.5rem;
 }
 .fk-newsletter-input {
-  flex: 1 1 14rem; max-width: 22rem;
-  padding: 0.6rem 0.9rem; font: inherit; color: inherit;
-  background: var(--bg); border: 1px solid var(--line); border-radius: 0.5rem;
+  flex: 1 1 16rem; max-width: 24rem; min-height: 44px; /* match .fk-btn */
+  padding: 0.65rem 1rem; font: inherit; font-size: 1rem; color: var(--ink);
+  background: var(--bg); border: 1px solid var(--line);
+  border-radius: var(--btn-radius, var(--radius));
 }
+.fk-newsletter-input::placeholder { color: var(--ink-muted); }
 .fk-newsletter-form .cf-turnstile { flex-basis: 100%; display: flex; justify-content: center; }
+.fk-newsletter-form .cf-turnstile:empty { display: none; } /* no ghost row before the script mounts */
 /* icon variants left-align the card copy; the form follows suit */
 html:is([data-newsletter="envelope"],[data-newsletter="plane"],[data-newsletter="megaphone"],[data-newsletter="mailbox"]) .fk-newsletter-form,
 html:is([data-newsletter="envelope"],[data-newsletter="plane"],[data-newsletter="megaphone"],[data-newsletter="mailbox"]) .fk-newsletter-form .cf-turnstile { justify-content: flex-start; }
+
+/* /newsletter — the band as its own page (layouts/newsletter.html): give the
+   lone band room to sit like a page, not a strip. */
+.fk-newsletter-page .fk-newsletter-band { padding-block: 6rem; border-top: 0; }
 
 /* ---------- Footer ---------- */
 .fk-footer { border-top: 1px solid var(--line); background: var(--bg-alt); padding-block: 2rem; }

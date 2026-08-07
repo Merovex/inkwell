@@ -69,7 +69,8 @@ class ExporterTest < ActiveSupport::TestCase
     accounts(:merovex).update!(ses_tenant_provisioned_at: Time.current, turnstile_site_key: "sk-merovex")
     workspace = Exporter.new(accounts(:merovex).reload).export!
 
-    home = Renderer.new(workspace).render!.join("index.html").read
+    destination = Renderer.new(workspace).render!
+    home = destination.join("index.html").read
     assert_includes home, "/newsletter", "form posts to the island"
     assert_includes home, %(name=#{Subscriber::HONEYPOT_FIELD}), "pinned honeypot is baked in"
     assert_includes home, "sk-merovex", "Turnstile widget carries the account's sitekey"
@@ -77,6 +78,11 @@ class ExporterTest < ActiveSupport::TestCase
     # updates" CTAs still carry mailto links — a separate partial).
     band = home[/fk-newsletter-band.*/m]
     assert_not_includes band, "mailto:", "the band's mailto fallback yields to the real form"
+
+    # The band is also its own destination — /newsletter was a Rails page
+    # pre-cutover, so the static site keeps the URL alive.
+    standalone = destination.join("newsletter/index.html").read
+    assert_includes standalone, %(name=#{Subscriber::HONEYPOT_FIELD}), "standalone page carries the same form"
   end
 
   private

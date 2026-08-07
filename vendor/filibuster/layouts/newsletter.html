@@ -1,0 +1,8 @@
+{{ define "main" }}
+{{/* /newsletter — the signup band as its own destination (declared by the
+     content adapter). The band partial is self-contained (bg, card, form or
+     mailto fallback), so this page is just the band with breathing room. */}}
+<div class="fk-newsletter-page">
+  {{ partial "sections/newsletter.html" . }}
+</div>
+{{ end }}

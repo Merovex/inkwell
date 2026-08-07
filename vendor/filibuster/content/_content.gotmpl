@@ -8,3 +8,14 @@
     "title" (printf "About %s" $data.name)
     "content" (dict "mediaType" "text/html" "value" $data.description_html)
 ) }}
+
+{{/* Standalone signup page at /newsletter — the band as a destination.
+     Pre-cutover Rails served a signup page here, so old links and typed
+     URLs keep working. Renders the same sections/newsletter.html partial
+     as the home band: the real form when the contract carries a signup
+     block, the mailto CTA otherwise. */}}
+{{ $.AddPage (dict
+    "path" "newsletter"
+    "title" (printf "Join the newsletter — %s" $data.name)
+    "layout" "newsletter"
+) }}
