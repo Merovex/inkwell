@@ -38,7 +38,14 @@ class TurnstileVerifier
     return true if @secret.blank?
     return false if @token.blank?
 
-    siteverify["success"] == true
+    result = siteverify
+    unless result["success"]
+      # error-codes tell rejected-token failures apart: invalid-input-secret
+      # (our stored secret is wrong), timeout-or-duplicate (expired or reused
+      # token), invalid-input-response (token/sitekey mismatch).
+      Rails.logger.warn("[turnstile] siteverify rejected: #{Array(result["error-codes"]).join(", ")}")
+    end
+    result["success"] == true
   rescue StandardError => error
     Rails.logger.warn("[turnstile] siteverify failed (#{error.class}: #{error.message}) — failing closed")
     false
