@@ -121,6 +121,11 @@ async function proxyIsland(request, env, host, pathname, url) {
   const target = new URL(pathname + url.search, env.RAILS_ORIGIN);
   const headers = new Headers(request.headers);
   headers.set("x-forwarded-host", host);
+  // X-Forwarded-Host doesn't survive the proxy hops in front of Rails (they
+  // rewrite it from the Host header), so the tenant host also rides a header
+  // nothing else touches; Rails' IslandHost::Rewriter restores it, gated on
+  // the island-auth secret.
+  headers.set("x-island-host", host);
   headers.set("x-forwarded-proto", "https");
   const clientIP = request.headers.get("cf-connecting-ip");
   if (clientIP) headers.set("x-forwarded-for", clientIP);

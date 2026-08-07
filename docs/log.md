@@ -2,6 +2,14 @@
 
 Append-only. Newest first. Format defined in [[CLAUDE]] (`CLAUDE.md`).
 
+## [2026-08-07] fix | Island proxying was dead in prod: X-Forwarded-Host doesn't survive the hops
+- Live submit broke: POST /newsletter reached Rails (x-request-id proved it) but 404'd — the proxy hops in front of Rails (kamal-proxy/Thruster, app host behind Cloudflare) **rewrite X-Forwarded-Host from the Host header**, so Rails saw `app.kindredquill.com`, where the tenant-constrained newsletter routes don't exist. Rails honors XFH fine (verified with MockRequest); the header just never arrives intact.
+- Fix: the Worker also sends the tenant host as **`X-Island-Host`** (a header nothing rewrites) and new `IslandHost::Rewriter` middleware (before `AccountHost::Extractor`) copies it into XFH — **gated on the island-auth secret**, so tenant hosts can't be spoofed at the origin. Unprovisioned = rewrite off.
+- Also: `/newsletter` standalone page had **two bands** — baseof already renders the band on every non-home page (`baseof.html:183`); the page layout now defines an empty main (the band IS the page). And the invisible interaction-only Turnstile div moved **after** the submit button — its full-width flex row split input from button the moment the script mounted into it.
+- Verified in-browser on a local build: single band, input + button as one themed capture row. Needs: Rails deploy + `wrangler deploy` + site republish, then the end-to-end curl checks.
+- pages touched: (log only)
+- refs: ../lib/middleware/island_host.rb, ../edge/src/index.js, ../vendor/filibuster/layouts/newsletter.html, ../vendor/filibuster/layouts/_partials/ses-newsletter.html
+
 ## [2026-08-07] fix | Signup band polish + /newsletter page + shared-credentials test guard
 - **Band form styled to the theme's vocabulary**: input matches `.fk-btn` height/radius (44px target, `--btn-radius`), placeholder on `--ink-muted`, capture-row layout (input grows beside the button). Turnstile widget now `data-appearance="interaction-only"` — invisible while it solves in the background, so the band reads as input + button; the box only materializes when a visitor must interact. `.cf-turnstile:empty` hidden to avoid a ghost row pre-mount.
 - **`/newsletter` is a static page again** — pre-cutover Rails served a signup page there; post-cutover it 404'd. The content adapter now declares `path: newsletter` with a `newsletter` layout rendering the same band partial (form or mailto fallback). Old links and typed URLs work.

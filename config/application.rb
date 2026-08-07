@@ -6,6 +6,7 @@ require "rails/all"
 # because the stack needs the class at boot, before Zeitwerk is set up.
 require_relative "../lib/middleware/scanner_blocker"
 require_relative "../lib/middleware/account_host"
+require_relative "../lib/middleware/island_host"
 
 # Require the gems listed in Gemfile, including any gems
 # you've limited to :test, :development, or :production.
@@ -96,5 +97,11 @@ module Inkwell
     # Resolve the request's account last in the stack, right before routing:
     # slug prefix on the app host, domain lookup on tenant hosts (ADR 0018).
     config.middleware.insert_after Rack::TempfileReaper, AccountHost::Extractor
+
+    # Just before it, restore the tenant host on Worker-proxied island
+    # requests (X-Island-Host, gated on the island-auth secret) — the proxy
+    # hops in front of Rails rewrite X-Forwarded-Host, which would otherwise
+    # route islands to the app host and 404 them.
+    config.middleware.insert_before AccountHost::Extractor, IslandHost::Rewriter
   end
 end

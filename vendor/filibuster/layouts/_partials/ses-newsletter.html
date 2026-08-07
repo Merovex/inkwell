@@ -20,13 +20,15 @@
     <input type="text" id="fk-newsletter-trap" name="{{ . }}" tabindex="-1" autocomplete="off">
   </div>
   {{ end }}
+  <button class="fk-btn fk-btn-primary" type="submit">{{ or $nl.button_label "Join the list" }}</button>
   {{ with $signup.turnstile_sitekey }}
   {{/* interaction-only: the widget stays invisible while it solves in the
        background, so the band reads as input + button; the box only
-       materializes for the rare visitor who must interact. */}}
+       materializes for the rare visitor who must interact. Placed AFTER the
+       button: its full-width row would otherwise split the capture row the
+       moment the script mounts into it. */}}
   <div class="cf-turnstile" data-sitekey="{{ . }}" data-appearance="interaction-only" data-size="flexible"></div>
   {{ end }}
-  <button class="fk-btn fk-btn-primary" type="submit">{{ or $nl.button_label "Join the list" }}</button>
 </form>
 {{ with $signup.turnstile_sitekey }}
 <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>

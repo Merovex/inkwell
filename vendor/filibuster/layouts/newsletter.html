@@ -1,8 +1,6 @@
 {{ define "main" }}
 {{/* /newsletter — the signup band as its own destination (declared by the
-     content adapter). The band partial is self-contained (bg, card, form or
-     mailto fallback), so this page is just the band with breathing room. */}}
-<div class="fk-newsletter-page">
-  {{ partial "sections/newsletter.html" . }}
-</div>
+     content adapter). Deliberately EMPTY: baseof already renders the
+     newsletter band on every non-home page, so the band IS this page —
+     rendering it here too doubled it. */}}
 {{ end }}
