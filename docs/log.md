@@ -2,6 +2,20 @@
 
 Append-only. Newest first. Format defined in [[CLAUDE]] (`CLAUDE.md`).
 
+## [2026-08-07] build | newsletter:enable — the one-command by-hand path
+- Ben wanted a runnable task, not (only) baked-in flow behavior: `bin/rails "newsletter:enable[handle|slug|domain]"` runs the whole enable-newsletter sequence — SES tenant, Turnstile widget, republish — idempotently, with per-step output and hard abort on widget failure. Production: `bin/kamal app exec 'bin/rails "newsletter:enable[cohwall]"'`. Works against prod as-deployed today (all three services are live); no deploy needed for the cohwall backfill.
+- The auto-provision-on-connect from the previous entry stays — the task and the flow share the same idempotent services, so either door lands the same state.
+- pages touched: (log only)
+- refs: ../lib/tasks/newsletter.rake
+
+## [2026-08-07] build | Sending-domain connect now provisions email + newsletter end-to-end
+- Gap: nothing ever called `EmailConnection.provision_tenant` for new accounts (it waited on a purchase flow that doesn't exist), so a new author with a connected sending domain still had no SES tenant — and no newsletter form (the export gate is `ses_tenant_provisioned?`). Ben's new author (news.cohwall.com) hit exactly this.
+- Fix: **connecting a sending domain IS the "this author uses our email" moment.** `EmailConnection#connect` now provisions the tenant + the account's Turnstile widget when missing (hard gate, injectable fake for tests), then associates the identity unconditionally (the old `if provisioned?` skip left pre-tenant identities orphaned until a console catch-up).
+- The republish is driven by the data: new Account hook — `saved_change_to_ses_tenant_provisioned_at?` → `SiteBuildJob.schedule` — because that stamp is the contract's signup gate. No operator steps left: connect → DNS instructions → (poll verifies) → site rebuilds with the form.
+- Already-connected accounts (cohwall) catch up by **re-submitting the same domain in the admin** — the documented retry/adopt path now provisions too.
+- pages touched: (log only)
+- refs: ../app/services/email_connection.rb, ../app/models/account.rb:122, ../test/services/email_connection_test.rb
+
 ## [2026-08-07] fix | siteverify "bad-request": Ruby 4's Net::HTTP sends no default Content-Type
 - Live Turnstile rejects with a REAL token logged `bad-request` — siteverify called our request malformed. Root cause: **Ruby 4 removed `supply_default_content_type`** from net/http, so `http.post(path, body)` ships a form body with NO Content-Type header (Ruby 3 defaulted it to x-www-form-urlencoded). `TurnstileVerifier#siteverify` now builds the request with `set_form_data` (sets body + header). Proven over the wire with Cloudflare's always-pass/always-fail test secrets. Repo-wide lesson: on Ruby 4, never `http.post(path, raw_body)` a form without an explicit Content-Type.
 - Also restored the real client IP on islands: the proxy hops rewrite X-Forwarded-For like they did X-Forwarded-Host (Rails logged Cloudflare egress IPs), collapsing every visitor into one rate-limit bucket and poisoning consent-log provenance. The Worker now sends `X-Island-IP` (from CF-Connecting-IP) and `IslandHost::Rewriter` restores it into XFF under the same island-auth gate.
