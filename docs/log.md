@@ -2,6 +2,19 @@
 
 Append-only. Newest first. Format defined in [[CLAUDE]] (`CLAUDE.md`).
 
+## [2026-08-07] note | Docs synced to the shipped newsletter/islands arc
+- New concept page [[dynamic-islands]] — the durable island contract (allowlist, X-Island-* headers, rendering rules, Ruby 4 + caching gotchas), synthesized from today's log entries.
+- [[newsletter-bot-protection-plan]] → status **implemented & live**, new "As built" section recording the four deltas (header contract, Ruby 4 Content-Type, absolute assets, automatic enablement); refs updated.
+- [[phase-2-static-serving]] §2.5 stamped with island status; index.md (plan line + new concept), overview.md (current-state bullet for newsletter signup, email bullet's provisioning trigger corrected, ops deploy state refreshed to 2026-08-07).
+- pages touched: [[dynamic-islands]], [[newsletter-bot-protection-plan]], [[phase-2-static-serving]], index.md, overview.md
+
+## [2026-08-07] fix | Island pages rendered naked on tenant hosts: /assets/* belongs to the Worker
+- First confirm on tenant #2 (cohwall.com) proved the island chain end-to-end — and exposed that Rails-rendered island pages link stylesheets at relative `/assets/<digest>` paths, which on a tenant host resolve into the Worker's static R2 build (theme files, not Rails assets) → 404 → unstyled page. Merovex never showed it because those pages had only been viewed pre-cutover.
+- Fix: `config.asset_host = https://<APP_HOST>` in production (no-op until APP_HOST set) — island pages load Rails assets absolutely from the app host. Plus `access-control-allow-origin: *` on public_file_server headers: cross-origin CSS is fine but the @font-face files it references need CORS. **Watch on deploy:** Thruster serves public/ itself and may not apply Rails' public_file_server headers — if fonts CORS-fail, add the header at the Thruster/Cloudflare layer instead.
+- Also: newsletter:enable now matches name/custom-domain/sending-domain and prints the account roster on a miss (the "cohwall" guess failed against handle/slug/domain).
+- pages touched: (log only)
+- refs: ../config/environments/production.rb, ../lib/tasks/newsletter.rake
+
 ## [2026-08-07] build | newsletter:enable — the one-command by-hand path
 - Ben wanted a runnable task, not (only) baked-in flow behavior: `bin/rails "newsletter:enable[handle|slug|domain]"` runs the whole enable-newsletter sequence — SES tenant, Turnstile widget, republish — idempotently, with per-step output and hard abort on widget failure. Production: `bin/kamal app exec 'bin/rails "newsletter:enable[cohwall]"'`. Works against prod as-deployed today (all three services are live); no deploy needed for the cohwall backfill.
 - The auto-provision-on-connect from the previous entry stays — the task and the flow share the same idempotent services, so either door lands the same state.

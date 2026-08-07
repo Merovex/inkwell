@@ -19,10 +19,19 @@ Rails.application.configure do
   config.action_controller.perform_caching = true
 
   # Cache assets for far-future expiry since they are all digest stamped.
-  config.public_file_server.headers = { "cache-control" => "public, max-age=#{1.year.to_i}" }
+  # The CORS header is for the island pages below: cross-origin CSS loads
+  # fine, but the @font-face files those sheets reference do not without it.
+  config.public_file_server.headers = {
+    "cache-control" => "public, max-age=#{1.year.to_i}",
+    "access-control-allow-origin" => "*"
+  }
 
-  # Enable serving of images, stylesheets, and JavaScripts from an asset server.
-  # config.asset_host = "http://assets.example.com"
+  # Rails-rendered island pages (newsletter confirm/sent/…) are served on
+  # TENANT hosts through the edge Worker, whose /assets/* belongs to the
+  # static site build in R2 — a relative asset path 404s there and the page
+  # renders naked. Absolute asset URLs against the app host keep Rails pages
+  # dressed wherever they're proxied. No-op until APP_HOST is set.
+  config.asset_host = ENV["APP_HOST"].presence && "https://#{ENV["APP_HOST"]}"
 
   # Store uploaded files on the local file system (see config/storage.yml for options).
   config.active_storage.service = :local

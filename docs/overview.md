@@ -24,7 +24,7 @@ rename and keep the old name as history.)
 This `docs/` folder is the single home for design/reference docs and the work
 log; see [[CLAUDE]] for how it's maintained.
 
-## Current state (2026-08-05)
+## Current state (2026-08-07)
 
 Since July: multitenancy shipped (app host + tenant hosts, join-code signup,
 [0017](decisions/0017-phase-1-tenancy-model.md)–[0020](decisions/0020-join-code-signup-and-root-role.md));
@@ -52,10 +52,19 @@ and the August community arc:
 - **Boosts & @mentions** across circle content — mentions by typed token or
   Lexxy's `@`-prompt (User as Action Text attachable, avatar+name chip);
   comment replies ring the thread everywhere comments exist.
+- **Newsletter signup on static sites** ([[dynamic-islands]],
+  [[newsletter-bot-protection-plan]] — built & live 2026-08-07, verified on
+  two tenants) — the Hugo band posts to the `POST /newsletter` island through
+  the edge Worker (X-Island-Auth/Host/IP header contract, origin lockdown);
+  bots stop at a pinned honeypot + per-account Cloudflare Turnstile
+  (fail-closed, secret encrypted at rest — first AR-encryption use).
+  Enablement is automatic on sending-domain connect, or
+  `bin/rails "newsletter:enable[x]"`.
 - **Email** ([[email-architecture]], CANONICAL; tenancy + BYOD shipped
   2026-08-06 per [[email-tenant-byod-plan]]) — all-SES; the root never sends.
-  Per-site SES tenants (`site-<slug>`, provisioned on broadcast-email
-  purchase) isolate every site's reputation; platform mail stamps
+  Per-site SES tenants (`site-<slug>`, provisioned automatically on
+  sending-domain connect, console/task for comped accounts) isolate every
+  site's reputation; platform mail stamps
   platform-auth/-circles. Site broadcast From = live BYOD sending domain
   (Email tab, subdomain-only) else `<handle>@kindredquill.email` (author
   handle, `noreply@` fallback). Deploy gated on `email:provision` +
@@ -69,10 +78,12 @@ and the August community arc:
   a11y gates); every stylesheet passes the mechanical check, markup swept
   app-wide (skip links, keyboard-operable editables, dead ARIA stripped).
 - **Ops** — Solid Queue in Puma, Mission Control at `/jobs` (root-only),
-  Eastern `config.time_zone`, recurring schedule zones explicit. Production
-  runs `01c6fe9` — the entire August arc is local/undeployed; the
-  alcovo container's volume collision (it mounted `/var/lib/inkwell`) is
-  diagnosed, its deploy.yml fixed, redeploy pending.
+  Eastern `config.time_zone`, recurring schedule zones explicit. The August
+  arc deployed 2026-08-07 (several rounds, through the newsletter-islands
+  work); the working tree still holds the final island fixes pending Ben's
+  commit + one `wrangler deploy` (client-IP restore). The alcovo container's
+  volume collision (it mounted `/var/lib/inkwell`) is diagnosed, its
+  deploy.yml fixed, redeploy pending.
 
 ## State as of 2026-07-12 (single-tenant era)
 

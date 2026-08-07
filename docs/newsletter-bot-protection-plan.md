@@ -1,10 +1,12 @@
 # Newsletter Signup — Static Form + Bot Protection Plan
 
-*Status: proposed (2026-08-07; revised same day after validation against the
-code, and again to add origin lockdown — see log). Scope: wire the Hugo public
-newsletter band to the Rails signup endpoint, and stop bots at the door so
-their bad addresses never trigger a confirmation send. Lands as part of the
-Phase 2 theme + the Merovex cut-over — see [[phase-2-static-serving]].*
+*Status: **implemented & live** (2026-08-07 — proposed, revised twice, built,
+and verified end-to-end the same day; Merovex and cohwall.com both completed
+signup → confirmation → confirm through the Worker). Scope: wire the Hugo
+public newsletter band to the Rails signup endpoint, and stop bots at the
+door so their bad addresses never trigger a confirmation send. See **"As
+built"** at the end for where reality amended the plan, and
+[[dynamic-islands]] for the durable island contract.*
 
 ## Problem
 
@@ -274,10 +276,42 @@ forwarding) is a small Worker + middleware-config change that benefits every
 island, not just this one. Item 2a tier 1 adds ~30 min: one concern, one
 Worker header, one secret in two places. Lands with the Phase 2 theme.
 
+## As built (2026-08-07) — where reality amended the plan
+
+Everything above shipped; four things the plan didn't foresee (full detail in
+[[dynamic-islands]] and the log):
+
+1. **§2/§2a needed custom headers.** `X-Forwarded-Host`/`-For` don't survive
+   the proxy hops in front of Rails (kamal-proxy/Thruster rewrite them from
+   their own peer), so the Worker sends `X-Island-Host` + `X-Island-IP`
+   alongside `X-Island-Auth`, and an `IslandHost::Rewriter` middleware
+   restores the standard headers — gated on the island-auth secret.
+2. **Ruby 4 broke siteverify silently**: `Net::HTTP#post` no longer supplies
+   a default Content-Type → `bad-request` from Cloudflare. `TurnstileVerifier`
+   uses `set_form_data` and logs siteverify `error-codes` on every reject.
+3. **Island pages need absolute assets** (`config.asset_host` → the app
+   host + CORS header for fonts): relative `/assets/*` on a tenant host
+   resolves into the Worker's static build and the page renders naked.
+4. **Enablement became automatic + one-command**: sending-domain connect
+   provisions SES tenant + per-account Turnstile widget and schedules the
+   republish (`EmailConnection#connect`); `bin/rails "newsletter:enable[x]"`
+   is the by-hand door. The secret is encrypted at rest (first
+   Active Record encryption use). The theme's form partial is
+   provider-scoped (`ses-newsletter.html`, selected by the contract's
+   `signup.provider`) for future Mailchimp-style integrations, and
+   `/newsletter` is a static page again (the band as a destination).
+
+Still open, tracked outside this plan: contact-form island hardening,
+platform-host (apex-slug) islands, Tier 2 network lockdown, and the
+watch-the-tripwires operating rhythm (SES bounce rate, pending/confirmed).
+
 ## Refs
 - Code: `app/controllers/subscriptions_controller.rb`,
-  `app/models/subscriber.rb`, `app/models/exporter.rb`,
-  `app/services/email_connection.rb`,
-  `vendor/filibuster/layouts/_partials/sections/newsletter.html`
-- Docs: [[phase-2-static-serving]], [[hugo-build-pipeline]], [[ses-tenants]],
+  `app/controllers/concerns/island_protected.rb`,
+  `lib/middleware/island_host.rb`, `app/services/turnstile_verifier.rb`,
+  `app/services/turnstile_connection.rb`, `app/services/email_connection.rb`,
+  `app/models/exporter.rb`, `edge/src/index.js`, `lib/tasks/newsletter.rake`,
+  `vendor/filibuster/layouts/_partials/ses-newsletter.html`
+- Docs: [[dynamic-islands]], [[phase-2-static-serving]],
+  [[hugo-build-pipeline]], [[ses-tenants]],
   [[0011-subscribers-and-consent-log]], [[custom-domain-onboarding]]

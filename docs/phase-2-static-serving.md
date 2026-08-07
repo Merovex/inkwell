@@ -105,7 +105,11 @@ criterion. No per-tenant buckets; the prefix is the tenancy.
   the slug taken from the path — the Worker replicates what the AccountHost
   extractor does today, so domain-less presses stay static too.
 - Dynamic islands proxy to the Rails origin — **enumerated from routes.rb,
-  not memory**: `POST /newsletter` + `GET /newsletter/confirm|unsubscribe|
+  not memory**. *Status 2026-08-07: the newsletter set is live (plus
+  `GET /newsletter/rejected`), with the X-Island-Auth/Host/IP header
+  contract — standard forwarding headers don't survive the origin's proxy
+  hops; see [[dynamic-islands]]. The rest below still to land, each with its
+  own hardening pass.* The list: `POST /newsletter` + `GET /newsletter/confirm|unsubscribe|
   keep/:token` + `GET /newsletter/sent`, `POST /contact` +
   `GET /contact/confirm/:token` + `GET /contact/sent`, `GET /buy/:id`
   (click counting), `POST /webhooks/ses` (stays on merovex.press per
