@@ -1,7 +1,7 @@
 xml.instruct! :xml, version: "1.0"
 xml.urlset xmlns: "http://www.sitemaps.org/schemas/sitemap/0.9" do
   # Static entry points.
-  [ root_url, blog_url, books_url, about_url ].each do |loc|
+  [ root_url, posts_url, books_url, about_url ].each do |loc|
     xml.url { xml.loc loc }
   end
   xml.url { xml.loc privacy_url } if site_settings.privacy_policy.present?
@@ -9,7 +9,7 @@ xml.urlset xmlns: "http://www.sitemaps.org/schemas/sitemap/0.9" do
 
   @posts.each do |post|
     xml.url do
-      xml.loc blog_post_url(post.record.to_slug)
+      xml.loc post_url(post.record.to_slug)
       xml.lastmod post.updated_at.iso8601
     end
   end

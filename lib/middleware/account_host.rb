@@ -76,7 +76,7 @@ module AccountHost
 
     private
       # The apex is every domain-less press's public home until Phase 2:
-      # kindredquill.com/{SLUG}/blog serves that account's public site (same
+      # kindredquill.com/{SLUG}/posts serves that account's public site (same
       # SCRIPT_NAME mount as the admin, so URL helpers carry the prefix). A
       # press that HAS a domain 301s to it — one canonical public URL per
       # press. Bare or unrecognized apex paths go to the app host.

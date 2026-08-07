@@ -110,7 +110,7 @@ class AdminPostBroadcastsTest < ActionDispatch::IntegrationTest
     assert_select ".broadcast-banner a", text: "preview link"
     # The share link rides the site's own address (the merovex fixture carries
     # domain: merovex.press), never the admin host.
-    assert_select ".broadcast-banner__url[value=?]", "https://merovex.press/blog/#{record.to_slug}"
+    assert_select ".broadcast-banner__url[value=?]", "https://merovex.press/posts/#{record.to_slug}"
     assert_match(/-#{record.preview_key}\b/, record.to_slug)  # the URL carries the HMAC key
   end
 

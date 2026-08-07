@@ -33,7 +33,7 @@ class BlogController < PublicController
     @post = @record.recordable
 
     if @post.published?
-      return redirect_to blog_post_path(@record.to_slug), status: :moved_permanently unless canonical_slug?
+      return redirect_to post_path(@record.to_slug), status: :moved_permanently unless canonical_slug?
       # Anonymous + only changes on a new version → cache at the edge; the etag
       # also folds in site identity so a Site change busts it.
       fresh_when etag: [ @record, site_settings ], public: true

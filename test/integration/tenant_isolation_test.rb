@@ -103,12 +103,12 @@ class TenantIsolationTest < ActionDispatch::IntegrationTest
 
   test "each domain serves only its own public site" do
     host! @rival.domain
-    get "/blog"
+    get "/posts"
     assert_response :success
     assert_match "Rival Post", response.body
 
     host! @merovex.domain
-    get "/blog"
+    get "/posts"
     assert_response :success
     assert_no_match "Rival Post", response.body
 

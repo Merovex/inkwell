@@ -41,7 +41,7 @@ class Account < ApplicationRecord
     abuse admin administrator api app assets billing blog bounce bounces
     cdn contact demo dev docs feed ftp help hostmaster info inkwell
     kindredquill legal mail mailer-daemon marketing moderator news
-    newsletter noreply no-reply official postmaster preview privacy root
+    newsletter noreply no-reply official postmaster posts preview privacy root
     rss sales search security site sites smtp staff staging static status
     subscribe support team test unsubscribe verify webmaster www
   ].freeze

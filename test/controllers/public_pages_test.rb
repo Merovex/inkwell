@@ -4,7 +4,7 @@ require "test_helper"
 # sitemap, legal pages, and the buy-link click-through.
 class PublicPagesTest < ActionDispatch::IntegrationTest
   test "the blog RSS feed lists published posts" do
-    get "/blog/feed.rss"
+    get "/posts/feed.rss"
     assert_response :success
     assert_equal "application/rss+xml", response.media_type
     assert_includes response.body, "<rss"
@@ -35,7 +35,7 @@ class PublicPagesTest < ActionDispatch::IntegrationTest
     get "/sitemap.xml"
     assert_response :success
     assert_includes response.body, "<urlset"
-    assert_includes response.body, blog_post_url(records(:kickoff).to_slug)
+    assert_includes response.body, post_url(records(:kickoff).to_slug)
   end
 
   test "legal pages render the admin-authored rich text" do

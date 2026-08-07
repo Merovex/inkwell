@@ -75,7 +75,7 @@
           <% if site_settings.terms.present? %>
             <%= link_to "Terms", terms_path, class: "press-link" %>
           <% end %>
-          <%= link_to "RSS", blog_feed_path(format: :rss), class: "press-link" %>
+          <%= link_to "RSS", posts_feed_path(format: :rss), class: "press-link" %>
         </p>
       </div>
     </footer>

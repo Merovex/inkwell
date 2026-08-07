@@ -433,12 +433,12 @@ Rails.application.routes.draw do
 
   # The public site — everything below resolves per-tenant by domain.
   constraints(public_routes) do
-    # Public blog. The index lists published posts only; :id on the article page
+    # Public posts. The index lists published posts only; :id on the article page
     # is the Record id (the stable public identity), matching the admin side.
-    get "blog" => "blog#index", as: :blog
-    # RSS feed — declared before blog/:id so "feed" isn't swallowed as an id.
-    get "blog/feed" => "blog#feed", as: :blog_feed, defaults: { format: "rss" }
-    get "blog/:id" => "blog#show", as: :blog_post
+    get "posts" => "blog#index", as: :posts
+    # RSS feed — declared before posts/:id so "feed" isn't swallowed as an id.
+    get "posts/feed" => "blog#feed", as: :posts_feed, defaults: { format: "rss" }
+    get "posts/:id" => "blog#show", as: :post
 
     # Author persona pages: bio + their published posts and books.
     get "authors/:id" => "authors#show", as: :author_page
