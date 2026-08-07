@@ -145,6 +145,12 @@ class Account < ApplicationRecord
   def ses_tenant_name = "site-#{slug}"
   def ses_tenant_provisioned? = ses_tenant_provisioned_at.present?
 
+  # The account's Turnstile widget secret (TurnstileConnection stamps it,
+  # TurnstileVerifier reads it). Encrypted at rest — backups and raw DB access
+  # see ciphertext; the model reader decrypts transparently, so console
+  # debugging is unchanged. Keys: credentials active_record_encryption.
+  encrypts :turnstile_secret_key
+
   # The address this site's broadcast mail sends from: its live BYOD domain
   # when one exists, else the shared lane. The Email tab shows the bare
   # address; mailers use broadcast_from, which wraps it in the public site's

@@ -2,6 +2,12 @@
 
 Append-only. Newest first. Format defined in [[CLAUDE]] (`CLAUDE.md`).
 
+## [2026-08-07] build | Turnstile secret encrypted at rest
+- `encrypts :turnstile_secret_key` on Account — Active Record encryption, first use in the app. Keys generated (`db:encryption:init`) and stored in credentials under `active_record_encryption`; test env carries fixed dummy keys in environments/test.rb so CI never needs the master key. Landed while zero rows carry a secret, so no `support_unencrypted_data` transition was needed.
+- Debugging unchanged: the model reader decrypts transparently (console shows plaintext); raw DB/backups see ciphertext; `inspect` auto-filters. Verified round-trip in dev. **Master-key custody now guards these rows** — losing credentials means reprovisioning widgets, not recovery.
+- pages touched: (log only)
+- refs: ../app/models/account.rb, ../config/environments/test.rb
+
 ## [2026-08-07] build | Per-account Turnstile widgets, API-provisioned (supersedes "one shared widget")
 - Ben's correction: custom-domain onboarding is already self-serve, so manual widget hostname entry was a broken assumption. Decisions: **hard gate** (a failed Turnstile registration fails the connect) and **keys indexed by account today** (sharding = data entry, never schema).
 - New `accounts.turnstile_site_key`/`turnstile_secret_key` columns; `TurnstileConnection` (the front-door twin of `EmailConnection.provision_tenant`): idempotent `provision` creates a managed-mode widget per account over its apexes + the platform apex, stamps the keys — **console-callable for the Tenant Zero backfill** (`TurnstileConnection.provision(account)`); `register_hostname`/`deregister_hostname` keep the list in sync.

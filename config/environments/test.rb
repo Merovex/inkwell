@@ -50,4 +50,12 @@ Rails.application.configure do
 
   # Raise error when a before_action's only/except options reference missing actions.
   config.action_controller.raise_on_missing_callback_actions = true
+
+  # Fixed Active Record encryption keys so the suite (and CI) never needs the
+  # credentials master key to write encrypted attributes (Account's
+  # turnstile_secret_key). Test-only values; production keys live in
+  # credentials under active_record_encryption.
+  config.active_record.encryption.primary_key = "test" * 8
+  config.active_record.encryption.deterministic_key = "test" * 8
+  config.active_record.encryption.key_derivation_salt = "test" * 8
 end
