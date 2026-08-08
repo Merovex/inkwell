@@ -1,45 +1,60 @@
 /*
- * .wall — a circle's feed presentation CANDIDATE (2026-08-06; the sectioned
- * circle page remains the default while this is judged). Full-bodied message
- * cards, newest first; a lazy turbo-frame tail loads the next page on scroll.
- * Single-sourced markup: circles/walls/show + _card.
+ * .wall — a circle's feed, and its home page (circles#show): messages and
+ * pulse answers merged newest-first, filterable by kind (the .segmented
+ * control), full-bodied cards, a lazy turbo-frame tail loading the next page
+ * on scroll. Single-sourced markup: circles/show + circles/walls/_card +
+ * _beat_card.
  */
 @layer components {
   .wall {
     display: flex;
     flex-direction: column;
-    gap: var(--u-pad);
+    gap: 0;                       /* cards divide with hairlines, not gaps */
     max-inline-size: var(--measure-prose);
     margin-inline: auto;
   }
   /* Frames are plumbing, not layout — cards read as direct children. */
   .wall turbo-frame { display: contents; }
+  /* Affixed strips (announcements, pulse ask, your drafts/appointments) sit in
+     a prelude above the card stream — evenly spaced and set off from the first
+     card. The cards below carry the flow's rhythm with their own dividers. */
+  .wall__prelude {
+    display: flex;
+    flex-direction: column;
+    gap: var(--u-pad);
+    margin-block-end: var(--u-pad);
+  }
 
+  /* Editorial rows, not bordered cards: an avatar·name·when byline, then the
+     title and body flush to the card's edge (no gutter indent), a centered
+     hairline between adjacent rows. */
   .wall__card {
     display: flex;
     flex-direction: column;
     gap: calc(var(--u-pad) / 2);
-    padding: var(--u-pad);
-    border: var(--border-size-1) solid var(--line);
-    border-radius: var(--radius-2);
-    background: var(--canvas);
+    padding-block: calc(var(--u-pad) * 2);
   }
+  .wall__card + .wall__card { border-block-start: var(--border-size-1) solid var(--line); }
+  .wall__avatar { --avatar-size: var(--size-7); flex-shrink: 0; }
 
-  .wall__byline { display: flex; align-items: center; gap: calc(var(--u-pad) / 2); }
-  .wall__byline > div { min-inline-size: 0; }
+  .wall__byline { display: flex; flex-wrap: wrap; align-items: center; gap: calc(var(--u-pad) / 2); }
   /* The author's ⋯ menu, far right of the byline. */
   .wall__actions { margin-inline-start: auto; flex-shrink: 0; }
   .wall__meta { color: var(--ink-muted); font-size: var(--font-size-0); }
+  .wall__when { color: var(--ink-muted); }
 
-  /* The title rides the byline inline — a real heading, sized to the line.
-     The icon must re-inline too: the base reset blocks every svg, which
-     breaks the flow (icons elsewhere live in flex rows and never notice). */
-  .wall__title { display: inline; margin: 0; font-size: var(--font-size-1); }
+  /* The title is the row's headline: its own line, bold, a step up in size.
+     The icon must re-inline: the base reset blocks every svg, which would
+     break the flow (icons elsewhere live in flex rows and never notice). */
+  .wall__title {
+    margin: 0;
+    font-size: var(--font-size-3);
+    font-weight: var(--font-weight-8);
+    line-height: var(--font-lineheight-1);
+  }
   .wall__title a { color: inherit; text-decoration: none; }
   .wall__title a:hover { text-decoration: underline; }
   .wall__title .lucide { display: inline-block; vertical-align: text-bottom; }
-  /* The receipt drops to its own line under name · title. */
-  .wall__when { display: block; }
 
   /* Card bodies clamp at five lines — the thread modal and the message page
      carry the full text. */
@@ -57,8 +72,11 @@
 
 
   .wall__footer { display: flex; flex-wrap: wrap; align-items: center; gap: calc(var(--u-pad) / 2); font-size: var(--font-size-0); }
-  .wall__footer a { display: inline-flex; align-items: center; gap: calc(var(--u-pad) / 4); color: var(--ink-muted); }
-  .wall__footer span { display: inline-flex; align-items: center; gap: calc(var(--u-pad) / 4); color: var(--ink-muted); }
+  /* Only the count link and the boost strip take the icon+text treatment —
+     scoped to direct children so it never reaches the commenter .avatar-group
+     or its nested .avatar spans (which own their own centering). */
+  .wall__footer > a,
+  .wall__footer > .wall__chips { display: inline-flex; align-items: center; gap: calc(var(--u-pad) / 4); color: var(--ink-muted); }
 
   /* Affixed strips above the stream (announcements, pulse ask, appointments). */
   .wall__affixed {

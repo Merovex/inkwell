@@ -10,7 +10,7 @@ class CircleWallsTest < ActionDispatch::IntegrationTest
     create_discussion(title: "Second post")
     sign_in_as users(:bob)
 
-    get circle_wall_path(circles(:writers))
+    get circle_path(circles(:writers))
     assert_response :success
     assert_select ".wall__card", 3 # the two above + the fixture discussion
     # Newest first.
@@ -23,14 +23,14 @@ class CircleWallsTest < ActionDispatch::IntegrationTest
     12.times { |i| create_discussion(title: "Post #{i}") }
     sign_in_as users(:bob)
 
-    get circle_wall_path(circles(:writers))
+    get circle_path(circles(:writers))
     assert_select ".wall__card", 10
     assert_select "turbo-frame[loading=lazy][src*=?]", "before_id"
 
     # The cursor page carries the rest (2 created + the fixture discussion),
     # no further frame.
     cursor = css_select("turbo-frame[loading=lazy]").first["src"][/before_id=(\d+)/, 1]
-    get circle_wall_path(circles(:writers), before_id: cursor)
+    get circle_path(circles(:writers), before_id: cursor)
     assert_response :success
     assert_select ".wall__card", 3
     assert_select "turbo-frame[loading=lazy]", 0
@@ -44,11 +44,11 @@ class CircleWallsTest < ActionDispatch::IntegrationTest
     bulletin.publish(creator: users(:alice))
     sign_in_as users(:bob)
 
-    get circle_wall_path(Circle.commons)
+    get circle_path(Circle.commons)
     assert_response :success
     assert_select ".wall__pin--announce", text: /Sidebar changes/
 
-    get circle_wall_path(circles(:writers))
+    get circle_path(circles(:writers))
     assert_select ".wall__pin--announce", 0
   end
 
@@ -63,7 +63,7 @@ class CircleWallsTest < ActionDispatch::IntegrationTest
     end
 
     sign_in_as users(:bob)
-    get circle_wall_path(circles(:writers))
+    get circle_path(circles(:writers))
     # Not in the stream…
     assert_select ".wall__card .wall__title a", text: "Way out there", count: 0
     # …but in bob's own strip, with its appointment.
@@ -72,7 +72,7 @@ class CircleWallsTest < ActionDispatch::IntegrationTest
 
     # Alice doesn't see bob's appointments.
     sign_in_as users(:alice)
-    get circle_wall_path(circles(:writers))
+    get circle_path(circles(:writers))
     assert_select ".wall__pin--scheduled", 0
     assert scheduled.record.reload.recordable.scheduled?
   end
@@ -86,7 +86,7 @@ class CircleWallsTest < ActionDispatch::IntegrationTest
     pulse.ask!
 
     sign_in_as users(:bob)
-    get circle_wall_path(circles(:writers))
+    get circle_path(circles(:writers))
     assert_select ".wall__pin--pulse", text: /Pulse check: What did you work on\?/
     assert_select "a[href=?]", circle_pulse_path(circles(:writers), pulse.record_id), text: /Pulse check/
 
@@ -94,7 +94,7 @@ class CircleWallsTest < ActionDispatch::IntegrationTest
       Record.originate(Beat.new(content: "<p>Wrote plenty</p>", asked_on: pulse.last_asked_on,
         creator: users(:bob)), parent: pulse.record)
     end
-    get circle_wall_path(circles(:writers))
+    get circle_path(circles(:writers))
     assert_select ".wall__pin--pulse", count: 0
 
     # The answer rides the wall as its own card — newest, so first — wearing
@@ -109,7 +109,7 @@ class CircleWallsTest < ActionDispatch::IntegrationTest
       Record.originate(Beat.new(content: "<p>Me too</p>", asked_on: pulse.last_asked_on,
         creator: users(:alice)), parent: pulse.record)
     end
-    get circle_wall_path(circles(:writers))
+    get circle_path(circles(:writers))
     assert_select ".wall__title a", text: /What did you work on\?/, count: 2
     assert_select ".wall__card:first-of-type .wall__body", text: /Me too/
 
@@ -129,14 +129,14 @@ class CircleWallsTest < ActionDispatch::IntegrationTest
     message = create_discussion(title: "Mine", creator: users(:bob))
 
     sign_in_as users(:bob) # the author
-    get circle_wall_path(circles(:writers))
+    get circle_path(circles(:writers))
     assert_select ".wall__card:first-of-type .wall__actions a.menu__item[href=?][data-turbo-frame=modal]",
       circle_wall_edit_path(circles(:writers), message.record), text: "Edit"
     assert_select ".wall__card:first-of-type .wall__actions form[action=?]",
       circle_message_path(circles(:writers), message.record)
 
     sign_in_as users(:alice) # circle owner, not the author — moderate only
-    get circle_wall_path(circles(:writers))
+    get circle_path(circles(:writers))
     assert_select ".wall__card:first-of-type .wall__actions a.menu__item", text: "Edit", count: 0
     assert_select ".wall__card:first-of-type .wall__actions form[action=?]",
       circle_message_path(circles(:writers), message.record)
@@ -144,7 +144,7 @@ class CircleWallsTest < ActionDispatch::IntegrationTest
     carol = User.create!(email_address: "carol@example.com")
     circles(:writers).circle_memberships.create!(user: carol)
     sign_in_as carol # plain member — no menu anywhere
-    get circle_wall_path(circles(:writers))
+    get circle_path(circles(:writers))
     assert_select ".wall__actions", count: 0
   end
 
@@ -159,7 +159,7 @@ class CircleWallsTest < ActionDispatch::IntegrationTest
 
     patch circle_message_path(circles(:writers), message.record),
       params: { back: "wall", message: { title: "Mine, revised", content: "<p>better</p>" } }
-    assert_redirected_to circle_wall_path(circles(:writers))
+    assert_redirected_to circle_path(circles(:writers))
     assert_equal "Mine, revised", message.record.reload.recordable.title
 
     sign_in_as users(:alice) # owner may moderate, not edit
@@ -167,11 +167,31 @@ class CircleWallsTest < ActionDispatch::IntegrationTest
     assert_response :not_found
   end
 
-  test "the standard circle page offers the Wall toggle as a visible head button" do
+  test "the feed's segmented control narrows to check-ins" do
+    create_discussion(title: "A post")
+    pulse = Current.with_bucket(circles(:writers)) do
+      Record.originate(Pulse.new(question: "What did you work on?", creator: users(:alice),
+        cadence: "weekly", days_of_week: (1 << 1), ask_at_minutes: 540))
+    end.recordable
+    Current.with_bucket(circles(:writers)) do
+      Record.originate(Beat.new(content: "<p>Wrote plenty</p>", asked_on: Date.current,
+        creator: users(:bob)), parent: pulse.record)
+    end
     sign_in_as users(:bob)
+
+    # Everything: the message card and the beat card (titled by its question).
+    # There is no "Posts" segment.
     get circle_path(circles(:writers))
-    assert_select ".canvas__head a.canvas__head-action[href=?]",
-      circle_wall_path(circles(:writers)), text: "Wall view"
+    assert_select "nav.segmented a[aria-current=page]", text: "Everything"
+    assert_select "nav.segmented a", text: "Posts", count: 0
+    assert_select ".wall__title a", text: "A post"
+    assert_select ".wall__title a", text: /What did you work on\?/
+
+    # Beats only: the beat survives, the message is gone.
+    get circle_path(circles(:writers), filter: "beats")
+    assert_select "nav.segmented a[aria-current=page]", text: "Pulse Checks"
+    assert_select ".wall__title a", text: /What did you work on\?/
+    assert_select ".wall__title a", text: "A post", count: 0
   end
 
   test "your drafts count links to the Discussions list; none, no line" do
@@ -182,28 +202,40 @@ class CircleWallsTest < ActionDispatch::IntegrationTest
     end
 
     sign_in_as users(:bob)
-    get circle_wall_path(circles(:writers))
+    get circle_path(circles(:writers))
     assert_select "a[href=?]", circle_messages_path(circles(:writers)), text: "You have 1 draft"
     # Not in the stream either.
     assert_select ".wall__card .wall__title a", text: "Half-formed", count: 0
 
     sign_in_as users(:alice)
-    get circle_wall_path(circles(:writers))
+    get circle_path(circles(:writers))
     assert_select "a", text: /You have \d+ draft/, count: 0
   end
 
   test "a non-member gets the same 404 as a missing circle" do
     outsider = User.create!(email_address: "outsider@example.com")
     sign_in_as outsider
-    get circle_wall_path(circles(:writers))
+    get circle_path(circles(:writers))
     assert_response :not_found
+  end
+
+  test "a card carries its commenters as an avatar cluster beside the count" do
+    discussion = create_discussion(title: "Talk to me", creator: users(:alice))
+    sign_in_as users(:bob)
+    post circle_record_comments_path(circles(:writers), discussion.record),
+      params: { comment: { content: "<p>A reply</p>" } }
+
+    get circle_path(circles(:writers))
+    assert_response :success
+    assert_select ".wall__card .wall__footer .avatar-group .avatar"
+    assert_select ".wall__card .wall__footer", text: /1 comment/
   end
 
   test "cards clamp the body and open the thread as a modal" do
     message = create_discussion(title: "Long one")
     sign_in_as users(:bob)
 
-    get circle_wall_path(circles(:writers))
+    get circle_path(circles(:writers))
     assert_select ".wall__body.u-clamp"
     assert_select "a[href=?][data-turbo-frame=modal]",
       circle_wall_thread_path(circles(:writers), message.record)
@@ -220,7 +252,7 @@ class CircleWallsTest < ActionDispatch::IntegrationTest
     end.recordable
 
     sign_in_as users(:alice)
-    get circle_wall_path(circles(:writers))
+    get circle_path(circles(:writers))
     assert_select ".wall__card:first-of-type a[href=?]",
       circle_wall_thread_path(circles(:writers), beat.record_id), text: /0 comments/
 
@@ -302,7 +334,7 @@ class CircleWallsTest < ActionDispatch::IntegrationTest
     assert_equal 1, message.record.boosts.count
 
     # The wall card now shows the boost itself (read-only — no remove button).
-    get circle_wall_path(circles(:writers))
+    get circle_path(circles(:writers))
     assert_select ".wall__card .boost", text: /🙌/
     assert_select ".wall__card .boost .boost__remove", 0
   end

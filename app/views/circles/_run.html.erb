@@ -1,0 +1,21 @@
+<%# locals: (standing:) %>
+<%# A member's run: a sparkline of the last occurrences (filled = answered) and
+    the count — "19 wks" while active, "broken, was 5" once a week is missed. %>
+<span class="run">
+  <% if standing.bars.any? %>
+    <span class="run__bars" aria-hidden="true">
+      <% standing.bars.each do |answered| %>
+        <span class="run__bar<%= " run__bar--on" if answered %>"></span>
+      <% end %>
+    </span>
+  <% end %>
+  <span class="run__label">
+    <% if standing.run.positive? %>
+      <%= pluralize(standing.run, "wk") %>
+    <% elsif standing.broken %>
+      broken, was <%= standing.prior %>
+    <% else %>
+      —
+    <% end %>
+  </span>
+</span>

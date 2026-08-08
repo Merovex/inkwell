@@ -16,6 +16,10 @@
                   autosave_key_value: "Record/#{@beat_record.id}/edit",
                   autosave_revision_value: @beat_record.recordable_id } do |f| %>
       <%= f.rich_textarea :content, "aria-label": "Your answer" do %><%= mention_prompt(@circle) %><% end %>
+      <div class="field">
+        <%= f.label :word_count, "Words this week (optional)", class: "field__label" %>
+        <%= f.number_field :word_count, class: "field__control", min: 0, placeholder: "e.g. 1500", inputmode: "numeric" %>
+      </div>
       <div class="form__action">
         <%= f.submit "Save changes", class: "button button--primary" %>
         <%= link_to "Never mind", circle_pulse_path(@circle, @record), class: "button" %>

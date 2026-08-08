@@ -18,6 +18,9 @@
        track in dark (the shadow can't carry it on a dark background). */
     --seg-active: var(--canvas);
   }
+  /* Left-aligned when it's a section filter riding under a header rather than
+     a centered page-level switcher. */
+  .segmented--start { margin-inline: 0; }
   [data-theme="dark"] .segmented { --seg-active: var(--color-mountain-mist-600); }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) .segmented { --seg-active: var(--color-mountain-mist-600); }
@@ -38,7 +41,10 @@
     transition: color var(--speed-quick) var(--ease-3);
   }
   .segmented__seg:hover { color: var(--ink); }
-  .segmented__seg[aria-selected="true"] {
+  /* Raised segment: aria-selected for JS tab panels, aria-current for the
+     link variant (a filter that navigates to the current page). */
+  .segmented__seg[aria-selected="true"],
+  .segmented__seg[aria-current="page"] {
     color: var(--ink);
     background: var(--seg-active);
     box-shadow: 0 1px 3px rgb(0 0 0 / 0.14), 0 1px 1px rgb(0 0 0 / 0.06);

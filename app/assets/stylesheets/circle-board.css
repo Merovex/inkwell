@@ -1,0 +1,29 @@
+/*
+ * .circle-board — the circle home's two-column layout: the feed at 3/4 (left),
+ * the detail rail at 1/4 (right). Collapses to a single column below the lg
+ * stop, where the rail flows under the feed.
+ */
+@layer components {
+  .circle-board {
+    display: grid;
+    grid-template-columns: minmax(0, 3fr) minmax(0, 1fr);
+    gap: var(--size-6);
+    align-items: start;
+  }
+  /* A flex column so the header, the filter, and the feed keep an even rhythm
+     (no collapsed/flush edges); min-inline-size:0 lets it shrink instead of
+     overflowing on long unbroken content. */
+  .circle-board__main {
+    display: flex;
+    flex-direction: column;
+    gap: var(--u-pad);
+    min-inline-size: 0;
+  }
+  /* The feed fills its 2/3 column here rather than the centered prose measure
+     it uses when it's the whole page. */
+  .circle-board__main .wall { max-inline-size: none; margin-inline: 0; }
+
+  @media (max-width: 64em) {  /* --breakpoint-lg */
+    .circle-board { grid-template-columns: 1fr; }
+  }
+}

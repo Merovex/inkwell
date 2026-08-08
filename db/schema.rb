@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.2].define(version: 2026_08_08_120000) do
+ActiveRecord::Schema[8.2].define(version: 2026_08_08_204756) do
   create_table "account_users", force: :cascade do |t|
     t.integer "account_id", null: false
     t.integer "user_id", null: false
@@ -156,6 +156,7 @@ ActiveRecord::Schema[8.2].define(version: 2026_08_08_120000) do
     t.date "asked_on", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "word_count"
     t.index ["creator_id"], name: "index_beats_on_creator_id"
     t.index ["record_id", "id"], name: "index_beats_on_record_id_and_id"
   end
@@ -296,6 +297,7 @@ ActiveRecord::Schema[8.2].define(version: 2026_08_08_120000) do
     t.datetime "updated_at", null: false
     t.text "description"
     t.boolean "commons", default: false, null: false
+    t.text "charter"
     t.index ["commons"], name: "index_circles_on_commons", unique: true, where: "commons"
     t.index ["owner_id"], name: "index_circles_on_owner_id"
     t.index ["slug"], name: "index_circles_on_slug", unique: true

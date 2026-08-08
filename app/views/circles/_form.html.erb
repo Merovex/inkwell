@@ -13,6 +13,13 @@
           placeholder: "What's this circle for?" %>
   </div>
 
+  <div class="field">
+    <%= f.label :charter, "Decided here", class: "field__label" %>
+    <p class="field__hint">One agreement per line — the norms the circle has settled on. Shows in the board's sidebar.</p>
+    <%= f.text_area :charter, class: "field__control", rows: 4,
+          placeholder: "Useful comment before a kind one" %>
+  </div>
+
   <div class="form__action">
     <%= f.submit submit, class: "button button--primary" %>
     <%= link_to "Cancel", (circle.persisted? ? circle_path(circle) : circles_path), class: "button" %>

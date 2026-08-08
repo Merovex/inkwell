@@ -20,8 +20,12 @@
 <% end %>
 
 <header class="perma-header u-center u-center-prose">
+  <p class="perma-header__content u-microcaps u-text-muted">
+    <%= link_to @circle.name, circle_path(@circle) %> · Message board
+  </p>
   <h1 class="perma-header__title"><%= @message.title %></h1>
   <p class="perma-header__content u-text-muted">
+    <span class="avatar" aria-hidden="true"><%= avatar_content(@record.creator) %></span>
     <span class="u-text-strong"><%= @record.creator.display_name %></span>
     <% if @message.published? %>
       · <%= l @message.published_at.to_date, format: :long %>

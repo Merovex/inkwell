@@ -1,0 +1,67 @@
+<%# locals: (circle:, ledger:) %>
+<%# The Progress leaderboard: circle roll-ups + a member row per novelist —
+    their beat this occurrence, words logged, and run. Read-only; logging and
+    editing happen on the Pulse check page. %>
+<section class="progress" aria-label="Progress">
+  <% if ledger.pulse.nil? %>
+    <p class="u-text-muted">No Pulse check yet — set one up to start logging progress.</p>
+  <% else %>
+    <div class="goal-stats">
+      <div class="goal-stat">
+        <span class="goal-stat__value"><%= ledger.posted_this_week %><span class="goal-stat__per"> / <%= ledger.member_count %></span></span>
+        <span class="goal-stat__meta">posted this week</span>
+      </div>
+      <div class="goal-stat">
+        <span class="goal-stat__value"><%= number_with_delimiter(ledger.total_words) %></span>
+        <span class="goal-stat__meta">words logged by the circle</span>
+      </div>
+      <div class="goal-stat">
+        <% if (top = ledger.longest) %>
+          <span class="goal-stat__value"><%= top.run %><span class="goal-stat__per"> wks</span></span>
+          <span class="goal-stat__meta">longest run — <%= top.member.display_name %></span>
+        <% else %>
+          <span class="goal-stat__value">—</span>
+          <span class="goal-stat__meta">longest run</span>
+        <% end %>
+      </div>
+    </div>
+
+    <div class="table-scroll">
+      <table class="table progress__table">
+        <thead>
+          <tr>
+            <th scope="col">Member</th>
+            <th scope="col">This week</th>
+            <th scope="col" data-align="end">Words</th>
+            <th scope="col">Run</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% ledger.standings.each do |standing| %>
+            <tr>
+              <th scope="row" class="progress__member">
+                <span class="progress__member-name">
+                  <span class="avatar avatar--small" aria-hidden="true"><%= avatar_content(standing.member) %></span>
+                  <span class="u-text-strong"><%= standing.member.display_name %></span>
+                  <% if standing.you %><span class="badge badge--accent">you</span><% end %>
+                </span>
+              </th>
+              <td>
+                <% if standing.beat %>
+                  <%= link_to plain_excerpt(standing.beat.content, length: 60),
+                        circle_pulse_path(circle, ledger.pulse.record, day: standing.beat.asked_on.iso8601) %>
+                <% else %>
+                  <span class="u-text-muted">Nothing yet</span>
+                <% end %>
+              </td>
+              <td data-align="end" class="progress__words">
+                <%= standing.words ? number_with_delimiter(standing.words) : "—" %>
+              </td>
+              <td><%= render "run", standing: standing %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% end %>
+</section>

@@ -153,7 +153,7 @@ class CirclePulsesTest < ActionDispatch::IntegrationTest
     assert_match "Alice here", pulse.beats_on(Date.current).find_by(creator_id: users(:alice).id).content.to_plain_text
   end
 
-  test "the circle home previews the pulse with its latest answers, one big door" do
+  test "the circle home shows a pulse answer as a feed card, a door to the pulse" do
     pulse = create_pulse
     pulse.update_column(:last_asked_on, Date.current)
     Current.with_bucket(@circle) do
@@ -162,11 +162,40 @@ class CirclePulsesTest < ActionDispatch::IntegrationTest
     sign_in_as users(:bob)
 
     get circle_path(@circle)
-    assert_select "#pulse-heading", text: "Pulse check"
-    assert_select "a.pulse-preview[href=?]", circle_pulse_path(@circle, pulse.record)
-    assert_select ".pulse-preview__question", text: pulse.question
-    assert_select ".pulse-preview__card", count: 1
-    assert_select ".pulse-preview__byline", text: /#{users(:alice).display_name}.*ago/m
-    assert_select ".pulse-preview__excerpt", text: /Wrote through the block/
+    assert_response :success
+    # The beat rides the feed as a card: the question titles it (a door to the
+    # pulse day), the answer is its body.
+    assert_select ".wall__card .wall__title a[href*=?]", circle_pulse_path(@circle, pulse.record)
+    assert_select ".wall__card .wall__body", text: /Wrote through the block/
+  end
+
+  test "logging a beat records the reported word count" do
+    pulse = create_pulse
+    pulse.update_column(:last_asked_on, Date.current)
+    sign_in_as users(:bob)
+
+    post circle_pulse_beats_path(@circle, pulse.record),
+      params: { beat: { content: "<p>Chapter three</p>", word_count: "2100" } }
+
+    assert_equal 2100, pulse.beats.first.word_count
+  end
+
+  test "the Progress view rolls up words and runs from the pulse's beats" do
+    pulse = create_pulse
+    pulse.update_column(:last_asked_on, Date.current)
+    Current.with_bucket(@circle) do
+      Record.originate(Beat.new(content: "<p>Chapter 14</p>", word_count: 3900,
+        asked_on: Date.current, creator: users(:alice)), parent: pulse.record)
+    end
+    sign_in_as users(:alice)
+
+    get circle_path(@circle, view: "progress")
+    assert_response :success
+    assert_select "nav.segmented a[aria-current=page]", text: "Progress"
+    assert_select ".progress__table tbody tr", minimum: 1
+    # Alice's row carries her words; the roll-up totals them; her run is 1 week.
+    assert_select ".progress__words", text: /3,900/
+    assert_select ".goal-stat__value", text: /3,900/
+    assert_select ".run__label", text: /1 wk/
   end
 end

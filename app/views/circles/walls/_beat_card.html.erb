@@ -1,28 +1,28 @@
-<%# locals: (circle:, record:, beat:, pulse_record:, comment_count:, boosts:) %>
-<%# A pulse answer as a wall story: the answerer's byline, the QUESTION as
-    the title (the door to that ask-day on the pulse page), the answer
-    clamped like any card body, comments + boost chips live like a message's.
-    Cached on the beat version + answerer + pulse version + count + boosts. %>
+<%# locals: (circle:, record:, beat:, pulse_record:, comment_count:, commenters:, boosts:) %>
+<%# A pulse answer as a feed story, same shape as a message: an avatar·name·when
+    byline, the QUESTION as the title (the door to that ask-day on the pulse
+    page), the answer clamped like any card body, then commenters + the ask-day
+    link + boost chips — title and body flush to the card's edge. Cached on the
+    beat version + answerer + pulse version + count + commenters + boosts. %>
 <% pulse = pulse_record.recordable %>
-<% cache [ "wall-beat", beat, record.creator, pulse, comment_count, boosts ] do %>
+<% cache [ "wall-beat", beat, record.creator, pulse, comment_count, commenters, boosts ] do %>
   <article class="wall__card">
     <header class="wall__byline">
-      <span class="avatar" aria-hidden="true"><%= avatar_content(record.creator) %></span>
-      <div>
-        <%# Name · Question on one line (still a real heading); the receipt
-            underneath. %>
-        <span class="u-text-strong"><%= record.creator.display_name %></span>
-        <span class="wall__meta">·</span>
-        <h3 class="wall__title">
-          <%= link_to circle_pulse_path(circle, pulse_record, day: beat.asked_on.iso8601) do %>
-            <%= inline_svg_tag "lucide/activity.svg", class: "lucide", size: "16px" %> <%= pulse.question %>
-          <% end %>
-        </h3>
-        <span class="wall__meta wall__when"><%= time_ago_tag(beat.created_at) %></span>
-      </div>
+      <span class="avatar wall__avatar" aria-hidden="true"><%= avatar_content(record.creator) %></span>
+      <span class="u-text-strong"><%= record.creator.display_name %></span>
+      <span class="wall__meta wall__when">· <%= time_ago_tag(beat.created_at) %></span>
     </header>
+    <h3 class="wall__title">
+      <%= link_to circle_pulse_path(circle, pulse_record, day: beat.asked_on.iso8601) do %>
+        <%= inline_svg_tag "lucide/activity.svg", class: "lucide", size: "16px" %> <%= pulse.question %>
+      <% end %>
+    </h3>
     <div class="prose u-clamp wall__body"><%= beat.content %></div>
     <footer class="wall__footer">
+      <%# Who's in the thread — distinct commenters, overlapping faces. %>
+      <% if commenters.any? %>
+        <%= render "shared/avatar_group", users: commenters, limit: 3, size: "small" %>
+      <% end %>
       <%# Opens the beat's thread modal; live comment broadcasts replace it. %>
       <%= render "circles/walls/comment_count", record: record, count: comment_count %>
       <%= link_to circle_pulse_path(circle, pulse_record, day: beat.asked_on.iso8601) do %>

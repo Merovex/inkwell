@@ -120,6 +120,22 @@ class Circle < ApplicationRecord
     list.sort_by { |member| [ member.id == owner_id ? 0 : 1, member.name.to_s ] }
   end
 
+  # The charter as the sidebar's "decided here" reads it: the owner's short
+  # agreement lines, one per line, blanks dropped.
+  def decisions
+    charter.to_s.lines.map(&:strip).reject(&:empty?)
+  end
+
+  # Members who posted to the board (a message or a check-in) within the given
+  # window — the "who's talking" cluster. Owner-first, then by name, like the
+  # roster.
+  def recent_posters(since: 30.days.ago)
+    poster_ids = records.active.where(recordable_type: %w[Message Beat])
+      .where(created_at: since..).distinct.pluck(:creator_id)
+    list = members.where(id: poster_ids).includes(avatar_attachment: :blob).to_a
+    list.sort_by { |member| [ member.id == owner_id ? 0 : 1, member.name.to_s ] }
+  end
+
   def to_s = name
 
   private

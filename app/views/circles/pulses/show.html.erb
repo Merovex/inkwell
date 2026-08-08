@@ -33,6 +33,10 @@
       <%= form_with model: Beat.new, url: circle_pulse_beats_path(@circle, @record), method: :post,
             class: "lexxy-compact" do |f| %>
         <%= f.rich_textarea :content, placeholder: "Share your answer…", "aria-label": "Your answer" do %><%= mention_prompt(@circle) %><% end %>
+        <div class="field">
+          <%= f.label :word_count, "Words this week (optional)", class: "field__label" %>
+          <%= f.number_field :word_count, class: "field__control", min: 0, placeholder: "e.g. 1500", inputmode: "numeric" %>
+        </div>
         <div class="form__action">
           <%= f.submit "Share my answer", class: "button button--primary" %>
         </div>

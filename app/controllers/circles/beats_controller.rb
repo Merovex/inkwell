@@ -14,11 +14,12 @@ module Circles
 
       beat = @pulse.beats_on(occurrence).find_by(creator_id: Current.user.id)
       if beat
-        beat.record.revise(event: :updated, content: beat_params[:content])
+        beat.record.revise(event: :updated, content: beat_params[:content], word_count: beat_params[:word_count])
         Mentions.deliver_for(beat.record)
       elsif beat_params[:content].present?
         record = Record.originate(
-          Beat.new(content: beat_params[:content], asked_on: occurrence, creator: Current.user),
+          Beat.new(content: beat_params[:content], word_count: beat_params[:word_count],
+            asked_on: occurrence, creator: Current.user),
           parent: @record)
         Mentions.deliver_for(record)
       end
@@ -55,7 +56,7 @@ module Circles
       end
 
       def beat_params
-        params.expect(beat: [ :content ])
+        params.expect(beat: [ :content, :word_count ])
       end
   end
 end

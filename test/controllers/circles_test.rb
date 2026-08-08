@@ -58,7 +58,7 @@ class CirclesTest < ActionDispatch::IntegrationTest
     assert_select ".segmented__seg[data-view=cards][aria-selected=true]"
   end
 
-  test "the circle home previews discussions with an H2 and a New message action" do
+  test "the circle home is the feed: canvas chrome, a New post action, the kind filter" do
     sign_in_as users(:bob)
 
     get circle_path(circles(:writers))
@@ -68,14 +68,16 @@ class CirclesTest < ActionDispatch::IntegrationTest
     assert_select ".breadcrumb a", text: "Circles"
     assert_select ".breadcrumb__item--current", text: circles(:writers).name
     assert_select ".perma-header__title", text: circles(:writers).name
-    # The Discussions section: an H2 with a far-right New message button and the
-    # latest discussion as a list row linking to its own page.
-    assert_select "h2#discussions-heading", text: "Discussions"
-    assert_select ".circle-section a[href=?]", new_circle_message_path(circles(:writers)), text: /New message/
-    assert_select ".list .list__title", text: "Welcome to the circle"
+    # The feed: a New post head action, the segmented kind filter, and the
+    # fixture discussion as a card.
+    assert_select ".canvas__head a[href=?]", new_circle_message_path(circles(:writers)), text: /New post/
+    assert_select "nav.segmented a", text: "Everything"
+    assert_select "nav.segmented a", text: "Pulse Checks"
+    assert_select "nav.segmented a", text: "Posts", count: 0
+    assert_select ".wall__card .wall__title a", text: "Welcome to the circle"
   end
 
-  test "the home preview is published-only — no drafts or scheduled, even the author's" do
+  test "the feed is published-only — no drafts or scheduled cards, even the author's" do
     create_discussion(creator: users(:bob), status: :drafted, title: "Drafty")
     Current.with_bucket(circles(:writers)) do
       message = Message.new(title: "Way out", content: "later", creator: users(:bob), status: :drafted)
@@ -85,25 +87,9 @@ class CirclesTest < ActionDispatch::IntegrationTest
 
     sign_in_as users(:bob)
     get circle_path(circles(:writers))
-    assert_select ".list .list__title", text: "Drafty", count: 0
-    assert_select ".list .list__title", text: "Way out", count: 0
-    assert_select ".list .list__title", text: "Welcome to the circle"
-  end
-
-  test "the circle home links to all discussions once past the preview count" do
-    sign_in_as users(:bob)
-    circle = circles(:writers)
-    # Push the circle over the five-item preview so the "see all" link appears.
-    Current.with_bucket(circle) do
-      6.times do |i|
-        Record.originate(Message.new(title: "D#{i}", content: "x", creator: users(:bob),
-          status: :published, published_at: Time.current))
-      end
-    end
-
-    get circle_path(circle)
-    assert_select ".list .list__item", count: CirclesController::PREVIEW_COUNT
-    assert_select "a[href=?]", circle_messages_path(circle), text: /See all \d+ discussions/
+    assert_select ".wall__card .wall__title a", text: "Drafty", count: 0
+    assert_select ".wall__card .wall__title a", text: "Way out", count: 0
+    assert_select ".wall__card .wall__title a", text: "Welcome to the circle"
   end
 
   test "the discussions index lists every discussion" do
@@ -335,15 +321,35 @@ class CirclesTest < ActionDispatch::IntegrationTest
 
   # ── Circle editing ─────────────────────────────────────────────────────────
 
-  test "the owner can edit the circle's name and description" do
+  test "the owner can edit the circle's name, description, and charter" do
     sign_in_as users(:alice)
 
-    patch circle_path(circles(:writers)), params: { circle: { name: "Renamed", description: "A cozy group." } }
+    patch circle_path(circles(:writers)), params: { circle: { name: "Renamed",
+      description: "A cozy group.", charter: "Useful comment before a kind one\nA run can be shelved" } }
 
     assert_redirected_to circle_path(circles(:writers))
     circles(:writers).reload
     assert_equal "Renamed", circles(:writers).name
     assert_equal "A cozy group.", circles(:writers).description
+    # The charter parses into the sidebar's "decided here" lines.
+    assert_equal ["Useful comment before a kind one", "A run can be shelved"], circles(:writers).decisions
+  end
+
+  test "the board rail carries the charter's decisions and who has posted lately" do
+    circle = circles(:writers)
+    circle.update!(charter: "Useful comment before a kind one\nA run can be shelved, not paused")
+    create_discussion(title: "Recent one", creator: users(:bob))
+
+    sign_in_as users(:bob)
+    get circle_path(circle)
+    # The rail is the board's right-hand column, not a popover.
+    assert_select ".circle-board > .circle-rail#circle-rail"
+    # Decided here: the owner's charter lines, one per item.
+    assert_select "#circle-rail .circle-rail__item", text: "Useful comment before a kind one"
+    assert_select "#circle-rail .circle-rail__item", text: "A run can be shelved, not paused"
+    # Who's talking: bob posted, so he rides the chips; the caption counts posters.
+    assert_select "#circle-rail .circle-rail__chips .avatar"
+    assert_select "#circle-rail .circle-rail__caption", text: /of \d+ posted to the board in the last 30 days/
   end
 
   test "a non-owner member cannot edit the circle" do

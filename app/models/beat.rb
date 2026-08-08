@@ -10,6 +10,9 @@ class Beat < ApplicationRecord
 
   validates :content, presence: true
   validates :asked_on, presence: true
+  # The words the writer logged for this occurrence — optional (not every pulse
+  # is a writing check-in), never negative. Feeds the Progress leaderboard.
+  validates :word_count, numericality: { only_integer: true, greater_than_or_equal_to: 0 }, allow_nil: true
 
   # Never amended in place — the circle sees a beat from its first save, so an
   # edit is a new version (see Comment for the same choice).
