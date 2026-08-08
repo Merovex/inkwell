@@ -9,7 +9,7 @@
 # the announcement stays). Sources nullify on destruction; removing
 # notifications is an explicit act on the revoke/decline path only.
 class Notification < ApplicationRecord
-  KINDS = %w[ invited invitation_accepted mentioned boosted pulse_asked replied ticket_opened bulletin_published ].freeze
+  KINDS = %w[ invited invitation_accepted mentioned boosted pulse_asked nudged replied ticket_opened bulletin_published ].freeze
   # Email-worthy kinds. Nothing notification-shaped is time-sensitive: these
   # roll up into digest emails (NotificationDigestJob) — and reading in-app
   # first cancels the email (the bell beat us to it). The rest (acceptances,
@@ -29,6 +29,7 @@ class Notification < ApplicationRecord
     "mentioned" => "at-sign",
     "boosted" => "rocket",
     "pulse_asked" => "activity",
+    "nudged" => "bell-ring",
     "replied" => "message-square",
     "ticket_opened" => "life-buoy",
     "bulletin_published" => "megaphone"
@@ -82,6 +83,9 @@ class Notification < ApplicationRecord
     when "pulse_asked" # source: the Pulse's Record — the schedule fired, no human actor
       { actor: nil, url: record_path_for(source),
         title: "Pulse check in #{source.bucket.name}: #{source.recordable.question}" }
+    when "nudged" # source: the Pulse's Record — a peer poke; the nudger is the actor
+      { actor: Current.user, url: record_path_for(source),
+        title: "#{Current.user.display_name} nudged you to answer “#{source.recordable.question}” in #{source.bucket.name}" }
     when "replied" # source: the new comment's Record — rings the thread (Replies)
       { actor: source.creator, url: record_path_for(source),
         title: "#{source.creator.display_name} commented on #{thread_for(source.parent)}" }

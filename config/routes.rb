@@ -109,6 +109,12 @@ Rails.application.routes.draw do
       # A message's edit surface: the composer as a modal (fetched into the
       # feed's "modal" frame); saves return to the feed.
       resources :edits, path: "wall/edits", only: :show, module: "circles/walls", as: :wall_edits
+      # New post as a modal (same "modal" frame); posting returns to the feed.
+      resource :composer, path: "wall/composer", only: :show, module: "circles/walls", as: :wall_composer
+      # The board's sibling views (segmented control): the Pulse checks list and
+      # the Progress leaderboard, each its own page sharing the board chrome.
+      resources :checks, only: :index, controller: "circles/checks"
+      resource :progress, only: :show, controller: "circles/progress"
       resources :messages, only: %i[index show new create edit update destroy], module: :circles do
         collection { get :archived }
         member do
@@ -149,6 +155,10 @@ Rails.application.routes.draw do
       resources :pulses, only: %i[new create show edit update destroy], module: :circles do
         # The member's own seat at the check-in: POST joins, DELETE opts out.
         resource :subscription, only: %i[create destroy], module: :pulses
+        # Pause/resume the check: POST resumes (active), DELETE pauses.
+        resource :activation, only: %i[create destroy], module: :pulses
+        # A peer poke to a member who owes an answer this week.
+        resources :nudges, only: :create, module: :pulses
         resources :beats, only: %i[create edit update]
       end
     end

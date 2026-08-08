@@ -1,4 +1,4 @@
-<%# locals: (crumbs: [], menu_id: "canvas-menu", menu: true, edit_href: nil, action_href: nil, action_label: nil) %>
+<%# locals: (crumbs: [], menu_id: "canvas-menu", menu: true, edit_href: nil, action_href: nil, action_label: nil, action_data: {}) %>
 <%# Standard canvas head: breadcrumb (left) + contextual actions (right). %>
 <%# crumbs is an array of [label, href]; a nil href marks the current page. %>
 <%# With menu: true (default) the block yields menu items into the ... popover; %>
@@ -32,7 +32,7 @@
     <% if menu %>
       <div class="canvas__head-actions">
         <% if action_href %>
-          <%= link_to action_label, action_href, class: "button button--ghost canvas__head-action" %>
+          <%= link_to action_label, action_href, class: "button button--ghost canvas__head-action", data: action_data %>
         <% end %>
         <% if edit_href %>
           <%= link_to "Edit", edit_href, class: "button button--ghost canvas__head-action" %>

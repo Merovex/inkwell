@@ -1,37 +1,55 @@
 <%# locals: (circle:, record:, beat:, pulse_record:, comment_count:, commenters:, boosts:) %>
-<%# A pulse answer as a feed story, same shape as a message: an avatar·name·when
-    byline, the QUESTION as the title (the door to that ask-day on the pulse
-    page), the answer clamped like any card body, then commenters + the ask-day
-    link + boost chips — title and body flush to the card's edge. Cached on the
-    beat version + answerer + pulse version + count + commenters + boosts. %>
+<%# A pulse answer as a feed story, same shape as a message: the avatar rides a
+    name·when byline; the QUESTION titles it (door to that ask-day), the answer
+    body and footer indent under the byline text. A ⋯ menu (Copy link) on every
+    row. Cached on the beat version + answerer + pulse version + count +
+    commenters + boosts. %>
 <% pulse = pulse_record.recordable %>
-<% cache [ "wall-beat", beat, record.creator, pulse, comment_count, commenters, boosts ] do %>
-  <article class="wall__card">
+<% can_edit = record.editable_by?(Current.user) %>
+<% cache [ "wall-beat", beat, record.creator, pulse, comment_count, commenters, boosts, can_edit ] do %>
+  <article class="wall__card" id="<%= dom_id(record) %>">
     <header class="wall__byline">
       <span class="avatar wall__avatar" aria-hidden="true"><%= avatar_content(record.creator) %></span>
       <span class="u-text-strong"><%= record.creator.display_name %></span>
       <span class="wall__meta wall__when">· <%= time_ago_tag(beat.created_at) %></span>
+      <div class="wall__actions">
+        <button type="button" class="button button--icon button--ghost"
+                popovertarget="wall-menu-<%= record.id %>" aria-label="Beat actions">
+          <%= inline_svg_tag "lucide/ellipsis-vertical.svg", class: "lucide", size: "18px" %>
+        </button>
+        <div class="menu" popover id="wall-menu-<%= record.id %>" data-controller="anchored-popover">
+          <button type="button" class="menu__item" data-controller="clipboard" data-action="clipboard#copy"
+                  data-clipboard-text-value="<%= circle_pulse_url(circle, pulse_record, day: beat.asked_on.iso8601) %>"
+                  popovertarget="wall-menu-<%= record.id %>" popovertargetaction="hide">Copy link</button>
+          <% if can_edit %>
+            <%# Your own answer — edit it (on the pulse page, its home). %>
+            <%= link_to "Edit", edit_circle_pulse_beat_path(circle, pulse_record, record), class: "menu__item" %>
+          <% end %>
+        </div>
+      </div>
     </header>
-    <h3 class="wall__title">
-      <%= link_to circle_pulse_path(circle, pulse_record, day: beat.asked_on.iso8601) do %>
-        <%= inline_svg_tag "lucide/activity.svg", class: "lucide", size: "16px" %> <%= pulse.question %>
-      <% end %>
-    </h3>
-    <div class="prose u-clamp wall__body"><%= beat.content %></div>
-    <footer class="wall__footer">
-      <%# Who's in the thread — distinct commenters, overlapping faces. %>
-      <% if commenters.any? %>
-        <%= render "shared/avatar_group", users: commenters, limit: 3, size: "small" %>
-      <% end %>
-      <%# Opens the beat's thread modal; live comment broadcasts replace it. %>
-      <%= render "circles/walls/comment_count", record: record, count: comment_count %>
-      <%= link_to circle_pulse_path(circle, pulse_record, day: beat.asked_on.iso8601) do %>
-        <%= inline_svg_tag "lucide/activity.svg", class: "lucide", size: "14px" %>
-        Pulse check · <%= l beat.asked_on, format: :short %>
-      <% end %>
-      <span class="wall__chips" id="<%= dom_id(record, :wall_boosts) %>">
-        <%= render partial: "circles/walls/boost_chip", collection: boosts, as: :boost %>
-      </span>
-    </footer>
+    <div class="wall__content">
+      <h3 class="wall__title">
+        <%= link_to circle_pulse_path(circle, pulse_record, day: beat.asked_on.iso8601) do %>
+          <%= inline_svg_tag "lucide/activity.svg", class: "lucide", size: "16px" %> <%= pulse.question %>
+        <% end %>
+      </h3>
+      <div class="prose u-clamp wall__body"><%= beat.content %></div>
+      <footer class="wall__footer">
+        <%# Who's in the thread — distinct commenters, overlapping faces. %>
+        <% if commenters.any? %>
+          <%= render "shared/avatar_group", users: commenters, limit: 3, size: "small" %>
+        <% end %>
+        <%# Opens the beat's thread modal; zero comments reads as "Comment". %>
+        <%= render "circles/walls/comment_count", record: record, count: comment_count %>
+        <%= link_to circle_pulse_path(circle, pulse_record, day: beat.asked_on.iso8601) do %>
+          <%= inline_svg_tag "lucide/activity.svg", class: "lucide", size: "14px" %>
+          Pulse check · <%= l beat.asked_on, format: :short %>
+        <% end %>
+        <span class="wall__chips" id="<%= dom_id(record, :wall_boosts) %>">
+          <%= render partial: "circles/walls/boost_chip", collection: boosts, as: :boost %>
+        </span>
+      </footer>
+    </div>
   </article>
 <% end %>

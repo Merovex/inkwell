@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.2].define(version: 2026_08_08_204756) do
+ActiveRecord::Schema[8.2].define(version: 2026_08_08_222054) do
   create_table "account_users", force: :cascade do |t|
     t.integer "account_id", null: false
     t.integer "user_id", null: false
@@ -571,6 +571,7 @@ ActiveRecord::Schema[8.2].define(version: 2026_08_08_204756) do
     t.date "last_asked_on"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "description"
     t.index ["creator_id"], name: "index_pulses_on_creator_id"
     t.index ["record_id", "id"], name: "index_pulses_on_record_id_and_id"
   end

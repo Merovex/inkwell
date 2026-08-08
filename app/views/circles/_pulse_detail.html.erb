@@ -1,0 +1,99 @@
+<%# locals: (circle:, record:, pulse:, week_start:, is_current_week:, my_beat:, beats:, answered_this_week:, non_answerers:, earlier_weeks:, comment_counts:, title_tag: "h2") %>
+<%# A Pulse check in full. The commitment is weekly (the prompt may ask daily —
+    a nudge, not the unit): answers group by ISO week. The composer sits right
+    under the question, pre-focused when you owe an answer; the cadence is a
+    quiet caption, not an eyebrow. %>
+<div class="check-detail u-flow">
+  <div class="check-detail__card">
+    <div class="check-detail__top">
+      <%= content_tag title_tag, pulse.question, class: "check-detail__title" %>
+      <% if allowed_to?(:manage, circle) %>
+        <%# The owner manages the check itself here — edit its question/schedule,
+            or pause/resume it. %>
+        <div class="check-detail__manage">
+          <%= link_to "Edit", edit_circle_pulse_path(circle, record), class: "button button--small button--ghost" %>
+          <% if pulse.active? %>
+            <%= button_to "Pause", circle_pulse_activation_path(circle, record), method: :delete, class: "button button--small button--ghost" %>
+          <% else %>
+            <%= button_to "Resume", circle_pulse_activation_path(circle, record), method: :post, class: "button button--small button--ghost" %>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+    <% if pulse.description.present? %>
+      <p class="check-detail__desc"><%= pulse.description %></p>
+    <% end %>
+    <p class="check-detail__cadence"><%= pulse.human_schedule %><% unless pulse.active? %> · paused<% end %></p>
+
+    <%# The primary action: answer this week, right here, pre-focused. %>
+    <% if is_current_week && pulse.subscribed?(Current.user) && my_beat.nil? %>
+      <%= form_with model: Beat.new, url: circle_pulse_beats_path(circle, record), method: :post,
+            id: "answer", class: "lexxy-compact check-detail__composer" do |f| %>
+        <%= f.rich_textarea :content, placeholder: "Your answer for week #{week_start.cweek}…",
+              "aria-label": "Your answer", autofocus: true do %><%= mention_prompt(circle) %><% end %>
+        <div class="check-detail__actions">
+          <span class="field field--inline">
+            <%= f.label :word_count, "Words this week", class: "field__label" %>
+            <%= f.number_field :word_count, class: "field__control", min: 0, inputmode: "numeric" %>
+          </span>
+          <%= f.submit "Post answer", class: "button button--primary" %>
+        </div>
+      <% end %>
+    <% elsif !pulse.subscribed?(Current.user) %>
+      <p class="u-text-muted">You're not in this Pulse check.
+        <%= button_to "Join it", circle_pulse_subscription_path(circle, record), method: :post, class: "u-unbutton u-link" %>
+        to be asked and answer.</p>
+    <% end %>
+  </div>
+
+  <section id="beats" aria-label="This week's answers" class="u-flow">
+    <h2 class="pulse-week"><span class="u-text-strong">Week <%= week_start.cweek %></span> · <%= answered_this_week %> of <%= pulse.subscriber_count %> answered</h2>
+    <% if beats.any? %>
+      <div class="list">
+        <% beats.each do |beat| %>
+          <%= render "circles/beats/beat", beat: beat, circle: circle, pulse_record: record,
+                comment_count: comment_counts[beat.record_id].to_i %>
+        <% end %>
+      </div>
+    <% end %>
+    <% non_answerers.each do |member| %>
+      <p class="pulse-waiting u-text-muted">
+        <span class="avatar avatar--small" aria-hidden="true"><%= avatar_content(member) %></span>
+        <span class="u-text-strong"><%= member.display_name %></span> hasn't answered yet.
+      </p>
+    <% end %>
+    <% if beats.empty? && non_answerers.none? %>
+      <p class="u-text-muted">No answers yet.</p>
+    <% end %>
+  </section>
+
+  <% if earlier_weeks.any? %>
+    <section aria-label="Earlier weeks">
+      <h2 class="u-microcaps u-text-muted">Earlier weeks</h2>
+      <%# Collapsed by default: each week is one row — week · a representative
+          line · who answered · the count. Open it for the full answers (real
+          rows with authors, attachments, and comments). %>
+      <% earlier_weeks.each do |week, week_beats| %>
+        <% answerers = week_beats.map(&:creator).uniq %>
+        <details class="pulse-week-group">
+          <summary class="pulse-week-summary">
+            <span class="pulse-week-summary__week u-text-strong">Week <%= week.cweek %></span>
+            <span class="pulse-week-summary__excerpt">
+              <%= week_beats.any? ? "“#{plain_excerpt(week_beats.first.content, length: 80)}”" : "Nobody answered." %>
+            </span>
+            <span class="pulse-week-summary__who">
+              <% if answerers.any? %><%= render "shared/avatar_group", users: answerers, limit: 4, size: "small" %><% end %>
+            </span>
+            <span class="pulse-week-summary__count u-text-muted"><%= answerers.size %> of <%= pulse.subscriber_count %></span>
+          </summary>
+          <div class="list">
+            <% week_beats.sort_by(&:asked_on).each do |beat| %>
+              <%= render "circles/beats/beat", beat: beat, circle: circle, pulse_record: record,
+                    comment_count: comment_counts[beat.record_id].to_i %>
+            <% end %>
+          </div>
+        </details>
+      <% end %>
+    </section>
+  <% end %>
+</div>

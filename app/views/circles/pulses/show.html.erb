@@ -1,9 +1,11 @@
-<% content_for :title, "Pulse check — #{@circle.name}" %>
+<% content_for :title, "#{@pulse.question} — #{@circle.name}" %>
 <% can_manage = allowed_to?(:manage, @circle) %>
 
+<%# Edit/pause/resume live on the check card itself now (see _pulse_detail);
+    the head keeps the membership + trash menu. %>
 <%= render "admin/shared/canvas_head",
-      crumbs: [["Circles", circles_path], [@circle.name, circle_path(@circle)], ["Pulse check", nil]],
-      edit_href: (edit_circle_pulse_path(@circle, @record) if can_manage) do %>
+      crumbs: [["Circles", circles_path], [@circle.name, circle_path(@circle)],
+               ["Pulse checks", circle_checks_path(@circle)], [@pulse.question, nil]] do %>
   <% if @pulse.subscribed?(Current.user) %>
     <%= button_to "Leave this Pulse check", circle_pulse_subscription_path(@circle, @record), method: :delete, class: "menu__item" %>
   <% else %>
@@ -16,48 +18,12 @@
   <% end %>
 <% end %>
 
-<header class="perma-header u-center u-center-prose">
-  <h1 class="perma-header__title"><%= @pulse.question %></h1>
-  <p class="perma-header__content u-text-muted">
-    Asked <%= @pulse.schedule_summary %> at <%= @pulse.ask_at %>
-    <% unless @pulse.active? %> · <span class="badge">Paused</span><% end %>
-  </p>
-</header>
-
-<div class="u-center u-center-prose u-flow">
-  <% if @pulse.subscribed?(Current.user) %>
-    <%# The composer shows only until you've answered, and only on the CURRENT
-        occurrence — a past ask-day is read-only history. After answering,
-        your answer lives in the list below with its own Edit (like a comment). %>
-    <% if @my_beat.nil? && @occurrence == @current_occurrence %>
-      <%= form_with model: Beat.new, url: circle_pulse_beats_path(@circle, @record), method: :post,
-            class: "lexxy-compact" do |f| %>
-        <%= f.rich_textarea :content, placeholder: "Share your answer…", "aria-label": "Your answer" do %><%= mention_prompt(@circle) %><% end %>
-        <div class="field">
-          <%= f.label :word_count, "Words this week (optional)", class: "field__label" %>
-          <%= f.number_field :word_count, class: "field__control", min: 0, placeholder: "e.g. 1500", inputmode: "numeric" %>
-        </div>
-        <div class="form__action">
-          <%= f.submit "Share my answer", class: "button button--primary" %>
-        </div>
-      <% end %>
-    <% end %>
-  <% else %>
-    <p class="u-text-muted">You're not in this Pulse check.
-      <%= button_to "Join it", circle_pulse_subscription_path(@circle, @record), method: :post, class: "u-unbutton u-link" %>
-      to be asked and answer.</p>
-  <% end %>
-
-  <section id="beats" aria-label="Answers">
-    <% if @beats.any? %>
-      <h2 class="comments__heading"><%= pluralize(@beats.size, "answer") %> ·
-        <time datetime="<%= @occurrence.iso8601 %>"><%= l @occurrence, format: :long %></time></h2>
-      <div class="list">
-        <%= render partial: "circles/beats/beat", collection: @beats,
-              locals: { circle: @circle, pulse_record: @record } %>
-      </div>
-    <% else %>
-      <p class="u-text-muted">No answers yet.</p>
-    <% end %>
-  </section>
+<div class="u-center u-center-prose">
+  <%= render "circles/pulse_detail", circle: @circle, record: @record, pulse: @pulse,
+        week_start: @week_start, is_current_week: @is_current_week, my_beat: @my_beat,
+        beats: @beats, answered_this_week: @answered_this_week, non_answerers: @non_answerers,
+        earlier_weeks: @earlier_weeks, comment_counts: @comment_counts, title_tag: "h1" %>
 </div>
+
+<%# A card's comment link opens the thread here (circles/walls/threads). %>
+<%= turbo_frame_tag "modal" %>

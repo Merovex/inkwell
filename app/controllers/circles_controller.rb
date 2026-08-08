@@ -52,22 +52,12 @@ class CirclesController < Circles::BaseController
     end
   end
 
-  # The circle home: the feed by default (messages + beats merged newest-first;
-  # ?filter=beats narrows to beats), or the Progress leaderboard
-  # (?view=progress). The header and rail ride the first page of either view;
-  # the feed's affixed strips ride its first page only, and feed pagination
-  # carries just the next slice.
+  # The circle home: the feed — messages + beats merged newest-first. Its
+  # sibling views (Pulse Checks, Progress) are their own routes/controllers,
+  # sharing the board shell. The header, rail, and affixed strips ride the first
+  # page only; pagination carries just the next slice.
   def show
-    @view = "progress" if params[:view] == "progress"
-
-    if @view == "progress"
-      @ledger = Circle::Ledger.new(@circle)
-      load_board_chrome
-      return
-    end
-
     before = params[:before_id].presence&.to_i
-    @filter = params[:filter] if params[:filter] == "beats"
     load_feed_page(before)
     return if before
 
@@ -96,10 +86,10 @@ class CirclesController < Circles::BaseController
       params.expect(circle: [ :name, :description, :charter ])
     end
 
-    # The merged feed slice for the current cursor + filter, with the cards'
-    # comment counts, commenters, and boosts.
+    # The merged feed slice for the current cursor, with the cards' comment
+    # counts, commenters, and boosts.
     def load_feed_page(before)
-      messages = @filter == "beats" ? [] : message_page(before)
+      messages = message_page(before)
       beats = beat_page(before)
 
       candidates =
@@ -117,15 +107,6 @@ class CirclesController < Circles::BaseController
       @commenters_by_record = commenters_for(item_record_ids)
       @boosts_by_record = Boost.where(record_id: item_record_ids)
         .includes(creator: { avatar_attachment: :blob }).group_by(&:record_id)
-    end
-
-    # The header's roster + pulse window and the rail's "who's talking" — shared
-    # by the feed and the Progress views.
-    def load_board_chrome
-      @pulse = @circle.pulse
-      @members = @circle.roster
-      @talkers = @circle.recent_posters
-      @member_count = @circle.circle_memberships.count
     end
 
     # The feed's own affixed strips: the one actionable pulse pin, your drafts

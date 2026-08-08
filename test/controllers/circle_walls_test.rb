@@ -66,14 +66,14 @@ class CircleWallsTest < ActionDispatch::IntegrationTest
     get circle_path(circles(:writers))
     # Not in the stream…
     assert_select ".wall__card .wall__title a", text: "Way out there", count: 0
-    # …but in bob's own strip, with its appointment.
-    assert_select ".wall__pin--scheduled", text: /Way out there/
-    assert_select ".wall__pin--scheduled time", 1
+    # …but in bob's own quiet housekeeping line, with its appointment.
+    assert_select ".wall__yours", text: /Way out there/
+    assert_select ".wall__yours time", 1
 
     # Alice doesn't see bob's appointments.
     sign_in_as users(:alice)
     get circle_path(circles(:writers))
-    assert_select ".wall__pin--scheduled", 0
+    assert_select ".wall__yours", 0
     assert scheduled.record.reload.recordable.scheduled?
   end
 
@@ -120,22 +120,24 @@ class CircleWallsTest < ActionDispatch::IntegrationTest
     assert_select "#beats .list__item", 2
     travel 3.days do
       get day_path
-      assert_select "#beats time[datetime=?]", pulse.last_asked_on.iso8601
+      # That week's answers still render, read-only — no composer for a past week.
+      assert_select "#beats .list__item", 2
       assert_select "form[action=?]", circle_pulse_beats_path(circles(:writers), pulse.record_id), count: 0
     end
   end
 
-  test "the card menu follows capability: author edits+trashes, owner trashes, member sees none" do
+  test "every card carries the menu; Edit/trash items follow capability" do
     message = create_discussion(title: "Mine", creator: users(:bob))
 
-    sign_in_as users(:bob) # the author
+    sign_in_as users(:bob) # the author — Copy link + Edit + trash
     get circle_path(circles(:writers))
+    assert_select ".wall__card:first-of-type .wall__actions button", text: "Copy link"
     assert_select ".wall__card:first-of-type .wall__actions a.menu__item[href=?][data-turbo-frame=modal]",
       circle_wall_edit_path(circles(:writers), message.record), text: "Edit"
     assert_select ".wall__card:first-of-type .wall__actions form[action=?]",
       circle_message_path(circles(:writers), message.record)
 
-    sign_in_as users(:alice) # circle owner, not the author — moderate only
+    sign_in_as users(:alice) # circle owner, not the author — moderate only (no Edit)
     get circle_path(circles(:writers))
     assert_select ".wall__card:first-of-type .wall__actions a.menu__item", text: "Edit", count: 0
     assert_select ".wall__card:first-of-type .wall__actions form[action=?]",
@@ -143,9 +145,52 @@ class CircleWallsTest < ActionDispatch::IntegrationTest
 
     carol = User.create!(email_address: "carol@example.com")
     circles(:writers).circle_memberships.create!(user: carol)
-    sign_in_as carol # plain member — no menu anywhere
+    sign_in_as carol # plain member — the kebab is still there (Copy link), but no Edit/trash
     get circle_path(circles(:writers))
-    assert_select ".wall__actions", count: 0
+    assert_select ".wall__card:first-of-type .wall__actions button", text: "Copy link"
+    assert_select ".wall__card:first-of-type .wall__actions a.menu__item", text: "Edit", count: 0
+    assert_select ".wall__card:first-of-type .wall__actions form[action=?]",
+      circle_message_path(circles(:writers), message.record), count: 0
+  end
+
+  test "trashing a discussion from the feed removes the card in place, no redirect" do
+    message = create_discussion(title: "Delete me", creator: users(:bob))
+    sign_in_as users(:bob)
+
+    delete circle_message_path(circles(:writers), message.record),
+      params: { back: "wall" }, as: :turbo_stream
+    assert_response :success
+    assert_select "turbo-stream[action=remove][target=?]",
+      ActionView::RecordIdentifier.dom_id(message.record)
+    assert message.record.reload.trashed_at.present?
+  end
+
+  test "New post opens the compose modal; posting with back=wall lands on the feed" do
+    sign_in_as users(:bob)
+
+    # The head action opens the modal, not a full page.
+    get circle_path(circles(:writers))
+    assert_select ".canvas__head a.canvas__head-action[href=?][data-turbo-frame=modal]",
+      circle_wall_composer_path(circles(:writers)), text: "New post"
+
+    # The modal renders the compose form + the full action ladder.
+    get circle_wall_composer_path(circles(:writers))
+    assert_response :success
+    assert_select "turbo-frame#modal dialog form[action=?]", circle_messages_path(circles(:writers))
+    assert_select "turbo-frame#modal button", text: "Save draft"
+    assert_select "turbo-frame#modal button", text: "Post"
+
+    # Post (publish=1) → published, and lands on the feed.
+    post circle_messages_path(circles(:writers)),
+      params: { back: "wall", publish: "1", message: { title: "From the modal", content: "<p>hi</p>" } }
+    assert_redirected_to circle_path(circles(:writers))
+    assert circles(:writers).messages.find { |m| m.title == "From the modal" }.published?
+
+    # Save draft (no publish) → a draft, still back to the feed.
+    post circle_messages_path(circles(:writers)),
+      params: { back: "wall", message: { title: "A modal draft", content: "<p>later</p>" } }
+    assert_redirected_to circle_path(circles(:writers))
+    assert circles(:writers).messages.find { |m| m.title == "A modal draft" }.drafted?
   end
 
   test "the edit modal serves the author, saves back to the wall, and 404s others" do
@@ -167,7 +212,7 @@ class CircleWallsTest < ActionDispatch::IntegrationTest
     assert_response :not_found
   end
 
-  test "the feed's segmented control narrows to check-ins" do
+  test "the segmented control links Everything, Pulse Checks, and Progress as their own pages" do
     create_discussion(title: "A post")
     pulse = Current.with_bucket(circles(:writers)) do
       Record.originate(Pulse.new(question: "What did you work on?", creator: users(:alice),
@@ -179,18 +224,23 @@ class CircleWallsTest < ActionDispatch::IntegrationTest
     end
     sign_in_as users(:bob)
 
-    # Everything: the message card and the beat card (titled by its question).
-    # There is no "Posts" segment.
+    # Everything: the message card and the beat card (titled by its question),
+    # plus the segments linking to their sibling pages. No "Posts" segment.
     get circle_path(circles(:writers))
     assert_select "nav.segmented a[aria-current=page]", text: "Everything"
     assert_select "nav.segmented a", text: "Posts", count: 0
+    assert_select "nav.segmented a[href=?]", circle_checks_path(circles(:writers)), text: "Pulse Checks"
+    assert_select "nav.segmented a[href=?]", circle_progress_path(circles(:writers)), text: "Progress"
     assert_select ".wall__title a", text: "A post"
     assert_select ".wall__title a", text: /What did you work on\?/
 
-    # Beats only: the beat survives, the message is gone.
-    get circle_path(circles(:writers), filter: "beats")
+    # Pulse Checks is its own page: the check listed as a door to its pulse (so
+    # you can reach it even with no answers), not a filtered feed of beats.
+    get circle_checks_path(circles(:writers))
+    assert_response :success
     assert_select "nav.segmented a[aria-current=page]", text: "Pulse Checks"
-    assert_select ".wall__title a", text: /What did you work on\?/
+    # The primary check is shown in full detail here, not a feed of beats.
+    assert_select ".check-detail__title", text: /What did you work on\?/
     assert_select ".wall__title a", text: "A post", count: 0
   end
 
@@ -253,8 +303,9 @@ class CircleWallsTest < ActionDispatch::IntegrationTest
 
     sign_in_as users(:alice)
     get circle_path(circles(:writers))
+    # No comments yet — the affordance is the "Comment" action, not "0 comments".
     assert_select ".wall__card:first-of-type a[href=?]",
-      circle_wall_thread_path(circles(:writers), beat.record_id), text: /0 comments/
+      circle_wall_thread_path(circles(:writers), beat.record_id), text: /Comment/
 
     get circle_wall_thread_path(circles(:writers), beat.record_id)
     assert_response :success

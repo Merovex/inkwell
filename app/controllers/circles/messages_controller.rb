@@ -61,7 +61,10 @@ module Circles
         # Mentions ring when the words go live — drafts/scheduled keep quiet.
         Mentions.deliver_for(@message.record) if @message.published?
         @message.schedule(at: scheduled_at) if scheduling?
-        redirect_to circle_message_path(@circle, @message.record), notice: create_notice
+        # Posted from the feed's compose modal (back=wall) → land on the feed,
+        # where the new card renders; otherwise the message's own page.
+        landing = params[:back] == "wall" ? circle_path(@circle) : circle_message_path(@circle, @message.record)
+        redirect_to landing, notice: create_notice
       else
         render :new, status: :unprocessable_entity
       end
@@ -89,7 +92,13 @@ module Circles
 
     def destroy
       @record.trash
-      redirect_to circle_messages_path(@circle), notice: "Discussion moved to trash."
+      # From the feed (back=wall) the card just vanishes in place — you stay put.
+      # Elsewhere (a discussion's own page) there's nothing left to show, so redirect.
+      if params[:back] == "wall"
+        render turbo_stream: turbo_stream.remove(@record)
+      else
+        redirect_to circle_messages_path(@circle), notice: "Discussion moved to trash."
+      end
     end
 
     def archive

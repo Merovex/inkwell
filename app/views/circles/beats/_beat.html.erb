@@ -1,8 +1,8 @@
-<%# locals: (beat:, circle:, pulse_record:) %>
+<%# locals: (beat:, circle:, pulse_record:, comment_count: 0) %>
 <%# One answer row — the .list__item comment shape (avatar | byline + rich %>
-<%# text | far-right action). The frame id doubles as the anchor and the %>
-<%# inline-edit swap target: Edit navigates the frame to beats#edit, which %>
-<%# renders the same frame with the content column as an editor. %>
+<%# text + peer-response affordance | far-right action). The frame id doubles %>
+<%# as the anchor and the inline-edit swap target: Edit navigates the frame to %>
+<%# beats#edit, which renders the same frame with the content as an editor. %>
 <%= turbo_frame_tag "beat_#{beat.record_id}", class: "list__item comment" do %>
   <span class="avatar list__avatar" aria-hidden="true"><%= avatar_content(beat.creator) %></span>
 
@@ -10,6 +10,11 @@
     <%= byline beat.creator, beat.record.created_at, edited: beat.event_updated? %>
     <div class="comment__body u-flow"><%= mentions_highlighted(beat.content, beat.record) %></div>
     <%= render "admin/boosts/boosts", record: beat.record %>
+    <%# Peer response lives here — the thread (its comments + composer) opens in
+        the board's modal frame. %>
+    <div class="beat__peer">
+      <%= render "circles/walls/comment_count", record: beat.record, count: comment_count %>
+    </div>
   </div>
 
   <div class="list__action comment__actions">

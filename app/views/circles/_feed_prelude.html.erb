@@ -1,0 +1,59 @@
+<%# The feed's affixed strips (first page only): announcements, the one
+    actionable pulse pin (or the owner's setup CTA), and your private
+    housekeeping — scheduled posts + drafts as quiet lines. Reads the feed's
+    @bulletins / @pending_pulse / @pulse / @scheduled / @drafts_count. %>
+<% if @bulletins&.any? || @pending_pulse || (@pulse.nil? && allowed_to?(:manage, @circle)) || @drafts_count.to_i.positive? || @scheduled&.any? %>
+  <div class="wall__prelude">
+    <% if @bulletins&.any? %>
+      <section class="wall__affixed" aria-label="Announcements">
+        <% @bulletins.each do |bulletin| %>
+          <%= link_to bulletin_path(bulletin.record.to_slug, script_name: ""), class: "wall__pin wall__pin--announce" do %>
+            <%= inline_svg_tag "lucide/megaphone.svg", class: "lucide", size: "16px" %>
+            <span class="u-text-strong"><%= bulletin.title %></span>
+            <% if bulletin.published_at %>
+              <span class="wall__meta"><%= l bulletin.published_at.to_date, format: :short %></span>
+            <% end %>
+          <% end %>
+        <% end %>
+      </section>
+    <% end %>
+
+    <% if @pending_pulse %>
+      <%# The one actionable pin: the circle asked, you haven't answered. %>
+      <section class="wall__affixed" aria-label="Pulse check">
+        <%= link_to circle_pulse_path(@circle, @pending_pulse.record_id), class: "wall__pin wall__pin--pulse" do %>
+          <%= inline_svg_tag "lucide/activity.svg", class: "lucide", size: "16px" %>
+          <span class="u-text-strong">Pulse check: <%= @pending_pulse.question %></span>
+          <span class="wall__meta">Share your answer</span>
+        <% end %>
+      </section>
+    <% elsif @pulse.nil? && allowed_to?(:manage, @circle) %>
+      <%# No pulse yet — the owner's entry point to give the circle a rhythm. %>
+      <section class="wall__affixed" aria-label="Set up a Pulse check">
+        <%= link_to new_circle_pulse_path(@circle), class: "wall__pin wall__pin--pulse" do %>
+          <%= inline_svg_tag "lucide/activity.svg", class: "lucide", size: "16px" %>
+          <span class="u-text-strong">Set up a Pulse check</span>
+          <span class="wall__meta">Give the circle a weekly question</span>
+        <% end %>
+      </section>
+    <% end %>
+
+    <% if @scheduled&.any? || @drafts_count.to_i.positive? %>
+      <%# YOUR private housekeeping — scheduled posts + drafts, visible to you
+          alone. Quiet lines, not a banner: the saturated tone is reserved for
+          what's actually urgent (an unanswered pulse). %>
+      <div class="wall__yours" aria-label="Your pending items">
+        <% @scheduled&.each do |message| %>
+          <p class="wall__meta">
+            <%= link_to message.title, circle_message_path(@circle, message.record_id) %> posts
+            <time datetime="<%= message.published_at.iso8601 %>" data-controller="local-time"
+                  data-local-time-datetime-value="<%= message.published_at.iso8601 %>"><%= message.published_at.strftime("%b %-d at %H:%M") %></time>
+          </p>
+        <% end %>
+        <% if @drafts_count.to_i.positive? %>
+          <p class="wall__meta"><%= link_to "You have #{pluralize(@drafts_count, "draft")}", circle_messages_path(@circle) %></p>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+<% end %>

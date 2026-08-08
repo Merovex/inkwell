@@ -70,7 +70,7 @@ class CirclesTest < ActionDispatch::IntegrationTest
     assert_select ".perma-header__title", text: circles(:writers).name
     # The feed: a New post head action, the segmented kind filter, and the
     # fixture discussion as a card.
-    assert_select ".canvas__head a[href=?]", new_circle_message_path(circles(:writers)), text: /New post/
+    assert_select ".canvas__head a[href=?][data-turbo-frame=modal]", circle_wall_composer_path(circles(:writers)), text: /New post/
     assert_select "nav.segmented a", text: "Everything"
     assert_select "nav.segmented a", text: "Pulse Checks"
     assert_select "nav.segmented a", text: "Posts", count: 0

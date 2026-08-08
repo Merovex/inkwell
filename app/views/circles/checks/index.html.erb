@@ -1,0 +1,46 @@
+<% content_for :title, "Pulse checks — #{@circle.name}" %>
+
+<%# The head action: answer the current occurrence if you still owe one; else
+    (owner) start a new question. %>
+<% head_action_href = head_action_label = nil %>
+<% if @pulse && @pulse.subscribed?(Current.user) && @my_beat.nil? %>
+  <% head_action_href = circle_checks_path(@circle, anchor: "answer") %>
+  <% head_action_label = "Answer this week" %>
+<% elsif allowed_to?(:manage, @circle) %>
+  <% head_action_href = new_circle_pulse_path(@circle) %>
+  <% head_action_label = "New question" %>
+<% end %>
+
+<% if @pulse %>
+  <% content_for :board_rail do %>
+    <%= render "circles/pulse_rail", circle: @circle, record: @record, pulse: @pulse,
+          answered_this_week: @answered_this_week, answered_ids: @answered_ids,
+          members: @pulse.respondents.includes(avatar_attachment: :blob) %>
+  <% end %>
+<% end %>
+
+<% content_for :board_body do %>
+  <% if @pulse %>
+    <%= render "circles/pulse_detail", circle: @circle, record: @record, pulse: @pulse,
+          week_start: @week_start, is_current_week: @is_current_week, my_beat: @my_beat,
+          beats: @beats, answered_this_week: @answered_this_week, non_answerers: @non_answerers,
+          earlier_weeks: @earlier_weeks, comment_counts: @comment_counts, title_tag: "h2" %>
+    <% if @other_checks.any? %>
+      <section class="checks u-flow" aria-label="Other questions">
+        <h2 class="u-microcaps u-text-muted">Other questions</h2>
+        <div class="checks__list">
+          <% @other_checks.each do |pulse| %>
+            <%= render "circles/check_card", circle: @circle, pulse: pulse %>
+          <% end %>
+        </div>
+      </section>
+    <% end %>
+  <% else %>
+    <p class="u-text-muted">
+      No Pulse checks yet<% if allowed_to?(:manage, @circle) %> — set one up to give the circle a rhythm<% end %>.
+    </p>
+  <% end %>
+<% end %>
+
+<%= render "circles/board", current: :checks,
+      action_href: head_action_href, action_label: head_action_label %>

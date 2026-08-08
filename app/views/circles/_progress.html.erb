@@ -57,7 +57,7 @@
               <td data-align="end" class="progress__words">
                 <%= standing.words ? number_with_delimiter(standing.words) : "—" %>
               </td>
-              <td><%= render "run", standing: standing %></td>
+              <td><%= render "circles/run", standing: standing %></td>
             </tr>
           <% end %>
         </tbody>

@@ -10,6 +10,13 @@
           placeholder: "What did you work on today?" %>
   </div>
 
+  <div class="field">
+    <%= f.label :description, "A line of context (optional)", class: "field__label" %>
+    <p class="field__hint">Shown under the question — what a good answer looks like.</p>
+    <%= f.text_field :description, class: "field__control",
+          placeholder: "Two sentences is a fine answer." %>
+  </div>
+
   <div class="pulse-schedule" data-controller="pulse-schedule"
        data-pulse-schedule-weekdays-hint-value="<%= weekdays_hint %>">
     <div class="field">

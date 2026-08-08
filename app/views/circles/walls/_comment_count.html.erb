@@ -1,11 +1,12 @@
 <%# locals: (record:, count:, comment: nil) %>
 <%# comment: unused — Turbo's broadcast injects the broadcasting model as an
     implicit local, and strict locals must name it to accept the render. %>
-<%# The card's comment count — a door to the thread modal, and the live
-    broadcast target when the thread changes (Comment#broadcast_count_to_wall
-    replaces it wholesale, so it carries its own id). %>
+<%# The card's comment affordance — a door to the thread modal (its composer),
+    and the live broadcast target when the thread changes
+    (Comment#broadcast_count_to_wall replaces it wholesale, so it carries its
+    own id). With no comments yet it's a "Comment" action, not a dead count. %>
 <%= link_to circle_wall_thread_path(record.bucket, record),
       id: dom_id(record, :wall_comments), data: { turbo_frame: "modal" } do %>
   <%= inline_svg_tag "lucide/message-square.svg", class: "lucide", size: "14px" %>
-  <%= pluralize(count, "comment") %>
+  <%= count.positive? ? pluralize(count, "comment") : "Comment" %>
 <% end %>

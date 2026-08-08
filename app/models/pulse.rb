@@ -50,6 +50,64 @@ class Pulse < ApplicationRecord
   # the pulse has first fired).
   def current_occurrence = last_asked_on
 
+  # The ask-days this pulse has recorded answers on (its lived occurrences),
+  # oldest first — the timeline the index sparkline reads.
+  def occurrences = beats.map(&:asked_on).uniq.sort
+
+  # The next date this pulse is due to ask, scanning its cadence forward from
+  # today (skipping today if it already asked). nil when paused or none inside
+  # the horizon.
+  def next_ask_on(horizon: 60)
+    return nil unless active?
+    start = current_occurrence == Time.zone.today ? Time.zone.today.next_day : Time.zone.today
+    (0..horizon).each do |offset|
+      date = start + offset
+      return date if due_on?(date)
+    end
+    nil
+  end
+
+  # The current occurrence's answers: how many members posted, over how many are
+  # subscribed ("1 of 2 in").
+  def answered_count(on = current_occurrence) = on ? beats_on(on).count : 0
+  def subscriber_count = subscriptions.count
+  def answered_by?(user, on = current_occurrence) = on.present? && beats_on(on).exists?(creator_id: user.id)
+
+  # The viewer's recent answer pattern (filled = answered), oldest last — for
+  # the "answered N of last M" sparkline.
+  def recent_answers(user, count: 7)
+    return [] if user.nil?
+    answered = beats.where(creator_id: user.id).pluck(:asked_on).to_set
+    occurrences.last(count).map { |date| answered.include?(date) }
+  end
+
+  # When a paused pulse went quiet — the ISO week of this (inactive) version.
+  def paused_since_week = created_at&.to_date&.cweek
+
+  # The viewer's weekly answer pattern, oldest first — the rail's run sparkline.
+  # Each entry is [week_start_date, answered?] so a cell can name its week.
+  def weeks_answered(user, count: 8)
+    return [] if user.nil?
+    answered = beats.where(creator_id: user.id).pluck(:asked_on).map(&:beginning_of_week).uniq.to_set
+    Array.new(count) { |i| (Time.zone.today - (count - 1 - i).weeks).beginning_of_week }
+      .map { |week| [ week, answered.include?(week) ] }
+  end
+
+  # A humane one-liner for the schedule — "Every day at 1:30 PM", "Every Monday
+  # at 9:00 AM", or the full day list — so the cadence reads as a quiet caption,
+  # not a shouted eyebrow.
+  def human_schedule
+    at = "at #{ask_at}"
+    days = selected_day_names
+    if cadence == "daily" && days.size == 7
+      "Every day #{at}"
+    elsif days.size == 1
+      "Every #{days.first} #{at}"
+    else
+      "#{schedule_summary} #{at}"
+    end
+  end
+
   # Is this pulse due to ask on `date`, per its cadence? daily/weekly fire on the
   # selected weekday(s); biweekly on those weekdays in even ISO weeks; monthly on
   # the first occurrence of the selected weekday in the month (e.g. first Monday).

@@ -19,5 +19,15 @@ module Circles
         authorize! @circle, to: :show
         Current.bucket = @circle
       end
+
+      # The board chrome shared by the three views (the feed, Pulse Checks, and
+      # Progress): the header's roster + pulse window and the rail's who's
+      # talking. Each view renders the same _board shell around its own body.
+      def load_board_chrome
+        @pulse = @circle.pulse
+        @members = @circle.roster
+        @member_count = @circle.circle_memberships.count
+        @talkers = @circle.recent_posters
+      end
   end
 end

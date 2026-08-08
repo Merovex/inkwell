@@ -62,4 +62,26 @@
   /* The check leads the label only when the pill is on. */
   .day-pill__check { display: none; }
   .day-pill:has(.day-pill__input:checked) .day-pill__check { display: inline-flex; }
+
+  /* A subscriber still owing an answer this occurrence — a quiet line. */
+  .pulse-waiting { display: flex; align-items: center; gap: calc(var(--u-pad) / 2); margin: 0; }
+
+  /* Earlier weeks: week label · representative excerpt · answered count, a
+     hairline between rows, the whole row a door to that ask-day. */
+  .pulse-history { display: flex; flex-direction: column; }
+  .pulse-history__row {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: var(--u-pad);
+    align-items: baseline;
+    padding-block: calc(var(--u-pad) / 2);
+    color: var(--ink);
+    text-decoration: none;
+  }
+  .pulse-history__row + .pulse-history__row {
+    border-block-start: var(--border-size-1) solid color-mix(in oklab, var(--line), transparent 45%);
+  }
+  .pulse-history__row:hover .pulse-history__excerpt { text-decoration: underline; }
+  .pulse-history__excerpt { min-inline-size: 0; }
+  .pulse-history__count { font-size: var(--font-size-0); white-space: nowrap; }
 }

@@ -3,6 +3,8 @@
 # schedule are versioned (Pulse is a recordable), so edits land as history.
 module Circles
   class PulsesController < BaseController
+    include PulseDetail
+
     before_action :set_pulse, only: %i[show edit update destroy]
     # Only the circle owner manages the Pulse check itself.
     before_action -> { authorize! @circle, to: :manage }, only: %i[new create edit update destroy]
@@ -25,13 +27,9 @@ module Circles
     end
 
     def show
-      # ?day= deep-links a specific ask-day (the wall's pulse cards); the
-      # composer only offers answering on the CURRENT occurrence — past days
-      # are read-only history.
-      @current_occurrence = @pulse.current_occurrence || Time.zone.today
-      @occurrence = requested_day || @current_occurrence
-      @beats = @pulse.beats_on(@occurrence)
-      @my_beat = @beats.find_by(creator_id: Current.user.id)
+      # ?day= deep-links a specific ask-day (the wall's pulse cards) — we show
+      # the WEEK that contains it; past weeks are read-only history.
+      load_pulse_detail(@record, week_of: requested_day || Time.zone.today)
     end
 
     def edit
@@ -69,7 +67,7 @@ module Circles
       # days_of_week bitmask. Monthly is a single "first <weekday>", so clamp it
       # to one day even if a non-JS submit sent more (isolate the lowest bit).
       def pulse_params
-        permitted = params.expect(pulse: [ :question, :cadence, :ask_at_minutes, :active, { weekdays: [] } ])
+        permitted = params.expect(pulse: [ :question, :description, :cadence, :ask_at_minutes, :active, { weekdays: [] } ])
         mask = Array(permitted.delete(:weekdays)).map(&:to_i).sum { |wday| 1 << wday }
         mask &= -mask if permitted[:cadence] == "monthly" && mask.positive?
         permitted[:days_of_week] = mask

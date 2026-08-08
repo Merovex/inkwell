@@ -1,175 +1,20 @@
 <% content_for :title, "#{@circle.name} — Circle" %>
 
 <%# The frame id must match what the requesting lazy frame asked for, so
-    paginated responses slot into place; the first page renders bare. %>
+    paginated responses slot into place; the first page renders the full board. %>
 <% frame_id = params[:before_id].present? ? "wall-page-#{params[:before_id]}" : "wall-page-first" %>
-<% first_page = params[:before_id].blank? %>
 
-<% if first_page %>
-  <%# The primary action follows the view: Progress logs the week (to the pulse
-      page), the feed starts a new post. %>
-  <% if @view == "progress" %>
-    <% head_action_href = circle_pulse_path(@circle, @pulse.record) if @pulse %>
-    <% head_action_label = "Log this week" %>
-  <% else %>
-    <% head_action_href = new_circle_message_path(@circle) %>
-    <% head_action_label = "New post" %>
-  <% end %>
-  <%= render "admin/shared/canvas_head", crumbs: [["Circles", circles_path], [@circle.name, nil]],
-        action_href: head_action_href, action_label: head_action_label,
-        edit_href: (edit_circle_path(@circle) if allowed_to?(:manage, @circle)) do %>
-    <%# The membership page: roster + invitations (any member may invite). %>
-    <%= link_to "Membership", circle_members_path(@circle), class: "menu__item" %>
-    <%# No exit from the Commons — it's the town square. %>
-    <% unless allowed_to?(:manage, @circle) || @circle.commons? %>
-      <hr class="menu__separator">
-      <%# A member's own exit (Basecamp's "Leave this project"). Owners never
-          see it — they delete or hand off, they don't abandon. %>
-      <%= button_to "Leave this circle", circle_membership_path(@circle), method: :delete,
-            class: "menu__item",
-            form: { data: { turbo_confirm: "Leave #{@circle.name}? You'll need a new invitation to return." } } %>
-    <% end %>
-  <% end %>
-<% end %>
-
-<%# Live updates: boost broadcasts land on the cards' chip strips. %>
-<%= turbo_stream_from @circle, :wall %>
-
-<%# Two columns: the feed at 2/3 (left), the board rail at 1/3 (right). The
-    grid wrappers render on both requests so a paginated frame still slots into
-    place; only the header and rail are first-page chrome. %>
-<div class="circle-board">
-  <div class="circle-board__main">
-    <% if first_page %>
-      <header class="perma-header">
-        <h1 class="perma-header__title"><%= @circle.name %></h1>
-        <p class="perma-header__content u-text-muted">
-          <%= pluralize(@circle.circle_memberships.count, "member") %><% if @pulse %> · week <%= Date.current.cweek %> closes <%= Date.current.end_of_week.strftime("%A") %><% end %>
-          <%= render "shared/avatar_group", users: @members, limit: 10, size: "small" %>
-        </p>
-        <% if @circle.description.present? %>
-          <p class="perma-header__content"><%= @circle.description %></p>
-        <% end %>
-      </header>
-
-      <%# Board views. Links, not tabs — each is a real navigation to the same
-          page with a different param; the current one is aria-current, which
-          the .segmented skin styles as the raised segment. Everything and Pulse
-          Checks filter the feed; Progress swaps in the leaderboard. %>
-      <nav class="segmented segmented--start" aria-label="Board views">
-        <%= link_to "Everything", circle_path(@circle), class: "segmented__seg",
-              aria: { current: (@filter.nil? && @view.nil? ? "page" : nil) } %>
-        <%= link_to "Pulse Checks", circle_path(@circle, filter: "beats"), class: "segmented__seg",
-              aria: { current: (@filter == "beats" ? "page" : nil) } %>
-        <%= link_to "Progress", circle_path(@circle, view: "progress"), class: "segmented__seg",
-              aria: { current: (@view == "progress" ? "page" : nil) } %>
-      </nav>
-    <% end %>
-
-    <% if @view == "progress" %>
-      <%= render "progress", ledger: @ledger, circle: @circle %>
-    <% else %>
+<% if params[:before_id].present? %>
+  <%# Pagination: just the next card frame slots in (Turbo extracts it). %>
+  <div class="wall"><%= render "circles/feed_items", frame_id: frame_id %></div>
+<% else %>
+  <% content_for :board_body do %>
     <div class="wall">
-      <% if first_page && (@bulletins&.any? || @pending_pulse || (@pulse.nil? && allowed_to?(:manage, @circle)) || @drafts_count.to_i.positive? || @scheduled&.any?) %>
-        <div class="wall__prelude">
-        <% if @bulletins&.any? %>
-          <section class="wall__affixed" aria-label="Announcements">
-            <% @bulletins.each do |bulletin| %>
-              <%= link_to bulletin_path(bulletin.record.to_slug, script_name: ""), class: "wall__pin wall__pin--announce" do %>
-                <%= inline_svg_tag "lucide/megaphone.svg", class: "lucide", size: "16px" %>
-                <span class="u-text-strong"><%= bulletin.title %></span>
-                <% if bulletin.published_at %>
-                  <span class="wall__meta"><%= l bulletin.published_at.to_date, format: :short %></span>
-                <% end %>
-              <% end %>
-            <% end %>
-          </section>
-        <% end %>
-
-        <% if @pending_pulse %>
-          <%# The one actionable pin: the circle asked, you haven't answered. %>
-          <section class="wall__affixed" aria-label="Pulse check">
-            <%= link_to circle_pulse_path(@circle, @pending_pulse.record_id), class: "wall__pin wall__pin--pulse" do %>
-              <%= inline_svg_tag "lucide/activity.svg", class: "lucide", size: "16px" %>
-              <span class="u-text-strong">Pulse check: <%= @pending_pulse.question %></span>
-              <span class="wall__meta">Share your answer</span>
-            <% end %>
-          </section>
-        <% elsif @pulse.nil? && allowed_to?(:manage, @circle) %>
-          <%# No pulse yet — the owner's entry point to give the circle a rhythm. %>
-          <section class="wall__affixed" aria-label="Set up a Pulse check">
-            <%= link_to new_circle_pulse_path(@circle), class: "wall__pin wall__pin--pulse" do %>
-              <%= inline_svg_tag "lucide/activity.svg", class: "lucide", size: "16px" %>
-              <span class="u-text-strong">Set up a Pulse check</span>
-              <span class="wall__meta">Give the circle a weekly question</span>
-            <% end %>
-          </section>
-        <% end %>
-
-        <% if @scheduled&.any? %>
-          <%# YOUR pending appointments — visible to you alone until they post. %>
-          <section class="wall__affixed" aria-label="Your scheduled messages">
-            <% @scheduled.each do |message| %>
-              <%= link_to circle_message_path(@circle, message.record_id), class: "wall__pin wall__pin--scheduled" do %>
-                <%= inline_svg_tag "lucide/clock.svg", class: "lucide", size: "16px" %>
-                <span class="u-text-strong"><%= message.title %></span>
-                <span class="wall__meta">Posts on
-                  <time datetime="<%= message.published_at.iso8601 %>" data-controller="local-time"
-                        data-local-time-datetime-value="<%= message.published_at.iso8601 %>"><%= message.published_at.strftime("%b %-d at %H:%M") %></time>
-                </span>
-              <% end %>
-            <% end %>
-          </section>
-        <% end %>
-
-        <% if @drafts_count.to_i.positive? %>
-          <p class="wall__meta"><%= link_to "You have #{pluralize(@drafts_count, "draft")}", circle_messages_path(@circle) %></p>
-        <% end %>
-        </div>
-      <% end %>
-
-      <%= turbo_frame_tag frame_id, target: "_top" do %>
-        <% @items.each do |item| %>
-          <% if (message = item[:message]) %>
-            <% record = @records_by_message[message] %>
-            <%= render "circles/walls/card", circle: @circle, record: record, message: message,
-                  comment_count: @comment_counts[record.id].to_i,
-                  commenters: @commenters_by_record.fetch(record.id, []),
-                  boosts: @boosts_by_record.fetch(record.id, []) %>
-          <% else %>
-            <% beat = item[:beat] %>
-            <% record = @beat_records[beat.record_id] %>
-            <%= render "circles/walls/beat_card", circle: @circle, record: record, beat: beat,
-                  pulse_record: @pulse_records[record.parent_id],
-                  comment_count: @comment_counts[record.id].to_i,
-                  commenters: @commenters_by_record.fetch(record.id, []),
-                  boosts: @boosts_by_record.fetch(record.id, []) %>
-          <% end %>
-        <% end %>
-        <% if @items.empty? && first_page %>
-          <p class="u-text-muted">Nothing here yet — start the first post.</p>
-        <% end %>
-        <% if @more %>
-          <%# Scrolling this into view fetches the next page; its response's
-              matching frame replaces the placeholder. %>
-          <%= turbo_frame_tag "wall-page-#{@cursor}", target: "_top", loading: :lazy,
-                src: circle_path(@circle, before_id: @cursor, filter: @filter) do %>
-            <p class="u-text-muted">Loading more…</p>
-          <% end %>
-        <% end %>
-      <% end %>
+      <%= render "circles/feed_prelude" %>
+      <%= render "circles/feed_items", frame_id: frame_id %>
     </div>
-    <% end %>
-  </div>
-
-  <% if first_page %>
-    <%= render "rail", circle: @circle, pulse: @pulse, decisions: @circle.decisions,
-          talkers: @talkers, member_count: @member_count %>
   <% end %>
-</div>
-
-<%# The thread modal lands here (a card's comments link fetches
-    circles/walls/threads#show into this frame). %>
-<% if first_page %>
-  <%= turbo_frame_tag "modal" %>
+  <%= render "circles/board", current: :everything,
+        action_href: circle_wall_composer_path(@circle), action_label: "New post",
+        action_data: { turbo_frame: "modal" } %>
 <% end %>

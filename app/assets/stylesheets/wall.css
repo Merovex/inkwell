@@ -25,21 +25,33 @@
     margin-block-end: var(--u-pad);
   }
 
-  /* Editorial rows, not bordered cards: an avatar·name·when byline, then the
-     title and body flush to the card's edge (no gutter indent), a centered
-     hairline between adjacent rows. */
+  /* Indented rows: the avatar rides the byline, vertically centered with the
+     name; the title/body/footer indent to align under the byline TEXT — one
+     trustworthy left edge for the post content, avatar in the gutter above it.
+     A faint hairline divides adjacent rows (lighter than --line full-strength;
+     the density doesn't warrant a hard rule). */
   .wall__card {
     display: flex;
     flex-direction: column;
     gap: calc(var(--u-pad) / 2);
     padding-block: calc(var(--u-pad) * 2);
   }
-  .wall__card + .wall__card { border-block-start: var(--border-size-1) solid var(--line); }
-  .wall__avatar { --avatar-size: var(--size-7); flex-shrink: 0; }
-
+  .wall__card + .wall__card {
+    border-block-start: var(--border-size-1) solid color-mix(in oklab, var(--line), transparent 45%);
+  }
   .wall__byline { display: flex; flex-wrap: wrap; align-items: center; gap: calc(var(--u-pad) / 2); }
+  .wall__avatar { --avatar-size: var(--size-7); flex-shrink: 0; }
   /* The author's ⋯ menu, far right of the byline. */
   .wall__actions { margin-inline-start: auto; flex-shrink: 0; }
+  /* Post content aligns under the byline text — indented past the avatar (its
+     size) plus the byline gap. */
+  .wall__content {
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--u-pad) / 2);
+    min-inline-size: 0;
+    padding-inline-start: calc(var(--size-7) + var(--u-pad) / 2);
+  }
   .wall__meta { color: var(--ink-muted); font-size: var(--font-size-0); }
   .wall__when { color: var(--ink-muted); }
 
@@ -84,8 +96,8 @@
     flex-direction: column;
     gap: calc(var(--u-pad) / 4);
   }
-  /* One pinned-row shape, tone by modifier: --announce (bulletins, the pulse
-     ask — invitations) and --scheduled (your appointments — private state). */
+  /* One pinned-row shape, tone by modifier. Only genuinely actionable rows
+     earn a filled pin (--announce, --pulse); your own housekeeping is quiet. */
   .wall__pin {
     display: flex;
     align-items: center;
@@ -99,8 +111,12 @@
   .wall__pin .wall__meta { margin-inline-start: auto; }
   .wall__pin--announce { background: var(--accent-soft); }
   .wall__pin--announce:hover { background: color-mix(in oklab, var(--accent-soft), var(--ink) 6%); }
-  .wall__pin--scheduled { background: var(--warning-surface); }
-  .wall__pin--scheduled:hover { background: color-mix(in oklab, var(--warning-surface), var(--ink) 6%); }
+
+  /* Your private housekeeping — scheduled posts and drafts — as quiet muted
+     lines, no banner. */
+  .wall__yours { display: flex; flex-direction: column; gap: calc(var(--u-pad) / 4); }
+  .wall__yours p { margin: 0; }
+
   /* The pulse ask wears the account's own tint (the ramp's pill stop) —
      native to the site's palette, distinct from platform announcements. */
   .wall__pin--pulse { background: var(--tint-soft); }
