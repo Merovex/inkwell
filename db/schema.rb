@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.2].define(version: 2026_08_07_120000) do
+ActiveRecord::Schema[8.2].define(version: 2026_08_08_120000) do
   create_table "account_users", force: :cascade do |t|
     t.integer "account_id", null: false
     t.integer "user_id", null: false
@@ -423,6 +423,7 @@ ActiveRecord::Schema[8.2].define(version: 2026_08_07_120000) do
     t.integer "delay_days", default: 0, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.text "notes"
     t.index ["creator_id"], name: "index_drops_on_creator_id"
     t.index ["record_id", "id"], name: "index_drops_on_record_id_and_id"
   end

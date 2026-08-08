@@ -50,6 +50,6 @@ class Admin::Drips::DropsController < Admin::BaseController
     end
 
     def drop_params
-      params.expect(drop: [ :subject, :body, :delay_days ])
+      params.expect(drop: [ :subject, :body, :delay_days, :notes ])
     end
 end

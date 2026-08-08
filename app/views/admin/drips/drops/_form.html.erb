@@ -19,6 +19,13 @@
     <%= f.rich_textarea :body, placeholder: "Write the email…", "aria-label": "Body" %>
   </div>
 
+  <div class="field">
+    <%= f.label :notes, "Notes", class: "field__label" %>
+    <%= f.text_area :notes, class: "field__control", rows: 3,
+          placeholder: "Internal reminders, rationale, follow-ups…" %>
+    <p class="u-text-muted">Private to your team. Never sent to subscribers.</p>
+  </div>
+
   <div class="form__action">
 
     <%= f.submit "Save", class: "button button--primary" %>
