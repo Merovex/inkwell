@@ -1,16 +1,19 @@
-<%# locals: (axis:) %>
+<%# locals: (axis:, heading: nil, variant: nil) %>
 <%# One design axis. Option rendering escalates with manifest metadata:
     a `wireframe` makes a big picture card, `display`/`body`/`tagline` make
-    a font-pairing card set in its actual faces, otherwise a text chip.
-    Options carrying a `group` render under sub-headings, in manifest order.
-    Either way the radios are the designer's working state; data-label
-    feeds the root menu's summary values. %>
+    a font-pairing card set in its actual faces, a `depiction` a CSS-drawn
+    thumbnail card, otherwise a text chip. Options carrying a `group` render
+    under sub-headings, in manifest order. Either way the radios are the
+    designer's working state; data-label feeds the root menu's summary
+    values. `heading:` overrides the legend (a pane that IS the axis titles
+    the control by facet, e.g. Buttons' "Rounding"); `variant: "segmented"`
+    joins the chips into one equal-cell track. %>
 <fieldset class="designer__block designer__axis">
-  <legend class="designer__block-title"><%= axis["noun"] %></legend>
+  <legend class="designer__block-title"><%= heading || axis["noun"] %></legend>
   <%# chunk drops nil-keyed elements, so ungrouped options key on false. %>
   <% axis["options"].chunk { |option| option["group"] || false }.each do |group, options| %>
     <% if group %><h4 class="designer__option-group u-microcaps u-text-muted"><%= group %></h4><% end %>
-    <div class="designer__options">
+    <div class="designer__options <%= "designer__options--segmented" if variant == "segmented" %>">
       <% options.each do |option| %>
         <% card = option["wireframe"] || option["display"] || option["swatches"] %>
         <label class="design-option <%= "design-option--card" if card %> <%= "design-option--font" if option["display"] %>">
@@ -22,6 +25,7 @@
             <% if option["wireframe"] %>
               <span class="design-option__wireframe" aria-hidden="true"><%= @theme.wireframe(option["wireframe"]) %></span>
               <%= option["label"] %>
+              <% if option["hint"] %><span class="design-option__hint u-text-muted"><%= option["hint"] %></span><% end %>
             <% elsif option["display"] %>
               <span class="design-option__font-name" style="font-family: '<%= option["display"] %>', serif"><%= option["label"] %></span>
               <span class="design-option__font-families" style="font-family: '<%= option["body"] %>', serif"><%= option["display"] %> + <%= option["body"] %></span>
@@ -31,6 +35,10 @@
               <span class="design-option__swatches" aria-hidden="true">
                 <% option["swatches"].each do |color| %><span class="design-option__swatch" style="background: <%= color %>"></span><% end %>
               </span>
+            <% elsif option["depiction"] %>
+              <span class="design-option__depiction" data-depiction="<%= option["depiction"] %>" aria-hidden="true"></span>
+              <%= option["label"] %>
+              <% if option["hint"] %><span class="design-option__hint u-text-muted"><%= option["hint"] %></span><% end %>
             <% else %>
               <%= option["label"] %>
             <% end %>

@@ -240,6 +240,35 @@
       ]
     },
     {
+      "key": "corners",
+      "attr": "data-corners",
+      "noun": "Cover corners",
+      "default": "soft",
+      "section": "books",
+      "options": [
+        {
+          "id": "square",
+          "label": "Square",
+          "depiction": "cover-square"
+        },
+        {
+          "id": "crisp",
+          "label": "Crisp",
+          "depiction": "cover-crisp"
+        },
+        {
+          "id": "soft",
+          "label": "Soft",
+          "depiction": "cover-soft"
+        },
+        {
+          "id": "round",
+          "label": "Round",
+          "depiction": "cover-round"
+        }
+      ]
+    },
+    {
       "key": "cards",
       "attr": "data-cards",
       "noun": "Book cards",
@@ -314,32 +343,6 @@
         {
           "id": "no",
           "label": "Uniform"
-        }
-      ]
-    },
-    {
-      "key": "corners",
-      "attr": "data-corners",
-      "noun": "Cover corners",
-      "default": "soft",
-      "section": "books",
-      "control": "slider",
-      "options": [
-        {
-          "id": "square",
-          "label": "Square"
-        },
-        {
-          "id": "crisp",
-          "label": "Crisp"
-        },
-        {
-          "id": "soft",
-          "label": "Soft"
-        },
-        {
-          "id": "round",
-          "label": "Round"
         }
       ]
     },
@@ -552,7 +555,7 @@
     {
       "key": "font",
       "attr": "data-font",
-      "noun": "Font pairing",
+      "noun": "Fonts",
       "default": "epic",
       "options": [
         {
@@ -737,26 +740,194 @@
     {
       "key": "buttons",
       "attr": "data-buttons",
-      "noun": "Button rounding",
+      "noun": "Buttons",
       "default": "soft",
       "section": "styles",
-      "control": "slider",
       "options": [
         {
           "id": "square",
-          "label": "Square"
+          "label": "Square",
+          "depiction": "btn-square"
         },
         {
           "id": "crisp",
-          "label": "Crisp"
+          "label": "Soft",
+          "depiction": "btn-crisp"
         },
         {
           "id": "soft",
-          "label": "Soft"
+          "label": "Round",
+          "depiction": "btn-soft"
         },
         {
           "id": "round",
-          "label": "Round"
+          "label": "Pill",
+          "depiction": "btn-round"
+        }
+      ]
+    },
+    {
+      "key": "button_second",
+      "attr": "data-button-second",
+      "noun": "Second button",
+      "default": "outlined",
+      "section": "buttons",
+      "options": [
+        {
+          "id": "outlined",
+          "label": "Outlined",
+          "depiction": "second-outlined"
+        },
+        {
+          "id": "tinted",
+          "label": "Tinted",
+          "depiction": "second-tinted"
+        },
+        {
+          "id": "plain",
+          "label": "Plain link",
+          "depiction": "second-plain"
+        }
+      ]
+    },
+    {
+      "key": "button_size",
+      "attr": "data-button-size",
+      "noun": "Button size",
+      "default": "regular",
+      "section": "buttons",
+      "options": [
+        {
+          "id": "compact",
+          "label": "Compact"
+        },
+        {
+          "id": "regular",
+          "label": "Regular"
+        },
+        {
+          "id": "large",
+          "label": "Large"
+        }
+      ]
+    },
+    {
+      "key": "nav_show",
+      "attr": "data-nav-show",
+      "noun": "Header shown",
+      "default": "yes",
+      "section": "nav",
+      "options": [
+        {
+          "id": "yes",
+          "label": "Shown"
+        },
+        {
+          "id": "no",
+          "label": "Hidden"
+        }
+      ]
+    },
+    {
+      "key": "footer",
+      "attr": "data-footer",
+      "noun": "Footer",
+      "default": "stacked",
+      "section": "footer",
+      "options": [
+        {
+          "id": "stacked",
+          "label": "Stacked",
+          "hint": "Brand, links, fine print",
+          "wireframe": "assets/wireframes/footer/stacked.svg"
+        },
+        {
+          "id": "columns",
+          "label": "Columns",
+          "hint": "Grouped links in columns",
+          "wireframe": "assets/wireframes/footer/columns.svg"
+        },
+        {
+          "id": "split",
+          "label": "Split",
+          "hint": "Brand left, links right",
+          "wireframe": "assets/wireframes/footer/split.svg"
+        },
+        {
+          "id": "minimal",
+          "label": "Minimal",
+          "hint": "Fine print only",
+          "wireframe": "assets/wireframes/footer/minimal.svg"
+        }
+      ]
+    },
+    {
+      "key": "footer_show",
+      "attr": "data-footer-show",
+      "noun": "Footer shown",
+      "default": "yes",
+      "section": "footer",
+      "options": [
+        {
+          "id": "yes",
+          "label": "Shown"
+        },
+        {
+          "id": "no",
+          "label": "Hidden"
+        }
+      ]
+    },
+    {
+      "key": "footer_signup",
+      "attr": "data-footer-signup",
+      "noun": "Footer signup",
+      "default": "yes",
+      "section": "footer",
+      "options": [
+        {
+          "id": "yes",
+          "label": "Signup"
+        },
+        {
+          "id": "no",
+          "label": "No signup"
+        }
+      ]
+    },
+    {
+      "key": "footer_credit",
+      "attr": "data-footer-credit",
+      "noun": "Made-with credit",
+      "default": "yes",
+      "section": "footer",
+      "options": [
+        {
+          "id": "yes",
+          "label": "Credit"
+        },
+        {
+          "id": "no",
+          "label": "No credit"
+        }
+      ]
+    },
+    {
+      "key": "footer_bg",
+      "attr": "data-footer-bg",
+      "noun": "Footer background",
+      "default": "paper",
+      "section": "footer",
+      "options": [
+        {
+          "id": "paper",
+          "label": "Paper",
+          "depiction": "footer-paper"
+        },
+        {
+          "id": "ink",
+          "label": "Ink",
+          "depiction": "footer-ink"
         }
       ]
     },

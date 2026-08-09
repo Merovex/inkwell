@@ -26,11 +26,11 @@ export default class extends Controller {
     "linksList", "linkTemplate", "buttonLabel", "buttonUrl", "buttonNewTab",
     "buttonVisible", "buttonFields",
     "logoTitleWrap", "logoTitleAsAlt",
-    "colorSlot", "colorChip", "assigning", "hexInput", "axisToggle", "axisSlider",
+    "colorSlot", "colorChip", "assigning", "hexInput", "axisToggle", "axisSlider", "buttonDemo",
     "customFontCard", "customFontName", "customFontFamilies",
     "heroHeadline", "heroLede", "heroBook", "heroSource", "heroCustomFields", "heroBookWrap",
     "heroLedeCount", "heroManyWrap", "heroScrimWrap", "heroScrimColor",
-    "nlHeadline", "nlBlurb", "nlButton", "orderList", "orderSummary"]
+    "nlHeadline", "nlBlurb", "nlButton", "orderList", "footerFinePrint"]
   static values = {
     buildUrl: String, frameUrl: String, storageKey: String, defaults: Object,
     saveUrl: String,
@@ -71,6 +71,7 @@ export default class extends Controller {
       : (this.validFonts(stored.custom_fonts) || this.validFonts(stored.fonts))
     this.hero = legacyFlat ? null : this.validHero(stored.hero)
     this.newsletter = legacyFlat ? null : this.validNewsletter(stored.newsletter)
+    this.footer = legacyFlat ? null : this.validFooter(stored.footer)
     this.sections = legacyFlat ? null : this.validSections(stored.sections)
     this.updateCustomFontCard()
     this.applyToRail()
@@ -78,6 +79,7 @@ export default class extends Controller {
     this.populateButtonFields()
     this.populateHeroFields()
     this.populateNewsletterFields()
+    this.populateFooterFields()
     this.populateSectionOrder()
     this.updateModeToggle()
     requestAnimationFrame(() => this.syncFontPickers())
@@ -140,10 +142,12 @@ export default class extends Controller {
     this.workingColors = null
     this.hero = null
     this.newsletter = null
+    this.footer = null
     this.sections = null
     this.updateCustomFontCard()
     this.populateHeroFields()
     this.populateNewsletterFields()
+    this.populateFooterFields()
     this.populateSectionOrder()
     this.applyToRail()
     this.refreshLabels()
@@ -491,18 +495,52 @@ export default class extends Controller {
     }
   }
 
-  // --- home section order (the home.sections contract field; Up/Down rows
-  //     reorder the DOM, and the DOM is the state)
+  // --- home section order (the home.sections contract field; the root
+  //     menu's Page sections rows are the order — drag a handle or press
+  //     an arrow key on it, the DOM is the state). Hero isn't a row here
+  //     (it has the featured card): it stays the page opener, pinned first
+  //     in the emitted order.
 
-  moveSection(event) {
+  sectionDragStart(event) {
+    this.draggedSection = event.target.closest("[data-section]")
+    this.draggedSection.classList.add("is-dragging")
+    event.dataTransfer.effectAllowed = "move"
+    event.dataTransfer.setData("text/plain", this.draggedSection.dataset.section)
+    event.dataTransfer.setDragImage(this.draggedSection, 24, 24)
+  }
+
+  // Rows reorder live as the drag passes their midpoints; dragend commits.
+  sectionDragOver(event) {
+    if (!this.draggedSection) return
+    event.preventDefault()
+    const over = event.target.closest("[data-section]")
+    if (!over || over === this.draggedSection) return
+    const midpoint = over.getBoundingClientRect().top + over.offsetHeight / 2
+    event.clientY > midpoint ? over.after(this.draggedSection) : over.before(this.draggedSection)
+  }
+
+  sectionDragEnd() {
+    if (!this.draggedSection) return
+    this.draggedSection.classList.remove("is-dragging")
+    this.draggedSection = null
+    this.commitSectionOrder()
+  }
+
+  sectionKeydown(event) {
+    const dir = { ArrowUp: -1, ArrowDown: 1 }[event.key]
+    if (!dir) return
+    event.preventDefault()
     const row = event.target.closest("[data-section]")
-    const dir = event.params.dir
     const sibling = dir < 0 ? row.previousElementSibling : row.nextElementSibling
     if (!sibling) return
     dir < 0 ? sibling.before(row) : sibling.after(row)
-    this.sections = [...this.orderListTarget.children].map(li => li.dataset.section)
+    event.target.focus()
+    this.commitSectionOrder()
+  }
+
+  commitSectionOrder() {
+    this.sections = ["hero", ...[...this.orderListTarget.children].map(row => row.dataset.section)]
     if (this.sections.join() === DEFAULT_SECTIONS.join()) this.sections = null
-    this.updateOrderSummary()
     this.commit()
   }
 
@@ -513,11 +551,6 @@ export default class extends Controller {
       const row = this.orderListTarget.querySelector(`[data-section="${id}"]`)
       if (row) this.orderListTarget.append(row)
     })
-    this.updateOrderSummary()
-  }
-
-  updateOrderSummary() {
-    if (this.hasOrderSummaryTarget) this.orderSummaryTarget.textContent = this.sections ? "Custom" : "Standard"
   }
 
   validSections(sections) {
@@ -547,6 +580,25 @@ export default class extends Controller {
     if (!block || typeof block !== "object") return null
     const filled = ["headline", "blurb", "button_label"].some(key => typeof block[key] === "string" && block[key])
     return filled ? block : null
+  }
+
+  // --- footer content (the fine-print override — layout and visibility
+  //     are footer_* axes; social links are Site settings, not design)
+
+  footerEdited() {
+    const fine_print = this.footerFinePrintTarget.value.trim()
+    this.footer = fine_print ? { fine_print } : null
+    this.commit()
+  }
+
+  populateFooterFields() {
+    if (!this.hasFooterFinePrintTarget) return
+    this.footerFinePrintTarget.value = this.footer?.fine_print || ""
+  }
+
+  validFooter(block) {
+    if (!block || typeof block !== "object" || Array.isArray(block)) return null
+    return (typeof block.fine_print === "string" && block.fine_print) ? { fine_print: block.fine_print } : null
   }
 
   // The memory card: reactivate the remembered custom pairing.
@@ -659,7 +711,8 @@ export default class extends Controller {
   store() {
     localStorage.setItem(this.storageKeyValue,
       JSON.stringify({ design: this.design, nav: this.nav, fonts: this.fonts, colors: this.colors,
-        custom_fonts: this.customFonts, hero: this.hero, newsletter: this.newsletter, sections: this.sections }))
+        custom_fonts: this.customFonts, hero: this.hero, newsletter: this.newsletter,
+        footer: this.footer, sections: this.sections }))
   }
 
   // Only a well-shaped block counts — a nav axis value ("split") once leaked
@@ -780,6 +833,34 @@ export default class extends Controller {
       chip.querySelectorAll("[data-option]").forEach(option => option.hidden = option.dataset.option !== current)
     })
 
+    // The Buttons pane's sample buttons and the footer's paper/ink cards:
+    // shapes from the working design; colors from the custom-color block
+    // when set, else the current palette's swatches (read off the root
+    // row's chip). Swatches are ordered artistically — dominant color
+    // first, accent always middle — so paper and ink are derived by
+    // lightness, not position. The custom properties land on the designer
+    // root so the option-card depictions paint in the same colors.
+    if (this.hasButtonDemoTarget) {
+      const demo = this.buttonDemoTarget
+      demo.dataset.rounding = this.design.buttons
+      demo.dataset.second = this.design.button_second
+      demo.dataset.size = this.design.button_size
+      const custom = this.validColors(this.colors)
+      const swatch = index => this.element.querySelector(
+        `[data-chip-for="palette"] [data-option="${this.design.palette}"] .designer__swatch:nth-child(${index})`)?.style.background
+      const luminance = color => {
+        const [r, g, b] = (color.match(/\d+/g) || [0, 0, 0]).map(Number)
+        return r * 0.299 + g * 0.587 + b * 0.114
+      }
+      const trio = [swatch(1), swatch(2), swatch(3)].filter(Boolean)
+      const paper = custom?.bg || (trio.length && trio.reduce((a, b) => luminance(a) >= luminance(b) ? a : b))
+      const ink = custom?.ink || (trio.length && trio.reduce((a, b) => luminance(a) <= luminance(b) ? a : b))
+      const accent = custom?.accent || swatch(2)
+      if (paper) this.element.style.setProperty("--demo-bg", paper)
+      if (accent) this.element.style.setProperty("--demo-accent", accent)
+      if (ink) this.element.style.setProperty("--demo-ink", ink)
+    }
+
     // Switch- and slider-rendered axes have no radios — summarize from
     // their labels (all matching spans: the row AND the pane control).
     const summarize = (axis, text) =>
@@ -793,6 +874,10 @@ export default class extends Controller {
     })
 
     // Custom fonts / colors trump the pairing / palette in the summaries.
+    // The Fonts row's typeface names describe the pairing, so they hide
+    // wholesale when a custom pairing takes over.
+    this.element.querySelectorAll("[data-font-names]")
+      .forEach(names => names.hidden = this.validFonts(this.fonts))
     if (this.validFonts(this.fonts)) {
       const summary = this.element.querySelector('[data-summary-for="font"]')
       if (summary) summary.textContent = "Custom"
@@ -844,7 +929,7 @@ export default class extends Controller {
   // The working design, as the preview build and the save both post it.
   payload() {
     return { design: this.design, nav: this.nav, fonts: this.fonts, colors: this.colors,
-      hero: this.hero, newsletter: this.newsletter, sections: this.sections }
+      hero: this.hero, newsletter: this.newsletter, footer: this.footer, sections: this.sections }
   }
 
   async build() {

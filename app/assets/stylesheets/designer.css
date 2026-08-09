@@ -99,14 +99,6 @@
   .designer__preset-name { font-size: var(--font-size-2); }
   .designer__preset-tagline { color: var(--ink-muted); font-size: var(--font-size-0); }
 
-  /* composes u-unlist in the markup */
-  .designer__order { display: grid; gap: calc(var(--u-pad) / 4); }
-  .designer__order-row {
-    display: flex; align-items: center; justify-content: space-between; gap: var(--u-pad);
-    padding: calc(var(--u-pad) / 2);
-    border: var(--border-size-1) solid var(--line); border-radius: var(--radius-ui);
-  }
-  .designer__order-label { font-weight: var(--font-weight-6); }
   .designer__count--over { color: var(--danger-ink); font-weight: var(--font-weight-6); }
 
   /* The stage scales a full-width desktop rendering to fit (70%, like the
@@ -175,6 +167,15 @@
     margin: 0 0 calc(var(--u-pad) / 4);
     font-weight: var(--font-weight-6);
   }
+  .designer__group-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--u-pad);
+  }
+  .designer__group-head .designer__group-title { margin-block-end: 0; }
+  .designer__group-hint { margin: 0; font-size: var(--font-size-0); }
+  .designer__group-rows { display: grid; grid-template-columns: minmax(0, 1fr); gap: calc(var(--u-pad) / 4); }
 
   /* Summary rows: label left, current value + chevron right. */
   .designer__row {
@@ -219,7 +220,18 @@
   }
   .designer__chip-option { display: block; inline-size: 100%; block-size: 100%; }
   .designer__chip-option svg { display: block; inline-size: 100%; block-size: 100%; }
-  .designer__chip-abc { font-weight: var(--font-weight-8); letter-spacing: var(--font-letterspacing-1); color: var(--gray-9); }
+  .designer__chip-aa { font-weight: var(--font-weight-8); letter-spacing: var(--font-letterspacing-1); color: var(--ink); }
+  /* The Buttons chip: a button outline drawn at the current rounding step. */
+  .designer__chip-corners { display: grid; place-items: center; }
+  .designer__chip-corner {
+    inline-size: 60%;
+    block-size: 45%;
+    border: var(--border-size-2) solid var(--ink);
+    border-radius: var(--chip-corner-radius, 0);
+  }
+  .designer__chip-corner--crisp { --chip-corner-radius: var(--radius-1); }
+  .designer__chip-corner--soft { --chip-corner-radius: var(--radius-2); }
+  .designer__chip-corner--round { --chip-corner-radius: var(--radius-round); }
   .designer__chip-swatches {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -236,6 +248,32 @@
   .designer__row--card .designer__row-value { text-align: start; }
   .designer__row-icon { flex: none; color: var(--ink-muted); }
   .designer__row--card:hover .designer__row-icon { color: var(--accent); }
+
+  /* Sortable rows (Page sections): grip handle + row body, both real
+     buttons inside the bordered row shell; the shell is the drag unit. */
+  .designer__row--sortable { padding: 0; gap: 0; }
+  .designer__row--sortable.is-dragging { opacity: 0.5; border-style: dashed; }
+  .designer__row-handle {
+    flex: none;
+    align-self: stretch;
+    display: grid;
+    place-items: center;
+    padding-inline: calc(var(--u-pad) / 3);
+    color: var(--ink-muted);
+    cursor: grab;
+  }
+  .designer__row-handle:hover { color: var(--accent); }
+  .designer__row-body {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--u-pad);
+    padding: calc(var(--u-pad) / 2);
+    padding-inline-start: 0;
+    text-align: start;
+  }
 
   /* The hero's featured card: thumbnail placeholder, current variant, CTA. */
   .designer__featured {
@@ -318,6 +356,139 @@
     block-size: var(--size-8);
     border: var(--border-size-1) solid var(--line);
     border-radius: var(--radius-ui);
+  }
+
+  /* The Buttons pane's sample buttons: a little stage painted in the working
+     palette (--demo-bg/--demo-accent, set by the controller; designer tokens
+     as fallback), reshaped by the rounding/second/size choices. */
+  .designer__button-demo {
+    --demo-radius: var(--radius-2);
+    --demo-pad-block: var(--size-2);
+    --demo-pad-inline: var(--size-3);
+    --demo-font-size: var(--font-size-1);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: calc(var(--u-pad) / 2);
+    padding: var(--u-pad);
+    border: var(--border-size-1) solid var(--line);
+    border-radius: var(--radius-card);
+    background: var(--demo-bg, var(--site-bg));
+  }
+  .designer__button-demo[data-rounding="square"] { --demo-radius: 0; }
+  .designer__button-demo[data-rounding="crisp"] { --demo-radius: var(--radius-1); }
+  .designer__button-demo[data-rounding="round"] { --demo-radius: var(--radius-round); }
+  .designer__button-demo[data-size="compact"] {
+    --demo-pad-block: var(--size-1);
+    --demo-pad-inline: var(--size-2);
+    --demo-font-size: var(--font-size-0);
+  }
+  .designer__button-demo[data-size="large"] {
+    --demo-pad-block: var(--size-3);
+    --demo-pad-inline: var(--size-5);
+    --demo-font-size: var(--font-size-2);
+  }
+  .designer__demo-button {
+    padding: var(--demo-pad-block) var(--demo-pad-inline);
+    border-radius: var(--demo-radius);
+    font-size: var(--demo-font-size);
+    font-weight: var(--font-weight-6);
+    white-space: nowrap;
+  }
+  .designer__demo-button--primary {
+    background: var(--demo-accent, var(--ink));
+    /* Label flips white/near-black off the accent's own lightness. */
+    color: oklch(from var(--demo-accent, var(--ink)) calc((0.66 - l) * infinity) 0 h);
+  }
+  .designer__demo-button--second { color: var(--demo-accent, var(--ink)); }
+  .designer__button-demo[data-second="outlined"] .designer__demo-button--second {
+    border: var(--border-size-2) solid var(--demo-accent, var(--ink));
+  }
+  .designer__button-demo[data-second="tinted"] .designer__demo-button--second {
+    background: color-mix(in oklab, var(--demo-accent, var(--ink)) 15%, var(--demo-bg, var(--canvas)));
+  }
+  .designer__button-demo[data-second="plain"] .designer__demo-button--second {
+    padding-inline: calc(var(--u-pad) / 4);
+    text-decoration: underline;
+    text-underline-offset: var(--size-1);
+  }
+
+  /* Option-card depictions: CSS-drawn thumbnails from the manifest's
+     `depiction` key — button shapes today, painted in the demo accent. */
+  .design-option__depiction {
+    display: block;
+    block-size: var(--size-5);
+    margin: 0 auto calc(var(--u-pad) / 4);
+    background: var(--demo-accent, var(--ink));
+  }
+  /* Depiction cards share the row in equal cells, thumbnails filling each. */
+  .design-option:has(.design-option__depiction) { flex: 1; }
+  .design-option__label:has(.design-option__depiction) { display: block; text-align: center; }
+  [data-depiction="btn-crisp"] { border-radius: var(--radius-1); }
+  [data-depiction="btn-soft"] { border-radius: var(--radius-2); }
+  [data-depiction="btn-round"] { border-radius: var(--radius-round); }
+  [data-depiction="second-outlined"] {
+    background: transparent;
+    border: var(--border-size-2) solid var(--demo-accent, var(--ink));
+    border-radius: var(--radius-round);
+  }
+  [data-depiction="second-tinted"] {
+    background: color-mix(in oklab, var(--demo-accent, var(--ink)) 15%, var(--canvas));
+    border-radius: var(--radius-2);
+  }
+  [data-depiction="second-plain"] {
+    block-size: var(--border-size-2);
+    inline-size: var(--size-7);
+    margin-block-start: calc((var(--size-5) - var(--border-size-2)) / 2);
+    margin-block-end: calc((var(--size-5) - var(--border-size-2)) / 2 + var(--u-pad) / 4);
+  }
+  /* Cover-corner depictions: a little portrait cover at each radius step. */
+  [data-depiction^="cover-"] {
+    inline-size: var(--size-5);
+    block-size: var(--size-7);
+  }
+  [data-depiction="cover-crisp"] { border-radius: var(--radius-1); }
+  [data-depiction="cover-soft"] { border-radius: var(--radius-2); }
+  [data-depiction="cover-round"] { border-radius: var(--radius-3); }
+  /* Footer background: the palette's paper and ink faces as color blocks. */
+  [data-depiction="footer-paper"] {
+    background: var(--demo-bg, var(--site-bg));
+    border: var(--border-size-1) solid var(--line);
+    border-radius: var(--radius-1);
+  }
+  [data-depiction="footer-ink"] {
+    background: var(--demo-ink, var(--ink));
+    border-radius: var(--radius-1);
+  }
+
+  /* Segmented option row (axis variant "segmented"): equal cells joined in
+     one track; the checked cell reads as the raised segment. */
+  .designer__options--segmented {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 1fr;
+    gap: var(--size-1);
+    padding: var(--size-1);
+    background: var(--line);
+    border-radius: var(--radius-ui);
+  }
+  .designer__options--segmented .design-option__label {
+    display: block;
+    text-align: center;
+    border: 0;
+    background: none;
+    border-radius: var(--radius-1);
+  }
+  .designer__options--segmented .design-option:has(.design-option__input:checked) .design-option__label {
+    background: var(--canvas);
+  }
+
+  /* Option descriptions (manifest `hint`) under wireframe/depiction labels. */
+  .design-option__hint {
+    display: block;
+    font-size: var(--font-size-0);
+    font-weight: var(--font-weight-4);
   }
 
   /* Sub-headings inside an axis, from manifest option groups. */

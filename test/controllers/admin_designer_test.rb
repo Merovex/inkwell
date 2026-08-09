@@ -40,21 +40,26 @@ class AdminDesignerTest < ActionDispatch::IntegrationTest
 
     theme = Theme.current
     # books + catalog + alternate + hero_book + hero_many + hero_shadow + the
-    # author-grid toggle (authors) + the two home-visibility axes (hero_home,
-    # bio_home) render as switches; corners, buttons, and hero_scrim (manifest
-    # control: "slider") as sliders — not fieldsets. hero_art is a 3-way choice,
-    # so it renders as an option-card fieldset like the other multi-value axes.
+    # author-grid toggle (authors) + the chrome toggles (nav_show,
+    # footer_show, footer_signup, footer_credit) + the two home-visibility
+    # axes (hero_home, bio_home) render as switches; hero_scrim (manifest
+    # control: "slider") as a slider — not fieldsets. hero_art is a 3-way
+    # choice, so it renders as an option-card fieldset like the other
+    # multi-value axes.
     sliders = theme.axes.count { it["control"] == "slider" }
-    assert_select ".designer__axis", count: theme.axes.size - 9 - sliders
-    assert_select ".switch__input[data-designer-target=axisToggle]", count: 9
+    assert_select ".designer__axis", count: theme.axes.size - 13 - sliders
+    assert_select ".switch__input[data-designer-target=axisToggle]", count: 13
     assert_select ".switch__input[data-axis=hero_home]", count: 1
     assert_select ".switch__input[data-axis=bio_home]", count: 1
     assert_select ".switch__input[data-axis=hero_shadow]", count: 1
     assert_select ".design-option__input[name='design[hero_art]']", count: 3
     assert_select ".switch__input[data-axis=authors]", count: 1
     assert_select ".designer__range[data-axis=hero_scrim]", count: 1
-    assert_select ".designer__range[data-axis=corners]", count: 1
-    assert_select ".designer__range[data-axis=buttons]", count: 1
+    # Buttons and cover corners render as depiction cards (manifest
+    # `depiction`), not sliders.
+    assert_select ".design-option__input[name='design[buttons]']", count: 4
+    assert_select ".design-option__input[name='design[corners]']", count: 4
+    assert_select ".design-option__depiction", count: 13
     assert_select ".design-option__input[name='design[palette]']",
       count: theme.axes.find { it["key"] == "palette" }["options"].size
     # Preset cards: swatch dots + name/tagline in the preset's own faces,
@@ -63,13 +68,18 @@ class AdminDesignerTest < ActionDispatch::IntegrationTest
     assert_select ".designer__preset .designer__preset-tagline", count: theme.presets.size
 
     # Root menu + one sub-pane per style axis, page section, hero, preset,
-    # and the section-order pane — grouping comes from the manifest's
-    # per-axis `section`. Section "palette" axes (mode) ride inside the
-    # palette pane, no pane of their own.
+    # and footer — grouping comes from the manifest's per-axis `section`.
+    # Nested-axis sections ride inside another axis's pane, no pane of
+    # their own: "palette" (mode) in Palette, "buttons" (second button,
+    # size) in Buttons, "nav" (shown) in Header; section "footer" axes all
+    # ride the hand-built footer pane.
     sections = theme.axes.map { it["section"] }.uniq
     styles = theme.axes.count { it["section"] == "styles" }
-    assert_select ".designer__pane", count: 3 + styles + (sections - %w[styles palette]).size
-    assert_select ".designer__order-row", count: 6
+    assert_select ".designer__pane", count: 3 + styles + (sections - %w[styles palette buttons nav footer]).size
+    # The Page sections rows ARE the order (drag handles, no order pane);
+    # the header row and footer placeholder sit pinned outside the list.
+    assert_select "[data-designer-target=orderList] .designer__row--sortable", count: 5
+    assert_select ".designer__row--sortable .designer__row-handle", count: 5
     assert_select ".designer__row[data-designer-pane-param=preset]", count: 1
 
     # Options carrying a manifest wireframe render as inlined-SVG cards.

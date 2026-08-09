@@ -23,7 +23,7 @@ class SiteDesign
   HERO_HTML_TAGS = %w[ p br strong em b i a ul ol li blockquote ].freeze
   HERO_HTML_ATTRIBUTES = %w[ href ].freeze
 
-  attr_reader :design, :nav, :fonts, :colors, :hero, :newsletter, :sections
+  attr_reader :design, :nav, :fonts, :colors, :hero, :newsletter, :footer, :sections
 
   def initialize(params)
     @params = params
@@ -33,6 +33,7 @@ class SiteDesign
     @colors = permit_colors
     @hero = permit_hero
     @newsletter = permit_newsletter
+    @footer = permit_footer
     @sections = permit_sections
   rescue Theme::InvalidDesign => error
     # The theme's vocabulary check speaks the same 422 as the rest.
@@ -42,7 +43,8 @@ class SiteDesign
   # The raw, validated bundle: what the account stores and the exporter reads.
   def to_h
     { "design" => design, "nav" => nav, "fonts" => fonts, "colors" => colors,
-      "hero" => hero, "newsletter" => newsletter, "sections" => sections }.compact_blank
+      "hero" => hero, "newsletter" => newsletter, "footer" => footer,
+      "sections" => sections }.compact_blank
   end
 
   private
@@ -119,6 +121,16 @@ class SiteDesign
       return nil unless block.is_a?(ActionController::Parameters)
 
       block.permit(:headline, :blurb, :button_label).to_h.compact_blank.presence
+    end
+
+    # The footer-content block: a fine-print override, plain string — blank
+    # keeps the theme's generated line. (Social links are Site settings,
+    # not design.)
+    def permit_footer
+      block = @params[:footer]
+      return nil unless block.is_a?(ActionController::Parameters)
+
+      block.permit(:fine_print).to_h.compact_blank.presence
     end
 
     # The home-page section order (the contract's home.sections). Must be a
