@@ -10,6 +10,16 @@
      "Books in this …" sections. */
   .series-books .combobox { margin-block-end: var(--u-pad); }
 
+  /* One series per book: once a membership row is present, drop the "add a
+     series" typeahead (the turbo-stream appends the row; this hides the box
+     without a round-trip, and it returns if the row is removed). */
+  .book-series:has(#book_series > li) .combobox { display: none; }
+
+  /* In the detail column the section sits in a u-flow stack, which already
+     spaces it — so it drops the standalone size-7 top margin (that stacked with
+     the flow rhythm to open a gap under the title). */
+  .book-detail__main .book-series { margin-block-start: 0; }
+
   /* the head row composes u-cluster u-cluster-between u-margin-block-end */
 
   /* --- membership / distributor rows (one bordered row per item) --- */

@@ -89,7 +89,11 @@
         <p class="book-detail__tagline"><%= @book.tagline %></p>
       <% end %>
 
-      <article class="prose"><%= @book.content %></article>
+      <% if @book.content.blank? %>
+        <p class="prose u-text-muted"><%= can_manage ? "No description yet — add one from Edit." : "No description yet." %></p>
+      <% else %>
+        <article class="prose"><%= @book.content %></article>
+      <% end %>
 
       <% if primary %>
         <section class="u-flow" aria-labelledby="series-order-heading">
