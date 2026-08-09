@@ -21,7 +21,8 @@
 <%# actions: captured HTML for the far-right action zone (buttons, stat badges). %>
 <%# discard_path adds a far-right trashcan (DELETE, with discard_confirm prompt); %>
 <%# discard_title/discard_aria relabel it (e.g. "Remove", "Trash"). %>
-<article class="list__item">
+<%# filter_text: opt the row into the `filter` controller (client-side search). %>
+<article class="list__item"<% if filter_text %> data-filter-target="item" data-filter-text="<%= filter_text %>"<% end %>>
   <% if avatar_spacer %>
     <span class="list__avatar-spacer" aria-hidden="true"></span>
   <% elsif avatar %>
