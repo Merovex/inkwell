@@ -28,6 +28,8 @@ export default class extends Controller {
     "logoTitleWrap", "logoTitleAsAlt",
     "colorSlot", "colorChip", "assigning", "hexInput", "axisToggle", "axisSlider", "buttonDemo",
     "customFontCard", "customFontName", "customFontFamilies",
+    "customDisplayPreview", "customBodyPreview",
+    "fontSearch", "fontGroups", "fontMore", "fontInUseName", "fontInUseSpecimen", "fontInUseFamilies",
     "heroHeadline", "heroLede", "heroBook", "heroSource", "heroCustomFields", "heroBookWrap",
     "heroLedeCount", "heroManyWrap", "heroScrimWrap", "heroScrimColor",
     "nlHeadline", "nlBlurb", "nlButton", "orderList", "footerFinePrint"]
@@ -644,6 +646,86 @@ export default class extends Controller {
       const picker = this.application.getControllerForElementAndIdentifier(el, "font-picker")
       picker?.display(this.fonts?.[el.dataset.fontPickerSlotValue])
     })
+    // The your-own-pairing preview lines render in the active picks (or
+    // the remembered ones while a pairing is active).
+    if (this.hasCustomDisplayPreviewTarget) {
+      const picks = this.validFonts(this.fonts) || this.validFonts(this.customFonts) || {}
+      this.customDisplayPreviewTarget.style.fontFamily = picks.display ? `'${picks.display}', serif` : ""
+      this.customBodyPreviewTarget.style.fontFamily = picks.body ? `'${picks.body}', serif` : ""
+    }
+  }
+
+  // --- fonts pane browsing: search + genre chips over the pairing cards,
+  //     the current pick's group floated first (its group stands in for an
+  //     account genre until one exists), the rest collapsed behind "Show
+  //     more". Pure layout — the radios underneath are untouched.
+
+  fontBrowse() {
+    this.applyFontBrowse()
+  }
+
+  fontChip(event) {
+    this.fontGroupFilter = event.target.dataset.group || null
+    this.element.querySelectorAll(".designer__filter").forEach(filter =>
+      filter.classList.toggle("is-active", filter === event.target))
+    this.applyFontBrowse()
+  }
+
+  fontMoreClicked() {
+    this.fontsExpanded = true
+    this.applyFontBrowse()
+  }
+
+  applyFontBrowse() {
+    if (!this.hasFontGroupsTarget) return
+    const query = (this.hasFontSearchTarget ? this.fontSearchTarget.value : "").trim().toLowerCase()
+    const browsing = Boolean(query || this.fontGroupFilter)
+    const currentGroup = this.element.querySelector('input[name="design[font]"]:checked:not([data-custom-font])')
+      ?.closest("[data-font-group]")?.dataset.fontGroup
+    let hidden = 0
+    this.fontGroupsTarget.querySelectorAll("[data-font-group]").forEach(section => {
+      const groupMatch = !this.fontGroupFilter || section.dataset.fontGroup === this.fontGroupFilter
+      const collapsed = !browsing && !this.fontsExpanded && currentGroup && section.dataset.fontGroup !== currentGroup
+      let visible = 0
+      section.querySelectorAll("[data-font-card]").forEach(card => {
+        const match = groupMatch && (!query || card.dataset.search.includes(query))
+        card.hidden = !match || collapsed
+        if (match && collapsed) hidden++
+        if (!card.hidden) visible++
+      })
+      section.hidden = visible === 0
+      section.querySelector(".designer__your-pick").hidden = section.dataset.fontGroup !== currentGroup
+    })
+    if (currentGroup) {
+      const current = this.fontGroupsTarget.querySelector(`[data-font-group="${CSS.escape(currentGroup)}"]`)
+      if (current) this.fontGroupsTarget.prepend(current)
+    }
+    if (this.hasFontMoreTarget) {
+      this.fontMoreTarget.hidden = hidden === 0
+      this.fontMoreTarget.textContent = `Show ${hidden} more pairings`
+    }
+  }
+
+  // The pinned "In use" card mirrors the working pairing (or the custom
+  // picks), dressed in its own faces.
+  updateFontInUse() {
+    if (!this.hasFontInUseNameTarget) return
+    const custom = this.validFonts(this.fonts)
+    if (custom) {
+      const display = custom.display || "", body = custom.body || ""
+      this.fontInUseNameTarget.textContent = "Custom"
+      this.fontInUseNameTarget.style.fontFamily = display ? `'${display}', serif` : ""
+      this.fontInUseSpecimenTarget.style.fontFamily = body ? `'${body}', serif` : ""
+      this.fontInUseFamiliesTarget.textContent = [display, body].filter(Boolean).join(" + ")
+      return
+    }
+    const label = this.element.querySelector('input[name="design[font]"]:checked:not([data-custom-font])')
+      ?.parentElement.querySelector(".design-option__label")
+    if (!label) return
+    this.fontInUseNameTarget.textContent = label.querySelector(".design-option__font-name").textContent
+    this.fontInUseNameTarget.style.fontFamily = label.querySelector(".design-option__font-name").style.fontFamily
+    this.fontInUseSpecimenTarget.style.fontFamily = label.querySelector(".design-option__font-specimen").style.fontFamily
+    this.fontInUseFamiliesTarget.textContent = label.querySelector(".design-option__font-families").textContent
   }
 
 
@@ -887,6 +969,8 @@ export default class extends Controller {
       if (summary) summary.textContent = "Custom"
     }
 
+    this.updateFontInUse()
+    this.applyFontBrowse()
     this.updateModeToggle()
 
     // Conditional hero controls: the 3D switch wants a one-book layout,

@@ -1,6 +1,8 @@
-<%# The escape valve past the pairings: pick any Google Fonts heading/body.
-    Standard modal; each field is a font-picker typeahead over the vendored
-    list, and picks land in the working design's fonts block. %>
+<%# The escape valve past the pairings, inline: any Google Font for the
+    headings and the body, each picker with a live preview line set in the
+    pick (the font-picker loads the face's stylesheet on selection). Picks
+    apply as they land — the whole designer is live — and the pairing is
+    remembered as the "Custom" card. %>
 <%# The remembered custom pairing (localStorage only, like the rest of the
     working state): once the author has picked custom fonts it renders as a
     card that survives switching to a pairing — click to reactivate. It
@@ -12,44 +14,36 @@
            data-custom-font data-label="Custom" data-action="designer#customFontCardPicked">
     <span class="design-option__label">
       <span class="design-option__font-name" data-designer-target="customFontName">Custom</span>
-      <span class="design-option__font-families" data-designer-target="customFontFamilies"></span>
-      <span class="design-option__font-tagline">Your own heading &amp; body picks</span>
+      <span class="design-option__font-specimen">Your own heading &amp; body picks</span>
+      <span class="design-option__font-families u-text-muted" data-designer-target="customFontFamilies"></span>
     </span>
   </label>
 </div>
-<section class="designer__block" aria-label="Custom fonts">
-  <h3 class="designer__block-title">Custom fonts</h3>
-  <span data-controller="dialog">
-    <button type="button" class="button" data-action="dialog#open">Pick your own fonts</button>
-    <dialog class="modal" data-dialog-target="modal" data-action="click->dialog#backdrop"
-            aria-labelledby="designer-fonts-title">
-      <div class="modal__header">
-        <span class="modal__title" id="designer-fonts-title">Custom fonts</span>
-        <button type="button" class="button button--icon button--ghost" data-action="dialog#close" aria-label="Close">
-          <%= inline_svg_tag "lucide/x.svg", class: "lucide", size: "20px" %>
-        </button>
+<section class="designer__block u-flow" aria-label="Your own pairing">
+  <div class="u-cluster u-cluster-between">
+    <h3 class="designer__group-title u-microcaps u-text-muted u-margin-0">Your own pairing</h3>
+    <p class="u-margin-0 u-text-small u-text-muted">Any Google font</p>
+  </div>
+  <% { display: { label: "Headings", preview: "A House Without Doors" },
+       body: { label: "Body", preview: "She had counted on one tide and the sea gave her two, which is more or less how the year went." } }.each do |slot, slot_info| %>
+    <div class="designer__font-slot">
+      <div class="field font-picker u-pad-half" data-controller="font-picker"
+           data-font-picker-url-value="<%= asset_path("google_fonts.json") %>"
+           data-font-picker-slot-value="<%= slot %>"
+           data-action="font-picker:change->designer#customFontPicked">
+        <label class="field__label u-microcaps u-text-muted" for="designer-font-<%= slot %>"><%= slot_info[:label] %></label>
+        <input type="text" id="designer-font-<%= slot %>" class="field__control" autocomplete="off"
+               role="combobox" aria-expanded="false" aria-autocomplete="list" placeholder="Search Google Fonts&hellip;"
+               data-font-picker-target="input"
+               data-action="input->font-picker#search focus->font-picker#search blur->font-picker#close keydown->font-picker#navigate">
+        <ul class="font-picker__list u-unlist" role="listbox" data-font-picker-target="list" hidden></ul>
       </div>
-      <div class="modal__body u-flow">
-        <p class="u-text-muted">Any Google Font, for the heading or the body or both — whatever you leave blank keeps the pairing's face. Type a few letters to search.</p>
-        <% { display: "Heading font", body: "Body font" }.each do |slot, label| %>
-          <div class="field font-picker" data-controller="font-picker"
-               data-font-picker-url-value="<%= asset_path("google_fonts.json") %>"
-               data-font-picker-slot-value="<%= slot %>"
-               data-action="font-picker:change->designer#customFontPicked">
-            <label class="field__label" for="designer-font-<%= slot %>"><%= label %></label>
-            <input type="text" id="designer-font-<%= slot %>" class="field__control" autocomplete="off"
-                   role="combobox" aria-expanded="false" aria-autocomplete="list" placeholder="Search Google Fonts&hellip;"
-                   data-font-picker-target="input"
-                   data-action="input->font-picker#search focus->font-picker#search blur->font-picker#close keydown->font-picker#navigate">
-            <ul class="font-picker__list u-unlist" role="listbox" data-font-picker-target="list" hidden></ul>
-          </div>
-        <% end %>
-      </div>
-      <div class="modal__footer">
-        <button type="button" class="button button--ghost" data-action="designer#clearCustomFonts">Back to the pairing</button>
-        <button type="button" class="button button--primary" data-action="dialog#close">Done</button>
-      </div>
-    </dialog>
-  </span>
-  <p class="designer__hint u-text-muted">Custom picks load at regular weight; bold and italics are synthesized by the browser.</p>
+      <p class="designer__font-preview" data-designer-target="custom<%= slot.to_s.classify %>Preview"><%= slot_info[:preview] %></p>
+    </div>
+  <% end %>
+  <div class="u-cluster">
+    <button type="button" class="button button--ghost" data-action="designer#clearCustomFonts">Back to the pairing</button>
+    <p class="designer__hint u-text-muted">Saved as &ldquo;Custom&rdquo; &mdash; applies as you pick.</p>
+  </div>
+  <p class="designer__hint u-text-muted">Two families keep the site fast. Picks load at regular weight; bold and italics are synthesized by the browser.</p>
 </section>

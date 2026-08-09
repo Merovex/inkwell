@@ -115,7 +115,7 @@
     overflow: hidden;
     border: var(--border-size-1) solid var(--line);
     border-radius: var(--radius-card);
-    background: white;
+    background: var(--canvas);
   }
   .designer__frame { border: 0; display: block; }
   .designer__stage[data-viewport="desktop"] .designer__frame {
@@ -167,15 +167,9 @@
     margin: 0 0 calc(var(--u-pad) / 4);
     font-weight: var(--font-weight-6);
   }
-  .designer__group-head {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: var(--u-pad);
-  }
-  .designer__group-head .designer__group-title { margin-block-end: 0; }
-  .designer__group-hint { margin: 0; font-size: var(--font-size-0); }
-  .designer__group-rows { display: grid; grid-template-columns: minmax(0, 1fr); gap: calc(var(--u-pad) / 4); }
+  /* The sortable-rows wrapper joins the group's own grid — it exists for
+     the orderList target and drag events, not for layout. */
+  .designer__group-rows { display: contents; }
 
   /* Summary rows: label left, current value + chevron right. */
   .designer__row {
@@ -214,7 +208,7 @@
     display: grid;
     place-items: center;
     overflow: hidden;
-    background: white;
+    background: var(--canvas);
     border: var(--border-size-1) solid var(--line);
     border-radius: var(--radius-ui);
   }
@@ -397,9 +391,11 @@
     white-space: nowrap;
   }
   .designer__demo-button--primary {
+    /* Derived from the accent token, no literal color: the label flips
+       white/near-black off the accent's own lightness (0.66 threshold). */
+    --demo-contrast: oklch(from var(--demo-accent, var(--ink)) calc((0.66 - l) * infinity) 0 h);
     background: var(--demo-accent, var(--ink));
-    /* Label flips white/near-black off the accent's own lightness. */
-    color: oklch(from var(--demo-accent, var(--ink)) calc((0.66 - l) * infinity) 0 h);
+    color: var(--demo-contrast);
   }
   .designer__demo-button--second { color: var(--demo-accent, var(--ink)); }
   .designer__button-demo[data-second="outlined"] .designer__demo-button--second {
@@ -499,18 +495,61 @@
   }
   .designer__option-group:first-of-type { margin-block-start: calc(var(--u-pad) / 3); }
 
-  /* Font-pairing cards: the name set in its display face, the families,
-     and a tagline in the body face. */
+  /* Font-pairing cards: the name set in its display face, a specimen
+     sentence in the body face, and the family names as a plain caption. */
   .design-option--font .design-option__label { gap: calc(var(--size-1) / 2); }
   .design-option__font-name { font-size: var(--font-size-4); line-height: 1.15; }
+  .design-option__font-specimen { font-size: var(--font-size-1); font-weight: var(--font-weight-4); }
   .design-option__font-families {
     font-size: var(--font-size-0);
     font-weight: var(--font-weight-4);
-    text-transform: uppercase;
-    letter-spacing: var(--font-letterspacing-2);
     color: var(--ink-muted);
   }
-  .design-option__font-tagline { font-size: var(--font-size-1); font-weight: var(--font-weight-4); }
+
+  /* The fonts pane's browse chrome: genre filters are house badges worn
+     by real buttons (the check-badge precedent), the pinned in-use card
+     is dressed as a checked option, and the tail hides behind a link. */
+  .designer__filter {
+    border: 0;
+    font-family: inherit;
+    cursor: pointer;
+  }
+  .designer__filter:hover,
+  .designer__filter:focus-visible { background: color-mix(in oklab, var(--ink) 16%, transparent); }
+  .designer__filter.is-active { background: var(--ink); color: var(--canvas); }
+  .designer__font-inuse {
+    position: relative;
+    display: grid;
+    gap: calc(var(--size-1) / 2);
+    padding: calc(var(--u-pad) / 2);
+    padding-inline-end: calc(var(--u-pad) * 1.5);
+    border: var(--border-size-1) solid var(--accent);
+    border-radius: var(--radius-ui);
+    background: color-mix(in oklab, var(--accent) 12%, var(--canvas));
+  }
+  .designer__font-inuse-check {
+    position: absolute;
+    inset-block-start: calc(var(--u-pad) / 2);
+    inset-inline-end: calc(var(--u-pad) / 2);
+    color: var(--accent);
+  }
+  .designer__show-more { color: var(--accent); font-weight: var(--font-weight-6); justify-self: start; }
+  .designer__show-more:hover { text-decoration: underline; }
+
+  /* Your-own-pairing slots: the picker with a preview line set in the pick.
+     The field composes u-pad-half in the markup. */
+  .designer__font-slot {
+    display: grid;
+    border: var(--border-size-1) solid var(--line);
+    border-radius: var(--radius-ui);
+    overflow: hidden;
+  }
+  .designer__font-preview {
+    margin: 0;
+    padding: calc(var(--u-pad) / 2);
+    background: var(--site-bg);
+    font-size: var(--font-size-2);
+  }
   .design-option--card .design-option__label {
     display: grid;
     gap: calc(var(--u-pad) / 4);

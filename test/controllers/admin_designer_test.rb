@@ -85,11 +85,12 @@ class AdminDesignerTest < ActionDispatch::IntegrationTest
     # Options carrying a manifest wireframe render as inlined-SVG cards.
     wireframed = theme.axes.sum { |axis| axis["options"].count { it["wireframe"] } }
     assert_select ".design-option--card svg", count: wireframed
-    # Font pairings render as cards set in their actual faces, plus the
-    # hidden custom-pairing memory card (revealed client-side once the
-    # author has picked custom fonts).
+    # Font pairings render as cards set in their actual faces (name in the
+    # heading face, specimen sentence in the body face), plus the hidden
+    # custom-pairing memory card (revealed client-side once the author has
+    # picked custom fonts).
     font_options = theme.axes.find { it["key"] == "font" }["options"].size
-    assert_select ".design-option--font .design-option__font-tagline", count: font_options + 1
+    assert_select ".design-option--font .design-option__font-specimen", count: font_options + 1
     assert_select ".design-option__input[data-custom-font][name='design[font]']", count: 1
     # The header-content editors ride the nav pane as standard modals.
     assert_select "dialog.modal .designer__links", count: 1

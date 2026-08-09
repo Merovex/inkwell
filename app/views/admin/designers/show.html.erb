@@ -154,9 +154,9 @@
         </section>
 
         <section class="designer__group" aria-label="Page sections">
-          <div class="designer__group-head">
-            <h3 class="designer__group-title u-microcaps u-text-muted">Page sections</h3>
-            <p class="designer__group-hint u-text-muted">Drag to reorder</p>
+          <div class="u-cluster u-cluster-between">
+            <h3 class="designer__group-title u-microcaps u-text-muted u-margin-0">Page sections</h3>
+            <p class="u-margin-0 u-text-small u-text-muted">Drag to reorder</p>
           </div>
           <%# The page, top to bottom: header pinned first, footer pinned
               last, and the home sections sortable between them — the rows
@@ -321,6 +321,8 @@
           <% end %>
           <% if axis["control"] == "slider" %>
             <%= render "slider", axis: axis %>
+          <% elsif axis["key"] == "font" %>
+            <%= render "fonts", axis: axis %>
           <% else %>
             <%= render "axis", axis: axis, heading: (axis["key"] == "buttons" ? "Rounding" : nil) %>
           <% end %>

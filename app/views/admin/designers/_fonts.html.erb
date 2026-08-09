@@ -1,0 +1,61 @@
+<%# locals: (axis:) %>
+<%# The Fonts pane's pairing browser — the pairings themselves are the
+    untouched manifest options; this is layout. Search and genre chips
+    filter the grouped cards; the working pairing is pinned under "In use";
+    the current pick's group floats first (no account genre exists yet —
+    the pick's own group is the proxy) and the long tail collapses behind
+    "Show more". Each card sets its name in the heading face and a specimen
+    sentence in the body face; the family names drop to a caption. Taglines
+    stay in the manifest but don't render here. %>
+<fieldset class="designer__block designer__axis u-flow">
+  <legend class="designer__block-title"><%= axis["noun"] %></legend>
+  <input type="search" class="field__control" placeholder="Search pairings or font names&hellip;"
+         aria-label="Search pairings or font names"
+         data-designer-target="fontSearch" data-action="input->designer#fontBrowse">
+  <%# Genre filters: house badges as real buttons (the check-badge
+      precedent), clustered — not a bespoke chip. %>
+  <div class="u-cluster u-cluster-tight" role="group" aria-label="Filter pairings by genre">
+    <button type="button" class="badge designer__filter is-active" data-group="" data-action="designer#fontChip">All</button>
+    <% chip_labels = { "Epic & Historical" => "Epic", "Crime & Mystery" => "Crime",
+                       "Horror & Gothic" => "Horror", "Romance & Commercial" => "Romance",
+                       "Science Fiction" => "Sci-fi", "Young Readers" => "Young readers",
+                       "Literary & Nonfiction" => "Literary" } %>
+    <% axis["options"].map { it["group"] }.uniq.compact.each do |group| %>
+      <button type="button" class="badge designer__filter" data-group="<%= group %>"
+              data-action="designer#fontChip"><%= chip_labels.fetch(group, group) %></button>
+    <% end %>
+  </div>
+  <h4 class="designer__option-group u-microcaps u-text-muted">In use</h4>
+  <div class="designer__font-inuse">
+    <span class="design-option__font-name" data-designer-target="fontInUseName">&hellip;</span>
+    <span class="design-option__font-specimen" data-designer-target="fontInUseSpecimen">The tide comes in twice, and the second one takes the traps.</span>
+    <span class="design-option__font-families u-text-muted" data-designer-target="fontInUseFamilies"></span>
+    <%= inline_svg_tag "lucide/circle-check.svg", class: "lucide designer__font-inuse-check", size: "20px" %>
+  </div>
+  <div data-designer-target="fontGroups">
+    <%# chunk drops nil-keyed elements, so ungrouped options key on false. %>
+    <% axis["options"].chunk { |option| option["group"] || false }.each do |group, options| %>
+      <section class="designer__font-group" data-font-group="<%= group %>">
+        <h4 class="designer__option-group u-microcaps u-text-muted"><%= group %><span class="designer__your-pick" hidden> &middot; your pick</span></h4>
+        <div class="designer__options">
+          <% options.each do |option| %>
+            <label class="design-option design-option--card design-option--font" data-font-card
+                   data-search="<%= "#{option["label"]} #{option["display"]} #{option["body"]}".downcase %>">
+              <input type="radio" class="design-option__input"
+                     name="design[<%= axis["key"] %>]" value="<%= option["id"] %>"
+                     data-label="<%= option["label"] %>"
+                     data-action="designer#change">
+              <span class="design-option__label">
+                <span class="design-option__font-name" style="font-family: '<%= option["display"] %>', serif"><%= option["label"] %></span>
+                <span class="design-option__font-specimen" style="font-family: '<%= option["body"] %>', serif">The tide comes in twice, and the second one takes the traps.</span>
+                <span class="design-option__font-families u-text-muted"><%= option["display"] %> + <%= option["body"] %></span>
+              </span>
+            </label>
+          <% end %>
+        </div>
+      </section>
+    <% end %>
+  </div>
+  <button type="button" class="u-unbutton designer__show-more" data-designer-target="fontMore"
+          data-action="designer#fontMoreClicked" hidden>Show more pairings</button>
+</fieldset>
