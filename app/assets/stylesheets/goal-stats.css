@@ -1,7 +1,7 @@
 /*
  * .goal-stat* — the goals page's status tiles: a period total over a mini
  * chart (bars for the week tiles, a line for the longer spans). Same tile
- * language as .analytics-stat. Chart series are mocked in GoalsHelper until
+ * language as the goals dashboard cards. Chart series are mocked in GoalsHelper until
  * per-day tally aggregates are wired.
  */
 @layer components {
@@ -146,7 +146,7 @@
     align-self: center;
     inline-size: 100%;
     border-radius: var(--radius-round);
-    background: color-mix(in oklab, var(--ink) 12%, transparent);
+    background: var(--fill-track);
     overflow: hidden;
   }
   .goal-stat__bar-fill { block-size: 100%; background: var(--stat-accent); border-radius: inherit; }
@@ -155,7 +155,7 @@
   /* Rate goal's period ring (Strava-shaped, current period only). */
   .goal-stat__ringrow { display: flex; align-items: center; gap: calc(var(--u-pad) / 2); }
   .goal-stat__ring { inline-size: calc(var(--u-pad) * 3.5); block-size: calc(var(--u-pad) * 3.5); flex-shrink: 0; }
-  .goal-stat__ring-track { stroke: color-mix(in oklab, var(--ink) 12%, transparent); stroke-width: 7; }
+  .goal-stat__ring-track { stroke: var(--fill-track); stroke-width: 7; }
   .goal-stat__ring-fill { stroke: var(--stat-accent); stroke-width: 7; stroke-linecap: round; }
   .goal-stat__ring-text { font-size: var(--font-size-1); font-weight: var(--font-weight-8); fill: var(--ink); }
 

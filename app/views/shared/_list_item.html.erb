@@ -1,4 +1,4 @@
-<%# locals: (title:, href: nil, title_tag: "h3", icon: nil, author: nil, date: nil, excerpt: nil, avatar: true, avatar_user: nil, avatar_src: nil, avatar_alt: "", avatar_initials: nil, avatar_spacer: false, chips: [], trailing_chips: [], badge: nil, badge_variant: nil, client_visible: false, comment_count: 0, scheduled_at: nil, pinned: false, activity: nil, actions: nil, discard_path: nil, discard_confirm: nil, discard_title: "Delete", discard_aria: nil, filter_text: nil) %>
+<%# locals: (title:, href: nil, title_tag: "h3", icon: nil, author: nil, date: nil, excerpt: nil, avatar: true, avatar_user: nil, avatar_src: nil, avatar_alt: "", avatar_initials: nil, avatar_spacer: false, chips: [], trailing_chips: [], badge: nil, badge_variant: nil, client_visible: false, comment_count: 0, scheduled_at: nil, pinned: false, activity: nil, actions: nil, discard_path: nil, discard_confirm: nil, discard_title: "Delete", discard_aria: nil, filter_text: nil, frame: nil) %>
 <%# THE list row. Every .list renders its rows through this partial — never %>
 <%# hand-roll .list__item markup (see CLAUDE.md "List rows"). %>
 <%# Structure: avatar + (heading title + meta) + optional trailing count/actions. %>
@@ -37,7 +37,7 @@
     </span>
   <% end %>
 
-  <%= content_tag (href ? :a : :div), href: href, class: "list__body" do %>
+  <%= content_tag (href ? :a : :div), href: href, class: "list__body", data: (href && frame ? { turbo_frame: frame } : {}) do %>
     <div class="list__titlerow">
       <%# icon: a small type glyph before the title (e.g. a notification's
           kind, Notification::ICONS) — decorative; the title carries meaning. %>

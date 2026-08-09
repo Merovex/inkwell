@@ -16,14 +16,8 @@
   /* Frames are plumbing, not layout — cards read as direct children. */
   .wall turbo-frame { display: contents; }
   /* Affixed strips (announcements, pulse ask, your drafts/appointments) sit in
-     a prelude above the card stream — evenly spaced and set off from the first
-     card. The cards below carry the flow's rhythm with their own dividers. */
-  .wall__prelude {
-    display: flex;
-    flex-direction: column;
-    gap: var(--u-pad);
-    margin-block-end: var(--u-pad);
-  }
+     a prelude above the card stream — u-stack u-margin-block-end in the
+     markup. The cards below carry the flow's rhythm with their own dividers. */
 
   /* Indented rows: the avatar rides the byline, vertically centered with the
      name; the title/body/footer indent to align under the byline TEXT — one
@@ -37,7 +31,7 @@
     padding-block: calc(var(--u-pad) * 2);
   }
   .wall__card + .wall__card {
-    border-block-start: var(--border-size-1) solid color-mix(in oklab, var(--line), transparent 45%);
+    border-block-start: var(--border-size-1) solid var(--line-faint);
   }
   .wall__byline { display: flex; flex-wrap: wrap; align-items: center; gap: calc(var(--u-pad) / 2); }
   .wall__avatar { --avatar-size: var(--size-7); flex-shrink: 0; }
@@ -140,7 +134,7 @@
     max-block-size: calc((100dvh - var(--size-7)) / 2);
     padding: var(--u-pad);
     border-block-start: var(--border-size-1) solid var(--line);
-    background: color-mix(in oklab, var(--canvas), var(--ink) 3%);
+    background: var(--canvas-sunken);
   }
   .wall-thread__composer form { display: flex; flex-direction: column; gap: calc(var(--u-pad) / 2); min-block-size: 0; }
   .wall-thread__composer lexxy-editor { min-block-size: 0; overflow-y: auto; }

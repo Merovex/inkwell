@@ -279,7 +279,8 @@ class CirclePulsesTest < ActionDispatch::IntegrationTest
 
     get circle_checks_path(@circle)
     assert_response :success
-    assert_select ".circle-rail .pulse-stat", text: /1 of 2 answered/
+    assert_select ".circle-rail .stat .stat__value", text: "1"
+    assert_select ".circle-rail .stat .stat__label", text: "of 2 answered"
     assert_select ".pulse-members__in", text: "In"        # alice answered
     assert_select ".pulse-members__nudge", text: "Nudge"  # bob still owes one
 

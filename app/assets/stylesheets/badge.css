@@ -5,6 +5,10 @@
   .badge {
     display: inline-flex;
     align-items: center;
+    /* Center on the text line when sitting inline among byline text — an
+       inline-flex chip otherwise exports its first child's baseline and rides
+       high (worse with an icon). Ignored in flex rows like the titlerow. */
+    vertical-align: middle;
     gap: calc(var(--u-pad) / 4);
     padding-block: calc(var(--u-pad) / 5);
     padding-inline: calc(var(--u-pad) / 2);

@@ -1,0 +1,37 @@
+/*
+ * Broadcasts dashboard — the send list (12a) and one send's detail (12b).
+ * Facts-first: the shared .stats big-number row (stat.css), then a per-send
+ * table / recipient list. Trouble (bounces, complaints) reads amber.
+ */
+@layer components {
+  .broadcast-note { max-inline-size: var(--measure-prose); margin-block-end: calc(var(--u-pad) * 2); }
+
+  /* The amber "N hard bounce — address" line under a post in the send table. */
+  .broadcast-row__trouble { margin-block-start: calc(var(--u-pad) / 4); font-size: var(--font-size-0); color: var(--warning-ink); }
+
+  /* Bounce alert on a send's detail. */
+  .broadcast-alert {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--u-pad);
+    padding: var(--u-pad);
+    margin-block-end: calc(var(--u-pad) * 2);
+    border-radius: var(--radius-2);
+    background: var(--warning-surface);
+  }
+  .broadcast-alert__body { min-inline-size: 0; }
+  .broadcast-alert__lead { color: var(--warning-ink); }
+  .broadcast-alert__body p + p { margin-block-start: calc(var(--u-pad) / 4); }
+
+  /* "Who received it" — a table so the status/engagement columns align across
+     rows, wrapped in a rounded card (u-surface in the markup). Address column
+     is greedy (width:100%) so the outcome columns sit right, aligned. */
+  .recipients { overflow: hidden; }
+  .recipients__table td:first-child { inline-size: 100%; }
+  .recipients__status { color: var(--ink-muted); font-size: var(--font-size-0); white-space: nowrap; }
+  .recipients__status--trouble { color: var(--warning-ink); font-weight: var(--font-weight-6); }
+  .recipients__engagement { color: var(--ink-muted); font-size: var(--font-size-0); white-space: nowrap; }
+  .recipients__engagement--clicked { color: var(--success-ink); font-weight: var(--font-weight-6); }
+}

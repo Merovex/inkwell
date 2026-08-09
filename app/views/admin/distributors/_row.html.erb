@@ -4,7 +4,7 @@
   <span class="buy-link__mark" aria-hidden="true"><%= distributor.display_name.scan(/[[:alpha:]]+/).map(&:first).first(2).join.upcase %></span>
   <span class="buy-link__body">
     <span class="buy-link__name u-text-strong"><%= distributor.display_name %></span>
-    <%= link_to distributor.display_url, distributor.url, class: "buy-link__url u-text-muted",
+    <%= link_to distributor.display_url, distributor.url, class: "buy-link__url u-truncate u-text-muted",
           target: "_blank", rel: "noopener" %>
   </span>
   <% if manage %>

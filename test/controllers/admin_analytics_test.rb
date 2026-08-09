@@ -17,7 +17,7 @@ class AdminAnalyticsTest < ActionDispatch::IntegrationTest
 
     get admin_analytics_path
     assert_response :success
-    assert_select ".analytics-stat__value", text: "1"          # one visit / one view
+    assert_select ".stat__value", text: "1"          # one visit / one view
     assert_select ".analytics-section", text: /google\.com/     # top referrer
   end
 
@@ -28,6 +28,6 @@ class AdminAnalyticsTest < ActionDispatch::IntegrationTest
 
     get admin_analytics_path
     assert_response :success
-    assert_select ".analytics-stat__value", text: "0"
+    assert_select ".stat__value", text: "0"
   end
 end

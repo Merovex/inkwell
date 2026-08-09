@@ -1,43 +1,8 @@
 /*
- * .analytics-* — the public-traffic dashboard: a couple of big stat tiles over
- * simple ranked lists (landing pages, referrers).
+ * .analytics-* — the public-traffic dashboard: the shared .stats big-number
+ * row (stat.css) over simple ranked lists (landing pages, referrers).
  */
 @layer components {
-  .analytics-totals {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--u-pad);
-    margin-block-end: calc(var(--u-pad) * 2);
-  }
-
-  /* Fixed-count variant: N equal tiles abreast (the broadcast detail's six),
-     halving on phones instead of flex-wrapping one orphan full-width. */
-  .analytics-totals--six {
-    display: grid;
-    grid-template-columns: repeat(6, 1fr);
-  }
-  @media (max-width: 48em) { /* --breakpoint-md */
-    .analytics-totals--six { grid-template-columns: repeat(3, 1fr); }
-  }
-
-  .analytics-stat {
-    flex: 1 1 var(--size-12);
-    display: grid;
-    gap: calc(var(--u-pad) / 4);
-    padding: var(--u-pad);
-    background: var(--accent-soft);
-    border-radius: var(--radius-card);
-    text-align: center;
-  }
-  .analytics-stat__value { font-size: var(--font-size-6); font-weight: var(--font-weight-8); color: var(--ink); }
-
-  /* Trouble tiles (bounces, complaints, unsubs) blush when the number is
-     non-zero — the danger surface pair, so it reads in both themes. */
-  .analytics-stat--trouble { background: var(--danger-surface); }
-  .analytics-stat--trouble .analytics-stat__value,
-  .analytics-stat--trouble .analytics-stat__label { color: var(--danger-ink); }
-  .analytics-stat__label { color: var(--ink-on-soft); } /* type via u-microcaps in the markup */
-
   /* Geography card: choropleth beside the country/region rankings. The
      --geo-* tokens are read by geo_map_controller (computed, so they follow
      light/dark) — jsVectorMap needs literal colors, not var() strings. */

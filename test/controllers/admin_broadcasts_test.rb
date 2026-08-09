@@ -16,8 +16,8 @@ class AdminBroadcastsTest < ActionDispatch::IntegrationTest
 
     get admin_broadcasts_path
     assert_response :success
-    assert_select ".table td .u-text-strong", text: posts(:kickoff).title.truncate(32)
-    assert_match "67%", response.body  # open rate 6/9 ≈ 67%
+    assert_select ".table td .u-text-strong", text: posts(:kickoff).title
+    assert_match "of 10", response.body   # delivered "9 of 10"
   end
 
   # A post can be emailed before its publish time arrives (broadcast early, on
@@ -44,37 +44,32 @@ class AdminBroadcastsTest < ActionDispatch::IntegrationTest
     assert_select ".empty__title", text: "No broadcasts yet"
   end
 
-  test "a broadcast's detail shows the tiles, recipient milestones, and clicked links" do
+  test "a broadcast's detail shows the stats and who received it" do
     broadcast = records(:kickoff).create_broadcast!(sent_at: Time.current,
       recipients_count: 2, delivered_count: 2, opened_count: 1, clicked_count: 1)
-    opened  = Subscriber.opt_in(email_address: "reader@example.com").tap(&:confirm!)
-    ignored = Subscriber.opt_in(email_address: "quiet@example.com").tap(&:confirm!)
-    delivery = broadcast.deliveries.create!(subscriber: opened, sent_at: Time.current,
+    clicker = Subscriber.opt_in(email_address: "reader@example.com").tap(&:confirm!)
+    quiet   = Subscriber.opt_in(email_address: "quiet@example.com").tap(&:confirm!)
+    broadcast.deliveries.create!(subscriber: clicker, sent_at: Time.current,
       delivered_at: Time.current, opened_at: Time.current, clicked_at: Time.current)
-    broadcast.deliveries.create!(subscriber: ignored, sent_at: Time.current, delivered_at: Time.current)
-    DeliveryEvent.create!(provider: :ses, event: :clicked, provider_message_id: "m1",
-      payload: { "click" => { "link" => "https://merovex.press/books" } },
-      delivery: delivery, subscriber: opened, occurred_at: Time.current)
+    broadcast.deliveries.create!(subscriber: quiet, sent_at: Time.current, delivered_at: Time.current)
     sign_in_as users(:admin)
 
     get admin_broadcast_path(broadcast)
     assert_response :success
-    assert_match "rea•••@example.com", response.body
-    assert_select "a[href=?]", "https://merovex.press/books"
-    # The quiet recipient shows delivered but no engagement badge trouble.
-    assert_match "qui•••@example.com", response.body
+    # Full addresses (the mock's design), each with its outcome.
+    assert_select ".recipients__who", text: "reader@example.com"
+    assert_select ".recipients__who", text: "quiet@example.com"
+    assert_select ".recipients__engagement--clicked", text: /Clicked/
   end
 
-  test "the overview strip summarizes the window from delivery events" do
+  test "the dashboard surfaces a send's hard bounce under the post" do
     broadcast = records(:kickoff).create_broadcast!(sent_at: Time.current, recipients_count: 1)
     reader = Subscriber.opt_in(email_address: "reader@example.com").tap(&:confirm!)
-    broadcast.deliveries.create!(subscriber: reader, sent_at: Time.current,
-      opened_at: Time.current, bounced_at: Time.current)
+    broadcast.deliveries.create!(subscriber: reader, sent_at: Time.current, bounced_at: Time.current)
     sign_in_as users(:admin)
 
     get admin_broadcasts_path
     assert_response :success
-    assert_select "[data-controller=area-chart]"
-    assert_match "1 hard bounce", response.body
+    assert_select ".broadcast-row__trouble", text: /1 hard bounce/
   end
 end

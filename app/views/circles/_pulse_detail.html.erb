@@ -4,7 +4,7 @@
     under the question, pre-focused when you owe an answer; the cadence is a
     quiet caption, not an eyebrow. %>
 <div class="check-detail u-flow">
-  <div class="check-detail__card">
+  <div class="check-detail__card u-surface u-pad">
     <div class="check-detail__top">
       <%= content_tag title_tag, pulse.question, class: "check-detail__title" %>
       <% if allowed_to?(:manage, circle) %>
@@ -23,7 +23,7 @@
     <% if pulse.description.present? %>
       <p class="check-detail__desc"><%= pulse.description %></p>
     <% end %>
-    <p class="check-detail__cadence"><%= pulse.human_schedule %><% unless pulse.active? %> · paused<% end %></p>
+    <p class="check-detail__cadence u-text-small u-text-muted"><%= pulse.human_schedule %><% unless pulse.active? %> · paused<% end %></p>
 
     <%# The primary action: answer this week, right here, pre-focused. %>
     <% if is_current_week && pulse.subscribed?(Current.user) && my_beat.nil? %>
@@ -78,7 +78,7 @@
         <details class="pulse-week-group">
           <summary class="pulse-week-summary">
             <span class="pulse-week-summary__week u-text-strong">Week <%= week.cweek %></span>
-            <span class="pulse-week-summary__excerpt">
+            <span class="pulse-week-summary__excerpt u-truncate">
               <%= week_beats.any? ? "“#{plain_excerpt(week_beats.first.content, length: 80)}”" : "Nobody answered." %>
             </span>
             <span class="pulse-week-summary__who">

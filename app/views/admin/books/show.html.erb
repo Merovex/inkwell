@@ -36,12 +36,12 @@
         <% end %>
       <% end %>
 
-      <dl class="book-stats">
+      <dl class="facts">
         <% if @book.word_count %>
-          <div class="book-stats__row"><dt>Length</dt><dd><%= number_with_delimiter(@book.word_count) %> words</dd></div>
+          <div class="facts__row"><dt>Length</dt><dd><%= number_with_delimiter(@book.word_count) %> words</dd></div>
         <% end %>
         <% if @book.isbn.present? %>
-          <div class="book-stats__row"><dt>ISBN</dt><dd><%= @book.isbn %></dd></div>
+          <div class="facts__row"><dt>ISBN</dt><dd><%= @book.isbn %></dd></div>
         <% end %>
       </dl>
     </aside>
@@ -95,7 +95,7 @@
       <% if primary %>
         <section class="u-flow" aria-labelledby="series-order-heading">
           <h2 id="series-order-heading" class="subhead">Where it sits in the series</h2>
-          <ol class="series-order u-unlist">
+          <ol class="series-order u-unlist u-surface u-divided">
             <% series_books.each_with_index do |book, i| %>
               <% current = book.record_id == @book.record_id %>
               <li class="series-order__row<%= " series-order__row--current" if current %>">

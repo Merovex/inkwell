@@ -103,6 +103,7 @@
           <button class="button button--primary">Primary</button>
           <button class="button button--ghost">Ghost</button>
           <button class="button button--danger">Danger</button>
+          <button class="button button--warning">Warning</button>
           <button class="button" disabled>Disabled</button>
         </div>
         <div class="u-cluster">
@@ -289,6 +290,53 @@
       </div>
     </section>
 
+    <%# ---- Stats ---- %>
+    <section class="sg-section">
+      <p class="sg-h">Stats — <code>.stats</code> / <code>.stat</code> (a label-first <code>&lt;dl&gt;</code>; <code>--trouble</code> reads amber, <code>--compact</code> steps rails down)</p>
+      <dl class="stats">
+        <div class="stat">
+          <dt class="stat__label">emails sent, last 30 days</dt>
+          <dd class="stat__value">1,204</dd>
+        </div>
+        <div class="stat">
+          <dt class="stat__label">delivered</dt>
+          <dd class="stat__value">982</dd>
+        </div>
+        <div class="stat stat--trouble">
+          <dt class="stat__label">bounces, complaints, unsubscribes</dt>
+          <dd class="stat__value">14</dd>
+        </div>
+        <div class="stat stat--compact">
+          <dt class="stat__label">compact, for rails</dt>
+          <dd class="stat__value">7</dd>
+        </div>
+      </dl>
+    </section>
+
+    <%# ---- Facts ---- %>
+    <section class="sg-section">
+      <p class="sg-h">Facts — <code>.facts</code> (label · value rows; book rail, subscriber modal)</p>
+      <dl class="facts">
+        <div class="facts__row"><dt>Status</dt><dd><span class="badge badge--success">Confirmed</span></dd></div>
+        <div class="facts__row"><dt>Signed up</dt><dd>May 12, 2026</dd></div>
+        <div class="facts__row"><dt>Length</dt><dd>82,000 words</dd></div>
+      </dl>
+    </section>
+
+    <%# ---- Meter + run sparkline ---- %>
+    <section class="sg-section">
+      <p class="sg-h">Meter &amp; run — <code>.meter</code> (native <code>&lt;progress&gt;</code>) and <code>.run__bars</code> (occurrences answered)</p>
+      <div class="u-stack u-stack-half">
+        <progress class="meter" value="3" max="12">3 of 12</progress>
+        <span class="run">
+          <span class="run__bars" aria-hidden="true">
+            <span class="run__bar run__bar--on"></span><span class="run__bar"></span><span class="run__bar run__bar--on"></span><span class="run__bar run__bar--on"></span><span class="run__bar"></span>
+          </span>
+          <span class="run__label">3 of last 5</span>
+        </span>
+      </div>
+    </section>
+
     <%# ---- List ---- %>
     <section class="sg-section">
       <p class="sg-h">List (summary rows)</p>
@@ -303,6 +351,8 @@
               excerpt: "Second row with no badges and a two-line excerpt that clamps once it exceeds the height of two lines of text in this row." %>
         <%= render "shared/list_item", href: "#", title: "Reminder", author: "Alan Turing", date: "Jun 25",
               excerpt: "Short one.", comment_count: 12 %>
+        <%= render "shared/list_item", href: "#", title: "A sent post with trailing chips", title_tag: "span", avatar: false,
+              date: "Jun 24", trailing_chips: [ [ "Opened", "success" ], [ "Not clicked", nil ] ] %>
       </div>
     </section>
 
@@ -319,7 +369,7 @@
 
     <%# ---- Modal (dialog) ---- %>
     <section class="sg-section" data-controller="dialog">
-      <p class="sg-h">Modal</p>
+      <p class="sg-h">Modal — <code>.modal--wide</code> for management surfaces; <code>.modal__footer--split</code> pins a destructive action left of the confirm pair</p>
       <button class="button button--primary" data-action="dialog#open">Open modal</button>
       <dialog class="modal" data-dialog-target="modal" data-action="click->dialog#backdrop" aria-labelledby="sg-modal-title">
         <div class="modal__header">
@@ -348,6 +398,32 @@
         <a class="pagination__item" href="#">9</a>
         <a class="pagination__item" href="#">Next ›</a>
       </nav>
+    </section>
+
+    <%# ---- Segmented control ---- %>
+    <section class="sg-section">
+      <p class="sg-h">Segmented — link variant (<code>aria-current="page"</code>), radio variant (<code>:has(:checked)</code>), or JS tabs (<code>aria-selected</code>); <code>--start</code> left-aligns a section filter</p>
+      <div class="u-stack">
+        <nav class="segmented segmented--start" aria-label="Example filter">
+          <a class="segmented__seg" href="#" aria-current="page">Everything</a>
+          <a class="segmented__seg" href="#">Posts</a>
+          <a class="segmented__seg" href="#">Answers</a>
+        </nav>
+        <fieldset class="segmented segmented--start">
+          <legend class="u-visually-hidden">Example state picker</legend>
+          <label class="segmented__seg"><input class="u-visually-hidden" type="radio" name="sg-seg" checked> Draft</label>
+          <label class="segmented__seg"><input class="u-visually-hidden" type="radio" name="sg-seg"> Published</label>
+        </fieldset>
+      </div>
+    </section>
+
+    <%# ---- Filter by text ---- %>
+    <section class="sg-section">
+      <p class="sg-h">Filter by text — <code>.filter-by-text</code> (<code>--wide</code> for roomier labels), pairs with the <code>filter</code> controller</p>
+      <div class="filter-by-text filter-by-text--wide">
+        <input class="filter-by-text__input" type="search" placeholder=" " autocomplete="off" aria-label="Search by address">
+        <label class="filter-by-text__hotkey">Search by address…</label>
+      </div>
     </section>
 
     <%# ---- Empty state ---- %>

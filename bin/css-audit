@@ -1,0 +1,114 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# css-audit — the mechanical half of the css-html-standards skill (§1/§2).
+# Run bare for a full report, from test/css_standards_test.rb in CI, or as a
+# Claude Code PostToolUse hook (--hook, reads the tool call JSON on stdin).
+#
+# Checks:
+#   color   raw colors (#hex / rgb / hsl / oklch / oklab) outside 01-tokens.css
+#   length  raw px/rem/em lengths (1px hairlines and the 48em/64em @media
+#           stops are sanctioned)
+#   mix     the same color-mix() recipe in two+ places — extract a token
+#   inline  static inline style= in views (custom-property knobs and
+#           data-driven <%= %> values are fine; mailers are exempt)
+#
+# Known legacy findings live in test/support/css_audit_baseline.txt — new code
+# must be clean. Shrink the baseline as legacy files get touched; regenerate
+# with --update-baseline ONLY when a listed finding is deliberately accepted.
+
+require "json"
+require "pathname"
+
+ROOT = Pathname.new(__dir__).join("..").expand_path
+BASELINE_PATH = ROOT.join("test/support/css_audit_baseline.txt")
+VENDORED = %w[open-props.css jsvectormap.css].freeze
+TOKENS = "01-tokens.css"
+
+def strip_comments(source)
+  source.gsub(%r{/\*.*?\*/}m) { |comment| comment.gsub(/[^\n]/, " ") }
+end
+
+# ---- collect findings: [key, "file:line  detail"] ---------------------------
+findings = []
+
+css_files = ROOT.glob("app/assets/stylesheets/*.css").reject { |f| VENDORED.include?(f.basename.to_s) }
+mix_sightings = Hash.new { |h, k| h[k] = [] }
+
+css_files.each do |file|
+  name = file.basename.to_s
+  lines = strip_comments(file.read).lines
+
+  lines.each_with_index do |line, i|
+    loc = "#{file.relative_path_from(ROOT)}:#{i + 1}"
+
+    unless name == TOKENS
+      line.scan(/#[0-9a-fA-F]{3,8}\b|\b(?:rgba?|hsla?|oklch|oklab)\(/) do |match|
+        findings << ["color|#{name}|#{line.strip}", "#{loc}  raw color #{match} — use a token (01-tokens.css)"]
+      end
+
+      line.scan(/(?<![\w.-])(-?\d*\.?\d+)(px|rem|em)\b/) do |value, unit|
+        next if value == "1" && unit == "px"                                   # sanctioned hairline
+        next if unit == "em" && %w[48 64].include?(value) && line.include?("@media") # house breakpoints
+        findings << ["length|#{name}|#{line.strip}", "#{loc}  raw length #{value}#{unit} — snap to a token"]
+      end
+    end
+
+    line.scan(/color-mix\((?:[^()]|\([^()]*\))*\)/) do |recipe|
+      normalized = recipe.gsub(/\s+/, " ")
+      mix_sightings[normalized] << [name, loc] unless name == TOKENS
+    end
+  end
+end
+
+mix_sightings.each do |recipe, sightings|
+  next if sightings.length < 2
+  sightings.each do |name, loc|
+    findings << ["mix|#{name}|#{recipe}", "#{loc}  #{recipe} repeats #{sightings.length}× — extract a token"]
+  end
+end
+
+ROOT.glob("app/views/**/*.erb").each do |file|
+  rel = file.relative_path_from(ROOT).to_s
+  next if rel.include?("_mailer/") # email HTML needs inline styles
+
+  file.read.lines.each_with_index do |line, i|
+    line.scan(/style="([^"]*)"/) do |(value)|
+      next if value.include?("<%=") # data-driven (swatches, chart geometry)
+      next if value.split(";").all? { |d| d.strip.empty? || d.strip.start_with?("--") } # custom-property knobs
+      findings << ["inline|#{rel}|#{value.strip}", "#{rel}:#{i + 1}  inline style \"#{value.strip}\" — move it to a stylesheet"]
+    end
+  end
+end
+
+# ---- compare against the baseline -------------------------------------------
+findings.uniq! { |key, _| key }
+baseline = BASELINE_PATH.exist? ? BASELINE_PATH.read.lines.map(&:chomp).reject(&:empty?) : []
+
+if ARGV.include?("--update-baseline")
+  BASELINE_PATH.write(findings.map(&:first).sort.join("\n") + "\n")
+  puts "css-audit: baseline rewritten with #{findings.length} findings."
+  exit 0
+end
+
+hook_mode = ARGV.include?("--hook")
+if hook_mode
+  # Only weigh in when the edited file is author CSS or view markup.
+  input = JSON.parse($stdin.read) rescue {}
+  path = input.dig("tool_input", "file_path").to_s
+  exit 0 unless path.match?(%r{app/assets/stylesheets/.*\.css$|app/views/.*\.erb$})
+end
+
+new_findings = findings.reject { |key, _| baseline.include?(key) }
+stale = baseline - findings.map(&:first)
+
+if new_findings.any?
+  out = hook_mode ? $stderr : $stdout
+  out.puts "css-audit: #{new_findings.length} new violation(s) of css-html-standards §1/§2:"
+  new_findings.each { |_, detail| out.puts "  #{detail}" }
+  out.puts "Fix them (tokens over raw values; extract repeated recipes; no inline styles)."
+  out.puts "A deliberate exception belongs in #{BASELINE_PATH.relative_path_from(ROOT)} with a PR-visible diff."
+  exit(hook_mode ? 2 : 1)
+end
+
+puts "css-audit: clean (#{baseline.length} baselined legacy findings remain#{stale.any? ? "; #{stale.length} stale — prune them" : ""})."

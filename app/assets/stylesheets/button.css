@@ -59,6 +59,12 @@
   }
   .button--danger:hover { background: var(--danger-solid); color: var(--on-brand); }
 
+  .button--warning {
+    background: var(--warning-surface);  /* soft-fill warning — a "needs attention" tab */
+    border-color: var(--warning-ink);
+    color: var(--warning-ink);
+  }
+
   .button--small { padding-block: calc(var(--u-pad) / 3); padding-inline: calc(var(--u-pad) / 1.5); font-size: var(--font-size-0); }
   .button--large { padding-block: calc(var(--u-pad) / 1.5); padding-inline: calc(var(--u-pad) * 1.25); font-size: var(--font-size-2); }
 

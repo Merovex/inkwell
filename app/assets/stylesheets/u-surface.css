@@ -3,11 +3,15 @@
  * UI radius. For rows, lists, and popover panels. Controls (.button,
  * .field__control, inputs) keep their own surface — it's part of their
  * identity, and their variants override pieces of it.
+ *
+ * Configured through custom properties (utilities beat component rules on the
+ * cascade, so a component variant re-declaring `background` would lose —
+ * it sets the knob instead): --u-surface-bg, --u-surface-line.
  */
 @layer utilities {
   .u-surface {
-    background: var(--canvas);
-    border: var(--border-size-1) solid var(--line);
+    background: var(--u-surface-bg, var(--canvas));
+    border: var(--border-size-1) solid var(--u-surface-line, var(--line));
     border-radius: var(--radius-ui);
   }
 }

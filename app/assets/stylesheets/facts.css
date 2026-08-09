@@ -1,0 +1,15 @@
+/*
+ * .facts — a label · value <dl>: muted labels left, semibold values right,
+ * one row per fact. Used by the book detail rail and the subscriber modal;
+ * documented in the style guide (/admin/theme).
+ *
+ *   <dl class="facts">
+ *     <div class="facts__row"><dt>Status</dt><dd>Confirmed</dd></div>
+ *   </dl>
+ */
+@layer components {
+  .facts { display: flex; flex-direction: column; gap: calc(var(--u-pad) / 2); }
+  .facts__row { display: flex; justify-content: space-between; align-items: baseline; gap: var(--u-pad); }
+  .facts dt { color: var(--ink-muted); }
+  .facts dd { font-weight: var(--font-weight-6); text-align: end; }
+}

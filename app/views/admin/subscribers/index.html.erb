@@ -2,86 +2,116 @@
 
 <%= render "admin/shared/canvas_head", crumbs: [["Subscribers", nil]] %>
 
+<div class="subscribers" data-controller="filter" data-filter-unit-value="subscriber">
 <header class="perma-header">
   <h1 class="perma-header__title">Subscribers</h1>
   <div class="perma-header__content">
     <%# One state at a time; each tab links to that state's view. %>
     <nav class="perma-header__toolbar" aria-label="Subscriber states">
       <% Admin::SubscribersController::STATES.each do |state| %>
+        <%# Deliverability problems call themselves out while they have anyone %>
+        <%# in them: bounced is amber, complained (spam) is red. %>
+        <% attention = @counts[state].to_i.positive? && { "bounced" => "warning", "complained" => "danger" }[state] %>
         <%= link_to admin_subscribers_path(state: state),
-              class: "button button--small#{' button--primary' if state == @state}",
+              class: "button button--small#{' button--primary' if state == @state}#{" button--#{attention}" if attention && state != @state}",
               aria: { current: ("page" if state == @state) } do %>
-          <%= state.capitalize %> <span class="button__count">(<%= @counts[state].to_i %>)</span>
+          <%= state.capitalize %> <span class="button__count">(<%= @counts[state].to_i %>)</span><% if attention %> · needs attention<% end %>
         <% end %>
       <% end %>
       <%= link_to admin_subscribers_path(state: @state, format: :csv), class: "button button--small" do %>
         <%= inline_svg_tag "lucide/file-text.svg", class: "lucide", size: "16px" %> Export
       <% end %>
+      <%# Screenshot safety: masks every address to cat•••@… so the list can be %>
+      <%# shared without leaking who's on it. On by default; pure CSS. %>
+      <label class="switch mask-toggle">
+        <input class="switch__input" type="checkbox" id="mask-addresses" checked>
+        Mask addresses
+      </label>
     </nav>
+  </div>
+  <div class="perma-header__content">
+    <div class="filter-by-text filter-by-text--wide">
+      <input class="filter-by-text__input" type="search" placeholder=" " autocomplete="off"
+             aria-label="Search subscribers by address"
+             data-filter-target="input"
+             data-action="input->filter#apply keydown.esc->filter#clear">
+      <label class="filter-by-text__hotkey">Search by address…</label>
+    </div>
   </div>
 </header>
 
 <% if @subscribers.any? %>
-  <div class="list">
-    <% @subscribers.each do |subscriber| %>
-      <% actions = capture do %>
-        <% if subscriber.seed? %>
-          <%= button_to admin_subscriber_seed_path(subscriber), method: :delete,
-                class: "button button--icon button--ghost", title: "Unmark seed",
-                "aria-label": "Unmark #{redacted_email(subscriber.email_address)} as a deliverability seed",
-                form: { data: { turbo_confirm: "Treat #{redacted_email(subscriber.email_address)} as a real subscriber again?" } } do %>
-            <%= inline_svg_tag "lucide/flask-conical.svg", class: "lucide", size: "16px" %>
-          <% end %>
-        <% else %>
-          <%= button_to admin_subscriber_seed_path(subscriber), method: :post,
-                class: "button button--icon button--ghost", title: "Mark as seed",
-                "aria-label": "Mark #{redacted_email(subscriber.email_address)} as a deliverability seed",
-                form: { data: { turbo_confirm: "Mark #{redacted_email(subscriber.email_address)} as a deliverability seed? Seeds get no broadcasts or drips and don't count in the roster." } } do %>
-            <%= inline_svg_tag "lucide/flask-conical.svg", class: "lucide", size: "16px" %>
-          <% end %>
+  <div class="table-scroll" data-filter-target="section">
+    <table class="table">
+      <thead>
+        <tr>
+          <th scope="col">Address</th>
+          <th scope="col">Source</th>
+          <th scope="col">Joined</th>
+          <th scope="col">Last opened</th>
+          <th scope="col"><span class="u-visually-hidden">Actions</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @subscribers.each do |subscriber| %>
+          <% redacted = redacted_email(subscriber.email_address) %>
+          <% menu_id = "sub-actions-#{subscriber.id}" %>
+          <tr data-filter-target="item" data-filter-text="<%= "#{subscriber.email_address} #{subscriber.source}".downcase %>">
+            <td>
+              <%# Both forms live in the cell; the Mask toggle shows one via CSS.
+                  When masked the full address isn't rendered — screenshot-safe. %>
+              <%= link_to admin_subscriber_path(subscriber), class: "subscriber-address u-text-strong", data: { turbo_frame: "modal" } do %>
+                <span class="subscriber-address__full"><%= subscriber.email_address %></span>
+                <span class="subscriber-address__masked"><%= redacted %></span>
+              <% end %>
+              <% if subscriber.seed? %>
+                <span class="badge badge--accent">Seed</span>
+              <% elsif subscriber.confirmed? && subscriber.re_engagement_sent_at %>
+                <span class="badge badge--warning">Nudged</span>
+              <% end %>
+            </td>
+            <td class="u-text-muted"><%= subscriber.source.presence&.humanize || "—" %></td>
+            <td class="u-text-muted"><%= subscriber.created_at.strftime("%b %-d") %></td>
+            <td class="u-text-muted"><%= subscriber.last_engaged_at ? subscriber.last_engaged_at.strftime("%b %-d") : "—" %></td>
+            <td data-align="end">
+              <button type="button" class="button button--icon button--ghost" popovertarget="<%= menu_id %>"
+                      aria-label="Actions for <%= redacted %>">
+                <%= inline_svg_tag "lucide/ellipsis-vertical.svg", class: "lucide", size: "18px" %>
+              </button>
+              <div class="menu" popover id="<%= menu_id %>" data-controller="anchored-popover" data-anchored-popover-placement-value="top">
+                <%= link_to "View details", admin_subscriber_path(subscriber), class: "menu__item", data: { turbo_frame: "modal" } %>
+                <% if subscriber.seed? %>
+                  <%= button_to "Unmark seed", admin_subscriber_seed_path(subscriber), method: :delete, class: "menu__item",
+                        form: { data: { turbo_confirm: "Treat #{redacted} as a real subscriber again?" } } %>
+                <% else %>
+                  <%= button_to "Mark as seed", admin_subscriber_seed_path(subscriber), method: :post, class: "menu__item",
+                        form: { data: { turbo_confirm: "Mark #{redacted} as a deliverability seed? Seeds get no broadcasts or drips and don't count in the roster." } } %>
+                <% end %>
+                <% if subscriber.pending? %>
+                  <%= button_to "Resend confirmation", resend_admin_subscriber_path(subscriber), method: :post, class: "menu__item",
+                        form: { data: { turbo_confirm: "Resend the confirmation email to #{redacted}?" } } %>
+                <% end %>
+                <% if subscriber.bounced? %>
+                  <%= button_to "Reactivate", admin_subscriber_reactivation_path(subscriber), method: :post, class: "menu__item",
+                        form: { data: { turbo_confirm: "Reactivate #{redacted}? They'll get broadcasts again — best after they've confirmed the mailbox works." } } %>
+                <% end %>
+                <% if subscriber.complained? %>
+                  <%= button_to "Re-invite (fresh opt-in)", admin_subscriber_reactivation_path(subscriber), method: :post, class: "menu__item",
+                        form: { data: { turbo_confirm: "Re-invite #{redacted}? They marked a send as spam, so they only come back by confirming a fresh opt-in email." } } %>
+                <% end %>
+                <% unless subscriber.unsubscribed? || subscriber.bounced? || subscriber.complained? %>
+                  <hr class="menu__separator">
+                  <%= button_to "Unsubscribe", unsubscribe_admin_subscriber_path(subscriber), method: :patch, class: "menu__item",
+                        form: { data: { turbo_confirm: "Unsubscribe #{redacted}?" } } %>
+                <% end %>
+              </div>
+            </td>
+          </tr>
         <% end %>
-        <% if subscriber.pending? %>
-          <%= button_to resend_admin_subscriber_path(subscriber), method: :post,
-                class: "button button--icon button--ghost", title: "Resend confirmation",
-                "aria-label": "Resend confirmation to #{redacted_email(subscriber.email_address)}",
-                form: { data: { turbo_confirm: "Resend the confirmation email to #{redacted_email(subscriber.email_address)}?" } } do %>
-            <%= inline_svg_tag "lucide/send.svg", class: "lucide", size: "16px" %>
-          <% end %>
-        <% end %>
-        <% if subscriber.bounced? %>
-          <%= button_to admin_subscriber_reactivation_path(subscriber), method: :post,
-                class: "button button--icon button--ghost", title: "Reactivate",
-                "aria-label": "Reactivate #{redacted_email(subscriber.email_address)} — resume sending",
-                form: { data: { turbo_confirm: "Reactivate #{redacted_email(subscriber.email_address)}? They'll get broadcasts again — best after they've confirmed the mailbox works." } } do %>
-            <%= inline_svg_tag "lucide/circle-check.svg", class: "lucide", size: "16px" %>
-          <% end %>
-        <% end %>
-        <% if subscriber.complained? %>
-          <%= button_to admin_subscriber_reactivation_path(subscriber), method: :post,
-                class: "button button--icon button--ghost", title: "Re-invite (fresh opt-in)",
-                "aria-label": "Re-invite #{redacted_email(subscriber.email_address)} with a fresh confirmation email",
-                form: { data: { turbo_confirm: "Re-invite #{redacted_email(subscriber.email_address)}? They marked a send as spam, so they only come back by confirming a fresh opt-in email." } } do %>
-            <%= inline_svg_tag "lucide/send.svg", class: "lucide", size: "16px" %>
-          <% end %>
-        <% end %>
-        <% unless subscriber.unsubscribed? || subscriber.bounced? || subscriber.complained? %>
-          <%= button_to unsubscribe_admin_subscriber_path(subscriber), method: :patch,
-                class: "button button--icon button--ghost", title: "Unsubscribe",
-                "aria-label": "Unsubscribe #{redacted_email(subscriber.email_address)}",
-                form: { data: { turbo_confirm: "Unsubscribe #{redacted_email(subscriber.email_address)}?" } } do %>
-            <%= inline_svg_tag "lucide/circle-x.svg", class: "lucide", size: "16px" %>
-          <% end %>
-        <% end %>
-      <% end %>
-      <%= render "shared/list_item",
-            title: redacted_email(subscriber.email_address),
-            avatar: false,
-            badge: (subscriber.seed? ? "Seed" : ("Nudged" if subscriber.confirmed? && subscriber.re_engagement_sent_at)),
-            badge_variant: (subscriber.seed? ? "accent" : "warning"),
-            author: "#{"via #{subscriber.source} · " if subscriber.source.present?}joined #{subscriber.created_at.strftime("%b %-d, %Y")}#{" · updated #{subscriber.updated_at.strftime('%b %-d, %Y')}" if subscriber.updated_at.to_date != subscriber.created_at.to_date}#{" · last opened #{subscriber.last_engaged_at.strftime('%b %-d, %Y')}" if subscriber.last_engaged_at}",
-            actions: actions %>
-    <% end %>
+      </tbody>
+    </table>
   </div>
+  <p class="u-text-muted u-margin-block-end" data-filter-target="blank" hidden>No subscribers match.</p>
 <% else %>
   <div class="empty">
     <span class="empty__icon"><%= inline_svg_tag "lucide/inbox.svg", class: "lucide", size: "40px" %></span>
@@ -101,3 +131,7 @@
     </p>
   </div>
 <% end %>
+</div>
+
+<%# Row click opens the subscriber detail here. %>
+<%= turbo_frame_tag "modal" %>

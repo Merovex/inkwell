@@ -26,9 +26,9 @@
           beats: @beats, answered_this_week: @answered_this_week, non_answerers: @non_answerers,
           earlier_weeks: @earlier_weeks, comment_counts: @comment_counts, title_tag: "h2" %>
     <% if @other_checks.any? %>
-      <section class="checks u-flow" aria-label="Other questions">
+      <section class="u-flow" aria-label="Other questions">
         <h2 class="u-microcaps u-text-muted">Other questions</h2>
-        <div class="checks__list">
+        <div class="u-stack">
           <% @other_checks.each do |pulse| %>
             <%= render "circles/check_card", circle: @circle, pulse: pulse %>
           <% end %>

@@ -1,64 +1,54 @@
+require "csv"
+
 # The broadcasts dashboard: every post that's been emailed (or is scheduled to
-# be), with its newsletter metrics. Domain-admin only. Read-only — sending is
+# be), with how each one landed. Domain-admin only. Read-only — sending is
 # driven from the post page (Admin::Posts::BroadcastsController).
 #
-# index carries the account-wide overview (the range's daily sent/opened/bounced
-# series + totals) above the per-post table; show is one send's detail:
-# per-recipient milestones and the link-click breakdown. Everything reads the
-# canonical DeliveryEvent substrate (ADR 0025) — no ESP dashboard needed.
+# index is facts-first: the 30-day totals over a per-send table. show is one
+# send's detail — who got it, who bounced, and who clicked. Everything reads the
+# canonical delivery milestones (ADR 0025) — no ESP dashboard needed.
 class Admin::BroadcastsController < Admin::BaseController
-  # Selectable windows for the overview. 30d today; the rest light up as the
-  # account accrues history (docs/email-architecture.md).
-  RANGES = { "30d" => 30 }.freeze
-
   def index
     @broadcasts = Current.account.broadcasts.includes(:record).order(created_at: :desc)
 
-    @range = RANGES.key?(params[:range]) ? params[:range] : "30d"
-    window = RANGES[@range].days.ago.beginning_of_day
-
+    # 30-day totals — the facts that lead the page. Clicks are the trustworthy
+    # engagement signal; opens are under-counted (blocked tracking pixels).
+    window = 30.days.ago.beginning_of_day
     deliveries = BroadcastDelivery.where(broadcast_id: Current.account.broadcasts.select(:id))
-    events = DeliveryEvent.where(delivery_type: "BroadcastDelivery", delivery_id: deliveries.select(:id))
-                          .where(occurred_at: window..)
+    @sent_30d      = deliveries.where(sent_at: window..).count
+    @delivered_30d = deliveries.where(delivered_at: window..).count
+    @clicked_30d   = deliveries.where(clicked_at: window..).count
+    @trouble_30d   = deliveries.where(bounced_at: window..).count +
+                     deliveries.where(complained_at: window..).count +
+                     deliveries.where(unsubscribed_at: window..).count
 
-    # Daily series for the chart: handed to the client as JSON; the area-chart
-    # controller draws the SVG (client-rendered on purpose — theme-aware via
-    # CSS classes, no chart library). Read the delivery MILESTONES, not
-    # DeliveryEvent rows — same source as the table's counters, so history
-    # from before the canonical event pipeline still charts.
-    sent_by_day    = deliveries.where(sent_at: window..).group("date(sent_at)").count
-    opened_by_day  = deliveries.where(opened_at: window..).group("date(opened_at)").count
-    bounced_by_day = deliveries.where(bounced_at: window..).group("date(bounced_at)").count
+    # Hard-bounce addresses per broadcast, for the amber note under a row.
+    @bounced_addresses = BroadcastDelivery.where(broadcast_id: @broadcasts.map(&:id))
+      .where.not(bounced_at: nil).includes(:subscriber)
+      .group_by(&:broadcast_id)
+      .transform_values { |ds| ds.map { |d| d.subscriber.email_address } }
 
-    days = (window.to_date..Date.current).to_a
-    @chart = {
-      labels: days.map { |d| d.strftime("%b %-d") },
-      series: [
-        { name: "Sent",    key: "sent",    values: days.map { |d| sent_by_day[d.iso8601].to_i } },
-        { name: "Opened",  key: "opened",  values: days.map { |d| opened_by_day[d.iso8601].to_i } },
-        { name: "Bounced", key: "bounced", values: days.map { |d| bounced_by_day[d.iso8601].to_i } }
-      ]
-    }
-
-    # The totals sentence + breakdown chips under the chart. Milestones again;
-    # soft bounces exist only as canonical events (they never stamp a milestone).
-    @window_sent       = deliveries.where(sent_at: window..).count
-    @window_opened     = deliveries.where(opened_at: window..).count
-    @window_hard       = deliveries.where(bounced_at: window..).count
-    @window_soft       = events.soft_bounce.count
-    @window_complaints = deliveries.where(complained_at: window..).count
+    respond_to do |format|
+      format.html
+      format.csv { send_data broadcasts_csv, filename: "broadcasts-#{Date.current.iso8601}.csv" }
+    end
   end
 
   def show
     @broadcast = Current.account.broadcasts.includes(:record).find(params[:id])
     @deliveries = @broadcast.deliveries.includes(:subscriber).order(:sent_at, :id)
-
-    # Which links got clicked: SES stamps the URL on each click event
-    # (payload.click.link); Postmark called it OriginalLink. Tallied in Ruby —
-    # a broadcast's click volume is small.
-    @link_clicks = DeliveryEvent.clicked
-      .where(delivery_type: "BroadcastDelivery", delivery_id: @broadcast.deliveries.select(:id))
-      .filter_map { |e| e.payload.dig("click", "link") || e.payload["OriginalLink"] }
-      .tally.sort_by { |_url, count| -count }
+    @bounced = @deliveries.select(&:bounced_at)
+    @unclicked = @deliveries.count { |d| d.delivered_at && !d.clicked_at && !d.bounced_at }
   end
+
+  private
+    def broadcasts_csv
+      CSV.generate do |csv|
+        csv << %w[ post sent_at recipients delivered opened clicked bounced complained unsubscribed ]
+        @broadcasts.each do |b|
+          csv << [ b.post&.title, b.sent_at, b.recipients_count, b.delivered_count,
+                   b.opened_count, b.clicked_count, b.bounced_count, b.complained_count, b.unsubscribed_count ]
+        end
+      end
+    end
 end

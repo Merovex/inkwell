@@ -52,8 +52,8 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
     get admin_book_path(record)
     assert_response :success
     assert_select ".book-detail__tagline", text: /orphaned Danel/
-    assert_select ".book-stats", text: /112,400 words/
-    assert_select ".book-stats", text: /978-1-234-56789/
+    assert_select ".facts", text: /112,400 words/
+    assert_select ".facts", text: /978-1-234-56789/
   end
 
   test "the change log renders the version history" do

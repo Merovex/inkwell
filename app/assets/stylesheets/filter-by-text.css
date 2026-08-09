@@ -6,6 +6,7 @@
  */
 @layer components {
   .filter-by-text { display: grid; inline-size: var(--size-12); }
+  .filter-by-text--wide { inline-size: var(--size-13); } /* roomier labels, e.g. "Search by address…" */
   .filter-by-text > * { grid-area: 1 / 1; } /* overlap input + label */
 
   .filter-by-text__input {
@@ -33,6 +34,7 @@
     padding-inline: calc(var(--u-pad) / 2);
     color: var(--ink-muted);
     font-size: var(--font-size-0);
+    white-space: nowrap; /* the fake-placeholder label never wraps to a 2nd line */
     pointer-events: none; /* clicks fall through to the input */
   }
   /* hide the label once the input has content */

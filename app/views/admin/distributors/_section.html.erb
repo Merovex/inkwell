@@ -3,7 +3,7 @@
     common ones not yet listed, and a paste-a-link form. %>
 <section class="buy u-flow">
   <% if heading %><h2 class="subhead">Distributors</h2><% end %>
-  <ul class="buy-links u-unlist" id="record_distributors">
+  <ul class="buy-links u-unlist u-stack-half" id="record_distributors">
     <% record.distributors.order(:platform).each do |distributor| %>
       <%= render "admin/distributors/row", distributor: distributor, manage: true %>
     <% end %>

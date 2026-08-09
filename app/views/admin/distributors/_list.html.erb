@@ -3,7 +3,7 @@
 <% if record.distributors.any? %>
   <section class="buy u-flow">
     <h2 class="subhead">Distributors</h2>
-    <ul class="buy-links u-unlist">
+    <ul class="buy-links u-unlist u-stack-half">
       <% record.distributors.order(:platform).each do |distributor| %>
         <%= render "admin/distributors/row", distributor: distributor, manage: false %>
       <% end %>

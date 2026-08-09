@@ -45,16 +45,15 @@ class PostsDraftsTest < ActionDispatch::IntegrationTest
     get admin_drafts_path
     assert_response :success
     assert_select ".list__title", text: "Fresh draft"
-    assert_select ".list__meta", text: /Scheduled/
     assert_select ".list__title", text: posts(:kickoff).title, count: 0
     # Rows link straight into the composer.
     assert_select "a.list__body[href=?]", edit_admin_post_path(records(:typography))
-    # The scheduled row carries the "Posts on <time>" clock flag.
+    # The scheduled row's status chip IS the schedule — "Posts on <time>", no
+    # separate "Scheduled" word or flag row (see post_status_chips).
     tomorrow_nine = Time.zone.local(Date.tomorrow.year, Date.tomorrow.month, Date.tomorrow.day, 9)
-    assert_select ".list__flag", count: 1 do
+    assert_select ".list__meta .badge", text: /Posts on/, count: 1 do
       assert_select "time[datetime=?]", tomorrow_nine.iso8601
     end
-    assert_select ".list__flag", text: /Posts on/
   end
 
   test "rows carry a trashcan; tossing a never-published draft destroys it outright" do

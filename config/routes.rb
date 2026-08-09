@@ -367,7 +367,7 @@ Rails.application.routes.draw do
       # re-issues the confirmation email to a still-pending subscriber. Seed
       # status is a resource: POST flags a deliverability-seed inbox, DELETE
       # returns it to a real reader.
-      resources :subscribers, only: :index do
+      resources :subscribers, only: %i[index show] do
         patch :unsubscribe, on: :member
         post  :resend, on: :member
         resource :seed, only: %i[create destroy], module: :subscribers

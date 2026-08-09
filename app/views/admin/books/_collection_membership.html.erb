@@ -2,7 +2,7 @@
 <%# A book's collections as cards, with a typeahead below to add more. %>
 <section class="book-collections u-flow">
   <% if heading %><h2 class="subhead">Collections</h2><% end %>
-  <ul class="collection-cards u-unlist" id="book_collections">
+  <ul class="collection-cards u-unlist u-stack-half" id="book_collections">
     <% book.installments.each do |installment| %>
       <% collection = Current.account.collections.find_by(record_id: installment.container_record_id) %>
       <% next unless collection %>

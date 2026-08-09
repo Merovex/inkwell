@@ -1,25 +1,14 @@
 /*
- * .checks / .check-card — the Pulse checks index: one card per recurring
- * question (title · description · schedule/next-ask/progress line) with the
- * viewer's recent-answers sparkline (reuses .run__bars from circle-progress),
- * or a paused state with a Resume. Cards are bordered here (the feed's rows are
- * borderless; these are discrete objects, not a stream).
+ * .check-card / .check-detail — the Pulse checks index and one check's detail.
+ * Cards compose `u-surface u-pad` in the markup (they're discrete objects, not
+ * a stream — the feed's rows stay borderless); this file keeps only what the
+ * utilities can't say. The rail's big number is the shared .stat, its bar the
+ * shared .meter, and the recent-answers sparkline is .run__bars from
+ * circle-progress.css.
  */
 @layer components {
-  .checks { display: flex; flex-direction: column; gap: var(--u-pad); }
-  .checks__intro { margin: 0; }
-  .checks__list { display: flex; flex-direction: column; gap: var(--u-pad); }
-
-  .check-card {
-    display: flex;
-    gap: var(--u-pad);
-    align-items: flex-start;
-    padding: var(--u-pad);
-    border: var(--border-size-1) solid var(--line);
-    border-radius: var(--radius-2);
-    background: var(--canvas);
-  }
-  .check-card--paused { background: var(--site-bg); }
+  .check-card { display: flex; gap: var(--u-pad); align-items: flex-start; }
+  .check-card--paused { --u-surface-bg: var(--site-bg); }
   .check-card--paused .check-card__title a { color: var(--ink-muted); }
 
   .check-card__main {
@@ -29,11 +18,9 @@
     flex-direction: column;
     gap: calc(var(--u-pad) / 4);
   }
-  .check-card__title { margin: 0; font-size: var(--font-size-2); font-weight: var(--font-weight-8); }
+  .check-card__title { font-size: var(--font-size-2); font-weight: var(--font-weight-8); }
   .check-card__title a { color: var(--ink); text-decoration: none; }
   .check-card__title a:hover { text-decoration: underline; }
-  .check-card__desc { margin: 0; }
-  .check-card__meta { margin: 0; font-size: var(--font-size-0); }
 
   .check-card__aside {
     flex-shrink: 0;
@@ -42,32 +29,19 @@
     align-items: flex-end;
     gap: calc(var(--u-pad) / 4);
   }
-  .check-card__run { font-size: var(--font-size-0); }
 
   /* The primary check's detail card (the in-board Pulse checks view): the
-     question + description + inline composer on a bordered surface, with the
-     answers and history flowing below it. */
-  .check-detail__card {
-    display: flex;
-    flex-direction: column;
-    gap: calc(var(--u-pad) / 2);
-    padding: var(--u-pad);
-    border: var(--border-size-1) solid var(--line);
-    border-radius: var(--radius-2);
-    background: var(--canvas);
-  }
+     question + description + inline composer, with the answers and history
+     flowing below it. */
+  .check-detail__card { display: flex; flex-direction: column; gap: calc(var(--u-pad) / 2); }
   /* The card's top row: the question, with the owner's manage controls (Edit ·
      Pause/Resume) tucked to the right. */
   .check-detail__top { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--u-pad); }
   .check-detail__manage { display: flex; align-items: center; gap: calc(var(--u-pad) / 2); flex-shrink: 0; }
   /* button_to wraps Pause/Resume in a <form>; strip its box so it aligns with
      the plain Edit link beside it. */
-  .check-detail__manage form { margin: 0; display: inline-flex; }
-  .check-detail__title { margin: 0; font-size: var(--font-size-4); font-weight: var(--font-weight-8); }
-  .check-detail__desc { margin: 0; }
-  /* The cadence is a quiet caption, not an eyebrow — it must not outweigh the
-     question. Sentence case (via human_schedule), muted, small. */
-  .check-detail__cadence { margin: 0; font-size: var(--font-size-0); color: var(--ink-muted); }
+  .check-detail__manage form { display: inline-flex; }
+  .check-detail__title { font-size: var(--font-size-4); font-weight: var(--font-weight-8); }
 
   /* The weekly answer-group header — a real section header, not body text. */
   .pulse-week { font-size: var(--font-size-1); margin-block-end: calc(var(--u-pad) / 2); }
@@ -79,7 +53,7 @@
   /* Earlier weeks: collapsed by default. The summary is one row — week ·
      excerpt · who · count; opening reveals the full answer rows. */
   .pulse-week-group + .pulse-week-group {
-    border-block-start: var(--border-size-1) solid color-mix(in oklab, var(--line), transparent 45%);
+    border-block-start: var(--border-size-1) solid var(--line-faint);
   }
   .pulse-week-summary {
     display: grid;
@@ -91,10 +65,11 @@
     list-style: none;
   }
   .pulse-week-summary::-webkit-details-marker { display: none; }
-  .pulse-week-summary__excerpt { min-inline-size: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  /* composes u-truncate in the markup */
+  .pulse-week-summary__excerpt { min-inline-size: 0; }
   .pulse-week-summary__count { font-size: var(--font-size-0); white-space: nowrap; }
   .pulse-week-group[open] .pulse-week-summary {
-    border-block-end: var(--border-size-1) solid color-mix(in oklab, var(--line), transparent 45%);
+    border-block-end: var(--border-size-1) solid var(--line-faint);
     margin-block-end: calc(var(--u-pad) / 2);
   }
   .check-detail__composer { margin-block-start: calc(var(--u-pad) / 2); }
@@ -110,40 +85,12 @@
   .check-detail .field--inline .field__control { inline-size: var(--size-11); }
 
   /* ── The Pulse checks rail (This week · Your run · Members) ── */
-  .pulse-stat { margin: 0; }
-  .pulse-stat__value { font-size: var(--font-size-5); font-weight: var(--font-weight-8); }
-
-  /* This-week completion — native <progress>, styled across engines. */
-  .pulse-bar {
-    inline-size: 100%;
-    block-size: var(--size-2);
-    appearance: none;
-    border: 0;
-    border-radius: var(--radius-round);
-    background: color-mix(in oklab, var(--ink) 12%, transparent);
-    overflow: hidden;
-  }
-  .pulse-bar::-webkit-progress-bar { background: transparent; }
-  .pulse-bar::-webkit-progress-value { background: var(--accent); border-radius: var(--radius-round); }
-  .pulse-bar::-moz-progress-bar { background: var(--accent); }
-  .pulse-close { margin: 0; font-size: var(--font-size-0); font-weight: var(--font-weight-6); color: var(--warning-text, var(--accent)); }
-
-  /* Your-run sparkline: filled squares for weeks answered. */
-  .pulse-run { display: inline-flex; gap: var(--border-size-2); }
-  .pulse-run__cell {
-    inline-size: var(--size-4);
-    block-size: var(--size-4);
-    border-radius: var(--radius-1);
-    background: color-mix(in oklab, var(--ink) 12%, transparent);
-  }
-  .pulse-run__cell--on { background: var(--accent); }
+  .pulse-close { font-size: var(--font-size-0); font-weight: var(--font-weight-6); color: var(--warning-ink); }
 
   /* Members: avatar · name · In / Nudge. */
-  .pulse-members { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: calc(var(--u-pad) / 2); }
+  .pulse-members { list-style: none; padding: 0; display: flex; flex-direction: column; gap: calc(var(--u-pad) / 2); }
   .pulse-members__row { display: flex; align-items: center; gap: calc(var(--u-pad) / 2); }
-  .pulse-members__row form { margin: 0; }
   .pulse-members__name { flex: 1; min-inline-size: 0; }
   .pulse-members__in,
   .pulse-members__nudge { color: var(--accent); }
-  .pulse-members__nudge { cursor: pointer; }
 }

@@ -4,7 +4,7 @@
 <% content_for :title, "Move #{@book.title} — Inkwell" %>
 
 <%= turbo_frame_tag "modal" do %>
-  <span data-controller="dialog" data-dialog-open-value="true">
+  <div data-controller="dialog" data-dialog-open-value="true">
     <dialog class="modal" data-dialog-target="modal" data-action="click->dialog#backdrop"
             aria-labelledby="move-book-title">
       <div class="modal__header">
@@ -19,30 +19,30 @@
                     shelving_old_title_value: @current_series&.title,
                     shelving_old_count_value: (@current_series ? @current_series.books.size : 0) } do %>
         <div class="modal__body u-stack">
-          <fieldset class="shelf-choices" data-action="change->shelving#update">
+          <fieldset class="shelf-choices u-stack-half" data-action="change->shelving#update">
             <legend class="subhead">Series</legend>
             <% @series.each do |series| %>
               <% count = series.books.size %>
               <% current = @current_series && series.record_id == @current_series.record_id %>
-              <label class="shelf-choice">
+              <label class="shelf-choice u-surface u-pad">
                 <%= radio_button_tag "container_record_id", series.record_id, current, required: true,
                       data: { shelving_target: "option", title: series.title, count: count, current: current } %>
                 <span class="shelf-choice__body">
                   <span class="shelf-choice__title u-text-strong"><%= series.title %></span>
-                  <span class="shelf-choice__meta u-text-muted"><%= pluralize(count, "book") %><% if current %> · currently here<% end %></span>
+                  <span class="shelf-choice__meta u-text-small u-text-muted"><%= pluralize(count, "book") %><% if current %> · currently here<% end %></span>
                 </span>
               </label>
             <% end %>
-            <label class="shelf-choice">
+            <label class="shelf-choice u-surface u-pad">
               <%= radio_button_tag "container_record_id", "", @current_series.nil?,
                     data: { shelving_target: "option", title: "", count: 0, current: @current_series.nil? } %>
               <span class="shelf-choice__body">
                 <span class="shelf-choice__title u-text-strong">No series</span>
-                <span class="shelf-choice__meta u-text-muted">Standalone</span>
+                <span class="shelf-choice__meta u-text-small u-text-muted">Standalone</span>
               </span>
             </label>
           </fieldset>
-          <p class="shelf-note u-text-muted" data-shelving-target="note" aria-live="polite"></p>
+          <p class="shelf-note u-text-small u-text-muted" data-shelving-target="note" aria-live="polite"></p>
         </div>
 
         <div class="modal__footer">
@@ -51,5 +51,5 @@
         </div>
       <% end %>
     </dialog>
-  </span>
+  </div>
 <% end %>

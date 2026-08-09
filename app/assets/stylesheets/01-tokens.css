@@ -103,6 +103,11 @@
   --line: var(--color-mountain-mist-300);       /* borders / hairlines */
   --scrim: oklch(0% 0 0 / 0.4);                 /* overlay behind modals & bottom sheets */
   --fill-subtle: var(--color-mountain-mist-100); /* subtle neutral fill: code bg, quiet hovers */
+  /* Derived washes — color-mix over the structural colors above, so they track
+     both themes for free. */
+  --line-faint: color-mix(in oklab, var(--line), transparent 45%); /* quieter hairline: row dividers inside a list/surface */
+  --fill-track: color-mix(in oklab, var(--ink) 12%, transparent);  /* the empty track behind meters and sparklines */
+  --canvas-sunken: color-mix(in oklab, var(--canvas), var(--ink) 3%); /* a step into the canvas: modal footers, neutral banners */
   /* Raised/floating surface (flyouts, popovers): the canvas in light mode, a
      step LIGHTER than the dark canvas in dark mode so panels read as elevated
      without a border. Was duplicated locally by switcher + subnav. */

@@ -7,7 +7,7 @@ class Admin::SubscribersController < Admin::BaseController
   # The roster is one state at a time; the header links between them.
   STATES = %w[ confirmed pending unsubscribed bounced complained ].freeze
 
-  before_action :set_subscriber, only: %i[ unsubscribe resend ]
+  before_action :set_subscriber, only: %i[ show unsubscribe resend ]
 
   def index
     @state = STATES.include?(params[:state]) ? params[:state] : "confirmed"
@@ -20,6 +20,16 @@ class Admin::SubscribersController < Admin::BaseController
       format.html
       format.csv { send_data subscribers_csv, filename: "subscribers-#{@state}-#{Date.current.iso8601}.csv" }
     end
+  end
+
+  # One subscriber's detail — opened into the roster's modal frame: their
+  # lifecycle dates and what they've received/opened, newest send first.
+  def show
+    @deliveries = @subscriber.broadcast_deliveries
+      .includes(broadcast: { record: :recordable }).order(created_at: :desc)
+    @received = @deliveries.count
+    @opened = @deliveries.count { |d| d.opened_at.present? }
+    @last_opened_at = @deliveries.filter_map(&:opened_at).max
   end
 
   # Manual opt-out on someone's behalf (a reply-to-email request, say). Same

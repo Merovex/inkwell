@@ -3,7 +3,7 @@
     housekeeping — scheduled posts + drafts as quiet lines. Reads the feed's
     @bulletins / @pending_pulse / @pulse / @scheduled / @drafts_count. %>
 <% if @bulletins&.any? || @pending_pulse || (@pulse.nil? && allowed_to?(:manage, @circle)) || @drafts_count.to_i.positive? || @scheduled&.any? %>
-  <div class="wall__prelude">
+  <div class="u-stack u-margin-block-end">
     <% if @bulletins&.any? %>
       <section class="wall__affixed" aria-label="Announcements">
         <% @bulletins.each do |bulletin| %>

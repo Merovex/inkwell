@@ -19,7 +19,7 @@
     padding: calc(var(--u-pad) * 1.25);
     border: var(--border-size-1) solid var(--line);
     border-radius: var(--radius-2);
-    background: color-mix(in oklab, var(--canvas), var(--ink) 3%);
+    background: var(--canvas-sunken);
   }
   /* The banner block breathes before the article body picks up. */
   .post-banner + .prose { margin-block-start: calc(var(--u-pad) * 2); }

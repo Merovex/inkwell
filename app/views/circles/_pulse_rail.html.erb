@@ -1,21 +1,28 @@
 <%# locals: (circle:, record:, pulse:, answered_this_week:, answered_ids:, members:) %>
 <%# The Pulse checks rail: this week's completion + close, your run, and the
-    members with their In/Nudge state. Reuses the .circle-rail column shell. %>
+    members with their In/Nudge state. Reuses the .circle-rail column shell,
+    the shared .stat big-number, .meter bar, and .run__bars sparkline. %>
 <aside class="circle-rail" aria-label="Pulse check">
   <section class="circle-rail__section" aria-labelledby="rail-week">
     <h2 id="rail-week" class="circle-rail__heading u-microcaps u-text-muted">This week</h2>
-    <p class="pulse-stat"><span class="pulse-stat__value"><%= answered_this_week %></span> of <%= pulse.subscriber_count %> answered</p>
-    <progress class="pulse-bar" value="<%= answered_this_week %>" max="<%= [ pulse.subscriber_count, 1 ].max %>"><%= answered_this_week %> of <%= pulse.subscriber_count %></progress>
+    <dl class="stat stat--compact">
+      <dt class="stat__label">of <%= pulse.subscriber_count %> answered</dt>
+      <dd class="stat__value"><%= answered_this_week %></dd>
+    </dl>
+    <progress class="meter" value="<%= answered_this_week %>" max="<%= [ pulse.subscriber_count, 1 ].max %>"><%= answered_this_week %> of <%= pulse.subscriber_count %></progress>
     <p class="pulse-close">Closes <%= Date.current.end_of_week.strftime("%A") %>, <%= pulse.ask_at %></p>
   </section>
 
   <section class="circle-rail__section" aria-labelledby="rail-run">
     <h2 id="rail-run" class="circle-rail__heading u-microcaps u-text-muted">Your run</h2>
     <% weeks = pulse.weeks_answered(Current.user) %>
-    <p class="pulse-stat"><span class="pulse-stat__value"><%= weeks.count { |_, answered| answered } %></span> weeks answered</p>
-    <span class="pulse-run" aria-hidden="true">
+    <dl class="stat stat--compact">
+      <dt class="stat__label">weeks answered</dt>
+      <dd class="stat__value"><%= weeks.count { |_, answered| answered } %></dd>
+    </dl>
+    <span class="run__bars" aria-hidden="true">
       <% weeks.each do |week, answered| %>
-        <span class="pulse-run__cell<%= " pulse-run__cell--on" if answered %>"
+        <span class="run__bar<%= " run__bar--on" if answered %>"
               title="Week <%= week.cweek %> (<%= l week, format: :short %>) — <%= answered ? "answered" : "no answer" %>"></span>
       <% end %>
     </span>
