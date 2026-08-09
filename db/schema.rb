@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.2].define(version: 2026_08_08_222054) do
+ActiveRecord::Schema[8.2].define(version: 2026_08_09_004249) do
   create_table "account_users", force: :cascade do |t|
     t.integer "account_id", null: false
     t.integer "user_id", null: false
@@ -180,6 +180,9 @@ ActiveRecord::Schema[8.2].define(version: 2026_08_08_222054) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.integer "author_record_id"
+    t.integer "word_count"
+    t.string "isbn"
+    t.string "tagline"
     t.index ["author_record_id"], name: "index_books_on_author_record_id"
     t.index ["body_id"], name: "index_books_on_body_id"
     t.index ["creator_id"], name: "index_books_on_creator_id"
@@ -315,6 +318,7 @@ ActiveRecord::Schema[8.2].define(version: 2026_08_08_222054) do
     t.integer "author_record_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.boolean "unordered", default: false, null: false
     t.index ["author_record_id"], name: "index_collections_on_author_record_id"
     t.index ["body_id"], name: "index_collections_on_body_id"
     t.index ["creator_id"], name: "index_collections_on_creator_id"
@@ -621,6 +625,7 @@ ActiveRecord::Schema[8.2].define(version: 2026_08_08_222054) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.integer "author_record_id"
+    t.string "state", default: "in_progress", null: false
     t.index ["author_record_id"], name: "index_series_on_author_record_id"
     t.index ["body_id"], name: "index_series_on_body_id"
     t.index ["creator_id"], name: "index_series_on_creator_id"

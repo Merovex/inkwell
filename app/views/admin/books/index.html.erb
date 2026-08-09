@@ -1,6 +1,7 @@
 <% content_for :title, "Books — Inkwell" %>
 
 <%= render "admin/shared/canvas_head", crumbs: [["Books", nil]], menu: false do %>
+  <%= link_to "New series", new_admin_series_path, class: "button", data: { turbo_frame: "modal" } %>
   <%= link_to new_admin_book_path, class: "button button--primary" do %>
     <%= inline_svg_tag "lucide/plus.svg", class: "lucide", size: "16px" %> New book
   <% end %>
@@ -9,6 +10,9 @@
 <div data-controller="filter" data-filter-unit-value="book">
   <header class="perma-header">
     <h1 class="perma-header__title">Books</h1>
+    <p class="perma-header__content u-text-muted">
+      <%= pluralize(@book_count, "title") %> · <%= pluralize(@series_count, "series") %><% if @standalone_count.positive? %> · <%= @standalone_count %> standalone<% end %>
+    </p>
     <div class="perma-header__content">
       <nav class="perma-header__toolbar" aria-label="Actions">
         <div class="filter-by-text">
@@ -16,7 +20,7 @@
                  aria-label="Filter books by title"
                  data-filter-target="input"
                  data-action="input->filter#apply keydown.esc->filter#clear">
-          <label class="filter-by-text__hotkey">Filter… <kbd class="kbd">F</kbd></label>
+          <label class="filter-by-text__hotkey">Filter titles… <kbd class="kbd">F</kbd></label>
         </div>
       </nav>
     </div>
@@ -27,36 +31,63 @@
   <% end %>
 
   <% if @sections.any? %>
-    <% @sections.each do |section_title, books| %>
+    <% @sections.each do |section| %>
       <section class="book-shelf" data-filter-target="section">
         <header class="book-shelf__head">
-          <h2 class="book-shelf__title"><%= section_title %></h2>
-          <span class="badge" data-filter-target="count"><%= pluralize(books.size, "book") %></span>
+          <div class="book-shelf__meta">
+            <h2 class="book-shelf__title"><%= section.title %></h2>
+            <span class="badge" data-filter-target="count"><%= pluralize(section.books.size, "book") %></span>
+            <% if section.series %>
+              <span class="badge<%= " badge--#{section.series.state_variant}" if section.series.state_variant %>"><%= section.series.state_label %></span>
+              <% years = section.books.filter_map { |b| b.publication_date&.year } %>
+              <% if years.any? %>
+                <span class="book-shelf__years u-text-muted"><%= years.min == years.max ? years.min : "#{years.min}–#{years.max}" %></span>
+              <% end %>
+            <% end %>
+          </div>
+          <% if section.series %>
+            <div class="book-shelf__actions">
+              <%= link_to "Edit series", edit_admin_series_path(section.series.record),
+                    class: "u-link", data: { turbo_frame: "modal" } %>
+            </div>
+          <% end %>
         </header>
-        <ul class="u-unlist u-grid">
-          <% books.each do |book| %>
-            <li class="book-card" data-filter-target="item" data-filter-text="<%= book.title.downcase %>">
-              <%= link_to admin_book_path(book.record), class: "book-card__link" do %>
-                <div class="book-card__cover">
+        <% if section.series && (blurb = section.series.content.to_plain_text.presence) %>
+          <p class="book-shelf__blurb"><%= truncate(blurb, length: 220) %></p>
+        <% end %>
+
+        <%# Series bands are drag-sortable in place (PATCH reorders the %>
+        <%# Installment positions); the Standalone band has no order to set. %>
+        <ul class="book-cards u-unlist"<% if section.series %> data-controller="sortable"
+            data-sortable-url-value="<%= reorder_admin_series_path(section.series.record) %>"<% end %>>
+          <% section.books.each_with_index do |book, i| %>
+            <li class="book-card" data-filter-target="item" data-filter-text="<%= book.title.downcase %>"
+                <% if section.series %>draggable="true" data-sortable-target="item"
+                data-record-id="<%= book.record_id %>"
+                data-action="dragstart->sortable#start dragover->sortable#over dragend->sortable#end"<% end %>>
+              <%= link_to admin_book_path(book.record), class: "book-card__link",
+                    draggable: (section.series ? "false" : nil) do %>
+                <span class="book-card__cover">
                   <% if book.cover? %>
                     <%= image_tag book.cover, class: "cover", alt: "" %>
                   <% else %>
                     <span class="cover cover--blank u-center-content" aria-hidden="true"><%= book.title.first %></span>
                   <% end %>
-                </div>
-                <div class="book-card__body">
-                  <h3 class="book-card__title"><%= book.title %></h3>
-                  <p class="book-card__excerpt u-clamp"><%= book.content.to_plain_text.to_s.truncate(700) %></p>
-                  <p class="book-card__meta u-cluster u-text-small u-text-muted u-margin-block-start-auto">
-                    <% if book.published? %>
-                      <span>Published <%= l((book.publication_date || book.published_at.to_date), format: :short) %></span>
-                    <% elsif book.scheduled? %>
-                      <span>Scheduled for <%= l(book.published_at, format: :short) %></span>
-                    <% else %>
-                      <span>Drafted <%= l(book.created_at.to_date, format: :short) %></span>
-                    <% end %>
-                  </p>
-                </div>
+                </span>
+                <h3 class="book-card__title"><%= book.title %></h3>
+                <p class="book-card__meta u-text-muted">
+                  <% if section.series %>Book <%= i + 1 %><% end %><%
+                    %><% if book.word_count %><%= " · " if section.series %><%= (book.word_count / 1000.0).round %>k<% if book.drafted? %> so far<% end %><% end %>
+                </p>
+                <p class="book-card__status">
+                  <% if book.published? %>
+                    <span class="badge badge--accent">Published</span>
+                  <% elsif book.scheduled? %>
+                    <span class="badge badge--accent">Scheduled</span>
+                  <% else %>
+                    <span class="badge">Draft</span>
+                  <% end %>
+                </p>
               <% end %>
             </li>
           <% end %>
@@ -73,3 +104,6 @@
     </div>
   <% end %>
 </div>
+
+<%# The band's "Edit series" link fetches admin/series/edit into here. %>
+<%= turbo_frame_tag "modal" %>

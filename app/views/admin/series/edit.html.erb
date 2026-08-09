@@ -1,7 +1,35 @@
-<% content_for :title, "#{@series.title} — Inkwell" %>
+<%# Series management lives in this modal, fetched into the books index's %>
+<%# "modal" turbo frame (data-turbo-frame="modal" on the band's Edit link). %>
+<%# The standalone series page is reader-only; managing happens here. %>
+<%# Self-opening dialog: the form (name/blurb/state) saves on Save series; the %>
+<%# book list reorders and adds/removes on their own as you drag and pick. %>
+<% content_for :title, "Edit #{@series.title} — Inkwell" %>
 
-<%= render "admin/shared/canvas_head", crumbs: [["Series", admin_series_index_path], [@series.title, nil]], menu: false do %>
-  <%= render "composer_actions", series: @series %>
+<%= turbo_frame_tag "modal" do %>
+  <span data-controller="dialog" data-dialog-open-value="true">
+    <dialog class="modal modal--wide" data-dialog-target="modal" data-action="click->dialog#backdrop"
+            aria-labelledby="edit-series-title">
+      <div class="modal__header">
+        <span class="modal__title" id="edit-series-title">Edit series</span>
+        <button type="button" class="button button--icon button--ghost" data-action="dialog#close" aria-label="Close">
+          <%= inline_svg_tag "lucide/x.svg", class: "lucide", size: "20px" %>
+        </button>
+      </div>
+
+      <div class="modal__body u-stack">
+        <%= render "form", series: @series, url: admin_series_path(@record), modal: true %>
+        <%= render "books", series: @series, record: @record %>
+      </div>
+
+      <div class="modal__footer modal__footer--split">
+        <%= button_to "Delete series", admin_series_path(@record), method: :delete,
+              class: "button button--danger", form: { data: { turbo_frame: "_top" } },
+              data: { turbo_confirm: "Delete “#{@series.title}”? Its books stay in the catalog — only the series grouping is removed." } %>
+        <div class="u-cluster">
+          <button type="button" class="button" data-action="dialog#close">Never mind</button>
+          <%= button_tag "Save series", form: "composer", class: "button button--primary" %>
+        </div>
+      </div>
+    </dialog>
+  </span>
 <% end %>
-
-<%= render "form", series: @series, url: admin_series_path(@record) %>

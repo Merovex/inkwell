@@ -75,10 +75,10 @@ class DistributorsControllerTest < ActionDispatch::IntegrationTest
     get admin_book_path(book)
     assert_response :success
     assert_select "form.distributor-form"
-    assert_select "#record_distributors .mrow", text: /Smashwords/
+    assert_select "#record_distributors .buy-link", text: /Smashwords/
 
     get edit_admin_book_path(book)
     assert_response :success
-    assert_select ".distributors", count: 0
+    assert_select ".buy", count: 0
   end
 end

@@ -1,11 +1,26 @@
-<%# locals: (series:, url:) %>
+<%# locals: (series:, url:, modal: false) %>
+<%# modal: true breaks the save out of the enclosing "modal" turbo frame so a %>
+<%# successful save reloads the whole books index rather than nesting a page. %>
 <%= render "admin/shared/error_summary", model: series %>
 
-<%= form_with model: series, url: url, id: "composer", class: "composer" do |f| %>
+<%= form_with model: series, url: url, id: "composer", class: "composer",
+      data: (modal ? { turbo_frame: "_top" } : {}) do |f| %>
   <%= f.text_field :title, class: "composer__title", placeholder: "Series title",
         "aria-label": "Title", required: true, autofocus: true %>
 
   <%= f.rich_textarea :content, placeholder: "About this series…", "aria-label": "Body" %>
+
+  <div class="field">
+    <span class="field__label" id="series-state-label">State</span>
+    <fieldset class="segmented segmented--start" aria-labelledby="series-state-label">
+      <% Series.states.keys.each do |s| %>
+        <label class="segmented__seg">
+          <%= f.radio_button :state, s, class: "u-visually-hidden" %>
+          <%= s.humanize %>
+        </label>
+      <% end %>
+    </fieldset>
+  </div>
 
   <%= render "admin/shared/author_select", f: f, resource: series %>
 <% end %>

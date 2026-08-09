@@ -20,7 +20,24 @@
   <%= f.text_field :title, class: "composer__title", placeholder: "Book title",
         "aria-label": "Title", required: true, autofocus: true %>
 
+  <div class="field">
+    <%= f.label :tagline, "Tagline", class: "field__label" %>
+    <p class="field__hint u-text-muted">The one-line hook, shown bold above the description.</p>
+    <%= f.text_field :tagline, class: "field__control", placeholder: "The orphaned Danel struggles to find his way…" %>
+  </div>
+
   <%= f.rich_textarea :content, placeholder: "About this book…", "aria-label": "Body" %>
+
+  <div class="u-cluster">
+    <div class="field">
+      <%= f.label :word_count, "Length (words)", class: "field__label" %>
+      <%= f.number_field :word_count, class: "field__control", min: 0, inputmode: "numeric", placeholder: "112400" %>
+    </div>
+    <div class="field">
+      <%= f.label :isbn, "ISBN", class: "field__label" %>
+      <%= f.text_field :isbn, class: "field__control", placeholder: "978-1-234-56789" %>
+    </div>
+  </div>
 
   <div class="field">
     <label for="publication_date" class="field__label">Publication date</label>

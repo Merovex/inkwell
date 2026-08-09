@@ -41,6 +41,17 @@ class Distributor < ApplicationRecord
       "google_play" => "Google Play Books" }.fetch(platform, platform.to_s.humanize)
   end
 
+  # A compact link label — host (sans "www.") + the last couple of path
+  # segments, e.g. "amazon.com/dp/B0BD6866Q6". The full url stays the href.
+  def display_url
+    uri = URI.parse(url)
+    host = uri.host.to_s.sub(/\Awww\./, "")
+    tail = uri.path.to_s.split("/").reject(&:blank?).last(2).join("/")
+    tail.present? ? "#{host}/#{tail}" : host
+  rescue URI::InvalidURIError, URI::Error
+    url
+  end
+
   def click
     increment!(:clicks)
   end

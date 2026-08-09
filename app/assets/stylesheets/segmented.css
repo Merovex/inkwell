@@ -8,6 +8,7 @@
   .segmented {
     display: flex;
     width: fit-content;
+    border: 0;                     /* neutralize the UA <fieldset> box (radio variant) */
     margin-inline: auto;           /* centered as a page-level tab switcher */
     gap: calc(var(--size-1) / 2);
     padding: calc(var(--size-1) * 0.75);
@@ -41,15 +42,19 @@
     transition: color var(--speed-quick) var(--ease-3);
   }
   .segmented__seg:hover { color: var(--ink); }
-  /* Raised segment: aria-selected for JS tab panels, aria-current for the
-     link variant (a filter that navigates to the current page). */
+  /* Raised segment: aria-selected for JS tab panels, aria-current for the link
+     variant (navigates to the current page), :has(:checked) for the radio
+     variant (a <label> segment wrapping a visually-hidden radio, e.g. a form
+     state picker). */
   .segmented__seg[aria-selected="true"],
-  .segmented__seg[aria-current="page"] {
+  .segmented__seg[aria-current="page"],
+  .segmented__seg:has(:checked) {
     color: var(--ink);
     background: var(--seg-active);
     box-shadow: 0 1px 3px rgb(0 0 0 / 0.14), 0 1px 1px rgb(0 0 0 / 0.06);
   }
-  .segmented__seg:focus-visible { outline: var(--border-size-2) solid var(--accent); outline-offset: var(--border-size-2); }
+  .segmented__seg:focus-visible,
+  .segmented__seg:has(:focus-visible) { outline: var(--border-size-2) solid var(--accent); outline-offset: var(--border-size-2); }
 
   /* On narrow screens the control scrolls horizontally rather than wrapping. */
   @media (max-width: 48em) {

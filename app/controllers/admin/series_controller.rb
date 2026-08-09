@@ -34,7 +34,8 @@ class Admin::SeriesController < Admin::BaseController
     if @series.errors.none?
       Record.originate(@series)
       @series.schedule(at: scheduled_at) if scheduling?
-      redirect_to admin_series_path(@series.record), notice: create_notice
+      # Created from the books-index modal — land back there to add its books.
+      redirect_to admin_books_path, notice: create_notice
     else
       render :new, status: :unprocessable_entity
     end
@@ -48,7 +49,8 @@ class Admin::SeriesController < Admin::BaseController
       publish: publishing?, schedule_at: (scheduled_at if scheduling?), unschedule: unscheduling?)
 
     if @series.errors.none?
-      redirect_to admin_series_path(@record)
+      # Management lives on the books index now, so the modal returns there.
+      redirect_to admin_books_path, notice: "Series saved."
     else
       @books = @series.books
       render :edit, status: :unprocessable_entity
@@ -57,7 +59,7 @@ class Admin::SeriesController < Admin::BaseController
 
   def destroy
     @record.trash
-    redirect_to admin_series_index_path, notice: "Series moved to trash."
+    redirect_to admin_books_path, notice: "Series moved to trash."
   end
 
   # Drag-reorder the series' books: PATCH with book_record_ids[] in the new
@@ -87,7 +89,7 @@ class Admin::SeriesController < Admin::BaseController
     end
 
     def series_params
-      params.expect(series: [ :title, :content, :author_record_id ])
+      params.expect(series: [ :title, :content, :author_record_id, :state ])
     end
 
     def create_notice

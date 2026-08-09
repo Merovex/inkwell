@@ -8,6 +8,11 @@
     margin: auto;                 /* centered in the viewport */
     padding: 0;
     inline-size: min(var(--size-15), calc(100% - var(--size-7)));
+  }
+  /* Wide variant for management surfaces (an editor + a book list side by side
+     of content): the shared wide-form measure, still shrinking on small screens. */
+  .modal--wide {
+    inline-size: min(var(--measure-form-wide), calc(100% - var(--size-7)));
     max-block-size: calc(100dvh - var(--size-7));
     background: var(--canvas);
     color: var(--ink);
@@ -36,6 +41,8 @@
     border-block-start: var(--border-size-1) solid var(--line);
     background: color-mix(in oklab, var(--canvas), var(--ink) 3%);
   }
+  /* A destructive action pinned left, the confirm/cancel pair right. */
+  .modal__footer--split { justify-content: space-between; }
 
   /* open/close animation — allow-discrete keeps it in the top layer while closing */
   .modal, .modal::backdrop {

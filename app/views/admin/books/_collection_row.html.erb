@@ -1,9 +1,30 @@
-<%# locals: (installment:, collection:) %>
-<li class="mrow u-surface" id="<%= dom_id(installment) %>">
-  <span class="mrow__label"><%= link_to collection.title, admin_collection_path(collection.record) %></span>
-  <% unless collection.published? %><span class="badge">Draft</span><% end %>
-  <%= button_to admin_installment_path(installment), method: :delete, class: "mrow__remove u-unbutton",
+<%# locals: (installment:, collection:, book: nil) %>
+<%# A collection card: title over its book count + (ordered) this book's place
+    or the unordered flag. book is nil when appended fresh via the typeahead. %>
+<% books = collection.books.to_a %>
+<% rank = book && (books.index { |b| b.record_id == book.record_id }&.+(1)) %>
+<li class="collection-card" id="<%= dom_id(installment) %>">
+  <% if books.any? %>
+    <span class="collection-card__covers" aria-hidden="true">
+      <% books.first(3).each do |b| %>
+        <% if b.cover? %>
+          <%= image_tag b.cover_thumb, class: "cover collection-card__cover", alt: "" %>
+        <% else %>
+          <span class="cover cover--blank collection-card__cover"></span>
+        <% end %>
+      <% end %>
+    </span>
+  <% end %>
+  <span class="collection-card__body">
+    <%= link_to collection.title, admin_collection_path(collection.record), class: "collection-card__title u-text-strong" %>
+    <span class="collection-card__meta u-text-muted">
+      <%= pluralize(books.size, "book") %><%
+        %><% if collection.unordered %> · unordered<% elsif rank %> · this one is <%= rank.ordinalize %><% end %><%
+        %><% unless collection.published? %> · draft<% end %>
+    </span>
+  </span>
+  <%= button_to admin_installment_path(installment), method: :delete, class: "collection-card__remove u-unbutton",
         aria: { label: "Remove from #{collection.title}" } do %>
-    <%= inline_svg_tag "lucide/trash-2.svg", class: "lucide", size: "16px" %>
+    <%= inline_svg_tag "lucide/x.svg", class: "lucide", size: "16px" %>
   <% end %>
 </li>

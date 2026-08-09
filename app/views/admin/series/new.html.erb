@@ -1,7 +1,27 @@
+<%# New series as a modal, fetched into the books index's "modal" turbo frame %>
+<%# (the header's "New series" carries data-turbo-frame="modal"). No book list %>
+<%# or delete yet — books get added by editing the series once it exists. %>
 <% content_for :title, "New series — Inkwell" %>
 
-<%= render "admin/shared/canvas_head", crumbs: [["Series", admin_series_index_path], ["New series", nil]], menu: false do %>
-  <%= render "composer_actions", series: @series %>
-<% end %>
+<%= turbo_frame_tag "modal" do %>
+  <span data-controller="dialog" data-dialog-open-value="true">
+    <dialog class="modal modal--wide" data-dialog-target="modal" data-action="click->dialog#backdrop"
+            aria-labelledby="new-series-title">
+      <div class="modal__header">
+        <span class="modal__title" id="new-series-title">New series</span>
+        <button type="button" class="button button--icon button--ghost" data-action="dialog#close" aria-label="Close">
+          <%= inline_svg_tag "lucide/x.svg", class: "lucide", size: "20px" %>
+        </button>
+      </div>
 
-<%= render "form", series: @series, url: admin_series_index_path %>
+      <div class="modal__body">
+        <%= render "form", series: @series, url: admin_series_index_path, modal: true %>
+      </div>
+
+      <div class="modal__footer">
+        <button type="button" class="button" data-action="dialog#close">Never mind</button>
+        <%= button_tag "Create series", form: "composer", class: "button button--primary" %>
+      </div>
+    </dialog>
+  </span>
+<% end %>

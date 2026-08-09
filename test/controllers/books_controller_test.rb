@@ -17,13 +17,14 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "index and show render" do
-    post admin_books_path, params: { book: { title: "Shown Book", content: "x" }, publish: "1" }
+    post admin_books_path, params: { book: { title: "Shown Book", content: "x", word_count: "50000" }, publish: "1" }
     record = Record.books.order(:id).last
 
     get admin_books_path
     assert_response :success
     assert_select ".book-card__title", text: "Shown Book"
     assert_select ".book-shelf__title", text: "Standalone"
+    assert_select ".book-card__meta", text: /50k/   # abbreviated word count on the card
     assert_select "[data-controller=filter] .filter-by-text__input"
 
     get admin_book_path(record)
@@ -34,6 +35,25 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
     assert_select "[data-controller=editable] h1 button[data-action*=?]", "editable#edit"
     assert_select "a[href=?]", admin_book_events_path(record), text: "Change log"
     assert_select ".cover-drop"   # click/drop cover uploader (no cover yet)
+  end
+
+  test "the detail page carries the tagline, length, and ISBN" do
+    post admin_books_path, params: { book: {
+      title: "Bellicose", content: "About the book.",
+      tagline: "The orphaned Danel struggles to find his way.",
+      word_count: "112400", isbn: "978-1-234-56789", publication_date: "2022-09-01" }, publish: "1" }
+    record = Record.books.order(:id).last
+
+    book = record.recordable
+    assert_equal 112400, book.word_count
+    assert_equal "978-1-234-56789", book.isbn
+    assert_equal "The orphaned Danel struggles to find his way.", book.tagline
+
+    get admin_book_path(record)
+    assert_response :success
+    assert_select ".book-detail__tagline", text: /orphaned Danel/
+    assert_select ".book-stats", text: /112,400 words/
+    assert_select ".book-stats", text: /978-1-234-56789/
   end
 
   test "the change log renders the version history" do

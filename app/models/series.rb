@@ -6,4 +6,12 @@ class Series < ApplicationRecord
   include Publishable
   include Authored
   include Installable
+
+  # Where the run stands, for the shelf band: planned → in progress → complete.
+  # (Distinct from `status`, which is the publish state of this record.)
+  enum :state, %w[planned in_progress complete].index_by(&:itself), default: "in_progress"
+
+  # Band label + badge tone.
+  def state_label = state.humanize
+  def state_variant = { "complete" => "accent", "in_progress" => "warning" }[state] # else neutral
 end

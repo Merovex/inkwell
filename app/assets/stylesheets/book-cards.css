@@ -6,7 +6,7 @@
  * Structure: .book-shelf > .book-shelf__head + ul.book-cards > li.book-card
  */
 @layer components {
-  .book-shelf { margin-block-end: calc(var(--u-pad) * 2); }
+  .book-shelf { margin-block-end: calc(var(--u-pad) * 4); }
 
   .book-shelf__head {
     display: flex;
@@ -22,8 +22,9 @@
     margin: 0;
     font-size: var(--font-size-4);
   }
-
-  /* the count is a .badge in the markup */
+  /* Title · Series-count chip · completion+years, on one baseline. */
+  .book-shelf__meta { display: flex; align-items: baseline; flex-wrap: wrap; gap: var(--u-pad); }
+  .book-shelf__status { font-size: var(--font-size-0); }
 
   .book-shelf__blank {
     color: var(--ink-muted);
@@ -31,47 +32,46 @@
     padding-block: calc(var(--u-pad) * 2);
   }
 
-  .book-card {
-    background: var(--canvas);
-    border-radius: var(--radius-card);
-    box-shadow: var(--elevation-card);
+  /* A shelf of cover cards: fixed cover-width columns, wrapping to new rows. */
+  .book-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, var(--measure-cover));
+    gap: calc(var(--u-pad) * 1.5);
   }
 
+  /* Each card is the cover over a title · meta · status stack — no surrounding
+     card chrome; the cover carries its own lift. */
+  .book-card { min-inline-size: 0; }
   .book-card__link {
-    display: grid;
-    grid-template-columns: var(--size-11) 1fr;
-    gap: calc(var(--u-pad) * 1.5);
-    padding: var(--u-pad);
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--u-pad) / 2);
     color: inherit;
     text-decoration: none;
   }
+  .book-card__cover .cover { --cover-size: 100%; box-shadow: var(--shadow-1); }
+  .book-card__cover .cover--blank { font-size: var(--font-size-6); }
+  .book-card__title { margin: 0; font-size: var(--font-size-2); }
+  .book-card__link:hover .book-card__title { text-decoration: underline; }
+  .book-card__meta { margin: 0; font-size: var(--font-size-0); }
+  .book-card__status { margin: 0; }
 
-  /* Covers are .cover (+ .cover--blank monogram) in the markup; the card
-     just lifts them off the surface and sizes the monogram initial. */
-  .book-card .cover { box-shadow: var(--shadow-1); }
-  .book-card .cover--blank { font-size: var(--font-size-6); }
+  /* Series-band actions (Edit series · Reorder) and the year range. */
+  .book-shelf__actions { display: flex; gap: var(--u-pad); flex-shrink: 0; }
+  .book-shelf__years { font-size: var(--font-size-0); }
 
-  .book-card__body {
-    display: flex;
-    flex-direction: column;
-    min-inline-size: 0;
+  /* The series blurb rides under the title row. When present it takes the
+     divider, so the head above it goes borderless. */
+  .book-shelf__head:has(+ .book-shelf__blurb) {
+    border-block-end: none;
+    margin-block-end: calc(var(--u-pad) / 2);
+    padding-block-end: 0;
   }
-
-  .book-card__title {
-    margin: 0 0 calc(var(--u-pad) / 2);
-    font-size: var(--font-size-3);
-  }
-
-  /* composes u-clamp in the markup */
-  .book-card__excerpt { --u-clamp-lines: 7; }
-
-  /* Composes u-cluster + u-text-small/-muted + u-margin-block-start-auto
-     in the markup (auto margin pins it to the card foot); only the minimum
-     breathing above it lives here. */
-  .book-card__meta { padding-block-start: calc(var(--u-pad) / 2); }
-
-  @media (max-width: 48em) { /* --breakpoint-md */
-    .book-card__link { grid-template-columns: var(--size-10) 1fr; }
-    .book-card__excerpt { --u-clamp-lines: 4; }
+  .book-shelf__blurb {
+    margin: 0 0 var(--u-pad);
+    padding-block-end: calc(var(--u-pad) / 2);
+    border-block-end: var(--border-size-1) solid var(--line);
+    color: var(--ink-muted);
+    max-inline-size: var(--measure-prose);
   }
 }

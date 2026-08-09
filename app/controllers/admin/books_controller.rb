@@ -4,9 +4,15 @@ class Admin::BooksController < Admin::BaseController
   before_action -> { authorize! @record, to: :view }, only: :show
   before_action -> { authorize! @record, to: :manage }, only: %i[edit update destroy]
 
+  # One index section: a Series (with its object, for the header) or Standalone.
+  BookSection = Struct.new(:series, :title, :books, keyword_init: true)
+
   def index
     books = Current.account.books.listed.includes(:record, :creator, :depiction, body: :rich_text_content).feed_ordered
     @sections = sections_for(books)
+    @book_count = books.size
+    @series_count = @sections.count(&:series)
+    @standalone_count = @sections.find { |s| s.series.nil? }&.books&.size.to_i
     @archived_count = Current.account.books.archived.count
   end
 
@@ -81,18 +87,20 @@ class Admin::BooksController < Admin::BaseController
       series_container_ids = series.map(&:record_id).to_set
 
       sections = series.map do |s|
-        [ s.title, by_container[s.record_id].filter_map { |i| by_record_id[i.book_record_id] } ]
+        list = by_container[s.record_id].filter_map { |i| by_record_id[i.book_record_id] }
+        BookSection.new(series: s, title: s.title, books: list)
       end
 
       standalone = books.reject do |book|
         installments.any? { |i| i.book_record_id == book.record_id && series_container_ids.include?(i.container_record_id) }
       end
-      sections << [ "Standalone", standalone ] if standalone.any?
-      sections.reject { |_, list| list.empty? }
+      sections << BookSection.new(series: nil, title: "Standalone", books: standalone) if standalone.any?
+      sections.reject { |section| section.books.empty? }
     end
 
     def book_params
-      params.expect(book: [ :title, :content, :publication_date, :author_record_id ])
+      params.expect(book: [ :title, :content, :publication_date, :author_record_id,
+        :tagline, :word_count, :isbn ])
     end
 
     # Current books matching ?q=, minus any already linked to ?container_record_id
