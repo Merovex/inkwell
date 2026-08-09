@@ -115,7 +115,7 @@
       {{ if $ledeHtml }}<div class="fk-hero-lede">{{ $ledeHtml | safeHTML }}</div>
       {{ else }}<p class="fk-hero-lede">{{ $lede }}</p>{{ end }}
       <p class="fk-hero-actions">
-        <a class="fk-btn fk-btn-primary" href="mailto:{{ $site.contact_email }}?subject=Newsletter%20signup">Get updates</a>
+        <a class="fk-btn fk-btn-primary" href="{{ "newsletter" | relURL }}">Get updates</a>
         <a class="fk-btn fk-btn-ghost" href="{{ site.Home.RelPermalink }}#books">Browse the books</a>
       </p>
     </div>

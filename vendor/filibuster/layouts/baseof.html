@@ -165,7 +165,7 @@
             {{ if and $button.label $button.url }}
             <a class="fk-nav-cta" href="{{ $button.url }}"{{ if $button.new_tab }} target="_blank" rel="noopener"{{ end }}>{{ $button.label }}</a>
             {{ else }}
-            <a class="fk-nav-cta" href="mailto:{{ $site.contact_email }}?subject=Newsletter%20signup">Get updates</a>
+            <a class="fk-nav-cta" href="{{ "newsletter" | relURL }}">Get updates</a>
             {{ end }}
           </li>
           {{ end }}
