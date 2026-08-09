@@ -94,6 +94,18 @@
       {{ end }}
     {{ end }}
   </div>
+  {{/* Photo credit for the uploaded banner backdrop (hero.banner_credit,
+       from the designer's banner slot): only over the banner background,
+       only when the author supplied one; the link is optional. */}}
+  {{ if and (eq $bg "banner") $site.banner }}{{ with $hero.banner_credit }}
+  <p class="fk-hero-credit">
+    {{- with $hero.banner_credit_url -}}
+    <a href="{{ . }}" rel="noopener">{{ $hero.banner_credit }}</a>
+    {{- else -}}
+    {{ $hero.banner_credit }}
+    {{- end -}}
+  </p>
+  {{ end }}{{ end }}
   <div class="fk-shell fk-hero-inner">
     <div class="fk-hero-copy">
       {{/* author source puts the name in the headline, so the kicker drops

@@ -31,6 +31,7 @@ export default class extends Controller {
     "customDisplayPreview", "customBodyPreview",
     "fontSearch", "fontGroups", "fontMore", "fontInUseName", "fontInUseSpecimen", "fontInUseFamilies",
     "heroHeadline", "heroLede", "heroBook", "heroSource", "heroCustomFields", "heroBookWrap",
+    "heroBannerCredit", "heroBannerCreditUrl",
     "heroLedeCount", "heroManyWrap", "heroScrimWrap", "heroScrimColor",
     "nlHeadline", "nlBlurb", "nlButton", "orderList", "footerFinePrint"]
   static values = {
@@ -435,6 +436,13 @@ export default class extends Controller {
       const color = this.heroScrimColorTarget.value
       if (color && color.toLowerCase() !== "#000000") hero.scrim_color = color
     }
+    // The banner photo's credit line; the link only travels with a credit.
+    if (this.hasHeroBannerCreditTarget) {
+      const credit = this.heroBannerCreditTarget.value.trim()
+      const url = this.heroBannerCreditUrlTarget.value.trim()
+      if (credit) hero.banner_credit = credit
+      if (credit && url) hero.banner_credit_url = url
+    }
     this.hero = Object.keys(hero).length ? hero : null
     this.heroCustomFieldsTarget.hidden = source !== "custom"
     this.updateHeroCount()
@@ -456,6 +464,10 @@ export default class extends Controller {
     this.heroLedeTarget.value = this.hero?.lede_html || ""
     this.heroBookTarget.value = this.hero?.book || ""
     if (this.hasHeroScrimColorTarget) this.heroScrimColorTarget.value = this.hero?.scrim_color || "#000000"
+    if (this.hasHeroBannerCreditTarget) {
+      this.heroBannerCreditTarget.value = this.hero?.banner_credit || ""
+      this.heroBannerCreditUrlTarget.value = this.hero?.banner_credit_url || ""
+    }
     this.updateHeroCount()
   }
 

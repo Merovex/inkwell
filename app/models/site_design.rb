@@ -94,14 +94,17 @@ class SiteDesign
     end
 
     # The hero content block: source picks what the copy says; headline/lede
-    # are the custom words; book picks the featured cover by slug. lede_html
-    # is the one rich field — sanitized here to a prose allowlist so only
-    # pre-rendered, safe HTML is ever stored or built (the body_html pattern).
+    # are the custom words; book picks the featured cover by slug;
+    # banner_credit (+ optional URL) attributes the uploaded banner photo.
+    # lede_html is the one rich field — sanitized here to a prose allowlist
+    # so only pre-rendered, safe HTML is ever stored or built (the
+    # body_html pattern).
     def permit_hero
       hero = @params[:hero]
       return nil unless hero.is_a?(ActionController::Parameters)
 
-      hero.permit(:source, :headline, :lede, :lede_html, :book, :scrim_color).to_h.compact_blank.tap do |block|
+      hero.permit(:source, :headline, :lede, :lede_html, :book, :scrim_color,
+                  :banner_credit, :banner_credit_url).to_h.compact_blank.tap do |block|
         if block["source"] && !block["source"].in?(HERO_SOURCES)
           raise Invalid, "#{block["source"].inspect} is not a hero copy source"
         end

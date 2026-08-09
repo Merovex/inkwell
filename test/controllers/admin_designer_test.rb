@@ -294,12 +294,16 @@ class AdminDesignerTest < ActionDispatch::IntegrationTest
 
     patch admin_designer_path,
       params: { design: { palette: "pine", font: "verse" }, fonts: { display: "Lobster" },
-                colors: { bg: "#0ea5e9", accent: "#f59e0b", ink: "#dc2626" } }, as: :json
+                colors: { bg: "#0ea5e9", accent: "#f59e0b", ink: "#dc2626" },
+                hero: { banner_credit: "Photo by Jane Doe on Unsplash",
+                        banner_credit_url: "https://unsplash.com/@janedoe" } }, as: :json
     assert_response :no_content
 
     saved = accounts(:merovex).reload.design
     assert_equal "pine", saved["design"]["palette"]
     assert_equal "Lobster", saved["fonts"]["display"]
+    assert_equal "Photo by Jane Doe on Unsplash", saved["hero"]["banner_credit"]
+    assert_equal "https://unsplash.com/@janedoe", saved["hero"]["banner_credit_url"]
     # Colors are stored RAW — the exporter resolves them per build.
     assert_equal "#0ea5e9", saved["colors"]["bg"]
 
