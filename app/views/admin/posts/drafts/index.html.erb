@@ -16,11 +16,11 @@
       <%= render "shared/list_item",
             href: edit_admin_post_path(post.record),
             title: post.title,
+            avatar: false,
             author: post.record.creator.display_name,
-            avatar_user: post.record.creator,
-            date: post.scheduled? ? "Scheduled" : "Draft",
+            date: l(post.updated_at.to_date, format: :short),
+            trailing_chips: post_status_chips(post),
             excerpt: plain_excerpt(post.content),
-            scheduled_at: (post.published_at if post.scheduled?),
             discard_path: admin_draft_path(post.record),
             discard_confirm: post.ever_published? ? "Move this once-published post to the trash?" : "Delete this draft forever? There's no undo." %>
     <% end %>

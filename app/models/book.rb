@@ -22,4 +22,22 @@ class Book < ApplicationRecord
   def collections
     Collection.current.where(record_id: installments.select(:container_record_id))
   end
+
+  # Move this book's *series* membership to another series (or nil to make it
+  # standalone). Collections are untouched. Both the vacated and the receiving
+  # series stay numbered 1..n; the book lands at the end of its new series.
+  def shelve_in_series(target_series_record_id)
+    target = target_series_record_id.presence&.to_i
+    old_ids = Series.current.where(record_id: installments.select(:container_record_id)).pluck(:record_id)
+    return if old_ids == [ target ].compact # already exactly there — nothing to do
+
+    Installment.transaction do
+      installments.where(container_record_id: old_ids).delete_all
+      if target
+        position = (Installment.where(container_record_id: target).maximum(:position) || 0) + 1
+        installments.create!(container_record_id: target, position: position)
+      end
+      (old_ids + [ target ]).compact.uniq.each { |id| Installment.renumber(id) }
+    end
+  end
 end

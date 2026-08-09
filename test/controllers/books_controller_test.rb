@@ -146,6 +146,38 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
     assert_equal 2, Installment.find_by(container_record_id: series.id, book_record_id: b1.id).position
   end
 
+  test "moving a book to another series reassigns the installment and renumbers" do
+    post admin_series_index_path, params: { series: { title: "Postal Marines", content: "x" }, publish: "1" }
+    from = Record.series.order(:id).last
+    post admin_series_index_path, params: { series: { title: "Strand", content: "x" }, publish: "1" }
+    to = Record.series.order(:id).last
+
+    post admin_books_path, params: { book: { title: "Bellicose", content: "x" }, publish: "1" }
+    book = Record.books.order(:id).last
+    post admin_books_path, params: { book: { title: "Wampum", content: "x" }, publish: "1" }
+    other = Record.books.order(:id).last
+
+    post admin_installments_path, as: :turbo_stream, params: { container_record_id: from.id, book_record_id: book.id, context: "book_series" }
+    post admin_installments_path, as: :turbo_stream, params: { container_record_id: to.id, book_record_id: other.id, context: "series" }
+
+    get new_admin_book_shelving_path(book)
+    assert_response :success
+    assert_select "input[type=radio][name=container_record_id]", minimum: 3   # two series + standalone
+
+    # Move it into Strand: it lands at the end (position 2), and Postal Marines
+    # is left empty.
+    post admin_book_shelving_path(book), params: { container_record_id: to.id }
+    assert_redirected_to admin_book_path(book)
+    assert_nil Installment.find_by(container_record_id: from.id, book_record_id: book.id)
+    moved = Installment.find_by(container_record_id: to.id, book_record_id: book.id)
+    assert_equal 2, moved.position
+
+    # Move it to standalone: the series installment is gone entirely.
+    assert_difference -> { Installment.where(book_record_id: book.id).count }, -1 do
+      post admin_book_shelving_path(book), params: { container_record_id: "" }
+    end
+  end
+
   test "uploading a cover attaches a versioned depiction to the current version" do
     post admin_books_path, params: { book: { title: "Cover Book", content: "x" }, publish: "1" }
     record = Record.books.order(:id).last

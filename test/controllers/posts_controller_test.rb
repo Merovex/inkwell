@@ -182,6 +182,23 @@ class PostsControllerTest < ActionDispatch::IntegrationTest
     assert late.recordable.published?
   end
 
+  test "publishing a draft from the status banner (title carried, publish flag)" do
+    record = records(:typography)   # a draft
+    assert record.recordable.drafted?
+
+    patch admin_post_path(record), params: { publish: "1", post: { title: record.recordable.title } }
+    assert record.reload.recordable.published?
+  end
+
+  test "unscheduling from the banner reverts a scheduled post to a draft" do
+    record = records(:typography)
+    record.revise(event: :scheduled, status: :scheduled, creator: users(:alice), published_at: 1.week.from_now)
+    assert record.reload.recordable.scheduled?
+
+    patch admin_post_path(record), params: { scheduled_posting: "false", post: { title: record.recordable.title } }
+    assert record.reload.recordable.drafted?
+  end
+
   test "requires authentication" do
     delete session_path
 

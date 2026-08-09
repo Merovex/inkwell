@@ -1,4 +1,6 @@
-<%# locals: (form:, schedulable: nil, panel_id: "scheduler-panel", drafts_href: nil, drafts_label: "Post Drafts", noun: "post", heading: nil, schedule_label: "Schedule and save", note: nil) %>
+<%# locals: (form:, schedulable: nil, panel_id: "scheduler-panel", drafts_href: nil, drafts_label: "Post Drafts", noun: "post", heading: nil, schedule_label: "Schedule and save", note: nil, trigger_label: nil) %>
+<%# trigger_label: give the clock trigger a text label (e.g. "Reschedule") %>
+<%# instead of the bare icon — for banner actions rather than composer toolbars. %>
 <%# "When would you like to post this?" — native-popover panel anchored to a %>
 <%# clock trigger, shared by every publishable composer (posts, messages); %>
 <%# drafts_href/drafts_label/noun word the note for the host type. Two modes: %>
@@ -12,10 +14,10 @@
 <% selected_date = scheduled ? schedulable.published_at.to_date.iso8601 : Date.tomorrow.iso8601 %>
 <% selected_hour = scheduled ? schedulable.published_at.hour : 9 %>
 
-<button type="button" class="button button--icon" popovertarget="<%= panel_id %>"
+<button type="button" class="button <%= trigger_label ? "button--small" : "button--icon" %>" popovertarget="<%= panel_id %>"
         title="<%= scheduled ? "Edit scheduled posting" : "Schedule this to post later" %>"
         aria-label="<%= scheduled ? "Edit scheduled posting…" : "Post later…" %>">
-  <%= inline_svg_tag "lucide/clock.svg", class: "lucide", size: "16px" %>
+  <%= inline_svg_tag "lucide/clock.svg", class: "lucide", size: "16px" %><% if trigger_label %> <%= trigger_label %><% end %>
 </button>
 
 <div class="menu scheduler" popover id="<%= panel_id %>"

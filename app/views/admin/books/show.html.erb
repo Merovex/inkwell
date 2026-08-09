@@ -40,9 +40,6 @@
         <% if @book.word_count %>
           <div class="book-stats__row"><dt>Length</dt><dd><%= number_with_delimiter(@book.word_count) %> words</dd></div>
         <% end %>
-        <% if @book.publication_date %>
-          <div class="book-stats__row"><dt>Released</dt><dd><%= @book.publication_date.strftime("%b %Y") %></dd></div>
-        <% end %>
         <% if @book.isbn.present? %>
           <div class="book-stats__row"><dt>ISBN</dt><dd><%= @book.isbn %></dd></div>
         <% end %>
@@ -52,7 +49,7 @@
     <%# ── Middle: header, tagline, description, series position ── %>
     <div class="book-detail__main u-flow">
       <header class="u-flow">
-        <p class="u-text-muted">
+        <p class="book-detail__status u-text-muted">
           <% if @book.published? %>
             <span class="badge badge--accent">Published</span>
           <% elsif @book.scheduled? %>
@@ -123,7 +120,13 @@
             <% end %>
           </ol>
           <% if can_manage %>
-            <%= link_to "Reorder or move to another series", admin_series_path(primary.record), class: "u-link" %>
+            <%# 8a: the series edit modal (7b), opened over the book page — no %>
+            <%# trip to a series view (that destination is gone). %>
+            <div class="u-cluster">
+              <%= link_to "Reorder", edit_admin_series_path(primary.record), class: "u-link", data: { turbo_frame: "modal" } %>
+              <span class="u-text-muted">or</span>
+              <%= link_to "Move to another series", new_admin_book_shelving_path(@record), class: "u-link", data: { turbo_frame: "modal" } %>
+            </div>
           <% end %>
         </section>
       <% end %>
@@ -161,3 +164,7 @@
     </aside>
   </div>
 </div>
+
+<%# "Reorder" (series edit modal) and "Move to another series" (the picker) %>
+<%# both open over the book page. %>
+<%= turbo_frame_tag "modal" %>

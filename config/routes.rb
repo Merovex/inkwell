@@ -285,6 +285,9 @@ Rails.application.routes.draw do
         scope module: :books do
           resource :publish, only: %i[create destroy]
           resource :depiction, only: %i[create destroy]
+          # Move this book to another series (or standalone) — the picker modal
+          # over the book page; create reassigns the series Installment.
+          resource :shelving, only: %i[new create]
           resources :events, only: :index
           resources :changes, only: :show
           resources :versions, only: :show

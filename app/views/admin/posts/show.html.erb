@@ -44,23 +44,38 @@
     <% else %>
       <h1 class="perma-header__title"><%= @post.title %></h1>
     <% end %>
+    <%# Status line, state by state: Draft shows drafting facts; Scheduled leads
+        with the publish moment; Published carries the date, length, and whether
+        it has gone to subscribers. %>
     <p class="perma-header__content u-text-muted">
-      <span class="u-text-strong"><%= @record.creator.display_name %></span>
       <% if @post.published? %>
+        <span class="badge badge--success">Published</span>
         · <time datetime="<%= @post.published_at.to_date.iso8601 %>"><%= l @post.published_at.to_date, format: :long %></time>
+        · <%= post_length(@post.content, reading: true) %>
+        <% broadcast = @record.broadcast %>
+        <% if broadcast&.sent? %>
+          · Emailed to <%= pluralize(broadcast.recipients_count, "subscriber") %> on <%= l broadcast.sent_at.to_date, format: :long %>
+        <% else %>
+          · Not emailed
+        <% end %>
       <% elsif @post.scheduled? %>
-        · <span class="badge badge--accent">Scheduled ·
+        <span class="badge badge--warning">Scheduled</span>
+        · <span class="u-text-strong">Publishes
           <time datetime="<%= @post.published_at.iso8601 %>" data-controller="local-time"
-                data-local-time-datetime-value="<%= @post.published_at.iso8601 %>"><%= @post.published_at.strftime("%b %-d at %H:%M") %></time></span>
+                data-local-time-datetime-value="<%= @post.published_at.iso8601 %>"><%= @post.published_at.strftime("%A, %B %-d at %-l:%M %p") %></time></span>
+        · <%= post_length(@post.content, reading: true) %>
       <% else %>
-        · <span class="badge">Draft</span>
+        <span class="badge">Draft</span>
+        · Started <time datetime="<%= @post.created_at.to_date.iso8601 %>"><%= l @post.created_at.to_date, format: :long %></time>
+        · Last edited <%= time_ago_tag @post.updated_at %>
+        · <%= post_length(@post.content) %>
       <% end %>
     </p>
   </header>
 </div>
 
 <% if can_manage %>
-  <%= render "admin/posts/broadcast_banner" %>
+  <%= render "admin/posts/status_banner" %>
 <% end %>
 
 <article class="prose">
@@ -68,5 +83,7 @@
 </article>
 
 <%= render "admin/boosts/boosts", record: @record %>
+
+<%= render "pager", previous_post: @previous_post, next_post: @next_post %>
 
 <%= render "admin/comments/comments", record: @record %>

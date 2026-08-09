@@ -1,4 +1,4 @@
-<%# locals: (title:, href: nil, title_tag: "h3", icon: nil, author: nil, date: nil, excerpt: nil, avatar: true, avatar_user: nil, avatar_src: nil, avatar_alt: "", avatar_initials: nil, avatar_spacer: false, chips: [], badge: nil, badge_variant: nil, client_visible: false, comment_count: 0, scheduled_at: nil, pinned: false, activity: nil, actions: nil, discard_path: nil, discard_confirm: nil, discard_title: "Delete", discard_aria: nil) %>
+<%# locals: (title:, href: nil, title_tag: "h3", icon: nil, author: nil, date: nil, excerpt: nil, avatar: true, avatar_user: nil, avatar_src: nil, avatar_alt: "", avatar_initials: nil, avatar_spacer: false, chips: [], trailing_chips: [], badge: nil, badge_variant: nil, client_visible: false, comment_count: 0, scheduled_at: nil, pinned: false, activity: nil, actions: nil, discard_path: nil, discard_confirm: nil, discard_title: "Delete", discard_aria: nil) %>
 <%# THE list row. Every .list renders its rows through this partial — never %>
 <%# hand-roll .list__item markup (see CLAUDE.md "List rows"). %>
 <%# Structure: avatar + (heading title + meta) + optional trailing count/actions. %>
@@ -15,6 +15,7 @@
 <%# keeps the indent with no avatar (a row that isn't a person's — e.g. a pulse). %>
 <%# author/date are optional — a blank byline collapses, leaving just the excerpt. %>
 <%# chips replace the author in the byline (e.g. a book's series). %>
+<%# trailing_chips: [[label, variant], …] badges after the date (post status). %>
 <%# badge puts a pill next to the title (badge_variant: "accent"/"warning"). %>
 <%# scheduled_at adds a "Posts on <time>" clock flag; pinned adds a "Pinned" flag. %>
 <%# actions: captured HTML for the far-right action zone (buttons, stat badges). %>
@@ -52,8 +53,9 @@
     </div>
     <% label = chips.any? ? safe_join(chips.map { |chip| tag.span(chip, class: "badge badge--accent") }, " ") : author %>
     <% byline = safe_join([ label.presence, date.presence ].compact, " · ") %>
-    <% if byline.present? || excerpt.present? %>
-      <span class="list__meta u-clamp"><% if byline.present? %><span class="list__byline"><%= byline %></span> <% end %><%= excerpt %></span>
+    <% trailing = trailing_chips.any? ? safe_join(trailing_chips.map { |chip_label, chip_variant| tag.span(chip_label, class: "badge#{" badge--#{chip_variant}" if chip_variant}") }, " ") : nil %>
+    <% if byline.present? || trailing.present? || excerpt.present? %>
+      <span class="list__meta u-clamp"><% if byline.present? %><span class="list__byline"><%= byline %></span> <% end %><% if trailing.present? %><%= trailing %> <% end %><%= excerpt %></span>
     <% end %>
     <% if scheduled_at %>
       <span class="list__flag">

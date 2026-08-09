@@ -23,9 +23,10 @@
       <%= render "shared/list_item",
             href: admin_post_path(post.record),
             title: post.title,
+            avatar: false,
             author: post.record.creator.display_name,
-            avatar_user: post.record.creator,
             date: l(post.published_at.to_date, format: :short),
+            trailing_chips: post_status_chips(post),
             excerpt: plain_excerpt(post.content),
             comment_count: @comment_counts[post.record_id].to_i,
             pinned: post.pinned_at.present? %>

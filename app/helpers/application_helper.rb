@@ -35,6 +35,45 @@ module ApplicationHelper
     content.to_plain_text.to_s.truncate(length, separator: " ")
   end
 
+  # The length fact in a post's status line: "1,840 words" alone, or with a
+  # reading estimate — "1,840 words, about 8 minutes" — for published/scheduled
+  # posts (a reader-facing signal; a draft just shows the raw count). ~225 wpm.
+  WORDS_PER_MINUTE = 225
+  def post_length(content, reading: false)
+    words = content.to_plain_text.to_s.split.size
+    phrase = "#{number_with_delimiter(words)} #{"word".pluralize(words)}"
+    return phrase unless reading
+
+    minutes = [ (words / WORDS_PER_MINUTE.to_f).round, 1 ].max
+    "#{phrase}, about #{pluralize(minutes, "minute")}"
+  end
+
+  # Status chips for a post row: its state (green Published / yellow Scheduled /
+  # neutral Draft), plus an "Emailed" chip once a published post has gone out.
+  # [[label, badge_variant], …] for shared/list_item's trailing_chips.
+  def post_status_chips(post)
+    if post.published?
+      chips = [ [ "Published", "success" ] ]
+      if post.record.broadcast&.sent?
+        chips << [ safe_join([ inline_svg_tag("lucide/mail.svg", class: "lucide", size: "14px"), " Emailed" ]), nil ]
+      end
+      chips
+    elsif post.scheduled?
+      # The schedule *is* the status — a yellow "Posts on …" chip, no separate
+      # "Scheduled" word or flag row (local-time reformats it to the reader's zone).
+      at = post.published_at
+      label = safe_join([
+        inline_svg_tag("lucide/clock.svg", class: "lucide", size: "14px"),
+        " Posts on ",
+        tag.time(at.strftime("%b %-d at %-l:%M %p"), datetime: at.iso8601,
+          data: { controller: "local-time", local_time_datetime_value: at.iso8601 })
+      ])
+      [ [ label, "warning" ] ]
+    else
+      [ [ "Draft", nil ] ]
+    end
+  end
+
   # Relative time with the receipt on hover: "3 hours ago" whose title (the
   # native tooltip) carries the absolute timestamp. Every time-ago should
   # render through this. suffix: "" for contexts that phrase it themselves

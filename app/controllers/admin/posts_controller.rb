@@ -9,7 +9,7 @@ class Admin::PostsController < Admin::BaseController
   # posts behind posts/archived.
   def index
     @posts = Current.account.posts.listed.published
-      .includes(:record, :creator, body: :rich_text_content).feed_ordered
+      .includes(:creator, body: :rich_text_content, record: :broadcast).feed_ordered
 
     @comment_counts = Current.account.records.active.comments
       .where(parent_id: @posts.map(&:record_id)).group(:parent_id).count
@@ -28,6 +28,13 @@ class Admin::PostsController < Admin::BaseController
   end
 
   def show
+    # Prev/next pager across the published feed, chronologically: "Previous" is
+    # the post published just before this one, "Next" the one just after.
+    if @post.published_at
+      feed = Current.account.posts.listed.published
+      @previous_post = feed.where(published_at: ...@post.published_at).order(published_at: :desc).first
+      @next_post = feed.where(published_at: @post.published_at..).where.not(id: @post.id).order(:published_at).first
+    end
   end
 
   def new

@@ -12,6 +12,14 @@ class Installment < ApplicationRecord
   # unrepresentable (SQLite can't express this constraint — AR only).
   validate :records_share_account
 
+  # Rewrite a container's positions to a contiguous 1..n in current order, after
+  # a book has been added to or removed from it (see Book#shelve_in_series).
+  def self.renumber(container_record_id)
+    where(container_record_id: container_record_id).order(:position).each_with_index do |installment, i|
+      installment.update_columns(position: i + 1)
+    end
+  end
+
   private
     def records_share_account
       return if container_record&.bucket_id == book_record&.bucket_id
