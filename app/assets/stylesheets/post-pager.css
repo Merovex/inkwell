@@ -1,0 +1,32 @@
+/*
+ * .post-pager — read-through navigation at the foot of an admin post: the older
+ * post (Previous) on the left, the newer (Next) on the right, each a small
+ * direction label over the post title. A two-column grid so Next stays pinned
+ * right even when there is no Previous (the view emits an empty span).
+ */
+@layer components {
+  .post-pager {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--u-pad);
+    margin-block-start: calc(var(--u-pad) * 2);
+    padding-block-start: var(--u-pad);
+    border-block-start: var(--border-size-1) solid var(--line);
+  }
+  .post-pager__link {
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--u-pad) / 4);
+    text-decoration: none;
+    color: inherit;
+    min-inline-size: 0;
+  }
+  .post-pager__link--next { text-align: end; align-items: flex-end; }
+  .post-pager__dir { display: inline-flex; align-items: center; gap: calc(var(--u-pad) / 2); }
+  .post-pager__link:hover .post-pager__title { text-decoration: underline; }
+
+  @media (max-width: 48em) { /* --breakpoint-md */
+    .post-pager { grid-template-columns: 1fr; }
+    .post-pager__link--next { text-align: start; align-items: flex-start; }
+  }
+}

@@ -1,0 +1,25 @@
+<%# locals: (previous_post:, next_post:) %>
+<%# Read-through pager at the foot of a post: older post on the left, newer on
+    the right. The empty span keeps "Next" pinned right when there's no prev. %>
+<% if previous_post || next_post %>
+  <nav class="post-pager" aria-label="More posts">
+    <% if previous_post %>
+      <%= link_to admin_post_path(previous_post.record), class: "post-pager__link post-pager__link--prev" do %>
+        <span class="post-pager__dir u-microcaps u-text-muted">
+          <%= inline_svg_tag "lucide/arrow-left.svg", class: "lucide", size: "16px" %> Previous
+        </span>
+        <span class="post-pager__title u-text-strong"><%= previous_post.title %></span>
+      <% end %>
+    <% else %>
+      <span></span>
+    <% end %>
+    <% if next_post %>
+      <%= link_to admin_post_path(next_post.record), class: "post-pager__link post-pager__link--next" do %>
+        <span class="post-pager__dir u-microcaps u-text-muted">
+          Next <%= inline_svg_tag "lucide/arrow-right.svg", class: "lucide", size: "16px" %>
+        </span>
+        <span class="post-pager__title u-text-strong"><%= next_post.title %></span>
+      <% end %>
+    <% end %>
+  </nav>
+<% end %>

@@ -1,0 +1,83 @@
+<%# The post's one contextual banner, state by state (10a/b/c). Creator/admin %>
+<%# only — the caller guards on can_manage. Publish/schedule reuse posts#update %>
+<%# (a hidden title satisfies params.expect; save_edit changes only the state); %>
+<%# the email nudge reuses the broadcast resource. %>
+<% public_url = post_url(@record.to_slug, **AccountHost.public_url_options(Current.account)) %>
+<% pretty_url = public_url.sub(%r{\Ahttps?://}, "") %>
+<% sendable = Current.account.subscribers.sendable.count %>
+<% broadcast = @record.broadcast %>
+
+<% if @post.drafted? %>
+  <aside class="post-banner">
+    <p class="post-banner__lead"><strong>Not on the web.</strong> Nobody can see this but you.</p>
+    <div class="post-banner__actions">
+      <%= link_to "Preview", public_url, class: "u-link", target: "_blank", rel: "noopener" %>
+      <%= form_with url: admin_post_path(@record), method: :patch, id: "publish-form", class: "post-banner__form" do %>
+        <%= hidden_field_tag "post[title]", @post.title %>
+        <%= submit_tag "Publish", name: "publish", value: "1", class: "button button--primary button--small" %>
+        <%= render "admin/shared/scheduler", form: "publish-form", schedulable: @post, noun: "post" %>
+      <% end %>
+    </div>
+  </aside>
+
+<% elsif @post.scheduled? %>
+  <aside class="post-banner post-banner--scheduled">
+    <p class="post-banner__lead">
+      <strong>Goes live
+        <time datetime="<%= @post.published_at.iso8601 %>" data-controller="local-time"
+              data-local-time-datetime-value="<%= @post.published_at.iso8601 %>"><%= @post.published_at.strftime("%A, %B %-d at %-l:%M %p") %></time></strong><% if broadcast&.scheduled? %>, and emails your <%= pluralize(sendable, "subscriber") %> that morning<% end %>.
+    </p>
+    <div class="post-banner__actions">
+      <%= link_to "Preview", public_url, class: "u-link", target: "_blank", rel: "noopener" %>
+      <%= form_with url: admin_post_path(@record), method: :patch, id: "reschedule-form", class: "post-banner__form" do %>
+        <%= hidden_field_tag "post[title]", @post.title %>
+        <%= render "admin/shared/scheduler", form: "reschedule-form", schedulable: @post, noun: "post", trigger_label: "Reschedule" %>
+      <% end %>
+      <%= form_with url: admin_post_path(@record), method: :patch, id: "unschedule-form", class: "post-banner__form" do %>
+        <%= hidden_field_tag "post[title]", @post.title %>
+        <%= hidden_field_tag "scheduled_posting", "false" %>
+        <%= submit_tag "Unschedule", class: "u-unbutton u-link" %>
+      <% end %>
+    </div>
+  </aside>
+
+<% elsif @post.published? %>
+  <aside class="post-banner" data-controller="clipboard" data-clipboard-text-value="<%= public_url %>">
+    <p class="post-banner__lead">Live at
+      <a class="post-banner__permalink" href="<%= public_url %>" target="_blank" rel="noopener"><%= pretty_url %></a></p>
+    <div class="post-banner__actions">
+      <button type="button" class="button button--small" data-action="clipboard#copy">Copy link</button>
+      <span class="u-copied-veil" data-clipboard-target="flash" role="status" aria-hidden="true">Copied to clipboard</span>
+    </div>
+  </aside>
+
+  <%# Email nudge — only while the post hasn't been sent (a sent post shows
+      "Emailed to N on …" in the status line instead). %>
+  <% if broadcast&.sent? %>
+  <% elsif broadcast&.scheduled? %>
+    <aside class="post-banner">
+      <p class="post-banner__lead">Scheduled to email your subscribers on
+        <time datetime="<%= broadcast.scheduled_at.iso8601 %>" data-controller="local-time"
+              data-local-time-datetime-value="<%= broadcast.scheduled_at.iso8601 %>"><%= broadcast.scheduled_at.strftime("%b %-d at %-l:%M %p") %></time>.</p>
+      <div class="post-banner__actions">
+        <%= button_to "Cancel scheduled email", admin_post_broadcast_path(@record), method: :delete, class: "button button--small" %>
+      </div>
+    </aside>
+  <% elsif broadcast %>
+    <aside class="post-banner"><p class="post-banner__lead">Emailing this post to your subscribers…</p></aside>
+  <% else %>
+    <aside class="post-banner">
+      <div class="post-banner__body">
+        <p class="post-banner__lead"><strong>This post hasn't gone to your subscribers.</strong></p>
+        <p class="post-banner__sub u-text-muted"><%= pluralize(sendable, "person") %> would receive it. You can send it any time.</p>
+      </div>
+      <%= form_with url: admin_post_broadcast_path(@record), method: :post, id: "broadcast-form", class: "post-banner__form" do %>
+        <%= submit_tag "Email it", class: "button button--primary button--small" %>
+        <%= render "admin/shared/scheduler", form: "broadcast-form", noun: "email",
+              panel_id: "broadcast-scheduler", heading: "When should we email this to subscribers?",
+              schedule_label: "Schedule email",
+              note: "The post stays live on the web — only the email send is scheduled." %>
+      <% end %>
+    </aside>
+  <% end %>
+<% end %>
