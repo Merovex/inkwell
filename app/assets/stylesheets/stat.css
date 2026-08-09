@@ -30,4 +30,8 @@
   .stat--compact { --stat-size: var(--font-size-5); }
   /* Trouble (bounces, complaints, unsubscribes) reads amber. */
   .stat--trouble .stat__value { color: var(--warning-ink); }
+
+  /* Flush: no divider or block margin — for a stat row that sits inside a card
+     (the campaign summary) rather than heading a page. */
+  .stats--flush { margin-block: 0; padding-block-end: 0; border-block-end: none; }
 }

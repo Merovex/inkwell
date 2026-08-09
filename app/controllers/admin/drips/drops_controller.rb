@@ -15,20 +15,24 @@ class Admin::Drips::DropsController < Admin::BaseController
     if @drop.valid?
       Record.originate(@drop, parent: @record)
       @drop.record.update!(position: next_position)
-      redirect_to admin_drip_path(@record), notice: "Drop added."
+      redirect_to admin_drip_path(@record), notice: "Step added."
     else
       render :new, status: :unprocessable_entity
     end
   end
 
   def edit
+    siblings = @drip.drops.to_a
+    @position = siblings.index { |d| d.record_id == @drop_record.id }&.succ
+    @count = siblings.size
+    @step_stats = step_stats(@drop_record.id)
   end
 
   def update
     @drop = @drop_record.revise(event: :updated, **drop_params.to_h.symbolize_keys)
 
     if @drop.errors.none?
-      redirect_to admin_drip_path(@record), notice: "Drop saved."
+      redirect_to admin_drip_path(@record), notice: "Step saved."
     else
       render :edit, status: :unprocessable_entity
     end
@@ -36,7 +40,7 @@ class Admin::Drips::DropsController < Admin::BaseController
 
   def destroy
     @drop_record.trash
-    redirect_to admin_drip_path(@record), notice: "Drop removed."
+    redirect_to admin_drip_path(@record), notice: "Step removed."
   end
 
   private

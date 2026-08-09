@@ -1,14 +1,15 @@
-<% content_for :title, "Drips — Inkwell" %>
+<% content_for :title, "Campaigns — Inkwell" %>
 
-<%= render "admin/shared/canvas_head", crumbs: [["Drips", nil]], menu: false do %>
+<%= render "admin/shared/canvas_head", crumbs: [["Campaigns", nil]], menu: false do %>
   <%= link_to new_admin_drip_path, class: "button button--primary" do %>
-    <%= inline_svg_tag "lucide/plus.svg", class: "lucide", size: "16px" %> New drip
+    <%= inline_svg_tag "lucide/plus.svg", class: "lucide", size: "16px" %> New campaign
   <% end %>
 <% end %>
 
 <header class="perma-header">
-  <h1 class="perma-header__title">Drips</h1>
+  <h1 class="perma-header__title">Campaigns</h1>
   <div class="perma-header__content">
+    <p class="u-text-muted">A campaign is a sequence of steps. Each step sends one email, a set number of days after the campaign starts.</p>
     <nav class="perma-header__toolbar" aria-label="Actions">
       <%= link_to "Dashboard", dashboard_admin_drips_path, class: "button button--small" %>
     </nav>
@@ -16,25 +17,66 @@
 </header>
 
 <% if @drips.any? %>
-  <div class="list">
+  <div class="u-stack">
     <% @drips.each do |drip| %>
-      <%= render "shared/list_item",
-            href: admin_drip_path(drip.record),
-            title: drip.title,
-            avatar: false,
-            badge: drip.active? ? "Active" : "Inactive",
-            badge_variant: ("accent" if drip.active?),
-            discard_path: admin_drip_path(drip.record),
-            discard_title: "Trash",
-            discard_aria: "Move #{drip.title} to trash",
-            discard_confirm: "Move “#{drip.title}” to trash?" %>
+      <% s = @stats[drip.record_id] %>
+      <% enrolled = s[:in_now].positive? || s[:finished].positive? || s[:left].positive? %>
+      <% menu_id = "campaign-actions-#{drip.record_id}" %>
+      <article class="campaign-card u-surface u-pad">
+        <div class="campaign-card__head">
+          <h2 class="campaign-card__title"><%= drip.title %></h2>
+          <% if drip.active? %>
+            <span class="badge badge--accent">Active</span>
+          <% else %>
+            <span class="badge">Paused</span>
+          <% end %>
+          <div class="campaign-card__actions">
+            <%= link_to "Open", admin_drip_path(drip.record), class: "campaign-card__open" %>
+            <button type="button" class="button button--icon button--ghost" popovertarget="<%= menu_id %>"
+                    aria-label="Actions for <%= drip.title %>">
+              <%= inline_svg_tag "lucide/ellipsis-vertical.svg", class: "lucide", size: "18px" %>
+            </button>
+            <div class="menu" popover id="<%= menu_id %>" data-controller="anchored-popover" data-anchored-popover-placement-value="top">
+              <% if drip.active? %>
+                <%= button_to "Pause", activate_admin_drip_path(drip.record, active: false), method: :patch, class: "menu__item" %>
+              <% else %>
+                <%= button_to "Activate", activate_admin_drip_path(drip.record, active: true), method: :patch, class: "menu__item" %>
+              <% end %>
+              <hr class="menu__separator">
+              <%= button_to "Move to trash", admin_drip_path(drip.record), method: :delete, class: "menu__item",
+                    form: { data: { turbo_confirm: "Move “#{drip.title}” to trash?" } } %>
+            </div>
+          </div>
+        </div>
+
+        <p class="campaign-card__desc">
+          <%= campaign_start_phrase(drip.trigger) %> · <%= campaign_shape(s[:steps], s[:span]) %><% unless enrolled %> · nobody is in it<% end %>
+        </p>
+
+        <% if enrolled %>
+          <dl class="stats stats--flush campaign-card__stats">
+            <div class="stat stat--compact">
+              <dt class="stat__label">in it now</dt>
+              <dd class="stat__value"><%= s[:in_now] %></dd>
+            </div>
+            <div class="stat stat--compact">
+              <dt class="stat__label">finished</dt>
+              <dd class="stat__value"><%= s[:finished] %></dd>
+            </div>
+            <div class="stat stat--compact">
+              <dt class="stat__label">clicked something</dt>
+              <dd class="stat__value"><%= s[:clicked] %></dd>
+            </div>
+          </dl>
+        <% end %>
+      </article>
     <% end %>
   </div>
 <% else %>
   <div class="empty">
     <span class="empty__icon"><%= inline_svg_tag "lucide/inbox.svg", class: "lucide", size: "40px" %></span>
-    <p class="empty__title">No drips yet</p>
+    <p class="empty__title">No campaigns yet</p>
     <p class="empty__text">Create a welcome sequence — an ordered set of emails sent to new subscribers.</p>
-    <div class="empty__actions"><%= link_to "New drip", new_admin_drip_path, class: "button button--primary" %></div>
+    <div class="empty__actions"><%= link_to "New campaign", new_admin_drip_path, class: "button button--primary" %></div>
   </div>
 <% end %>

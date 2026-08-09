@@ -1,26 +1,60 @@
 <% content_for :title, "#{@drip.title} — Inkwell" %>
 
-<%= render "admin/shared/canvas_head", crumbs: [["Drips", admin_drips_path], [@drip.title, nil]],
-      edit_href: edit_admin_drip_path(@record) do %>
+<%= render "admin/shared/canvas_head",
+      crumbs: [["Campaigns", admin_drips_path], [@drip.title, nil]], menu: false do %>
   <% if @drip.active? %>
-    <%= button_to "Deactivate", activate_admin_drip_path(@record, active: false), method: :patch, class: "menu__item" %>
+    <%= button_to "Pause", activate_admin_drip_path(@record, active: false), method: :patch, class: "button" %>
   <% else %>
-    <%= button_to "Activate", activate_admin_drip_path(@record, active: true), method: :patch, class: "menu__item" %>
+    <%= button_to "Resume", activate_admin_drip_path(@record, active: true), method: :patch, class: "button" %>
   <% end %>
-  <hr class="menu__separator">
-  <%= button_to "Move to trash", admin_drip_path(@record), method: :delete, class: "menu__item" %>
+  <%= link_to new_admin_drip_drop_path(@record), class: "button button--primary" do %>
+    <%= inline_svg_tag "lucide/plus.svg", class: "lucide", size: "16px" %> Add step
+  <% end %>
+  <button type="button" class="button button--icon button--ghost" popovertarget="campaign-menu" aria-label="More actions">
+    <%= inline_svg_tag "lucide/ellipsis-vertical.svg", class: "lucide", size: "20px" %>
+  </button>
+  <div class="menu" popover id="campaign-menu" data-controller="anchored-popover" data-anchored-popover-placement-value="top">
+    <%= link_to "Rename campaign", edit_admin_drip_path(@record), class: "menu__item" %>
+    <hr class="menu__separator">
+    <%= button_to "Move to trash", admin_drip_path(@record), method: :delete, class: "menu__item",
+          form: { data: { turbo_confirm: "Move “#{@drip.title}” to trash?" } } %>
+  </div>
 <% end %>
 
 <header class="perma-header">
-  <h1 class="perma-header__title"><%= @drip.title %></h1>
-  <p class="perma-header__content u-text-muted">
+  <h1 class="perma-header__title">
+    <%= @drip.title %>
     <% if @drip.active? %>
       <span class="badge badge--accent">Active</span>
     <% else %>
-      <span class="badge">Inactive</span>
+      <span class="badge">Paused</span>
     <% end %>
-    · Trigger: <%= @drip.trigger.humanize %>
+  </h1>
+  <p class="perma-header__content u-text-muted">
+    <%= campaign_start_phrase(@drip.trigger) %> · <%= campaign_shape(@drops.size, @span) %>
   </p>
 </header>
 
-<%= render "drops", record: @record, drops: @drops %>
+<dl class="stats">
+  <div class="stat">
+    <dt class="stat__label">in this campaign now</dt>
+    <dd class="stat__value"><%= @campaign_stats[:in_now] %></dd>
+  </div>
+  <div class="stat">
+    <dt class="stat__label">finished it</dt>
+    <dd class="stat__value"><%= @campaign_stats[:finished] %></dd>
+  </div>
+  <div class="stat">
+    <dt class="stat__label">clicked something</dt>
+    <dd class="stat__value"><%= @campaign_stats[:clicked] %></dd>
+  </div>
+  <div class="stat">
+    <dt class="stat__label">left partway</dt>
+    <dd class="stat__value"><%= @campaign_stats[:left] %></dd>
+  </div>
+</dl>
+
+<section aria-labelledby="steps-heading">
+  <h2 class="u-microcaps u-text-muted u-margin-block-end" id="steps-heading">Steps</h2>
+  <%= render "drops", record: @record, drops: @drops, step_stats: @step_stats %>
+</section>

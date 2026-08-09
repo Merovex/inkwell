@@ -1,18 +1,43 @@
-<%# locals: (drip_record:, drop:) %>
-<li class="mrow u-surface sortable__item" id="<%= dom_id(drop.record) %>"
-    data-sortable-target="item" data-record-id="<%= drop.record_id %>"
-    draggable="true"
+<%# locals: (drip_record:, drop:, index:, previous:, stats:) %>
+<%# One step on the timeline: rail (step n · day · relative) │ node │ card. %>
+<li class="campaign-step sortable__item" id="<%= dom_id(drop.record) %>"
+    data-sortable-target="item" data-record-id="<%= drop.record_id %>" draggable="true"
     data-action="dragstart->sortable#start dragover->sortable#over dragend->sortable#end">
-  <span class="sortable__handle" aria-hidden="true">
-    <%= inline_svg_tag "lucide/ellipsis-vertical.svg", class: "lucide", size: "16px" %>
-  </span>
-  <span class="sortable__label">
-    <%= link_to drop.subject, edit_admin_drip_drop_path(drip_record, drop.record) %>
-    <span class="badge"><%= drop.delay_days.zero? ? "Day 0" : "Day #{drop.delay_days}" %></span>
-  </span>
-  <%= button_to admin_drip_drop_path(drip_record, drop.record), method: :delete, class: "mrow__remove u-unbutton",
-        aria: { label: "Remove #{drop.subject}" },
-        form: { data: { turbo_confirm: "Remove “#{drop.subject}”?" } } do %>
-    <%= inline_svg_tag "lucide/trash-2.svg", class: "lucide", size: "16px" %>
-  <% end %>
+  <div class="campaign-step__rail">
+    <div class="campaign-step__label u-microcaps">Step <%= index + 1 %></div>
+    <div class="campaign-step__day"><%= drop.delay_days.zero? ? "Day 0" : "Day #{drop.delay_days}" %></div>
+    <div class="campaign-step__delta"><%= step_delta(drop.delay_days, previous) %></div>
+  </div>
+
+  <div class="campaign-step__node"><span class="campaign-step__dot" aria-hidden="true"></span></div>
+
+  <div class="campaign-step__card u-surface u-pad">
+    <span class="sortable__handle" aria-hidden="true">
+      <%= inline_svg_tag "lucide/grip-vertical.svg", class: "lucide", size: "16px" %>
+    </span>
+    <div class="campaign-step__body">
+      <h3 class="campaign-step__title">
+        <%= link_to drop.subject, edit_admin_drip_drop_path(drip_record, drop.record) %>
+      </h3>
+      <p class="campaign-step__meta">
+        <% if stats[:sent].positive? %>
+          Sent to <%= stats[:sent] %> · <%= pluralize(stats[:clicked], "click") %>
+        <% else %>
+          Not sent yet
+        <% end %>
+      </p>
+    </div>
+    <div class="campaign-step__menu">
+      <button type="button" class="button button--icon button--ghost" popovertarget="step-menu-<%= drop.record_id %>"
+              aria-label="Actions for <%= drop.subject %>">
+        <%= inline_svg_tag "lucide/ellipsis-vertical.svg", class: "lucide", size: "18px" %>
+      </button>
+      <div class="menu" popover id="step-menu-<%= drop.record_id %>" data-controller="anchored-popover" data-anchored-popover-placement-value="top">
+        <%= link_to "Edit", edit_admin_drip_drop_path(drip_record, drop.record), class: "menu__item" %>
+        <hr class="menu__separator">
+        <%= button_to "Remove", admin_drip_drop_path(drip_record, drop.record), method: :delete, class: "menu__item",
+              form: { data: { turbo_confirm: "Remove “#{drop.subject}”?" } } %>
+      </div>
+    </div>
+  </div>
 </li>
