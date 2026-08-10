@@ -51,6 +51,10 @@ class User < ApplicationRecord
   # Everyone still receiving a digest (drops the opted-out).
   scope :digest_subscribers, -> { where.not(digest_cadence: "off") }
 
+  # Signs the one-click cadence links in the digest footer (no login). No expiry
+  # — an old digest's links keep working, like the newsletter's unsubscribe token.
+  generates_token_for :digest_preferences
+
   # Due for this run? weekly fires each week, fortnightly every other; last_digest_at
   # both spaces the fortnightly send and guards a double-send within one run.
   def digest_due?(now: Time.current)

@@ -45,21 +45,26 @@
     <% end %>
   </section>
 
-  <% if Current.user.owned_accounts.any? %>
+  <% if Current.user.owned_accounts.any? || Current.user.root? %>
     <section class="settings__section" aria-label="Weekly digest">
-      <%= form_with model: Current.user, url: user_settings_path, method: :patch do |f| %>
-        <div class="field u-full-width">
-          <%= f.label :digest_cadence, "Weekly digest", class: "field__label" %>
-          <%= f.select :digest_cadence,
-                [ [ "Every week", "weekly" ], [ "Every other week", "fortnightly" ], [ "Off", "off" ] ],
-                {}, class: "field__control" %>
-          <p class="field__hint u-text-muted">A Tuesday-morning roundup of each site you own — subscribers, sends, and posts. Sent only when something changed.</p>
-        </div>
-        <div class="form__action">
-          <%= f.submit "Save", class: "button button--primary" %>
-        </div>
+      <% if Current.user.owned_accounts.any? %>
+        <%= form_with model: Current.user, url: user_settings_path, method: :patch do |f| %>
+          <div class="field u-full-width">
+            <%= f.label :digest_cadence, "Weekly digest", class: "field__label" %>
+            <%= f.select :digest_cadence,
+                  [ [ "Every week", "weekly" ], [ "Every other week", "fortnightly" ], [ "Off", "off" ] ],
+                  {}, class: "field__control" %>
+            <p class="field__hint u-text-muted">A Tuesday-morning roundup of each site you own — subscribers, sends, and posts. Sent only when something changed.</p>
+          </div>
+          <div class="form__action">
+            <%= f.submit "Save", class: "button button--primary" %>
+          </div>
+        <% end %>
       <% end %>
-      <%= button_to "Send me a test now", user_digest_test_path, class: "button" %>
+      <%# Platform staff only: fire the real email at yourself to eyeball it. %>
+      <% if Current.user.root? %>
+        <%= button_to "Send me a test now", user_digest_test_path, class: "button" %>
+      <% end %>
     </section>
   <% end %>
 

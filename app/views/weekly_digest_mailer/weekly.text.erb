@@ -20,7 +20,7 @@ NEWSLETTER — <%= pluralize(report.sends.size, "send") %>
 <% if report.published_posts.any? %>
 POSTS
 <% report.published_posts.each do |post| -%>
-  <%= post.title %> — <%= report.emailed?(post) ? "emailed to #{report.recipients_for(post)}" : "not emailed" %> · <%= report.reads_for(post) %> reads
+  <%= post.title %> — <%= report.emailed?(post) ? "emailed to #{report.recipients_for(post)}" : "not emailed" %> · <%= report.reads_for(post) %> reads (estimated)
 <% end -%>
 <% end %>
 <% report.unmailed_posts.each do |post| -%>
@@ -29,4 +29,6 @@ POSTS
 <% end %>
 
 —
-Sent every Tuesday at 8:00 AM. Manage this digest: <%= "#{@base_url}/user/settings" %>
+Sent <%= @user.digest_fortnightly? ? "every other Tuesday" : "every Tuesday" %> at 8:00 AM.
+<%= @user.digest_fortnightly? ? "Switch to weekly" : "Get this every other week" %>: <%= "#{@base_url}/digest/#{@user.digest_fortnightly? ? "weekly" : "fortnightly"}/#{@digest_token}" %>
+Turn it off: <%= "#{@base_url}/digest/off/#{@digest_token}" %>

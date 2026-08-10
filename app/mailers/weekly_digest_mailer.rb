@@ -18,9 +18,20 @@ class WeeklyDigestMailer < ApplicationMailer
     reports = user.owned_accounts.map { |account| WeeklyReport.new(account, week_of: week_of) }
     @reports = only_changed ? reports.select(&:changed?) : reports
     @base_url = root_url(**app_url_options).chomp("/")
+    @digest_token = user.generate_token_for(:digest_preferences)
 
     subject = @reports.one? ? "Your week on #{@reports.first.account.name}"
                             : "Your week across #{@reports.size} sites"
-    mail to: user.email_address, from: platform_bulk_from, subject: subject
+    mail to: user.email_address, from: digest_from, subject: subject
   end
+
+  private
+    # The digest speaks as the platform, from its own address. ENV/credential
+    # overridable; digest@kindredquill.com by default. Sending from the apex
+    # needs its own SES/DKIM identity (the web apex can be a static site — mail
+    # DNS is separate records).
+    def digest_from
+      address = Rails.application.credentials.dig(:ses, :digest_from).presence || "digest@kindredquill.com"
+      email_address_with_name(address, "Inkwell")
+    end
 end

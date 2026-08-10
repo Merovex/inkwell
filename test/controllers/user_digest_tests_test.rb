@@ -13,6 +13,14 @@ class UserDigestTestsTest < ActionDispatch::IntegrationTest
     assert_redirected_to user_settings_path
   end
 
+  test "is root-only — a bare 404 for other users" do
+    sign_in_as users(:bob)  # a member
+    assert_no_enqueued_emails do
+      post user_digest_test_path
+    end
+    assert_response :not_found
+  end
+
   test "requires sign-in" do
     post user_digest_test_path
     assert_response :redirect

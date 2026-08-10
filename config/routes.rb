@@ -73,6 +73,11 @@ Rails.application.routes.draw do
       end
     end
 
+    # One-click weekly-digest cadence from the email footer — tokened, no login,
+    # GET+mutate like the newsletter's unsubscribe. cadence is enum-constrained.
+    get "digest/:cadence/:token" => "digest_preferences#update", as: :digest_preference,
+        constraints: { cadence: /weekly|fortnightly|off/ }
+
     # Announcements, readable by any signed-in user — the bell links here.
     resources :bulletins, only: %i[index show]
 

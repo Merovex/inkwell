@@ -1,0 +1,13 @@
+<% content_for :title, "Weekly digest — Inkwell" %>
+
+<div class="card auth__card">
+  <header class="card__header"><span class="card__title">Weekly digest updated</span></header>
+  <div class="card__body u-stack">
+    <% if @user.digest_off? %>
+      <p class="u-text-muted">The weekly digest is off. You won't get any more of these emails.</p>
+    <% else %>
+      <p class="u-text-muted">You'll get the weekly digest <%= @user.digest_fortnightly? ? "every other Tuesday" : "every Tuesday" %> from now on.</p>
+    <% end %>
+    <p><%= link_to "Manage in settings", user_settings_path, class: "button button--primary" %></p>
+  </div>
+</div>
