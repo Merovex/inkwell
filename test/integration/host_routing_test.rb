@@ -87,6 +87,31 @@ class HostRoutingTest < ActionDispatch::IntegrationTest
     assert_redirected_to "/session/new"
   end
 
+  # The platform sites host: static bytes come from the edge Worker; only the
+  # dynamic islands (newsletter, later contact) reach Rails, with the original
+  # prefixed path. The prefix resolves handle-first, slug-fallback, and mounts
+  # as typed so redirects carry it back through the Worker.
+  test "sites-host islands resolve by handle and slug, and redirects keep the prefix" do
+    domainless = Account.create_with_owner(name: "Nameless Site", owner: users(:bob))
+    domainless.update!(handle: "nameless")
+    host! AccountHost.sites_host
+
+    get "/nameless/newsletter"
+    assert_response :success  # the signup form, in the site's own chrome
+
+    get "/#{domainless.slug}/newsletter"
+    assert_response :success  # raw slug resolves too (pre-handle links)
+
+    post "/nameless/newsletter", params: { email_address: "reader@example.com", source: "nav" }
+    assert_redirected_to "http://#{AccountHost.sites_host}/nameless/newsletter/sent"
+  end
+
+  test "an unknown segment on the sites host is a 404" do
+    host! AccountHost.sites_host
+    get "/nobody-here/newsletter"
+    assert_response :not_found
+  end
+
   # Apex-public serving is retired (Phase 2): the apex points at the static
   # marketing site and a domain-less account lives on sites.kindredquill.com/
   # <handle>, so the app itself no longer answers on the apex at all.

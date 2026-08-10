@@ -58,6 +58,10 @@ module AccountHost
     # Sluggable::SLUG_LENGTH; literal because this file loads before Zeitwerk).
     SLUG_PREFIX = %r{\A/([0-9A-Za-z]{6})(?=/|\z)}
 
+    # One path segment as the platform sites host takes it: a claimed handle
+    # or a raw slug (mirrors the edge Worker's own SLUG pattern).
+    SITES_PREFIX = %r{\A/([0-9A-Za-z_-]{1,32})(?=/|\z)}
+
     def initialize(app)
       @app = app
     end
@@ -80,6 +84,8 @@ module AccountHost
       # apex-public path is retired (commented below):
       #   elsif AccountHost.canonical_host(request.host) == AccountHost.apex_host
       #     call_with_apex_public(request, env)
+      elsif request.host == AccountHost.sites_host
+        call_with_sites_prefix(request, env)
       else
         call_with_tenant_account(request, env)
       end
@@ -121,6 +127,27 @@ module AccountHost
       #   [ 301, { "location" => location, "content-type" => "text/html" }, [] ]
       # end
 
+      # Dynamic islands on the platform sites host (sites.kindredquill.com/
+      # <handle>/newsletter/…). The edge Worker serves this host's static
+      # bytes itself and proxies only the enumerated islands here, forwarding
+      # the ORIGINAL prefixed path with X-Island-Host: the sites host
+      # (restored onto the request by IslandHost::Rewriter). The first
+      # segment resolves handle-first, slug-fallback — mirroring the Worker —
+      # and mounts AS TYPED, so generated paths and redirects (→ /newsletter/
+      # sent) carry the same prefix back through the Worker. An unknown
+      # segment passes through account-less: a 404 downstream.
+      def call_with_sites_prefix(request, env)
+        if (match = SITES_PREFIX.match(request.path_info)) &&
+           (account = Account.find_by(handle: match[1].downcase) ||
+                      Account.find_by(slug: Sluggable.normalize(match[1])))
+          env["account_host.tenant_account"] = account
+          mount_at_prefix(request, match[1], match)
+          Current.with_account(account) { @app.call(env) }
+        else
+          Current.without_account { @app.call(env) }
+        end
+      end
+
       # A prefix only counts when the account actually exists — shape alone
       # can't be trusted ("assets" is a plausible six-char slug, which is also
       # why Sluggable refuses to generate reserved words). Unprefixed paths on
@@ -129,7 +156,7 @@ module AccountHost
         if (match = SLUG_PREFIX.match(request.path_info)) &&
            (account = Account.find_by(slug: Sluggable.normalize(match[1])))
           env["account_host.slug_account"] = account
-          mount_at_prefix(request, account, match)
+          mount_at_prefix(request, account.slug, match)
           Current.with_account(account) { @app.call(env) }
         else
           Current.without_account { @app.call(env) }
@@ -153,9 +180,11 @@ module AccountHost
 
       # The Fizzy trick: the prefix leaves PATH_INFO for SCRIPT_NAME, so the
       # router never sees it and url_for echoes it back on every generated
-      # URL. Mounted under the canonical slug, however the prefix was typed.
-      def mount_at_prefix(request, account, match)
-        request.engine_script_name = request.script_name = "#{request.script_name}/#{account.slug}"
+      # URL. The app host mounts the canonical slug however the prefix was
+      # typed; the sites host mounts the segment as typed (the Worker accepts
+      # handle and slug alike, so echoes must round-trip unchanged).
+      def mount_at_prefix(request, prefix, match)
+        request.engine_script_name = request.script_name = "#{request.script_name}/#{prefix}"
         rest = match.post_match
         request.path_info = rest.empty? ? "/" : rest
       end

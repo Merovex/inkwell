@@ -61,4 +61,69 @@ await check("preview host still trailing-slash redirects deep directories", asyn
   assert.ok(res.headers.get("location").endsWith("/merovexpress/books/"));
 });
 
+// ---- dynamic islands ---------------------------------------------------
+// Proxy tests capture the origin fetch instead of performing it.
+const islandEnv = {
+  ...env,
+  RAILS_ORIGIN: "https://app.kindredquill.com",
+  ISLAND_AUTH: "sekrit",
+  HOSTNAMES: { get: async (k) => (k === "merovex.press" ? "MEROVEXPRESS" : null) },
+};
+
+let proxied;
+const realFetch = globalThis.fetch;
+globalThis.fetch = async (target, init) => {
+  proxied = { url: String(target), init };
+  return new Response("proxied", { status: 200 });
+};
+
+const island = (url, method = "GET") =>
+  worker.fetch(new Request(url, { method }), islandEnv);
+
+await check("platform-host island proxies the ORIGINAL prefixed path, not slash-mangled", async () => {
+  proxied = undefined;
+  const res = await island("https://sites.kindredquill.com/merovexpress/newsletter/confirm/tok123");
+  assert.equal(res.status, 200); // proxied, NOT the trailing-slash 301
+  assert.equal(proxied.url, "https://app.kindredquill.com/merovexpress/newsletter/confirm/tok123");
+  assert.equal(proxied.init.headers.get("x-island-host"), "sites.kindredquill.com");
+  assert.equal(proxied.init.headers.get("x-island-auth"), "sekrit");
+});
+
+await check("platform-host signup POST proxies with the prefix", async () => {
+  proxied = undefined;
+  await island("https://sites.kindredquill.com/merovexpress/newsletter", "POST");
+  assert.equal(proxied.url, "https://app.kindredquill.com/merovexpress/newsletter");
+});
+
+await check("custom-domain island still proxies its own host and bare path", async () => {
+  proxied = undefined;
+  await island("https://merovex.press/newsletter", "POST");
+  assert.equal(proxied.url, "https://app.kindredquill.com/newsletter");
+  assert.equal(proxied.init.headers.get("x-island-host"), "merovex.press");
+});
+
+await check("preview host stays static-only — islands never proxy drafts", async () => {
+  proxied = undefined;
+  const res = await island("https://preview.kindredquill.com/merovexpress/newsletter", "POST");
+  assert.equal(proxied, undefined);
+  assert.notEqual(res.status, 200);
+});
+
+globalThis.fetch = realFetch;
+
+// ---- apex tail ---------------------------------------------------------
+await check("old apex newsletter links 301 to the sites host, path intact", async () => {
+  const res = await call("https://kindredquill.com/MEROVEXPRESS/newsletter/unsubscribe/tok?b=7");
+  assert.equal(res.status, 301);
+  assert.equal(
+    res.headers.get("location"),
+    "https://sites.kindredquill.com/MEROVEXPRESS/newsletter/unsubscribe/tok?b=7",
+  );
+});
+
+await check("other apex paths are the static site's business — plain 404 here", async () => {
+  const res = await call("https://kindredquill.com/anything-else");
+  assert.equal(res.status, 404);
+});
+
 console.log(`\n${passed} passed`);

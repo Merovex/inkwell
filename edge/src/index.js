@@ -33,6 +33,16 @@ const PLATFORM_HOSTS = new Set(["sites.kindredquill.com"]);
 const PREVIEW_HOSTS = new Set(["preview.kindredquill.com"]);
 const SLUG = /^\/([A-Za-z0-9_-]{1,32})(\/.*)?$/;
 
+// The bare apex is the static marketing site — the app never serves it. The
+// one thing this Worker owes it is the in-flight-link tail: tokened
+// newsletter/contact links minted before the sites.* cutover carry
+// kindredquill.com/<SLUG>/… and must keep working (unsubscribe tokens never
+// expire). Raw slugs resolve on the sites host with no KV entry, so the
+// redirect is purely mechanical. Route only these path patterns here; the
+// static site serves everything else on the apex.
+const APEX_HOSTS = new Set(["kindredquill.com", "www.kindredquill.com"]);
+const APEX_TAIL = /^\/[A-Za-z0-9_-]{1,32}\/(?:newsletter|contact)(\/|$)/;
+
 // Where a site's builds and pointer live in the bucket, per channel: preview
 // (the staging host) sits one level deeper than production.
 function siteRoot(slug, preview) {
@@ -62,28 +72,21 @@ export default {
       .split(":")[0]
       .toLowerCase();
 
+    // Old apex links (kindredquill.com/<SLUG>/newsletter/…) 301 to the same
+    // path on the sites host; anything else that reaches us on the apex is a
+    // routing mistake — the static marketing site owns it.
+    if (APEX_HOSTS.has(host)) {
+      if (APEX_TAIL.test(url.pathname)) {
+        return Response.redirect(
+          "https://sites.kindredquill.com" + url.pathname + url.search, 301);
+      }
+      return plain404("Not found.");
+    }
+
     // The platform and preview hosts both take the account slug from the first
     // path segment; custom domains resolve through KV.
     const preview = PREVIEW_HOSTS.has(host);
     const pathHost = PLATFORM_HOSTS.has(host) || preview;
-
-    // Canonical trailing slash for directory URLs on the path hosts. The
-    // build's asset/nav URLs are page-relative (Exporter sets Hugo's
-    // relativeURLs so one build serves at both the domain root and the
-    // <host>/<handle>/ path prefix). A directory URL without its trailing
-    // slash makes the browser resolve "./asset" against the PARENT, so every
-    // asset 404s. Custom domains sit at the root, where the missing slash
-    // clamps back to "/" and resolves anyway — so this is scoped to the path
-    // hosts. GET/HEAD only: a directory-shaped POST is an island, handled
-    // below. Stable relationship, safe to cache as 301.
-    if (
-      pathHost &&
-      (request.method === "GET" || request.method === "HEAD") &&
-      !url.pathname.endsWith("/") &&
-      keyForPath(url.pathname)?.endsWith("/index.html")
-    ) {
-      return Response.redirect(url.origin + url.pathname + "/" + url.search, 301);
-    }
 
     let slug;
     let pathname = url.pathname;
@@ -102,12 +105,34 @@ export default {
       if (!slug) return plain404("No site is configured for this domain.");
     }
 
-    // Dynamic islands proxy to Rails (custom-domain hosts only for now:
-    // Rails resolves the tenant from the forwarded Host, and the path hosts
-    // have no Rails-side hostname mapping yet). With RAILS_ORIGIN unset
+    // Dynamic islands proxy to Rails. A custom domain forwards its own host
+    // (Rails resolves the tenant by domain); the platform host forwards the
+    // ORIGINAL prefixed path — Rails' sites-host branch resolves the handle/
+    // slug segment and mounts it, so redirects come back prefixed. Preview
+    // stays static-only (drafts don't collect subscribers). Checked BEFORE
+    // the trailing-slash canonicalization below, so tokened island GETs
+    // (confirm/unsubscribe) are never slash-mangled. With RAILS_ORIGIN unset
     // islands stay off and the path falls through to static handling.
-    if (isIsland(request.method, pathname) && !pathHost && env.RAILS_ORIGIN) {
-      return proxyIsland(request, env, host, pathname, url);
+    if (isIsland(request.method, pathname) && !preview && env.RAILS_ORIGIN) {
+      return proxyIsland(request, env, host, pathHost ? url.pathname : pathname, url);
+    }
+
+    // Canonical trailing slash for directory URLs on the path hosts. The
+    // build's asset/nav URLs are page-relative (Exporter sets Hugo's
+    // relativeURLs so one build serves at both the domain root and the
+    // <host>/<handle>/ path prefix). A directory URL without its trailing
+    // slash makes the browser resolve "./asset" against the PARENT, so every
+    // asset 404s. Custom domains sit at the root, where the missing slash
+    // clamps back to "/" and resolves anyway — so this is scoped to the path
+    // hosts. GET/HEAD only, after the island proxy has claimed its paths.
+    // Stable relationship, safe to cache as 301.
+    if (
+      pathHost &&
+      (request.method === "GET" || request.method === "HEAD") &&
+      !url.pathname.endsWith("/") &&
+      keyForPath(url.pathname)?.endsWith("/index.html")
+    ) {
+      return Response.redirect(url.origin + url.pathname + "/" + url.search, 301);
     }
 
     if (request.method !== "GET" && request.method !== "HEAD") {
