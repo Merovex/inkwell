@@ -64,6 +64,11 @@ class Exporter
     def write_hugo_config
       workspace.join("hugo.toml").write(<<~TOML)
         baseURL = #{@base_url.to_json}
+        # Emit page-relative asset/nav URLs so one build serves correctly both
+        # at the canonical domain root AND under the platform path prefix
+        # (sites.kindredquill.com/<handle>/). Absolute .Permalink URLs
+        # (canonical, OG, JSON-LD) are unaffected and stay pinned to baseURL.
+        relativeURLs = true
         locale = "en-us"
         title = #{account.site.site_name.to_json}
         theme = #{theme.name.to_json}

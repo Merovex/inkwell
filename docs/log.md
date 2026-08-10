@@ -2,6 +2,21 @@
 
 Append-only. Newest first. Format defined in [[CLAUDE]] (`CLAUDE.md`).
 
+## [2026-08-09] build | Site Designer UI pass — Fonts/Buttons/Footer panes, sortable sections, banner credit
+- UI-only work against the SiteDesigner rail (commits 89f0128, f4da14a, 5fada75, 681137c). All new settings ride the theme manifest as axes or the design JSON as content blocks — no model/schema changes beyond `SiteDesign` permit-lists.
+- **Manifest mechanisms added, reused everywhere:** `depiction` key on options → CSS-drawn thumbnail cards (`_axis.html.erb`), `hint` key → option descriptions, and an `_axis` `variant: "segmented"` for equal-cell radio tracks. Buttons rounding, cover corners, footer background, and second-button all render through these instead of one-offs.
+- **Site Styles rows** restyled to chip-cards (swatch/`Aa`/corner-preview chips + chevrons); axes renamed **Font pairing→Fonts**, **Button rounding→Buttons** (`theme.json` nouns, so pane headings follow).
+- **Buttons pane:** live sample-button stage painted in the working palette (paper/ink/accent derived by luminance, label contrast via `oklch(from …)`), rounding as depiction cards, + new axes `button_second` (Outlined/Tinted/Plain) and `button_size` (segmented). `nav_show` axis added (Header "Shown" toggle).
+- **Cover corners** slider → depiction cards, moved above Book cards.
+- **Footer pane (new):** `footer` layout wireframe cards (Stacked/Columns/Split/Minimal), `footer_show`/`footer_signup`/`footer_credit` toggles (credit defaults **on**), `footer_bg` Paper/Ink, and a fine-print override in a new `footer` design block. Social links **pulled out** → deferred to Site settings (needs a schema decision).
+- **Page Sections** are now the sortable list itself (HTML5 drag + Arrow-key handles, DOM-is-state); Header pinned top, Footer pinned bottom; the separate order pane + `orderSummary` removed. Hero stays pinned first in the emitted order (no Hero row).
+- **Fonts pane** rebuilt as a pairing browser: search + genre filters (house `.badge`, not a bespoke chip), pinned "In use" card, specimen sentences in the body face (taglines dropped from render), current-pairing group floated first with the tail behind "Show N more"; the custom-fonts modal became an inline "Your own pairing" with live preview lines (no explicit apply — everything's live).
+- **"Get updates"** (hero + header default CTA) now links to `/newsletter` (the signup band as a page) instead of `mailto:` — same conditional SES-form/mailto fallback.
+- **Banner photo credit:** new Photo-credit + optional Credit-link fields on the banner slot → `hero.banner_credit`/`banner_credit_url`; theme renders it only over the banner background when set, smallest caption size, white-on-shadow, **always system sans** (chrome, not the site's voice), null-hidden.
+- **Standards:** corrected a bespoke-chip and hand-rolled-margin drift back onto house utilities (`u-flow`/`u-cluster`/`u-margin`/`u-pad`) and the `.badge` component; `white`→`var(--canvas)`. Tests: `admin_designer_test` + `exporter_test` green throughout (27 runs).
+- pages touched: (log only)
+- refs: ../app/views/admin/designers/, ../app/javascript/controllers/designer_controller.js, ../app/models/site_design.rb, ../app/assets/stylesheets/designer.css, ../vendor/filibuster/data/theme.json, ../vendor/filibuster/layouts/_partials/sections/hero.html, [[site-designer]], [[0022-sitedesigner-design-json-sovereignty]]
+
 ## [2026-08-07] note | Docs synced to the shipped newsletter/islands arc
 - New concept page [[dynamic-islands]] — the durable island contract (allowlist, X-Island-* headers, rendering rules, Ruby 4 + caching gotchas), synthesized from today's log entries.
 - [[newsletter-bot-protection-plan]] → status **implemented & live**, new "As built" section recording the four deltas (header contract, Ruby 4 Content-Type, absolute assets, automatic enablement); refs updated.
