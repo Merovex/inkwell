@@ -69,10 +69,13 @@ Rails.application.configure do
   # Set this to true and configure the email server for immediate delivery to raise delivery errors.
   # config.action_mailer.raise_delivery_errors = false
 
-  # Set host to be used by links generated in mailer templates. This is the Rails
-  # app's host (merovex.press) — where confirm/unsubscribe/view-on-web routes
-  # resolve — not the sending subdomains.
-  config.action_mailer.default_url_options = { host: Rails.application.credentials.dig(:ses, :host) || "example.com" }
+  # The host for links generated in mailer templates when no explicit host is
+  # passed (unpinned *_url helpers, Active Storage blob/image URLs in email
+  # bodies). Must be a host where Rails routes actually answer — the app host,
+  # never the apex (static marketing site) or a sending subdomain. APP_HOST is
+  # authoritative so this can't drift from the host the app serves; the ses.host
+  # credential is the fallback.
+  config.action_mailer.default_url_options = { host: ENV["APP_HOST"].presence || Rails.application.credentials.dig(:ses, :host) || "example.com" }
 
   # SES is the DEFAULT pipe for everything (docs/email-architecture.md,
   # 2026-08-05): one account carries the platform (Quill) and Merovex Press
