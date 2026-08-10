@@ -15,14 +15,14 @@ class StaffUsersTest < ActionDispatch::IntegrationTest
     assert_match "Merovex Press", response.body
   end
 
-  test "the scoreboard shows real customer counts and projected economics" do
+  test "the scoreboard shows measured counts, assumptions, and a derived gauge" do
     sign_in_as users(:alice)
     get staff_users_path
 
     assert_response :success
-    assert_select ".stat__label", text: "customers"
-    assert_select ".stat__value", text: User.count.to_s
-    assert_select ".stat__label", text: "LTV : CAC"
+    assert_select ".stat__value", text: User.count.to_s     # measured customer count stays large
+    assert_select ".facts dt", text: "Annual churn"          # assumptions read as a settings list
+    assert_select ".gauge__tick", count: 2                    # the LTV:CAC gauge draws its 1:1 and 3:1 ticks
   end
 
   test "the directory is root-only" do

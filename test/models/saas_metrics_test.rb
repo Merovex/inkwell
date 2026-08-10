@@ -1,7 +1,7 @@
 require "test_helper"
 
 # The /admin/users scoreboard: real customer counts, assumed unit economics on
-# an annual plan ($50/yr, 30-day refund window, yearly churn).
+# an annual plan ($50/yr, 30-day refund window, 6% target yearly churn).
 class SaasMetricsTest < ActiveSupport::TestCase
   setup { @metrics = SaasMetrics.new }
 
@@ -10,20 +10,25 @@ class SaasMetricsTest < ActiveSupport::TestCase
   end
 
   test "LTV is annual ARPU over annual churn, net of the 30-day refund" do
-    # Defaults: $50/yr, 5% refunded, 30% yearly churn → (0.95 × 50) / 0.30.
-    assert_in_delta 158.33, @metrics.ltv, 0.01
+    # Defaults: $50/yr, 5% refunded, 6% yearly churn → (0.95 × 50) / 0.06.
+    assert_in_delta 791.67, @metrics.ltv, 0.01
   end
 
-  test "a $50/yr plan can't cover a $200 CAC — the ratio flags trouble" do
-    # $158.33 LTV / $200 CAC ≈ 0.79 : 1, well under the 3:1 floor.
-    assert_in_delta 0.79, @metrics.ltv_cac_ratio, 0.01
-    assert_not @metrics.healthy?
-  end
-
-  test "a low enough CAC clears the playbook's 3:1 floor" do
-    Rails.configuration.x.saas.acquisition_cost = 40.0
-    assert_operator @metrics.ltv_cac_ratio, :>=, SaasMetrics::HEALTHY_LTV_CAC
+  test "at the 6% churn target the plan clears the playbook's 3:1 floor" do
+    # $791.67 LTV / $200 CAC ≈ 3.96 : 1.
+    assert_in_delta 3.96, @metrics.ltv_cac_ratio, 0.01
     assert @metrics.healthy?
+  end
+
+  test "break-even and healthy CAC mark where the ratio hits 1:1 and 3:1" do
+    assert_in_delta @metrics.ltv, @metrics.break_even_cac, 0.01              # 1:1 when CAC == LTV
+    assert_in_delta @metrics.ltv / SaasMetrics::HEALTHY_LTV_CAC, @metrics.healthy_cac, 0.01
+  end
+
+  test "a CAC that outruns lifetime value trips the health flag" do
+    Rails.configuration.x.saas.acquisition_cost = 400.0
+    assert_operator @metrics.ltv_cac_ratio, :<, SaasMetrics::HEALTHY_LTV_CAC
+    assert_not @metrics.healthy?
   ensure
     Rails.configuration.x.saas.acquisition_cost = 200.0
   end
@@ -34,6 +39,6 @@ class SaasMetricsTest < ActiveSupport::TestCase
     assert_nil @metrics.ltv_cac_ratio
     assert_not @metrics.healthy?
   ensure
-    Rails.configuration.x.saas.annual_churn = 0.30
+    Rails.configuration.x.saas.annual_churn = 0.06
   end
 end

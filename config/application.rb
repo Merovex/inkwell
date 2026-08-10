@@ -60,10 +60,10 @@ module Inkwell
     # no billing yet, so these are levers the founder sets, not measurements: the
     # playbook's ARPU, churn, and CAC — here on an ANNUAL plan ($50/year, no
     # monthly), with the provider's 30-day refund window as a slice that never
-    # sticks. Churn is yearly (non-renewal). Real revenue supersedes these once
-    # customers pay.
+    # sticks. Churn is yearly (non-renewal); 6% is the target ceiling — we want
+    # it lower. Real revenue supersedes these once customers pay.
     config.x.saas.annual_price     = ENV.fetch("SAAS_ANNUAL_PRICE", 50).to_f
-    config.x.saas.annual_churn     = ENV.fetch("SAAS_ANNUAL_CHURN", 0.30).to_f
+    config.x.saas.annual_churn     = ENV.fetch("SAAS_ANNUAL_CHURN", 0.06).to_f
     config.x.saas.refund_rate      = ENV.fetch("SAAS_REFUND_RATE", 0.05).to_f
     config.x.saas.acquisition_cost = ENV.fetch("SAAS_CAC", 200).to_f
 

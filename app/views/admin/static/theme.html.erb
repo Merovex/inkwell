@@ -313,6 +313,19 @@
       </dl>
     </section>
 
+    <%# ---- Popover ---- %>
+    <section class="sg-section">
+      <p class="sg-h">Popover — <code>.popover</code> (native Popover API content card; sibling of <code>.menu</code>, which is for action lists). Restores centering the reset zeroes; no JS, no anchor positioning.</p>
+      <button type="button" class="button button--ghost button--small" popovertarget="sg-popover">Open a popover</button>
+      <div class="popover" popover id="sg-popover">A small card in the top layer — for a note, a hint, or a short disclosure. Light-dismiss and the top layer are the UA's job.</div>
+    </section>
+
+    <%# ---- Gauge ---- %>
+    <section class="sg-section">
+      <p class="sg-h">Gauge — <code>.gauge</code> (SVG scale bar with fixed reference ticks + a value fill; <code>--good</code>/<code>--trouble</code> color the fill). Ticks stay crisp at any width.</p>
+      <%= render "shared/gauge", value: 0.8, good: false %>
+    </section>
+
     <%# ---- Facts ---- %>
     <section class="sg-section">
       <p class="sg-h">Facts — <code>.facts</code> (label · value rows; book rail, subscriber modal)</p>

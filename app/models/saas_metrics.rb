@@ -19,6 +19,7 @@ class SaasMetrics
   def customers = User.count
   def sites = Account.count
   def new_this_month = User.where(created_at: Time.current.beginning_of_month..).count
+  def this_month = Time.current.strftime("%B")
 
   # Assumed unit economics — levers the founder sets, not measurements.
   def arpu = config.annual_price          # per year
@@ -47,6 +48,11 @@ class SaasMetrics
   end
 
   def healthy? = ltv_cac_ratio.present? && ltv_cac_ratio >= HEALTHY_LTV_CAC
+
+  # The CAC where the ratio hits each mark — what the verdict points at. Break
+  # even is 1:1 (CAC == LTV); healthy is the 3:1 floor (LTV ÷ 3).
+  def break_even_cac = ltv
+  def healthy_cac = ltv && ltv / HEALTHY_LTV_CAC
 
   private
     def config = Rails.configuration.x.saas
