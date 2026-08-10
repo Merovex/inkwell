@@ -51,6 +51,24 @@ export default {
       .split(":")[0]
       .toLowerCase();
 
+    // Canonical trailing slash for directory URLs on the platform host. The
+    // build's asset/nav URLs are page-relative (Exporter sets Hugo's
+    // relativeURLs so one build serves at both the domain root and the
+    // sites.kindredquill.com/<handle>/ path prefix). A directory URL without
+    // its trailing slash makes the browser resolve "./asset" against the
+    // PARENT, so every asset 404s. Custom domains sit at the root, where the
+    // missing slash clamps back to "/" and resolves anyway — so this is scoped
+    // to the platform host. GET/HEAD only: a directory-shaped POST is an
+    // island, handled below. Stable relationship, safe to cache as 301.
+    if (
+      PLATFORM_HOSTS.has(host) &&
+      (request.method === "GET" || request.method === "HEAD") &&
+      !url.pathname.endsWith("/") &&
+      keyForPath(url.pathname)?.endsWith("/index.html")
+    ) {
+      return Response.redirect(url.origin + url.pathname + "/" + url.search, 301);
+    }
+
     let slug;
     let pathname = url.pathname;
     if (PLATFORM_HOSTS.has(host)) {
