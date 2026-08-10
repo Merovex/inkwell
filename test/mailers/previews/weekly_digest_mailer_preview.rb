@@ -2,6 +2,6 @@
 class WeeklyDigestMailerPreview < ActionMailer::Preview
   def weekly
     user = User.joins(:owned_accounts).first || User.first
-    WeeklyDigestMailer.weekly(user, 1.week.ago.to_date.beginning_of_week)
+    WeeklyDigestMailer.weekly(user, 1.week.ago.to_date.beginning_of_week, user.owned_account_ids)
   end
 end

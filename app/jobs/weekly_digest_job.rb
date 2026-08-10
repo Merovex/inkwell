@@ -12,11 +12,14 @@ class WeeklyDigestJob < ApplicationJob
     User.digest_subscribers.find_each do |user|
       next unless user.digest_due?
 
-      next unless user.owned_accounts
-        .any? { |account| WeeklyReport.new(account, week_of: week_of).changed? }
+      # The sites with something to report — decided once, here; the mailer
+      # renders exactly these (ids, because reports don't serialize).
+      active_ids = user.owned_accounts
+        .select { |account| WeeklyReport.new(account, week_of: week_of).changed? }.map(&:id)
+      next if active_ids.empty?
 
-      WeeklyDigestMailer.weekly(user, week_of).deliver_later
-      user.update_column(:last_digest_at, Time.current)
+      WeeklyDigestMailer.weekly(user, week_of, active_ids).deliver_later
+      user.touch(:last_digest_at)
     end
   end
 end

@@ -8,7 +8,7 @@ class Support::BulletinsController < ApplicationController
   include Publishing
   layout "application"
 
-  before_action :require_root
+  require_root
   before_action :set_record, only: %i[edit update]
 
   def index
@@ -60,10 +60,6 @@ class Support::BulletinsController < ApplicationController
   end
 
   private
-    def require_root
-      head :not_found unless Current.user&.root?
-    end
-
     def set_record
       Current.allowing_unscoped_tenancy do
         @record = Record.active.bulletins.find(params[:id])

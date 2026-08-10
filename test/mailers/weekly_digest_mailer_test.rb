@@ -7,7 +7,7 @@ class WeeklyDigestMailerTest < ActionMailer::TestCase
     broadcast = records(:kickoff).create_broadcast!
     broadcast.update!(sent_at: week_of + 1.day, recipients_count: 5, delivered_count: 5)
 
-    email = WeeklyDigestMailer.weekly(users(:alice), week_of)
+    email = WeeklyDigestMailer.weekly(users(:alice), week_of, users(:alice).owned_account_ids)
 
     assert_equal [ users(:alice).email_address ], email.to
     assert_equal [ "digest@kindredquill.com" ], email.from  # the digest's own address
@@ -23,7 +23,7 @@ class WeeklyDigestMailerTest < ActionMailer::TestCase
     week_of = Date.new(2026, 8, 3)
     records(:kickoff).create_broadcast!.update!(sent_at: week_of + 1.day, recipients_count: 1, delivered_count: 1)
 
-    email = WeeklyDigestMailer.weekly(users(:alice), week_of)
+    email = WeeklyDigestMailer.weekly(users(:alice), week_of, users(:alice).owned_account_ids)
     settings = email.delivery_method.settings
 
     assert_equal "platform-circles", settings[:tenant_name]

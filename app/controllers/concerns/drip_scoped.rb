@@ -28,7 +28,7 @@ module DripScoped
         in_now:   streams.active.count,
         finished: streams.where(ended_reason: "completed").count,
         left:     streams.where.not(ended_at: nil).where.not(ended_reason: "completed").count,
-        clicked:  clicked.distinct.count(:stream_id),
+        clicked:  clicked.distinct.count(:stream_id)
       }
     end
 
@@ -38,7 +38,7 @@ module DripScoped
       {
         sent:    deliveries.status_sent.count,
         clicked: deliveries.where.not(clicked_at: nil).count,
-        unsub:   deliveries.where.not(unsubscribed_at: nil).count,
+        unsub:   deliveries.where.not(unsubscribed_at: nil).count
       }
     end
 end

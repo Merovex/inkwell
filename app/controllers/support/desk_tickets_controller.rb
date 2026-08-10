@@ -5,7 +5,7 @@
 class Support::DeskTicketsController < ApplicationController
   layout "application"
 
-  before_action :require_root
+  require_root
 
   def index
     @state = Ticket::STATUSES.include?(params[:state]) ? params[:state] : "open"
@@ -15,9 +15,4 @@ class Support::DeskTicketsController < ApplicationController
       @counts = Ticket.current_in(Record.active.tickets).group(:status).count
     end
   end
-
-  private
-    def require_root
-      head :not_found unless Current.user&.root?
-    end
 end

@@ -332,7 +332,7 @@ class CirclesTest < ActionDispatch::IntegrationTest
     assert_equal "Renamed", circles(:writers).name
     assert_equal "A cozy group.", circles(:writers).description
     # The charter parses into the sidebar's "decided here" lines.
-    assert_equal ["Useful comment before a kind one", "A run can be shelved"], circles(:writers).decisions
+    assert_equal [ "Useful comment before a kind one", "A run can be shelved" ], circles(:writers).decisions
   end
 
   test "the board rail carries the charter's decisions and who has posted lately" do

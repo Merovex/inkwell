@@ -4,8 +4,6 @@
 # consent log + snapshots, sends from Broadcast, posts from the spine. `week_of`
 # is the Monday the week starts on; the window runs Mon 00:00 → next Mon 00:00.
 class WeeklyReport
-  JOINED_ACTIONS = %w[ confirmed resubscribed reactivated ].freeze
-
   attr_reader :account, :week_of
 
   def initialize(account, week_of:)
@@ -15,7 +13,7 @@ class WeeklyReport
 
   def starts_on = week_of
   def ends_on = week_of + 7.days
-  def window = week_of.beginning_of_day..ends_on.beginning_of_day
+  def window = SubscriberSnapshot.week_window(week_of)
 
   # --- Subscribers -----------------------------------------------------------
 
@@ -77,10 +75,12 @@ class WeeklyReport
   end
 
   # Recent published posts that were never emailed — the "14 haven't seen it"
-  # nudge. Small per site; the broadcast lookup rides each post's record.
+  # nudge. One query: a missing-or-unsent broadcast is a left join, not a loop
+  # (a broadcast row with no sent_at is a scheduled send, still unmailed).
   def unmailed_posts
-    @unmailed_posts ||= posts.where(status: "published").order(published_at: :desc)
-      .limit(20).reject { |post| emailed?(post) }
+    @unmailed_posts ||= posts.where(status: "published")
+      .left_joins(record: :broadcast).where(broadcasts: { sent_at: nil })
+      .order(published_at: :desc).limit(20).to_a
   end
 
   def scheduled_posts
@@ -114,7 +114,7 @@ class WeeklyReport
   private
     def posts = Post.current_in(account.records.active)
 
-    def joined_events = events(JOINED_ACTIONS)
+    def joined_events = events(SubscriptionEvent::JOINED)
 
     def events(actions)
       SubscriptionEvent.joins(:subscriber)

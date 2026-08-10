@@ -3,16 +3,12 @@
 # they own (only_changed: false) so the template renders even in a quiet week.
 # Platform staff only — a bare 404 for everyone else, like the support desk.
 class User::DigestTestsController < ApplicationController
-  before_action :require_root
+  require_root
 
   def create
     week_of = 1.week.ago.to_date.beginning_of_week
-    WeeklyDigestMailer.weekly(Current.user, week_of, only_changed: false).deliver_later
+    # Every owned site, changed or not, so the template renders in a quiet week.
+    WeeklyDigestMailer.weekly(Current.user, week_of, Current.user.owned_account_ids).deliver_later
     redirect_to user_settings_path, notice: "Test digest on its way to #{Current.user.email_address}."
   end
-
-  private
-    def require_root
-      head :not_found unless Current.user&.root?
-    end
 end

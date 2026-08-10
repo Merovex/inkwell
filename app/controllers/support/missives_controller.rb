@@ -4,7 +4,7 @@
 # scoped to Missive.platform, never any Site's mail. Gated exactly like
 # Mission Control (Admin::JobsBaseController): non-root gets a bare 404.
 class Support::MissivesController < ApplicationController
-  before_action :require_root
+  require_root
   around_action :allow_platform_scope
 
   STATES = %w[ active trashed ].freeze
@@ -25,10 +25,6 @@ class Support::MissivesController < ApplicationController
   end
 
   private
-    def require_root
-      head :not_found unless Current.user&.root?
-    end
-
     def allow_platform_scope(&)
       Current.allowing_unscoped_tenancy(&)
     end

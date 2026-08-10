@@ -16,6 +16,14 @@ class ApplicationController < ActionController::Base
   # were. Probing ids is indistinguishable from a typo.
   rescue_from ActiveRecord::RecordNotFound, with: :render_not_found
 
+  # Root-only surfaces (support desk, staff directory, Mission Control):
+  # platform staff or a bare 404 — what exists is nobody's business but its
+  # audience's. Bare head, not the friendly errors page: engine-hosted
+  # surfaces (Mission Control) would render that under the wrong layout.
+  def self.require_root
+    before_action -> { head :not_found unless Current.user&.root? }
+  end
+
   # Changes to the importmap will invalidate the etag for HTML responses
   stale_when_importmap_changes
 

@@ -12,7 +12,7 @@ class WeeklyDigestJobTest < ActiveJob::TestCase
 
   test "captures a snapshot per account and mails owners with activity" do
     assert_difference -> { SubscriberSnapshot.where(account: @account, week_of: @week_of).count }, 1 do
-      assert_enqueued_email_with WeeklyDigestMailer, :weekly, args: [ users(:alice), @week_of ] do
+      assert_enqueued_email_with WeeklyDigestMailer, :weekly, args: [ users(:alice), @week_of, [ @account.id ] ] do
         WeeklyDigestJob.new.perform(week_of: @week_of)
       end
     end

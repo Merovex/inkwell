@@ -6,18 +6,13 @@
 class Staff::UsersController < ApplicationController
   layout "application"
 
-  before_action :require_root
+  require_root
 
   def index
     @metrics = SaasMetrics.new
     @users = User.includes(:circles).order(:name)
-    # The sites each user owns, gathered in one query and bucketed by owner so
-    # the view stays N+1-free (owner_id, not membership — a site's creator).
-    @sites_by_owner = Account.where(owner_id: @users.map(&:id)).order(:name).group_by(&:owner_id)
+    # Every site, bucketed by owner, so the view stays N+1-free (owner_id, not
+    # membership — a site's creator). No owner filter: @users is every user.
+    @sites_by_owner = Account.order(:name).group_by(&:owner_id)
   end
-
-  private
-    def require_root
-      head :not_found unless Current.user&.root?
-    end
 end

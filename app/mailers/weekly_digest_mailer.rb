@@ -8,15 +8,14 @@ class WeeklyDigestMailer < ApplicationMailer
     tenant_name: "platform-circles"
   }
 
-  # Takes only serializable args (user + the week's Monday) so deliver_later can
-  # enqueue it — WeeklyReport is a PORO, so the mailer rebuilds the per-site
-  # reports here. In production only the sites with something to report are kept;
-  # the in-app "send a test" button passes only_changed: false so the owner sees
-  # every site rendered. `week_of` is a Date.
-  def weekly(user, week_of, only_changed: true)
+  # Takes only serializable args (user, the week's Monday, and which owned
+  # sites to render) — WeeklyReport is a PORO, so the caller decides the sites
+  # and the mailer just builds their reports. The job passes the changed ones;
+  # the in-app "send a test" button passes every owned site.
+  def weekly(user, week_of, account_ids)
     @user = user
-    reports = user.owned_accounts.map { |account| WeeklyReport.new(account, week_of: week_of) }
-    @reports = only_changed ? reports.select(&:changed?) : reports
+    @reports = user.owned_accounts.where(id: account_ids)
+                   .map { |account| WeeklyReport.new(account, week_of: week_of) }
     @base_url = root_url(**app_url_options).chomp("/")
     @digest_token = user.generate_token_for(:digest_preferences)
 

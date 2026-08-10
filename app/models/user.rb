@@ -57,11 +57,11 @@ class User < ApplicationRecord
 
   # Due for this run? weekly fires each week, fortnightly every other; last_digest_at
   # both spaces the fortnightly send and guards a double-send within one run.
-  def digest_due?(now: Time.current)
+  def digest_due?
     return false if digest_off?
     return true if last_digest_at.nil?
 
-    last_digest_at <= now - (digest_fortnightly? ? 13.days : 6.days)
+    last_digest_at <= Time.current - (digest_fortnightly? ? 13.days : 6.days)
   end
 
   normalizes :email_address, with: -> { it.strip.downcase }
