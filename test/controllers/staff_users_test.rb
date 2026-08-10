@@ -15,6 +15,16 @@ class StaffUsersTest < ActionDispatch::IntegrationTest
     assert_match "Merovex Press", response.body
   end
 
+  test "the scoreboard shows real customer counts and projected economics" do
+    sign_in_as users(:alice)
+    get staff_users_path
+
+    assert_response :success
+    assert_select ".stat__label", text: "customers"
+    assert_select ".stat__value", text: User.count.to_s
+    assert_select ".stat__label", text: "LTV : CAC"
+  end
+
   test "the directory is root-only" do
     sign_in_as users(:bob)
     get staff_users_path

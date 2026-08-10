@@ -9,6 +9,7 @@ class Staff::UsersController < ApplicationController
   before_action :require_root
 
   def index
+    @metrics = SaasMetrics.new
     @users = User.includes(:circles).order(:name)
     # The sites each user owns, gathered in one query and bucketed by owner so
     # the view stays N+1-free (owner_id, not membership — a site's creator).

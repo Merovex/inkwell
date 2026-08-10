@@ -9,6 +9,58 @@
   </div>
 </header>
 
+<%# The playbook's scoreboard. Customer counts are real; every user counts,
+    paying or not. %>
+<dl class="stats">
+  <div class="stat">
+    <dt class="stat__label">customers</dt>
+    <dd class="stat__value"><%= number_with_delimiter @metrics.customers %></dd>
+  </div>
+  <div class="stat">
+    <dt class="stat__label">new this month</dt>
+    <dd class="stat__value"><%= number_with_delimiter @metrics.new_this_month %></dd>
+  </div>
+  <div class="stat">
+    <dt class="stat__label">sites</dt>
+    <dd class="stat__value"><%= number_with_delimiter @metrics.sites %></dd>
+  </div>
+</dl>
+
+<%# The revenue side: assumed unit economics until billing lands (set in
+    config.x.saas). Annual plan; LTV is net of the 30-day refund and flags
+    trouble below the playbook's 3:1 floor. %>
+<p class="u-text-muted u-margin-block-end">Projected economics — assumed unit economics (no billing yet); set in <code>config.x.saas</code>.</p>
+<dl class="stats">
+  <div class="stat">
+    <dt class="stat__label">ARPU / yr</dt>
+    <dd class="stat__value"><%= number_to_currency @metrics.arpu %></dd>
+  </div>
+  <div class="stat">
+    <dt class="stat__label">ARR (projected)</dt>
+    <dd class="stat__value"><%= number_to_currency @metrics.projected_arr %></dd>
+  </div>
+  <div class="stat">
+    <dt class="stat__label">refunds (30-day)</dt>
+    <dd class="stat__value"><%= number_to_percentage @metrics.refund_rate * 100, precision: 1 %></dd>
+  </div>
+  <div class="stat">
+    <dt class="stat__label">annual churn</dt>
+    <dd class="stat__value"><%= number_to_percentage @metrics.churn_rate * 100, precision: 1 %></dd>
+  </div>
+  <div class="stat">
+    <dt class="stat__label">LTV</dt>
+    <dd class="stat__value"><%= @metrics.ltv ? number_to_currency(@metrics.ltv) : "—" %></dd>
+  </div>
+  <div class="stat">
+    <dt class="stat__label">CAC</dt>
+    <dd class="stat__value"><%= number_to_currency @metrics.cac %></dd>
+  </div>
+  <div class="stat<%= " stat--trouble" unless @metrics.healthy? %>">
+    <dt class="stat__label">LTV : CAC</dt>
+    <dd class="stat__value"><%= @metrics.ltv_cac_ratio ? "#{number_with_precision(@metrics.ltv_cac_ratio, precision: 1)} : 1" : "—" %></dd>
+  </div>
+</dl>
+
 <% if @users.any? %>
   <div class="list">
     <% @users.each do |user| %>

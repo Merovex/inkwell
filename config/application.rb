@@ -56,6 +56,17 @@ module Inkwell
     # tracking is live — otherwise everyone looks cold (ADR 0014).
     config.x.newsletter.sunset_enabled = ENV["NEWSLETTER_SUNSET"] == "true"
 
+    # SaaS unit-economics assumptions behind the /admin/users scoreboard. There's
+    # no billing yet, so these are levers the founder sets, not measurements: the
+    # playbook's ARPU, churn, and CAC — here on an ANNUAL plan ($50/year, no
+    # monthly), with the provider's 30-day refund window as a slice that never
+    # sticks. Churn is yearly (non-renewal). Real revenue supersedes these once
+    # customers pay.
+    config.x.saas.annual_price     = ENV.fetch("SAAS_ANNUAL_PRICE", 50).to_f
+    config.x.saas.annual_churn     = ENV.fetch("SAAS_ANNUAL_CHURN", 0.30).to_f
+    config.x.saas.refund_rate      = ENV.fetch("SAAS_REFUND_RATE", 0.05).to_f
+    config.x.saas.acquisition_cost = ENV.fetch("SAAS_CAC", 200).to_f
+
     # Cloudflare for SaaS: the kindredquill.com zone, the account, the HOSTNAMES
     # KV namespace, and the CNAME target authors point their www at. These IDs
     # are not secret (ENV-overridable, with the provisioned values as defaults);
