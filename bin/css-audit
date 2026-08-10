@@ -43,7 +43,9 @@ css_files.each do |file|
     loc = "#{file.relative_path_from(ROOT)}:#{i + 1}"
 
     unless name == TOKENS
-      line.scan(/#[0-9a-fA-F]{3,8}\b|\b(?:rgba?|hsla?|oklch|oklab)\(/) do |match|
+      # Relative color syntax seeded from a token — oklch(from var(--x) …) —
+      # carries no raw value: it's a derivation, not a literal (§1-clean).
+      line.scan(/#[0-9a-fA-F]{3,8}\b|\b(?:rgba?|hsla?|oklch|oklab)\((?!\s*from\s+var\()/) do |match|
         findings << ["color|#{name}|#{line.strip}", "#{loc}  raw color #{match} — use a token (01-tokens.css)"]
       end
 
