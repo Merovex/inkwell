@@ -17,7 +17,7 @@ class Exporter
   # point. base_url lets a preview render under the admin's preview path
   # prefix; preview gates designer-facing affordances only (ADR 0022 — no
   # build mode ever varies the design).
-  def initialize(account, design: account.design, base_url: "/", preview: false)
+  def initialize(account, design: account.published_design&.data, base_url: "/", preview: false)
     @account = account
     @theme = Theme.current
     @design = (design || {}).with_indifferent_access

@@ -16,15 +16,20 @@ class Publisher
   HTML_CACHE  = "public, max-age=60"
   ASSET_CACHE = "public, max-age=31536000, immutable"
 
-  def initialize(account)
+  # channel picks where the build lands: :production serves the real site
+  # (custom domain + platform path), :preview serves the staging host
+  # (preview.kindredquill.com). Each channel has its own build tree and
+  # pointer, so a preview never touches what's live.
+  def initialize(account, channel: :production)
     @account = account
+    @channel = channel
   end
 
   # Uploads `output` (a rendered public/ tree) as a new build; returns the
   # build id once the pointer names it.
   def publish!(output)
     build_id = Time.current.utc.strftime("%Y%m%d%H%M%S%L")
-    prefix = "sites/#{account.slug}/builds/#{build_id}/"
+    prefix = "#{root}builds/#{build_id}/"
 
     Pathname(output).glob("**/*").select(&:file?).each do |file|
       key = prefix + file.relative_path_from(output).to_s
@@ -37,7 +42,7 @@ class Publisher
     end
 
     client.put_object(
-      bucket: BUCKET, key: "sites/#{account.slug}/pointer.json",
+      bucket: BUCKET, key: "#{root}pointer.json",
       body: JSON.generate(build_id: build_id),
       content_type: "application/json", cache_control: "no-store"
     )
@@ -47,12 +52,18 @@ class Publisher
   end
 
   private
-    attr_reader :account
+    attr_reader :account, :channel
+
+    # The channel's home in the bucket: production at sites/<slug>/, preview
+    # (the staging host) one level deeper at sites/<slug>/preview/.
+    def root
+      channel == :preview ? "sites/#{account.slug}/preview/" : "sites/#{account.slug}/"
+    end
 
     # Keep the newest KEEP_BUILDS (which includes the one just published);
     # delete the rest so the bucket stays a working set, not an archive.
     def reap(current_build_id)
-      prefix = "sites/#{account.slug}/builds/"
+      prefix = "#{root}builds/"
       builds = client.list_objects_v2(bucket: BUCKET, prefix: prefix, delimiter: "/")
                      .common_prefixes.map { |p| p.prefix.delete_prefix(prefix).delete_suffix("/") }
                      .sort.reverse

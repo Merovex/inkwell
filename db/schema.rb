@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.2].define(version: 2026_08_09_004249) do
+ActiveRecord::Schema[8.2].define(version: 2026_08_10_123527) do
   create_table "account_users", force: :cascade do |t|
     t.integer "account_id", null: false
     t.integer "user_id", null: false
@@ -29,7 +29,6 @@ ActiveRecord::Schema[8.2].define(version: 2026_08_09_004249) do
     t.string "contact_email"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.text "design"
     t.string "site_build_status"
     t.datetime "site_built_at"
     t.datetime "ses_tenant_provisioned_at"
@@ -654,6 +653,21 @@ ActiveRecord::Schema[8.2].define(version: 2026_08_09_004249) do
     t.index ["user_id"], name: "index_sign_in_codes_on_user_id"
   end
 
+  create_table "site_design_versions", force: :cascade do |t|
+    t.integer "account_id", null: false
+    t.json "data", default: {}, null: false
+    t.string "status", default: "drafted", null: false
+    t.string "label"
+    t.integer "created_by_id"
+    t.datetime "published_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id"], name: "index_site_design_versions_on_account_id"
+    t.index ["account_id"], name: "index_site_design_versions_one_draft", unique: true, where: "status = 'drafted'"
+    t.index ["account_id"], name: "index_site_design_versions_one_published", unique: true, where: "status = 'published'"
+    t.index ["created_by_id"], name: "index_site_design_versions_on_created_by_id"
+  end
+
   create_table "sites", force: :cascade do |t|
     t.string "site_name", null: false
     t.string "tagline"
@@ -778,6 +792,8 @@ ActiveRecord::Schema[8.2].define(version: 2026_08_09_004249) do
   add_foreign_key "sending_domains", "accounts"
   add_foreign_key "sessions", "users"
   add_foreign_key "sign_in_codes", "users"
+  add_foreign_key "site_design_versions", "accounts"
+  add_foreign_key "site_design_versions", "users", column: "created_by_id"
   add_foreign_key "sites", "records"
   add_foreign_key "sites", "users", column: "creator_id"
   add_foreign_key "streams", "records", column: "drip_record_id"

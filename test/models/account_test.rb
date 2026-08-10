@@ -103,4 +103,31 @@ class AccountTest < ActiveSupport::TestCase
       end
     end
   end
+
+  test "a new account is seeded with one live and one working design version" do
+    account = Account.create_with_owner(name: "Fresh Press", owner: users(:bob))
+
+    assert account.published_design.present?, "seeded a published version"
+    assert account.draft_design.present?, "seeded a drafted version"
+    assert_equal [ "drafted", "published" ], account.site_design_versions.pluck(:status).sort
+  end
+
+  test "publishing promotes the draft, archives the old live design, and forks a fresh draft" do
+    account = accounts(:merovex)
+    old_live = account.published_design
+    account.draft_design.update!(data: { "design" => { "palette" => "pine" } })
+    editing = account.draft_design
+
+    assert_enqueued_with(job: SiteBuildJob, args: [ account ]) do
+      account.publish_design!(by: users(:admin))
+    end
+
+    assert_equal "archived", old_live.reload.status
+    assert_equal "published", editing.reload.status, "the edited draft is now live"
+    assert_equal({ "design" => { "palette" => "pine" } }, account.reload.published_design.data)
+    # A brand-new draft is forked from the freshly-published design so editing
+    # continues where it left off, and the one-draft invariant still holds.
+    assert_not_equal editing, account.draft_design
+    assert_equal editing.data, account.draft_design.data
+  end
 end

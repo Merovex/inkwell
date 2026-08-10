@@ -1,0 +1,13 @@
+# Every fixture account needs its live + working design rows (the app seeds
+# these on create; fixtures load without callbacks, so they're spelled out).
+# Empty data means the theme falls back to its own defaults.
+merovex_published:
+  account: merovex
+  status: published
+  data: {}
+  published_at: <%= 1.day.ago.to_fs(:db) %>
+
+merovex_draft:
+  account: merovex
+  status: drafted
+  data: {}

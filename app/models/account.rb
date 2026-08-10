@@ -29,6 +29,15 @@ class Account < ApplicationRecord
   # flow (EmailConnection), not this cascade.
   has_many :sending_domains, dependent: :destroy
 
+  # The public site's design as versioned records (SiteDesignVersion): one
+  # `drafted` working copy the SiteDesigner edits and the preview host serves,
+  # one `published` copy production builds from, and archived history behind
+  # them. Seeded on create so both always exist.
+  has_many :site_design_versions, dependent: :destroy
+  has_one :draft_design, -> { drafted }, class_name: "SiteDesignVersion"
+  has_one :published_design, -> { published }, class_name: "SiteDesignVersion"
+  after_create :seed_design_versions
+
   validates :name, presence: true, uniqueness: { case_sensitive: false }
 
   # The author-chosen Kindred Quill name — Buttondown's shape, on two
@@ -73,11 +82,6 @@ class Account < ApplicationRecord
   # with its owner).
   def moderated_by?(user) = user&.administers?(self)
 
-  # The public site's saved design (the SiteDesigner's working payload —
-  # axes + content blocks + escape valves). Validated at the controller by
-  # SiteDesign before it lands here; the exporter reads it for real builds.
-  serialize :design, coder: JSON
-
   # Account-scoped counterparts of each content type's `.current` scope —
   # the sanctioned starting point for every content query (ADR 0017):
   # current versions of this account's live records, written out plainly,
@@ -116,10 +120,11 @@ class Account < ApplicationRecord
   end
 
   # The public site's address: the custom domain, else the apex slug path.
-  # A saved SiteDesigner design re-publishes the static site; so does the
-  # domain changing hands (go-live stamp or disconnect clear) — the build's
-  # baseURL is the domain, so every asset/link must re-render against it.
-  after_update_commit -> { SiteBuildJob.schedule(self) }, if: :saved_change_to_design?
+  # A design change no longer republishes on its own — the author edits the
+  # draft and deploys explicitly (draft_design → preview, publish_design! →
+  # production). Infrastructure moves still force a production rebuild: the
+  # domain changing hands (go-live stamp or disconnect clear) re-renders every
+  # asset/link against the new baseURL.
   after_update_commit -> { SiteBuildJob.schedule(self) }, if: :saved_change_to_domain?
   # A handle change moves the platform URL: rebuild (baseURL embeds the
   # handle path) and re-point the edge alias (KV handle:<name> → slug).
@@ -132,6 +137,27 @@ class Account < ApplicationRecord
 
   def public_address
     domain || [ AccountHost.apex_host, slug ].compact.join("/")
+  end
+
+  # The staging address a draft design deploys to for a second opinion — the
+  # preview host under the handle path (falling back to the slug), served
+  # noindex by the edge Worker's preview lane.
+  def preview_url
+    "https://#{Rails.configuration.x.cloudflare.preview_host}/#{handle.presence || slug}/"
+  end
+
+  # Promote the working design to production: the current live design steps
+  # down to history, the draft becomes live, and a fresh draft is forked from
+  # it so the author keeps editing where they left off. The production rebuild
+  # is scheduled after the transaction commits so it never races the write.
+  def publish_design!(by: Current.user)
+    transaction do
+      published_design&.update!(status: :archived)
+      draft = draft_design
+      draft.update!(status: :published, published_at: Time.current)
+      site_design_versions.create!(status: :drafted, data: draft.data, created_by: by)
+    end
+    SiteBuildJob.schedule(self)
   end
 
   # The shared sending domain every un-BYOD site mails from (bought 2026-08-06)
@@ -181,5 +207,13 @@ class Account < ApplicationRecord
 
     def sync_handle_route
       HandleRouteJob.perform_later(self, saved_change_to_handle.first)
+    end
+
+    # A new account starts with an empty live design and a matching draft, so
+    # production has something to build and the designer always has a draft to
+    # edit. Runs inside create_with_owner's transaction.
+    def seed_design_versions
+      site_design_versions.create!(status: :published, published_at: Time.current)
+      site_design_versions.create!(status: :drafted)
     end
 end

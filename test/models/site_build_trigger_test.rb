@@ -24,9 +24,19 @@ class SiteBuildTriggerTest < ActiveSupport::TestCase
     end
   end
 
-  test "a saved design schedules the site build" do
+  test "saving a design draft does not schedule a build; publishing it does" do
+    assert_no_enqueued_jobs(only: SiteBuildJob) do
+      accounts(:merovex).draft_design.update!(data: { "design" => {} })
+    end
+
     assert_enqueued_with(job: SiteBuildJob, args: [ accounts(:merovex) ]) do
-      accounts(:merovex).update!(design: { "design" => {} })
+      accounts(:merovex).publish_design!(by: users(:admin))
+    end
+  end
+
+  test "deploying to preview does not schedule a production build" do
+    assert_no_enqueued_jobs(only: SiteBuildJob) do
+      PreviewBuildJob.perform_later(accounts(:merovex))
     end
   end
 

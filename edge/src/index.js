@@ -26,7 +26,18 @@ const TYPES = {
 // paths") — every site is servable here with no KV entry and no DNS.
 // Custom domains still resolve through the HOSTNAMES KV.
 const PLATFORM_HOSTS = new Set(["sites.kindredquill.com"]);
+// The staging host: same first-segment-is-the-slug routing, but it serves a
+// site's DRAFT design from the preview build channel and is kept out of
+// search (noindex). A draft deploys here for a second opinion before it's
+// promoted to production.
+const PREVIEW_HOSTS = new Set(["preview.kindredquill.com"]);
 const SLUG = /^\/([A-Za-z0-9_-]{1,32})(\/.*)?$/;
+
+// Where a site's builds and pointer live in the bucket, per channel: preview
+// (the staging host) sits one level deeper than production.
+function siteRoot(slug, preview) {
+  return preview ? `sites/${slug}/preview/` : `sites/${slug}/`;
+}
 
 // Dynamic islands — the enumerated allowlist of Rails-backed paths the
 // Worker proxies to the origin (docs/phase-2-static-serving.md §2.5,
@@ -51,17 +62,22 @@ export default {
       .split(":")[0]
       .toLowerCase();
 
-    // Canonical trailing slash for directory URLs on the platform host. The
+    // The platform and preview hosts both take the account slug from the first
+    // path segment; custom domains resolve through KV.
+    const preview = PREVIEW_HOSTS.has(host);
+    const pathHost = PLATFORM_HOSTS.has(host) || preview;
+
+    // Canonical trailing slash for directory URLs on the path hosts. The
     // build's asset/nav URLs are page-relative (Exporter sets Hugo's
     // relativeURLs so one build serves at both the domain root and the
-    // sites.kindredquill.com/<handle>/ path prefix). A directory URL without
-    // its trailing slash makes the browser resolve "./asset" against the
-    // PARENT, so every asset 404s. Custom domains sit at the root, where the
-    // missing slash clamps back to "/" and resolves anyway — so this is scoped
-    // to the platform host. GET/HEAD only: a directory-shaped POST is an
-    // island, handled below. Stable relationship, safe to cache as 301.
+    // <host>/<handle>/ path prefix). A directory URL without its trailing
+    // slash makes the browser resolve "./asset" against the PARENT, so every
+    // asset 404s. Custom domains sit at the root, where the missing slash
+    // clamps back to "/" and resolves anyway — so this is scoped to the path
+    // hosts. GET/HEAD only: a directory-shaped POST is an island, handled
+    // below. Stable relationship, safe to cache as 301.
     if (
-      PLATFORM_HOSTS.has(host) &&
+      pathHost &&
       (request.method === "GET" || request.method === "HEAD") &&
       !url.pathname.endsWith("/") &&
       keyForPath(url.pathname)?.endsWith("/index.html")
@@ -71,7 +87,7 @@ export default {
 
     let slug;
     let pathname = url.pathname;
-    if (PLATFORM_HOSTS.has(host)) {
+    if (pathHost) {
       const m = pathname.match(SLUG);
       if (!m) return plain404("Sites live at /<site-code>/ on this host.");
       // The segment is a claimed handle (KV alias "handle:<name>" → slug,
@@ -87,10 +103,10 @@ export default {
     }
 
     // Dynamic islands proxy to Rails (custom-domain hosts only for now:
-    // Rails resolves the tenant from the forwarded Host, and the platform
-    // host has no Rails-side hostname mapping yet). With RAILS_ORIGIN unset
+    // Rails resolves the tenant from the forwarded Host, and the path hosts
+    // have no Rails-side hostname mapping yet). With RAILS_ORIGIN unset
     // islands stay off and the path falls through to static handling.
-    if (isIsland(request.method, pathname) && !PLATFORM_HOSTS.has(host) && env.RAILS_ORIGIN) {
+    if (isIsland(request.method, pathname) && !pathHost && env.RAILS_ORIGIN) {
       return proxyIsland(request, env, host, pathname, url);
     }
 
@@ -101,26 +117,27 @@ export default {
       });
     }
 
-    const buildId = await buildIdFor(slug, env);
+    const root = siteRoot(slug, preview);
+    const buildId = await buildIdFor(root, env);
     if (!buildId) return plain404("This site has not been published yet.");
 
     const key = keyForPath(pathname);
     if (!key) return plain404("Not found.");
 
-    const prefix = `sites/${slug}/builds/${buildId}/`;
+    const prefix = `${root}builds/${buildId}/`;
 
     if (request.method === "HEAD") {
       const head = await env.SITES.head(prefix + key);
-      if (!head) return missing(env, prefix, buildId);
-      return new Response(null, { headers: headersFor(head, key, buildId) });
+      if (!head) return missing(env, prefix, buildId, preview);
+      return new Response(null, { headers: headersFor(head, key, buildId, preview) });
     }
 
     const object = await env.SITES.get(prefix + key, {
       onlyIf: request.headers,
     });
-    if (!object) return missing(env, prefix, buildId);
+    if (!object) return missing(env, prefix, buildId, preview);
 
-    const headers = headersFor(object, key, buildId);
+    const headers = headersFor(object, key, buildId, preview);
     if (!("body" in object) || object.body === null) {
       return new Response(null, { status: 304, headers });
     }
@@ -162,12 +179,15 @@ async function proxyIsland(request, env, host, pathname, url) {
   });
 }
 
-async function buildIdFor(slug, env) {
+// root is the channel's home (sites/<slug>/ or sites/<slug>/preview/); it also
+// keys the pointer cache, so a site's production and preview builds never
+// shadow each other.
+async function buildIdFor(root, env) {
   const now = Date.now();
-  const hit = pointerCache.get(slug);
+  const hit = pointerCache.get(root);
   if (hit && hit.expires > now) return hit.buildId;
 
-  const obj = await env.SITES.get(`sites/${slug}/pointer.json`);
+  const obj = await env.SITES.get(`${root}pointer.json`);
   if (!obj) return null;
 
   let pointer;
@@ -180,7 +200,7 @@ async function buildIdFor(slug, env) {
   const buildId = pointer.build_id;
   if (!buildId) return null;
 
-  pointerCache.set(slug, { buildId, expires: now + POINTER_TTL_MS });
+  pointerCache.set(root, { buildId, expires: now + POINTER_TTL_MS });
   return buildId;
 }
 
@@ -206,7 +226,7 @@ function extOf(key) {
   return i === -1 ? "" : key.slice(i + 1).toLowerCase();
 }
 
-function headersFor(object, key, buildId) {
+function headersFor(object, key, buildId, preview = false) {
   const h = new Headers();
   object.writeHttpMetadata?.(h);
   if (!h.has("content-type")) {
@@ -214,6 +234,8 @@ function headersFor(object, key, buildId) {
   }
   h.set("etag", object.httpEtag);
   h.set("x-kq-build", buildId);
+  // The staging host serves unpublished drafts — keep it out of search.
+  if (preview) h.set("x-robots-tag", "noindex");
   // Assets live at STABLE urls whose bytes change when a build publishes, so
   // no `immutable` — a day of freshness plus a week of serve-stale-while-
   // revalidating keeps repeat visits fast without freezing rebuilds out.
@@ -226,13 +248,14 @@ function headersFor(object, key, buildId) {
   return h;
 }
 
-async function missing(env, prefix, buildId) {
+async function missing(env, prefix, buildId, preview = false) {
   const custom = await env.SITES.get(prefix + "404.html");
   if (!custom) return plain404("Not found.");
   const h = new Headers();
   h.set("content-type", "text/html; charset=utf-8");
   h.set("cache-control", "no-store");
   h.set("x-kq-build", buildId);
+  if (preview) h.set("x-robots-tag", "noindex");
   return new Response(custom.body, { status: 404, headers: h });
 }
 

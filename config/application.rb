@@ -64,6 +64,10 @@ module Inkwell
     config.x.cloudflare.account_id = ENV.fetch("CF_ACCOUNT_ID", "a65cb156b161e9bcd5107601fcc6255a")
     config.x.cloudflare.kv_namespace_id = ENV.fetch("CF_KV_NAMESPACE_ID", "31cc38518280423694f78a0ae0726878")
     config.x.cloudflare.cname_target = ENV.fetch("CF_CNAME_TARGET", "sites.kindredquill.com")
+    # The staging host: a site's DRAFT design deploys here (preview.kindredquill.com/
+    # <handle>/) for a second opinion before it's promoted to production. The
+    # Worker serves it noindex from the preview build channel.
+    config.x.cloudflare.preview_host = ENV.fetch("CF_PREVIEW_HOST", "preview.kindredquill.com")
 
     # Mail rendered by deliver_later must carry the enqueuing request's
     # account, like every other job (see ApplicationMailDeliveryJob).

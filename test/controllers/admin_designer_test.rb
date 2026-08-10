@@ -4,6 +4,8 @@ require "test_helper"
 # from the theme manifest, and the stateless preview that builds a posted
 # design against real content through the exporter + Hugo pipeline.
 class AdminDesignerTest < ActionDispatch::IntegrationTest
+  include ActiveJob::TestHelper
+
   # The preview page's markup minus the <head> — the theme inlines its whole
   # stylesheet there, so fk-* class assertions must not grep the CSS.
   def page_markup = response.body.split("</head>", 2).last
@@ -299,7 +301,7 @@ class AdminDesignerTest < ActionDispatch::IntegrationTest
                         banner_credit_url: "https://unsplash.com/@janedoe" } }, as: :json
     assert_response :no_content
 
-    saved = accounts(:merovex).reload.design
+    saved = accounts(:merovex).draft_design.reload.data
     assert_equal "pine", saved["design"]["palette"]
     assert_equal "Lobster", saved["fonts"]["display"]
     assert_equal "Photo by Jane Doe on Unsplash", saved["hero"]["banner_credit"]
@@ -312,7 +314,7 @@ class AdminDesignerTest < ActionDispatch::IntegrationTest
     patch admin_designer_path, params: { design: { palette: "vantablack" } }, as: :json
     assert_response :unprocessable_entity
     assert_match(/not in theme/, response.parsed_body["error"])
-    assert_equal "pine", accounts(:merovex).reload.design["design"]["palette"]
+    assert_equal "pine", accounts(:merovex).draft_design.reload.data["design"]["palette"]
   end
 
   test "an unknown design value fails the build loudly" do
@@ -466,6 +468,37 @@ class AdminDesignerTest < ActionDispatch::IntegrationTest
     sign_in_as users(:admin)
 
     get admin_designer_preview_version_path
+    assert_response :not_found
+  end
+
+  test "deploying to preview enqueues a preview build and touches no production build" do
+    sign_in_as users(:admin)
+
+    assert_enqueued_with(job: PreviewBuildJob, args: [ accounts(:merovex) ]) do
+      assert_no_enqueued_jobs(only: SiteBuildJob) do
+        post admin_designer_preview_deployment_path
+      end
+    end
+    assert_response :no_content
+  end
+
+  test "publishing promotes the draft and schedules the production build" do
+    sign_in_as users(:admin)
+    accounts(:merovex).draft_design.update!(data: { "design" => { "palette" => "pine" } })
+
+    assert_enqueued_with(job: SiteBuildJob, args: [ accounts(:merovex) ]) do
+      post admin_designer_publication_path
+    end
+    assert_response :no_content
+    assert_equal "pine", accounts(:merovex).published_design.data.dig("design", "palette")
+  end
+
+  test "the deploy actions are admin-only: a member gets a 404" do
+    sign_in_as users(:bob)
+
+    post admin_designer_preview_deployment_path
+    assert_response :not_found
+    post admin_designer_publication_path
     assert_response :not_found
   end
 

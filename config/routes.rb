@@ -352,6 +352,11 @@ Rails.application.routes.draw do
       resource :designer, only: %i[show update]
       scope path: "designer", module: :designers, as: :designer do
         resource :preview, only: :create
+        # Deploy the draft to the staging host (preview.kindredquill.com) for a
+        # second opinion; promote the draft to production. Both are explicit,
+        # deliberate steps modeled as resource creates (never member verbs).
+        resource :preview_deployment, only: :create
+        resource :publication, only: :create
         # Declared before the wildcard so "version" isn't swallowed as a file path.
         get "preview/version" => "previews#version", as: :preview_version
         get "preview/(*path)" => "previews#show", as: :preview_file, format: false

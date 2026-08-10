@@ -37,6 +37,8 @@ export default class extends Controller {
   static values = {
     buildUrl: String, frameUrl: String, storageKey: String, defaults: Object,
     saveUrl: String,
+    // Explicit deploys: draft → staging host, draft → live production.
+    previewDeployUrl: String, publishUrl: String, previewSiteUrl: String,
     // Image-slot endpoint template; __SLOT__ is replaced per upload.
     imagesUrl: String,
     // Development live reload: poll versionUrl every watch ms and rebuild
@@ -507,6 +509,33 @@ export default class extends Controller {
       const failure = await response.json().catch(() => ({}))
       this.statusTarget.textContent = failure.error || "Couldn't save the design"
     }
+    return response.ok
+  }
+
+  // Save the draft, then deploy it to the staging host for a second opinion.
+  // The live site is untouched.
+  async deployPreview() {
+    if (!await this.save()) return
+    this.statusTarget.textContent = "Deploying to preview…"
+    const response = await this.deploy(this.previewDeployUrlValue)
+    this.statusTarget.textContent = response.ok
+      ? "Deploying to preview — it’ll be live at the preview link shortly"
+      : "Couldn’t deploy to preview"
+  }
+
+  // Save the draft, then promote it to the live production site.
+  async publish() {
+    if (!await this.save()) return
+    if (!confirm("Publish this design to your live site?")) return
+    this.statusTarget.textContent = "Publishing to production…"
+    const response = await this.deploy(this.publishUrlValue)
+    this.statusTarget.textContent = response.ok
+      ? "Publishing to production— your live site is rebuilding"
+      : "Couldn’t publish"
+  }
+
+  deploy(url) {
+    return fetch(url, { method: "POST", headers: { "X-CSRF-Token": this.csrf } })
   }
 
   // --- home section order (the home.sections contract field; the root

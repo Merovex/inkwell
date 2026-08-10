@@ -30,6 +30,9 @@
      data-designer-images-url-value="<%= admin_designer_image_path(slot: "__SLOT__") %>"
      data-designer-colors-url-value="<%= asset_path("tailwind_colors.json") %>"
      data-designer-save-url-value="<%= admin_designer_path %>"
+     data-designer-preview-deploy-url-value="<%= admin_designer_preview_deployment_path %>"
+     data-designer-publish-url-value="<%= admin_designer_publication_path %>"
+     data-designer-preview-site-url-value="<%= Current.account.preview_url %>"
      data-designer-watch-value="<%= Rails.env.development? ? 1500 : 0 %>">
 
   <header class="designer__topbar">
@@ -45,7 +48,11 @@
       </p>
       <%= render "help" %>
       <button type="button" class="button" data-action="designer#reset">Discard changes</button>
-      <button type="button" class="button button--primary" data-action="designer#save">Save</button>
+      <button type="button" class="button" data-action="designer#save">Save</button>
+      <button type="button" class="button" data-action="designer#deployPreview">Deploy to preview</button>
+      <%= link_to "View preview", Current.account.preview_url, class: "button button--ghost",
+            target: "_blank", rel: "noopener" %>
+      <button type="button" class="button button--primary" data-action="designer#publish">Publish</button>
     </div>
   </header>
 
