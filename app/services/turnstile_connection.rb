@@ -40,9 +40,11 @@ class TurnstileConnection
   private
     # Verifying rows count too: a connect in flight lands within moments, and
     # a stale entry on the widget is harmless — the allowlist only OPENS
-    # hostnames, it can't break others.
+    # hostnames, it can't break others. The sites host covers the domain-less
+    # account's newsletter form (edge-served under the handle path); gated on
+    # enforcement like the rest of the multi-host posture.
     def initial_domains
       apexes = @account.custom_domains.map { |domain| domain.hostname.delete_prefix("www.") }
-      ([ AccountHost.apex_host ] + apexes).compact.uniq
+      ([ (AccountHost.sites_host if AccountHost.enforced?) ] + apexes).compact.uniq
     end
 end

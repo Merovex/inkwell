@@ -1,11 +1,15 @@
 # Host-role routing (ADR 0018), adapted from Fizzy's AccountSlug::Extractor.
 #
 # Two kinds of hostname once APP_HOST is set:
-#   app host     — kindredquill.com/{SLUG}/admin/…: admin + auth for every
+#   app host     — app.kindredquill.com/{SLUG}/admin/…: admin + auth for every
 #                  account. The slug prefix moves into SCRIPT_NAME, so routes
 #                  never namespace it and every URL helper emits it for free.
 #   tenant host  — merovex.press: that account's public site, resolved by
 #                  accounts.domain (www. folds into the apex). No admin here.
+#
+# The bare apex (kindredquill.com) is NOT served by the app: it points at the
+# static marketing site, and a domain-less account's public site is edge-served
+# at sites.kindredquill.com/<handle> (see sites_host / public_url_options).
 #
 # With APP_HOST unset the middleware is a pass-through and routing behaves
 # exactly as the single-tenant app always has — which is what makes the
@@ -19,11 +23,11 @@ module AccountHost
 
   def self.app_host?(request) = request.host == app_host
 
-  # The app host's registrable domain (app.kindredquill.com → kindredquill.com):
-  # not a tenant, so strays there bounce to the app host. Nil when the app host
-  # has no subdomain to strip.
-  def self.apex_host
-    app_host.split(".", 2).last if app_host && app_host.count(".") >= 2
+  # The platform sites host (sites.kindredquill.com): where a domain-less
+  # account's public site is edge-served under its handle path. The apex
+  # (kindredquill.com) is a static marketing site the app never touches.
+  def self.sites_host
+    Rails.configuration.x.cloudflare.cname_target
   end
 
   # merovex.press and www.merovex.press are the same tenant.
@@ -31,16 +35,19 @@ module AccountHost
 
   # URL options for a link on the account's PUBLIC site (reader-facing: the
   # blog permalink, newsletter confirm/unsubscribe): the custom domain when
-  # connected, else the apex slug path — mirrors Account#public_address. The
-  # explicit script_name matters both ways: it must carry the slug on the apex
-  # and must clear the admin's mounted /{SLUG} prefix on a custom domain.
-  # Without either (legacy single-tenant, dev/test) this returns {} and links
-  # fall back to the request/default host — the old behavior.
+  # connected, else the sites-host handle path (falling back to the slug until
+  # a handle is claimed) — mirrors Account#public_address. The explicit
+  # script_name matters both ways: it must carry the handle path on the sites
+  # host and must clear the admin's mounted /{SLUG} prefix on a custom domain.
+  # The dynamic islands (newsletter/contact) resolve there via the edge
+  # Worker's island proxy — links only, no app serving. Without enforcement
+  # (legacy single-tenant, dev/test) this returns {} and links fall back to
+  # the request/default host — the old behavior.
   def self.public_url_options(account)
     if account&.domain.present?
       { host: account.domain, protocol: "https", script_name: "" }
-    elsif account && apex_host
-      { host: apex_host, script_name: "/#{account.slug}", protocol: "https" }
+    elsif account && enforced?
+      { host: sites_host, script_name: "/#{account.handle.presence || account.slug}", protocol: "https" }
     else
       {}
     end
@@ -82,7 +89,8 @@ module AccountHost
       # RETIRED (Phase 2): the apex no longer serves domain-less accounts' public
       # sites — the apex points at the static marketing site, and a domain-less
       # account's public site is edge-served at sites.kindredquill.com/<handle>.
-      # Kept commented for reference / rollback.
+      # Kept commented for reference / rollback. (A rollback also needs the
+      # removed AccountHost.apex_host helper: app_host minus its first label.)
       #
       # def call_with_apex_public(request, env)
       #   if (match = SLUG_PREFIX.match(request.path_info)) &&

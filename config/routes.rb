@@ -30,11 +30,15 @@ Rails.application.routes.draw do
   # under /admin: signing in and managing yourself aren't domain-admin actions.
   # On the app host these work unprefixed — you sign in before you have an
   # account context, exactly like Fizzy.
-  constraints(app_routes) do
-    # The app host is admin + auth, never for crawlers — disallow everything.
-    # (Public sites carry their own robots/sitemap on their own hosts.)
+  # The app host is admin + auth, never for crawlers — disallow everything.
+  # Strictly the enforced app host (not the loose app_routes lambda, which also
+  # passes unenforced and would shadow the public site's robots below).
+  constraints(->(request) { AccountHost.enforced? && AccountHost.app_host?(request) }) do
     get "robots.txt", as: :app_robots,
         to: ->(_env) { [ 200, { "content-type" => "text/plain" }, [ "User-agent: *\nDisallow: /\n" ] ] }
+  end
+
+  constraints(app_routes) do
     # Passwordless (magic-link) authentication.
     resource :session, only: %i[new create destroy]
     # Redeems the emailed code — hit by the magic link and the manual entry form.

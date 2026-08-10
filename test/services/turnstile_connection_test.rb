@@ -34,7 +34,20 @@ class TurnstileConnectionTest < ActiveSupport::TestCase
     assert_equal "sk-site-#{account.slug}", account.turnstile_site_key
     assert_equal "secret-site-#{account.slug}", account.turnstile_secret_key
     assert_equal [ "merovex.press" ], fake.widgets[account.turnstile_site_key],
-      "one apex entry covers www; no APP_HOST in test, so no platform apex"
+      "one apex entry covers www; no APP_HOST in test, so no platform sites host"
+  end
+
+  test "under host enforcement the widget also allows the platform sites host" do
+    Rails.configuration.x.app_host = "app.kindredquill.example"
+    account = accounts(:merovex)
+    fake = FakeClient.new
+
+    TurnstileConnection.provision(account, client: fake)
+
+    assert_includes fake.widgets[account.reload.turnstile_site_key], AccountHost.sites_host,
+      "the domain-less newsletter form is served from the sites host"
+  ensure
+    Rails.configuration.x.app_host = nil
   end
 
   test "provision is idempotent — an account with keys is left alone" do

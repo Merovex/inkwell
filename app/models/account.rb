@@ -121,7 +121,8 @@ class Account < ApplicationRecord
     "/#{slug}/admin"
   end
 
-  # The public site's address: the custom domain, else the apex slug path.
+  # The public site's address: the custom domain, else the sites-host handle
+  # path (slug until a handle is claimed) — where the static build is served.
   # A design change no longer republishes on its own — the author edits the
   # draft and deploys explicitly (draft_design → preview, publish_design! →
   # production). Infrastructure moves still force a production rebuild: the
@@ -138,7 +139,7 @@ class Account < ApplicationRecord
   after_update_commit -> { SiteBuildJob.schedule(self) }, if: :saved_change_to_ses_tenant_provisioned_at?
 
   def public_address
-    domain || [ AccountHost.apex_host, slug ].compact.join("/")
+    domain || "#{AccountHost.sites_host}/#{handle.presence || slug}"
   end
 
   # The staging address a draft design deploys to for a second opinion — the
