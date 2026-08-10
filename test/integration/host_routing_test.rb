@@ -74,37 +74,34 @@ class HostRoutingTest < ActionDispatch::IntegrationTest
     assert_response :not_found
   end
 
+  test "the app host disallows crawlers" do
+    host! APP_HOST
+    get "/robots.txt"
+    assert_response :success
+    assert_match "Disallow: /", response.body
+  end
+
   test "bare app host forces authentication" do
     host! APP_HOST
     get "/"
     assert_redirected_to "/session/new"
   end
 
-  test "the apex 301s to the app host, path intact" do
+  # Apex-public serving is retired (Phase 2): the apex points at the static
+  # marketing site and a domain-less account lives on sites.kindredquill.com/
+  # <handle>, so the app itself no longer answers on the apex at all.
+  test "the apex is not served by the app" do
     host! "kindredquill.example"
     get "/anything?x=1"
-    assert_response :moved_permanently
-    assert_equal "http://#{APP_HOST}/anything?x=1", response.headers["Location"]
+    assert_response :not_found
   end
 
-  test "a domain-less press serves its public site from the apex under its slug" do
-    domainless = Account.create!(name: "Nameless Press", owner: users(:bob))
+  test "a domain-less account is no longer served from the apex under its slug" do
+    domainless = Account.create!(name: "Nameless Site", owner: users(:bob))
     host! "kindredquill.example"
 
     get "/#{domainless.slug}/books"
-    assert_response :success
-    assert_select "a[href^=?]", "/#{domainless.slug}/", minimum: 1  # links carry the prefix
-
-    get "/#{domainless.slug}"
-    assert_response :success  # the public home, not the admin redirect
-  end
-
-  test "an apex slug path for a press WITH a domain 301s to the domain" do
-    host! "kindredquill.example"
-    get "/#{@account.slug}/books?x=1"
-
-    assert_response :moved_permanently
-    assert_equal "http://#{@account.domain}/books?x=1", response.headers["Location"]
+    assert_response :not_found
   end
 
   test "signed in with one account, the root and /SLUG land in its admin" do

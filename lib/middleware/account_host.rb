@@ -67,47 +67,51 @@ module AccountHost
 
       if AccountHost.app_host?(request)
         call_with_slug_account(request, env)
-      elsif AccountHost.canonical_host(request.host) == AccountHost.apex_host
-        call_with_apex_public(request, env)
+      # The apex (kindredquill.com) is no longer served by the app — it points
+      # at the static marketing site, and a domain-less account's public site
+      # lives on sites.kindredquill.com/<handle> (edge-served, Phase 2). The
+      # apex-public path is retired (commented below):
+      #   elsif AccountHost.canonical_host(request.host) == AccountHost.apex_host
+      #     call_with_apex_public(request, env)
       else
         call_with_tenant_account(request, env)
       end
     end
 
     private
-      # The apex is every domain-less press's public home until Phase 2:
-      # kindredquill.com/{SLUG}/posts serves that account's public site (same
-      # SCRIPT_NAME mount as the admin, so URL helpers carry the prefix). A
-      # press that HAS a domain 301s to it — one canonical public URL per
-      # press. Bare or unrecognized apex paths go to the app host.
-      def call_with_apex_public(request, env)
-        if (match = SLUG_PREFIX.match(request.path_info)) &&
-           (account = Account.find_by(slug: Sluggable.normalize(match[1])))
-          return redirect_to_domain(request, account, match) if account.domain.present?
-
-          env["account_host.tenant_account"] = account
-          mount_at_prefix(request, account, match)
-          Current.with_account(account) { @app.call(env) }
-        else
-          redirect_to_app_host(request)
-        end
-      end
-
-      def redirect_to_domain(request, account, match)
-        rest = match.post_match
-        rest = "/" if rest.empty?
-        query = request.query_string.presence
-        moved_permanently "#{request.scheme}://#{account.domain}#{rest}#{"?#{query}" if query}"
-      end
-
-      # kindredquill.com itself isn't a tenant — send visitors to the app host.
-      def redirect_to_app_host(request)
-        moved_permanently "#{request.scheme}://#{AccountHost.app_host}#{request.fullpath}"
-      end
-
-      def moved_permanently(location)
-        [ 301, { "location" => location, "content-type" => "text/html" }, [] ]
-      end
+      # RETIRED (Phase 2): the apex no longer serves domain-less accounts' public
+      # sites — the apex points at the static marketing site, and a domain-less
+      # account's public site is edge-served at sites.kindredquill.com/<handle>.
+      # Kept commented for reference / rollback.
+      #
+      # def call_with_apex_public(request, env)
+      #   if (match = SLUG_PREFIX.match(request.path_info)) &&
+      #      (account = Account.find_by(slug: Sluggable.normalize(match[1])))
+      #     return redirect_to_domain(request, account, match) if account.domain.present?
+      #
+      #     env["account_host.tenant_account"] = account
+      #     mount_at_prefix(request, account, match)
+      #     Current.with_account(account) { @app.call(env) }
+      #   else
+      #     redirect_to_app_host(request)
+      #   end
+      # end
+      #
+      # def redirect_to_domain(request, account, match)
+      #   rest = match.post_match
+      #   rest = "/" if rest.empty?
+      #   query = request.query_string.presence
+      #   moved_permanently "#{request.scheme}://#{account.domain}#{rest}#{"?#{query}" if query}"
+      # end
+      #
+      # # kindredquill.com itself isn't a tenant — send visitors to the app host.
+      # def redirect_to_app_host(request)
+      #   moved_permanently "#{request.scheme}://#{AccountHost.app_host}#{request.fullpath}"
+      # end
+      #
+      # def moved_permanently(location)
+      #   [ 301, { "location" => location, "content-type" => "text/html" }, [] ]
+      # end
 
       # A prefix only counts when the account actually exists — shape alone
       # can't be trusted ("assets" is a plausible six-char slug, which is also

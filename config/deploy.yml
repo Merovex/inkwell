@@ -28,8 +28,8 @@ proxy:
     - merovex.press
     - www.merovex.press
     # The app host (admin + auth; ADR 0018/0019). Cloudflare-proxied: SSL Full.
-    # The apex just 301s to the app subdomain (AccountHost middleware).
-    - kindredquill.com
+    # The apex (kindredquill.com) is NOT served by the app — it points at the
+    # static marketing site; domain-less accounts live on sites.kindredquill.com.
     - app.kindredquill.com
 
 # Where you keep your container images.

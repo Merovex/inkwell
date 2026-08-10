@@ -6,6 +6,8 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="application-name" content="Inkwell">
     <meta name="mobile-web-app-capable" content="yes">
+    <%# The app host is admin + auth — keep it out of search indexes. %>
+    <meta name="robots" content="noindex">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
 
