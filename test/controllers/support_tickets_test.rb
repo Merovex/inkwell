@@ -51,7 +51,9 @@ class SupportTicketsTest < ActionDispatch::IntegrationTest
     get ticket_path(record)
     assert_response :success
 
-    assert_difference -> { Ticket.count }, 1 do # a revision, not an edit
+    # A revision, not an edit — and the requester's bell rings the change.
+    assert_difference -> { Ticket.count } => 1,
+                      -> { Notification.where(kind: "ticket_updated", user: users(:bob)).count } => 1 do
       patch desk_ticket_status_path(record, status: "resolved")
     end
     assert_equal "resolved", record.reload.recordable.status

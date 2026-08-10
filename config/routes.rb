@@ -92,6 +92,18 @@ Rails.application.routes.draw do
       resource :join_code, only: :update
     end
 
+    # A member's public face: their picture, handle, and the circles they're
+    # in (your own on your page; the ones you share on someone else's). Sign-in
+    # required — a member looking at another member, never anonymous.
+    resources :profiles, only: :show
+
+    # The platform people directory — every user, their circles, and the sites
+    # they own. Root staff only (gated in the controller like the support desk);
+    # on the bare app host, never a site slug.
+    scope path: "/admin", module: :staff, as: :staff do
+      resources :users, only: :index
+    end
+
     # Author circles — cross-site accountability groups a user belongs to,
     # independent of any one site, so they live on the app host at the top level
     # (not under a /{SLUG}/admin) — their URLs never carry a site slug. index is

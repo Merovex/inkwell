@@ -1,0 +1,37 @@
+<% content_for :title, "Users — Inkwell" %>
+
+<%= render "admin/shared/canvas_head", crumbs: [["Users", nil]] %>
+
+<header class="perma-header">
+  <h1 class="perma-header__title">Users</h1>
+  <div class="perma-header__content">
+    <p class="u-text-muted">Every member, the circles they're in, and the sites they own.</p>
+  </div>
+</header>
+
+<% if @users.any? %>
+  <div class="list">
+    <% @users.each do |user| %>
+      <% sites = @sites_by_owner[user.id] || [] %>
+      <% site_links = capture do %>
+        <% sites.each do |account| %>
+          <%= link_to account.name, account.admin_path, class: "button button--small button--ghost" %>
+        <% end %>
+      <% end if sites.any? %>
+      <%= render "shared/list_item",
+            href: profile_path(user),
+            title: user.display_name,
+            avatar_user: user,
+            badge: ("Staff" if user.root?),
+            badge_variant: "warning",
+            chips: user.circles.reject(&:commons?).map(&:name),
+            actions: site_links %>
+    <% end %>
+  </div>
+<% else %>
+  <div class="empty">
+    <span class="empty__icon"><%= inline_svg_tag "lucide/users.svg", class: "lucide", size: "40px" %></span>
+    <p class="empty__title">No users</p>
+    <p class="empty__text">Nobody has signed up yet.</p>
+  </div>
+<% end %>

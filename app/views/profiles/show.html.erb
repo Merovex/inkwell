@@ -1,0 +1,40 @@
+<% content_for :title, "#{@user.display_name} — Inkwell" %>
+
+<%= render "admin/shared/canvas_head", crumbs: [[@user.display_name, nil]] %>
+
+<header class="perma-header">
+  <div class="u-cluster">
+    <span class="avatar avatar--large"><%= avatar_content(@user) %></span>
+    <div class="perma-header__content">
+      <h1 class="perma-header__title"><%= @user.display_name %></h1>
+      <p class="u-text-muted">
+        <%= own_profile? ? "This is how other members see you." : "Circles you share with #{@user.display_name}." %>
+      </p>
+    </div>
+  </div>
+</header>
+
+<% if @memberships.any? %>
+  <div class="list">
+    <% @memberships.each do |membership| %>
+      <%= render "shared/list_item",
+            href: circle_path(membership.circle),
+            title: membership.circle.name,
+            avatar: false,
+            badge: ("Owner" if membership.role == "owner"),
+            badge_variant: "accent" %>
+    <% end %>
+  </div>
+<% else %>
+  <div class="empty">
+    <span class="empty__icon"><%= inline_svg_tag "lucide/users.svg", class: "lucide", size: "40px" %></span>
+    <% if own_profile? %>
+      <p class="empty__title">No circles yet</p>
+      <p class="empty__text">Join or start an accountability group to see it here.</p>
+      <div class="empty__actions"><%= link_to "Your circles", circles_path, class: "button button--primary" %></div>
+    <% else %>
+      <p class="empty__title">No shared circles</p>
+      <p class="empty__text">You don't share any circles with <%= @user.display_name %>.</p>
+    <% end %>
+  </div>
+<% end %>

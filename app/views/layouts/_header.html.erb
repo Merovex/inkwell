@@ -27,12 +27,14 @@
   <button type="button" class="avatar" popovertarget="user-menu" aria-label="Account menu"><%= avatar_content(Current.user) %></button>
 
   <div class="menu menu--user" popover id="user-menu">
-    <button type="button" class="menu__item">My Profile</button>
+    <%= link_to "My Profile", profile_path(Current.user, script_name: ""), class: "menu__item" %>
     <%= link_to "Settings", user_settings_path, class: "menu__item" %>
     <%# The App's help desk — open/read your support tickets (app host, never slugged). %>
     <%= link_to "Support", tickets_path(script_name: ""), class: "menu__item" %>
     <% if Current.user&.root? %>
-      <%# Platform staff: the desk queue + the mail-in inbox (app host, never slugged). %>
+      <%# Platform staff: the people directory, the desk queue, the mail-in %>
+      <%# inbox — all on the bare app host, never slugged. %>
+      <%= link_to "Users", staff_users_path(script_name: ""), class: "menu__item" %>
       <%= link_to "Support desk", desk_tickets_path(script_name: ""), class: "menu__item" %>
       <%= link_to "Support inbox", missives_path(script_name: ""), class: "menu__item" %>
     <% end %>

@@ -2,6 +2,14 @@
 
 Append-only. Newest first. Format defined in [[CLAUDE]] (`CLAUDE.md`).
 
+## [2026-08-10] build | Draft designs + staging host (in progress — pivoting)
+- Public-site design became versioned records (`site_design_versions`: drafted/published/archived) instead of the `accounts.design` blob. **Save no longer publishes** — two explicit deploys: draft → `preview.kindredquill.com` (staging, noindex, no token) and draft → production (`Account#publish_design!`). Preview shows the draft design over current published content. Platform path stays a production mirror (keeps the deferred #3 redirect alive).
+- Shipped (code only, **uncommitted**): migration+backfill (drops `accounts.design`), `SiteDesignVersion`, Account assoc/seed/publish, `Publisher` channel, `PreviewBuildJob`, `Exporter` reads published, Save→draft + `preview_deployment`/`publication` CRUD resources + designer buttons, Worker preview lane (`edge/src/index.js`) + node harness. Suite 741 runs/0 errors (lone failure = pre-existing `designer.css:396` oklch).
+- **Open / not done:** revert-rollback UI (data-ready via `archived`, no button yet — semantics unconfirmed: roll back production and/or fix "Discard changes" to reset to live not defaults); Cloudflare `preview.kindredquill.com` custom domain (DNS/TLS/binding — owner's to run, IaC-vs-dashboard undecided); `wrangler deploy` + Rails deploy.
+- Built atop the path-prefix fix (Hugo `relativeURLs` + Worker trailing-slash 301).
+- pages touched: [[draft-design-staging]]
+- refs: ../app/models/site_design_version.rb, ../app/models/account.rb, ../app/jobs/preview_build_job.rb, ../app/controllers/admin/designers/, ../edge/src/index.js, ../db/migrate/20260810123527_create_site_design_versions.rb, [[site-designer]], [[0022-sitedesigner-design-json-sovereignty]]
+
 ## [2026-08-09] build | Site Designer UI pass — Fonts/Buttons/Footer panes, sortable sections, banner credit
 - UI-only work against the SiteDesigner rail (commits 89f0128, f4da14a, 5fada75, 681137c). All new settings ride the theme manifest as axes or the design JSON as content blocks — no model/schema changes beyond `SiteDesign` permit-lists.
 - **Manifest mechanisms added, reused everywhere:** `depiction` key on options → CSS-drawn thumbnail cards (`_axis.html.erb`), `hint` key → option descriptions, and an `_axis` `variant: "segmented"` for equal-cell radio tracks. Buttons rounding, cover corners, footer background, and second-button all render through these instead of one-offs.

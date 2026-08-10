@@ -28,6 +28,7 @@ for canonical naming.
 - [filibuster-merovex-parity.md](filibuster-merovex-parity.md) — gap analysis: what the `filibuster` theme must gain to capture the live merovex.press public design (multi-author REQUIRED; open questions; books/series index pages shipped 2026-07-31)
 - [site-designer.md](site-designer.md) — SiteDesigner design plan: manifest-driven rail, Site-draft save semantics, preview = local Hugo build in an iframe, CSS foundation pass (layers, `mode` axis, mobile-first), build order (ADR 0022)
 - [site-designer-user-guide.md](site-designer-user-guide.md) — author-facing copy (seed of "How to use this page"): the three-rung brand ladder, header controls, palettes + light/dark mode + custom colors, the books section, font pairings
+- [draft-design-staging.md](draft-design-staging.md) — status/handoff: versioned `site_design_versions`, Save≠publish, `preview.kindredquill.com` staging host; open items (revert UI, Cloudflare custom domain, deploys)
 - [saas-static-hosting-plan.md](saas-static-hosting-plan.md) — five-phase plan: static publish to Cloudflare R2 + Worker, multi-tenant SaaS (Fizzy pattern), BYODomain via CF for SaaS, per-tenant SES
 - [newsletter-bot-protection-plan.md](newsletter-bot-protection-plan.md) — IMPLEMENTED & LIVE (2026-08-07): Hugo newsletter band → `POST /newsletter` island; pinned honeypot + per-account Cloudflare Turnstile (fail-closed) + origin lockdown; see its "As built" section for the deltas, [dynamic-islands](concepts/dynamic-islands.md) for the durable contract
 
