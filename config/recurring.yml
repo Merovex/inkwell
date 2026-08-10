@@ -71,6 +71,13 @@ production:
     args: [ [ "replied" ] ]
     schedule: at 8am every day America/New_York
 
+  # Weekly site digest: snapshot every account's subscriber count, then mail each
+  # owner a per-site roundup of the week — but only the sites (and users) with
+  # something to report. Tuesday 8am, matching the email's own footer line.
+  weekly_digest:
+    class: WeeklyDigestJob
+    schedule: at 8am every Tuesday America/New_York
+
   # Circle check-ins: every 30 minutes, fire any pulse whose cadence lands today
   # and whose ask time has passed (30-min granularity matches the UI). Idempotent.
   pulse_tick:

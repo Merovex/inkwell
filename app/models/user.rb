@@ -11,6 +11,9 @@ class User < ApplicationRecord
   # Accounts this user belongs to; drives the post-sign-in landing (ADR 0018).
   has_many :account_users, dependent: :destroy
   has_many :accounts, through: :account_users
+  # Accounts this user OWNS (superuser) — the sites the weekly digest reports on.
+  # Query-only; ownership transfer/removal is a console operation (see Account).
+  has_many :owned_accounts, class_name: "Account", foreign_key: :owner_id, inverse_of: :owner
   # Circles this user belongs to (the other bucket kind) — the /circles doors.
   has_many :circle_memberships, dependent: :destroy
   has_many :circles, through: :circle_memberships
@@ -40,6 +43,22 @@ class User < ApplicationRecord
   # (via the Setup flow), superuser across every account. Per-account authority
   # comes from ownership (accounts.owner_id), not from this global role.
   enum :role, { member: "member", root: "root" }, default: :member
+
+  # How often this user gets the weekly site digest (the email footer's toggle):
+  # weekly · fortnightly · off. Prefixed so digest_off? doesn't collide.
+  enum :digest_cadence, %w[ weekly fortnightly off ].index_by(&:itself), default: "weekly", prefix: :digest
+
+  # Everyone still receiving a digest (drops the opted-out).
+  scope :digest_subscribers, -> { where.not(digest_cadence: "off") }
+
+  # Due for this run? weekly fires each week, fortnightly every other; last_digest_at
+  # both spaces the fortnightly send and guards a double-send within one run.
+  def digest_due?(now: Time.current)
+    return false if digest_off?
+    return true if last_digest_at.nil?
+
+    last_digest_at <= now - (digest_fortnightly? ? 13.days : 6.days)
+  end
 
   normalizes :email_address, with: -> { it.strip.downcase }
 

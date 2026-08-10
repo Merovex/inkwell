@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.2].define(version: 2026_08_10_123527) do
+ActiveRecord::Schema[8.2].define(version: 2026_08_10_183009) do
   create_table "account_users", force: :cascade do |t|
     t.integer "account_id", null: false
     t.integer "user_id", null: false
@@ -693,6 +693,18 @@ ActiveRecord::Schema[8.2].define(version: 2026_08_10_123527) do
     t.index ["subscriber_id"], name: "index_streams_on_subscriber_id"
   end
 
+  create_table "subscriber_snapshots", force: :cascade do |t|
+    t.integer "account_id", null: false
+    t.date "week_of", null: false
+    t.integer "confirmed_count", default: 0, null: false
+    t.integer "joined_count", default: 0, null: false
+    t.integer "unsubscribed_count", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "week_of"], name: "index_subscriber_snapshots_on_account_id_and_week_of", unique: true
+    t.index ["account_id"], name: "index_subscriber_snapshots_on_account_id"
+  end
+
   create_table "subscribers", force: :cascade do |t|
     t.string "email_address", null: false
     t.string "status", default: "pending", null: false
@@ -757,6 +769,8 @@ ActiveRecord::Schema[8.2].define(version: 2026_08_10_123527) do
     t.datetime "updated_at", null: false
     t.string "role", default: "member", null: false
     t.integer "inviter_id"
+    t.string "digest_cadence", default: "weekly", null: false
+    t.datetime "last_digest_at"
     t.index ["email_address"], name: "index_users_on_email_address", unique: true
     t.index ["inviter_id"], name: "index_users_on_inviter_id"
     t.index ["name"], name: "index_users_on_name", unique: true
@@ -798,6 +812,7 @@ ActiveRecord::Schema[8.2].define(version: 2026_08_10_123527) do
   add_foreign_key "sites", "users", column: "creator_id"
   add_foreign_key "streams", "records", column: "drip_record_id"
   add_foreign_key "streams", "subscribers"
+  add_foreign_key "subscriber_snapshots", "accounts"
   add_foreign_key "subscribers", "accounts"
   add_foreign_key "subscribers", "people"
   add_foreign_key "subscription_events", "subscribers"

@@ -90,6 +90,8 @@ Rails.application.routes.draw do
       resource :avatar, only: %i[update destroy]
       # Rotate your invite code (inviters only — see User#can_invite?).
       resource :join_code, only: :update
+      # Send yourself the weekly digest now, to eyeball the real email in prod.
+      resource :digest_test, only: :create
     end
 
     # A member's public face: their picture, handle, and the circles they're

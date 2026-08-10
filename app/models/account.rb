@@ -20,6 +20,8 @@ class Account < ApplicationRecord
   has_many :categories
   has_many :broadcasts, through: :records
   has_many :ahoy_visits, class_name: "Ahoy::Visit"
+  # Weekly readings of the sendable subscriber count — the digest's trend + baseline.
+  has_many :subscriber_snapshots, dependent: :delete_all
   # Connected custom hostnames (apex + www rows) on the Cloudflare-for-SaaS
   # path. Destroying an account drops its rows; the KV keys and Cloudflare
   # custom hostnames are torn down by the disconnect flow, not this cascade.

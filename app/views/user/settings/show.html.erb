@@ -45,6 +45,24 @@
     <% end %>
   </section>
 
+  <% if Current.user.owned_accounts.any? %>
+    <section class="settings__section" aria-label="Weekly digest">
+      <%= form_with model: Current.user, url: user_settings_path, method: :patch do |f| %>
+        <div class="field u-full-width">
+          <%= f.label :digest_cadence, "Weekly digest", class: "field__label" %>
+          <%= f.select :digest_cadence,
+                [ [ "Every week", "weekly" ], [ "Every other week", "fortnightly" ], [ "Off", "off" ] ],
+                {}, class: "field__control" %>
+          <p class="field__hint u-text-muted">A Tuesday-morning roundup of each site you own — subscribers, sends, and posts. Sent only when something changed.</p>
+        </div>
+        <div class="form__action">
+          <%= f.submit "Save", class: "button button--primary" %>
+        </div>
+      <% end %>
+      <%= button_to "Send me a test now", user_digest_test_path, class: "button" %>
+    </section>
+  <% end %>
+
   <% if Current.user.can_invite? %>
     <section class="settings__section" aria-label="Invite code">
       <% join_code = Current.user.join_code || Current.user.create_join_code! %>

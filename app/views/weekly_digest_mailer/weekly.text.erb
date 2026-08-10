@@ -1,0 +1,32 @@
+Your week on Inkwell
+<% @reports.each do |report| %>
+
+<%= report.account.name %> — <%= report.starts_on.strftime("%b %-d") %>–<%= report.ends_on.strftime("%b %-d, %Y") %>
+==================================================
+
+SUBSCRIBERS
+  <%= report.confirmed_count %> confirmed<% if report.confirmed_delta && report.confirmed_delta != 0 %> (<%= report.confirmed_delta.positive? ? "up" : "down" %> <%= report.confirmed_delta.abs %> on last week)<% end %>
+  <%= report.joined %> joined<% if report.joined_by_source.any? %> (<%= report.joined_by_source.map { |source, n| "#{n} #{source}" }.join(", ") %>)<% end %>
+  <%= report.unsubscribed %> unsubscribed
+<% if report.sent_any? %>
+NEWSLETTER — <%= pluralize(report.sends.size, "send") %>
+  <%= report.delivered %> delivered
+  <%= report.bounced %> bounced (<%= number_to_percentage(report.bounce_rate * 100, precision: 1) %>)
+  <%= report.complained %> spam reports
+<% report.bounced_addresses.each do |address| -%>
+  hard bounce — <%= address %>
+<% end -%>
+<% end %>
+<% if report.published_posts.any? %>
+POSTS
+<% report.published_posts.each do |post| -%>
+  <%= post.title %> — <%= report.emailed?(post) ? "emailed to #{report.recipients_for(post)}" : "not emailed" %> · <%= report.reads_for(post) %> reads
+<% end -%>
+<% end %>
+<% report.unmailed_posts.each do |post| -%>
+  <%= post.title %> — published <%= post.published_at.strftime("%b %-d") %>, never emailed (<%= report.confirmed_count %> haven't seen it)
+<% end -%>
+<% end %>
+
+—
+Sent every Tuesday at 8:00 AM. Manage this digest: <%= "#{@base_url}/user/settings" %>
