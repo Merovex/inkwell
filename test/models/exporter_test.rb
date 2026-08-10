@@ -86,6 +86,30 @@ class ExporterTest < ActiveSupport::TestCase
     assert_includes standalone, %(name=#{Subscriber::HONEYPOT_FIELD}), "standalone page carries the same form"
   end
 
+  # A published build's assets/nav must resolve at BOTH the canonical domain
+  # root and the platform path prefix (sites.kindredquill.com/<handle>/), so
+  # the config turns on Hugo's page-relative URLs. The designer preview is
+  # served at a fixed non-directory path that matches its base_url, where
+  # page-relative URLs resolve one level too high — so preview keeps them off.
+  test "hugo.toml enables relative URLs for published builds but not for preview" do
+    assert_includes @workspace.join("hugo.toml").read, "relativeURLs = true"
+
+    preview = Exporter.new(accounts(:merovex), base_url: "/admin/theme/preview/", preview: true).export!
+    assert_includes preview.join("hugo.toml").read, "relativeURLs = false"
+  end
+
+  test "a published build emits page-relative asset URLs; preview emits absolute" do
+    skip "hugo binary not available" unless system("#{HUGO_BIN} version", out: File::NULL, err: File::NULL)
+
+    home = Renderer.new(@workspace).render!.join("index.html").read
+    assert_includes home, "./assets/css/", "published home links assets relative to the page"
+    assert_no_match %r{href=/assets/css/}, home, "no root-absolute asset paths that break under a path prefix"
+
+    preview = Exporter.new(accounts(:merovex), base_url: "/admin/theme/preview/", preview: true).export!
+    preview_home = Renderer.new(preview).render!.join("index.html").read
+    assert_includes preview_home, "/admin/theme/preview/assets/css/", "preview keeps absolute paths anchored to base_url"
+  end
+
   private
     def data(name)
       JSON.parse(@workspace.join("data", "#{name}.json").read)
