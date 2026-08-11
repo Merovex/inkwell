@@ -10,7 +10,7 @@ class WeeklyDigestMailerTest < ActionMailer::TestCase
     email = WeeklyDigestMailer.weekly(users(:alice), week_of, users(:alice).owned_account_ids)
 
     assert_equal [ users(:alice).email_address ], email.to
-    assert_equal [ "digest@kindredquill.com" ], email.from  # the digest's own address
+    assert_equal [ "digest@kindredquill.com" ], email.from  # the platform's own name
     assert_match account.name, email.subject
     assert_match account.name, email.text_part.decoded
     assert_match "delivered", email.text_part.decoded

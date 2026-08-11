@@ -25,10 +25,11 @@ class WeeklyDigestMailer < ApplicationMailer
   end
 
   private
-    # The digest speaks as the platform, from its own address. ENV/credential
-    # overridable; digest@kindredquill.com by default. Sending from the apex
-    # needs its own SES/DKIM identity (the web apex can be a static site — mail
-    # DNS is separate records).
+    # The digest speaks as the platform's own name: digest@kindredquill.com.
+    # Sending as the apex requires the kindredquill.com SES identity to be
+    # DKIM-verified AND associated with the platform-circles tenant (rake
+    # email:provision handles both; DMARC passes on DKIM alignment, so the
+    # apex's SPF -all stays). ENV/credential overridable via ses.digest_from.
     def digest_from
       address = Rails.application.credentials.dig(:ses, :digest_from).presence || "digest@kindredquill.com"
       email_address_with_name(address, "Inkwell")

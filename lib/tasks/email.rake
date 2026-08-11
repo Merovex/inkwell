@@ -61,11 +61,12 @@ namespace :email do
     # kindredquill.email Cloudflare zone. Site tenants associate with this
     # identity at provision time (EmailConnection.provision_tenant).
     "kindredquill.email"      => { config_set: "inkwell-marketing",     tenant: nil },
-    # The ROOT is a receive-only identity: SES email receiving only accepts
-    # mail for recipient domains that are VERIFIED identities in the account
-    # (verkilo.com in this account exists for the same reason). It still never
-    # sends — no config set, no MAIL FROM, SPF -all stands.
-    "kindredquill.com"        => { config_set: nil, tenant: nil, mail_from: false }
+    # The ROOT receives (SES receiving only accepts recipient domains that are
+    # VERIFIED identities — verkilo.com exists for the same reason) and sends
+    # exactly one thing: the weekly digest, From digest@kindredquill.com on
+    # the platform-circles tenant. DKIM-aligned signing carries DMARC, so the
+    # root lock stands as-is: SPF -all, p=reject, and no custom MAIL FROM.
+    "kindredquill.com"        => { config_set: "inkwell-marketing", tenant: "platform-circles", mail_from: false }
   }.freeze
 
   TENANTS = %w[ platform-auth platform-circles ].freeze
@@ -115,7 +116,7 @@ namespace :email do
 
     IDENTITIES.each do |domain, opts|
       if dry
-        extras = opts[:mail_from] == false ? "receive-only, no MAIL FROM" :
+        extras = opts[:mail_from] == false ? "no MAIL FROM (DKIM-aligned only)" :
                  "default config set #{opts[:config_set]}, MAIL FROM bounce.#{domain}"
         puts "would create identity #{domain} (#{extras})"
         dkim[domain] = %w[ token1 token2 token3 ]
@@ -195,7 +196,9 @@ namespace :email do
           end
           lines + [ "" ]
         end.flatten.join("\n")}
-      # Root lock (docs/email-architecture.md — the root never sends):
+      # Root lock (docs/email-architecture.md): the root sends ONLY the
+      # DKIM-aligned weekly digest — SPF -all and p=reject stand; DKIM
+      # alignment carries DMARC for that one lane.
       kindredquill.com.  TXT  "v=spf1 -all"
       _dmarc.kindredquill.com.  TXT  "v=DMARC1; p=reject; rua=mailto:support@kindredquill.com"
       ────────────────────────────────────────────────────────────────────────
