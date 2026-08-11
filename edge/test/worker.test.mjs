@@ -109,6 +109,12 @@ await check("preview host stays static-only — islands never proxy drafts", asy
   assert.notEqual(res.status, 200);
 });
 
+await check("docs subdomain passes through to Pages, path and query intact", async () => {
+  proxied = undefined;
+  await island("https://docs.kindredquill.com/guides/newsletter?q=1");
+  assert.equal(proxied.url, "https://inkwell-support.pages.dev/guides/newsletter?q=1");
+});
+
 globalThis.fetch = realFetch;
 
 // ---- apex tail ---------------------------------------------------------

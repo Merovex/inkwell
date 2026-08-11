@@ -43,6 +43,14 @@ const SLUG = /^\/([A-Za-z0-9_-]{1,32})(\/.*)?$/;
 const APEX_HOSTS = new Set(["kindredquill.com", "www.kindredquill.com"]);
 const APEX_TAIL = /^\/[A-Za-z0-9_-]{1,32}\/(?:newsletter|contact)(\/|$)/;
 
+// Platform subdomains that aren't tenant sites: hosted elsewhere and proxied
+// straight through, so they never fall into the unknown-hostname 404. The
+// zone-wide Worker route catches them (that's how docs hit "No site is
+// configured"); this map hands them to their real home.
+const PASSTHROUGH_HOSTS = new Map([
+  ["docs.kindredquill.com", "https://inkwell-support.pages.dev"],
+]);
+
 // Where a site's builds and pointer live in the bucket, per channel: preview
 // (the staging host) sits one level deeper than production.
 function siteRoot(slug, preview) {
@@ -71,6 +79,13 @@ export default {
     const host = (request.headers.get("host") || url.hostname)
       .split(":")[0]
       .toLowerCase();
+
+    // Non-tenant platform subdomains (docs, …) proxy to their real home,
+    // path and method intact.
+    const passthrough = PASSTHROUGH_HOSTS.get(host);
+    if (passthrough) {
+      return fetch(new URL(url.pathname + url.search, passthrough), request);
+    }
 
     // Old apex links (kindredquill.com/<SLUG>/newsletter/…) 301 to the same
     // path on the sites host; anything else that reaches us on the apex is a
