@@ -87,4 +87,10 @@ Rails.application.configure do
   # host serving the first account's public site. APP_HOST in the environment
   # still wins; set it to the empty string to force single-tenant legacy mode.
   config.x.app_host = ENV.fetch("APP_HOST", "app.localhost")
+
+  # Allow the platform sites host so a domain-less account's public site is
+  # browsable in dev at sites.kindredquill.com:3020/{slug} (the screenshot
+  # runner maps the hostname to loopback inside its browser). Any account,
+  # not just Account.first — the tenant-host fallback only reaches the latter.
+  config.hosts << ENV.fetch("CF_CNAME_TARGET", "sites.kindredquill.com")
 end
