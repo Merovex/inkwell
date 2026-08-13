@@ -11,7 +11,7 @@ module Circles
       authorize! circle, to: :invite
 
       invitee = User.find_by(email_address: params[:email_address])
-      return redirect_to circle_members_path(circle), alert: "No Inkwell author with that address — they need to join Inkwell first." unless invitee
+      return redirect_to circle_members_path(circle), alert: "No Kindred Quill author with that address — they need to join Kindred Quill first." unless invitee
 
       invitation = circle.invitations.create(user: invitee, inviter: Current.user)
       if invitation.persisted?

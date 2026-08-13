@@ -1,4 +1,4 @@
-<% content_for :title, "#{@drip.title} — Inkwell" %>
+<% content_for :title, @drip.title %>
 
 <%= render "admin/shared/canvas_head",
       crumbs: [["Campaigns", admin_drips_path], [@drip.title, nil]], menu: false do %>

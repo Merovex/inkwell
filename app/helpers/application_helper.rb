@@ -1,4 +1,16 @@
 module ApplicationHelper
+  # The product name — the one place it lives. Brands the admin <title> and any
+  # app-level chrome; never hardcode it in a view again. (Public/tenant pages
+  # brand with the author's own site_settings.site_name, not this.)
+  APP_NAME = "Kindred Quill"
+
+  # The admin document <title>: the page-specific part a view sets with
+  # `content_for :title, "Posts"`, suffixed once with the app name here →
+  # "Posts — Kindred Quill". No page title set → just the app name.
+  def document_title
+    [ content_for(:title).presence, APP_NAME ].compact.join(" — ")
+  end
+
   # Version token mixed into the public book-cover fragment cache keys
   # (books/index, books/show). Book/Series records don't change when the cover
   # *variant definition* does (see Depiction#image), so those fragments — which

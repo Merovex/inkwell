@@ -1,5 +1,5 @@
 <% title = @broadcast.post&.title.presence || "Untitled" %>
-<% content_for :title, "#{title} — broadcast — Inkwell" %>
+<% content_for :title, "#{title} — broadcast" %>
 <% live = !@broadcast.record.trashed_at? %>
 
 <%= render "admin/shared/canvas_head",

@@ -41,6 +41,10 @@
               <% end %>
             </div>
           <% end %>
+          <%= link_to new_account_path(script_name: ""), class: "switcher__new" do %>
+            <%= inline_svg_tag "lucide/plus.svg", class: "lucide", size: "16px" %>
+            <span>New site</span>
+          <% end %>
         <% else %>
           <%= link_to new_account_path(script_name: ""), class: "switcher__invite" do %>
             <strong>Ready to publish publicly?</strong>

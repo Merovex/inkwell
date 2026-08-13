@@ -1,7 +1,7 @@
 <%# 8b: "Move to another series" — a picker over the book page. Pick a series
     (or Standalone); a note shows where the book lands. Move reassigns the
     series Installment; collections are untouched. %>
-<% content_for :title, "Move #{@book.title} — Inkwell" %>
+<% content_for :title, "Move #{@book.title}" %>
 
 <%= turbo_frame_tag "modal" do %>
   <div data-controller="dialog" data-dialog-open-value="true">

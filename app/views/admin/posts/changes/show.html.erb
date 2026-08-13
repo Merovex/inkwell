@@ -1,4 +1,4 @@
-<% content_for :title, "Changes: #{@post.title} — Inkwell" %>
+<% content_for :title, "Changes: #{@post.title}" %>
 
 <%= render "admin/shared/canvas_head", crumbs: [["Posts", admin_posts_path], [@post.title, admin_post_path(@record)], ["Change Log", admin_post_events_path(@record)], ["Change", nil]] do %>
   <%= link_to "Change Log", admin_post_events_path(@record), class: "menu__item" %>

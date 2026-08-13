@@ -1,6 +1,6 @@
 # The weekly site digest: one email per user rolling up the sites they own, a
 # per-site section each (WeeklyReport). Platform bulk mail like NotificationMailer
-# — it's a per-user Inkwell email, not a per-site newsletter, so it rides the
+# — it's a per-user Kindred Quill email, not a per-site newsletter, so it rides the
 # platform voice and the platform-circles tenant, never a site's sending lane.
 class WeeklyDigestMailer < ApplicationMailer
   default delivery_method_options: {
@@ -32,6 +32,6 @@ class WeeklyDigestMailer < ApplicationMailer
     # apex's SPF -all stays). ENV/credential overridable via ses.digest_from.
     def digest_from
       address = Rails.application.credentials.dig(:ses, :digest_from).presence || "digest@kindredquill.com"
-      email_address_with_name(address, "Inkwell")
+      email_address_with_name(address, "Kindred Quill")
     end
 end

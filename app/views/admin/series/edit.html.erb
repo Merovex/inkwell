@@ -3,7 +3,7 @@
 <%# The standalone series page is reader-only; managing happens here. %>
 <%# Self-opening dialog: the form (name/blurb/state) saves on Save series; the %>
 <%# book list reorders and adds/removes on their own as you drag and pick. %>
-<% content_for :title, "Edit #{@series.title} — Inkwell" %>
+<% content_for :title, "Edit #{@series.title}" %>
 
 <%= turbo_frame_tag "modal" do %>
   <span data-controller="dialog" data-dialog-open-value="true">

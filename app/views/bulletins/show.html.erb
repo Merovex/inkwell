@@ -1,4 +1,4 @@
-<% content_for :title, "#{@bulletin.title} — Inkwell" %>
+<% content_for :title, @bulletin.title %>
 
 <%= render "admin/shared/canvas_head", crumbs: [["Announcements", bulletins_path], [@bulletin.title, nil]], menu: false do %>
   <% if Current.user&.root? %>

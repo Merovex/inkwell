@@ -1,0 +1,313 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "DemoSite",
+  "description": "A complete demo site: one user owning one site, with authors, posts, books, series, and collections. Content bodies are HTML fragments (<p> paragraphs) for the record's rich text.",
+  "type": "object",
+  "properties": {
+    "user": {
+      "description": "The demo account owner.",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Handle, unique across users (e.g. \"gutenberg\").",
+          "pattern": "^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$"
+        },
+        "email_address": {
+          "type": "string",
+          "format": "email"
+        }
+      },
+      "required": [
+        "name",
+        "email_address"
+      ],
+      "additionalProperties": false
+    },
+    "site": {
+      "description": "The Account (site) the user owns; all content below lives in it.",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Site title (e.g. \"Gutenberg Press\")."
+        },
+        "handle": {
+          "type": "string",
+          "description": "Kindred Quill handle for the platform URL and shared-lane email From. Omit to leave unclaimed.",
+          "pattern": "^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$"
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "additionalProperties": false
+    },
+    "authors": {
+      "description": "Public pen names / bylines. The first becomes the site default unless another sets default: true.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "description": "Payload-unique id other sections reference as author:.",
+            "pattern": "^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$"
+          },
+          "name": {
+            "type": "string",
+            "description": "The byline as shown on the site."
+          },
+          "tagline": {
+            "type": "string",
+            "description": "One-line hook under the name in the author grid.",
+            "maxLength": 140
+          },
+          "bio": {
+            "type": "string",
+            "description": "HTML bio for the author page."
+          },
+          "default": {
+            "type": "boolean",
+            "description": "Make this the site's default byline (at most one)."
+          }
+        },
+        "required": [
+          "key",
+          "name"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 1
+    },
+    "posts": {
+      "description": "Blog posts, oldest first.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "author": {
+            "type": "string",
+            "description": "An authors[].key; omit for the site default.",
+            "pattern": "^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "drafted",
+              "published"
+            ]
+          },
+          "published_at": {
+            "type": "string",
+            "description": "Back-dated go-live moment for published posts; the loader stamps now when omitted. Ignored for drafts.",
+            "format": "date-time"
+          },
+          "excerpt": {
+            "type": "string",
+            "description": "SEO summary for list rows and the meta description; omitted means the body gets truncated instead.",
+            "maxLength": 160
+          },
+          "body": {
+            "type": "string",
+            "description": "HTML body."
+          },
+          "pinned": {
+            "type": "boolean",
+            "description": "Pin to the top of the blog."
+          }
+        },
+        "required": [
+          "title",
+          "status",
+          "body"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "books": {
+      "description": "The catalog. Series and collections reference these by key.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "description": "Payload-unique id series/collections reference.",
+            "pattern": "^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$"
+          },
+          "title": {
+            "type": "string"
+          },
+          "author": {
+            "type": "string",
+            "description": "An authors[].key; omit for the site default.",
+            "pattern": "^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$"
+          },
+          "tagline": {
+            "type": "string",
+            "description": "One-line pitch shown under the title."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "drafted",
+              "published"
+            ]
+          },
+          "publication_date": {
+            "type": "string",
+            "description": "Real-world release date (distinct from the record going live). Give it for published books; omit for unreleased drafts.",
+            "format": "date"
+          },
+          "isbn": {
+            "type": "string"
+          },
+          "word_count": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "description": {
+            "type": "string",
+            "description": "HTML description for the book page."
+          },
+          "cover_url": {
+            "type": "string",
+            "description": "Cover image the loader downloads and attaches.",
+            "format": "uri"
+          },
+          "buy_links": {
+            "type": "array",
+            "description": "Store URLs; the platform (Amazon, Kobo…) is detected from each URL.",
+            "items": {
+              "type": "string"
+            }
+          },
+          "pinned": {
+            "type": "boolean",
+            "description": "Feature on the shelf."
+          }
+        },
+        "required": [
+          "key",
+          "title",
+          "status",
+          "description"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 1
+    },
+    "series": {
+      "description": "Ordered runs of books.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "author": {
+            "type": "string",
+            "description": "An authors[].key; omit for the site default.",
+            "pattern": "^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "planned",
+              "in_progress",
+              "complete"
+            ],
+            "description": "Where the run stands, for the shelf band."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "drafted",
+              "published"
+            ]
+          },
+          "description": {
+            "type": "string",
+            "description": "HTML description."
+          },
+          "books": {
+            "type": "array",
+            "description": "books[].key values in reading order (position 1..n). A book belongs to at most one series.",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1
+          }
+        },
+        "required": [
+          "title",
+          "state",
+          "status",
+          "books"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "collections": {
+      "description": "Curated groupings that cut across series (e.g. \"Where to Start\"). Unlike series, a book may appear in many collections.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "author": {
+            "type": "string",
+            "description": "An authors[].key; omit for the site default.",
+            "pattern": "^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$"
+          },
+          "unordered": {
+            "type": "boolean",
+            "description": "True for an unranked grab-bag; false/omitted keeps the listed order."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "drafted",
+              "published"
+            ]
+          },
+          "description": {
+            "type": "string",
+            "description": "HTML description."
+          },
+          "books": {
+            "type": "array",
+            "description": "books[].key values.",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1
+          }
+        },
+        "required": [
+          "title",
+          "status",
+          "books"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "user",
+    "site",
+    "authors",
+    "posts",
+    "books",
+    "series",
+    "collections"
+  ],
+  "additionalProperties": false
+}

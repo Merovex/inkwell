@@ -1,4 +1,4 @@
-<% content_for :title, "Your circles — Inkwell" %>
+<% content_for :title, "Your circles" %>
 
 <%= render "admin/shared/canvas_head", crumbs: [["Circles", nil]], menu: false do %>
   <% if can_create_circle? %>
@@ -17,7 +17,7 @@
 
 <%# Like the drafts/archived links on posts: the wider world, one click away. %>
 <% if @all_count > @circles.size %>
-  <p class="u-margin-block-end"><%= link_to "View all #{pluralize(@all_count, "circle")} on Inkwell", all_circles_path %></p>
+  <p class="u-margin-block-end"><%= link_to "View all #{pluralize(@all_count, "circle")} on Kindred Quill", all_circles_path %></p>
 <% end %>
 
 <% if @circles.any? || @invitations.any? %>

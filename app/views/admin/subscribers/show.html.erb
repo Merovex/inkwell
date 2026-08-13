@@ -1,7 +1,7 @@
 <%# One subscriber, opened into the roster's "modal" turbo frame (the row links
     here with data-turbo-frame="modal"). Lifecycle dates + what they've received
     and opened, then the recent sends. %>
-<% content_for :title, "#{@subscriber.email_address} — Inkwell" %>
+<% content_for :title, @subscriber.email_address %>
 <% variant = { "confirmed" => "success", "pending" => "warning", "bounced" => "danger", "complained" => "danger" }[@subscriber.status] %>
 
 <%= turbo_frame_tag "modal" do %>

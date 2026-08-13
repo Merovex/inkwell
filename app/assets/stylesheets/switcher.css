@@ -132,6 +132,20 @@
   }
   .switcher__switch a:hover { background: color-mix(in oklab, var(--ink) 4%, transparent); }
 
+  /* Found another site — always reachable when you already own one (there is no
+     server-side one-site cap; ADR-free product choice lived only in this menu). */
+  .switcher__new {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--size-1);
+    margin-block-start: var(--size-2);
+    padding: var(--size-1) var(--size-2);
+    border-radius: var(--radius-ui);
+    color: var(--ink-muted);
+    text-decoration: none;
+  }
+  .switcher__new:hover { background: color-mix(in oklab, var(--ink) 4%, transparent); color: var(--ink); }
+
   /* Footer — two actions, separated by tone alone (barely-there tint, theme-aware). */
   .switcher__footer {
     display: grid;

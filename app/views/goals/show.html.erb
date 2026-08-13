@@ -1,4 +1,4 @@
-<% content_for :title, "#{@goal.title} — Inkwell" %>
+<% content_for :title, @goal.title %>
 
 <%= render "admin/shared/canvas_head",
       crumbs: [["Goals", goals_path], [@goal.title, nil]],

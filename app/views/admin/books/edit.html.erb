@@ -1,4 +1,4 @@
-<% content_for :title, "#{@book.title} — Inkwell" %>
+<% content_for :title, @book.title %>
 
 <%= render "admin/shared/canvas_head", crumbs: [["Books", admin_books_path], [@book.title, nil]], menu: false do %>
   <%= render "composer_actions", book: @book %>

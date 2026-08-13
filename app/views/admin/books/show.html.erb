@@ -1,4 +1,4 @@
-<% content_for :title, "#{@book.title} — Inkwell" %>
+<% content_for :title, @book.title %>
 <% can_manage = allowed_to?(:manage, @record) %>
 <% primary = @book.series.first %>
 <% series_books = primary ? primary.books.to_a : [] %>

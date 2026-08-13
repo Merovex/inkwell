@@ -9,8 +9,8 @@ class SessionMailer < ApplicationMailer
   }
 
   SUBJECTS = {
-    sign_in: "Your Inkwell sign-in link",
-    sign_up: "Welcome to Inkwell — confirm your email"
+    sign_in: "Your Kindred Quill sign-in link",
+    sign_up: "Welcome to Kindred Quill — confirm your email"
   }.freeze
 
   # Emails a magic-link sign-in code. `plaintext` is the raw 8-letter code; it

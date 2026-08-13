@@ -22,5 +22,6 @@
     color: inherit;
     cursor: pointer;
   }
+  .app-menu-trigger__logo { display: block; border-radius: var(--radius-2); }
   .app-menu-trigger__chevron { color: var(--ink-muted); }
 }

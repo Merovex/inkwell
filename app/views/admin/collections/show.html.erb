@@ -1,4 +1,4 @@
-<% content_for :title, "#{@collection.title} — Inkwell" %>
+<% content_for :title, @collection.title %>
 <% can_manage = allowed_to?(:manage, @record) %>
 
 <%= render "admin/shared/canvas_head", crumbs: [["Collections", admin_collections_path], [@collection.title, nil]],

@@ -1,4 +1,4 @@
-<% content_for :title, "#{@series.title} — Inkwell" %>
+<% content_for :title, @series.title %>
 <% can_manage = allowed_to?(:manage, @record) %>
 
 <%= render "admin/shared/canvas_head", crumbs: [["Series", admin_series_index_path], [@series.title, nil]],

@@ -5,7 +5,7 @@ class ApplicationMailer < ActionMailer::Base
   # credential so the eventual verify.* identity is a credential change.
   default from: email_address_with_name(
     Rails.application.credentials.dig(:ses, :transactional_from).presence || "noreply@verify.kindredquill.com",
-    "Inkwell"
+    "Kindred Quill"
   )
   layout "mailer"
 
@@ -66,6 +66,6 @@ class ApplicationMailer < ActionMailer::Base
     # verification identity and no longer the Subscriber identity.
     def platform_bulk_from
       address = Rails.application.credentials.dig(:ses, :notify_from).presence || "noreply@notify.kindredquill.com"
-      email_address_with_name(address, "Inkwell")
+      email_address_with_name(address, "Kindred Quill")
     end
 end

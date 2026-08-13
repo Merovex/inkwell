@@ -18,7 +18,7 @@ class NotificationMailer < ApplicationMailer
     @notifications_url = "#{@base_url}/notifications"
 
     subject = notifications.one? ? notifications.first.title
-                                 : "#{notifications.size} new notifications on Inkwell"
+                                 : "#{notifications.size} new notifications on Kindred Quill"
     mail to: user.email_address, from: platform_bulk_from, subject: subject
   end
 end

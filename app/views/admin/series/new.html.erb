@@ -1,7 +1,7 @@
 <%# New series as a modal, fetched into the books index's "modal" turbo frame %>
 <%# (the header's "New series" carries data-turbo-frame="modal"). No book list %>
 <%# or delete yet — books get added by editing the series once it exists. %>
-<% content_for :title, "New series — Inkwell" %>
+<% content_for :title, "New series" %>
 
 <%= turbo_frame_tag "modal" do %>
   <span data-controller="dialog" data-dialog-open-value="true">
