@@ -13,12 +13,12 @@ class SiteBuildJob < ApplicationJob
 
   # The one enqueue door: publish transitions and Site/design edits call this.
   def self.schedule(account)
-    account.update_columns(site_build_status: "queued")
+    account.stamp_build_status!("queued")
     set(wait: DEBOUNCE).perform_later(account)
   end
 
   def perform(account)
-    account.update_columns(site_build_status: "building")
+    account.stamp_build_status!("building")
 
     # The build's canonical home: the custom domain when connected, else the
     # platform host path — the handle when claimed (the Worker resolves it
@@ -35,9 +35,9 @@ class SiteBuildJob < ApplicationJob
     output = Renderer.new(workspace).render!
     Publisher.new(account).publish!(output)
 
-    account.update_columns(site_build_status: "live", site_built_at: Time.current)
+    account.stamp_build_status!("live", built_at: Time.current)
   rescue => e
-    account.update_columns(site_build_status: "failed")
+    account.stamp_build_status!("failed")
     raise e # Honeybadger sees it; the previous build keeps serving
   ensure
     FileUtils.rm_rf(workspace) if workspace

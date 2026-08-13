@@ -142,6 +142,15 @@ class Account < ApplicationRecord
     domain || "#{AccountHost.sites_host}/#{handle.presence || slug}"
   end
 
+  # SiteBuildJob's status stamps. update_columns on purpose — a build's own
+  # bookkeeping must never trip the rebuild callbacks above — so the designer
+  # topbar's live badge broadcast rides here instead of a model callback.
+  def stamp_build_status!(status, built_at: nil)
+    update_columns({ site_build_status: status, site_built_at: built_at }.compact)
+    broadcast_replace_later_to [ self, :build_status ], target: "site-build-status",
+      partial: "admin/designers/build_status", locals: { account: self }
+  end
+
   # The staging address a draft design deploys to for a second opinion — the
   # preview host under the handle path (falling back to the slug), served
   # noindex by the edge Worker's preview lane.

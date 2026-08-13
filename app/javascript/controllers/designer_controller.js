@@ -33,7 +33,8 @@ export default class extends Controller {
     "heroHeadline", "heroLede", "heroBook", "heroSource", "heroCustomFields", "heroBookWrap",
     "heroBannerCredit", "heroBannerCreditUrl",
     "heroLedeCount", "heroManyWrap", "heroScrimWrap", "heroScrimColor",
-    "nlHeadline", "nlBlurb", "nlButton", "orderList", "footerFinePrint"]
+    "nlHeadline", "nlBlurb", "nlButton", "orderList", "footerFinePrint",
+    "headingPosts", "headingBooks", "headingAuthors"]
   static values = {
     buildUrl: String, frameUrl: String, storageKey: String, defaults: Object,
     saveUrl: String,
@@ -78,6 +79,7 @@ export default class extends Controller {
     this.newsletter = legacyFlat ? null : this.validNewsletter(stored.newsletter)
     this.footer = legacyFlat ? null : this.validFooter(stored.footer)
     this.sections = legacyFlat ? null : this.validSections(stored.sections)
+    this.headings = legacyFlat ? null : this.validHeadings(stored.headings)
     this.updateCustomFontCard()
     this.applyToRail()
     this.refreshLabels()
@@ -85,6 +87,7 @@ export default class extends Controller {
     this.populateHeroFields()
     this.populateNewsletterFields()
     this.populateFooterFields()
+    this.populateHeadingsFields()
     this.populateSectionOrder()
     this.updateModeToggle()
     requestAnimationFrame(() => this.syncFontPickers())
@@ -129,6 +132,12 @@ export default class extends Controller {
     this.fonts = null
     this.colors = null
     this.workingColors = {}
+    // A preset may carry a home-section order (e.g. World leads with the
+    // bio); without one the author's order stands.
+    if (event.params.sections) {
+      this.sections = this.validSections(event.params.sections)
+      this.populateSectionOrder()
+    }
     this.syncFontPickers()
     this.paintColorSlots()
     this.store()
@@ -149,10 +158,12 @@ export default class extends Controller {
     this.newsletter = null
     this.footer = null
     this.sections = null
+    this.headings = null
     this.updateCustomFontCard()
     this.populateHeroFields()
     this.populateNewsletterFields()
     this.populateFooterFields()
+    this.populateHeadingsFields()
     this.populateSectionOrder()
     this.applyToRail()
     this.refreshLabels()
@@ -625,6 +636,31 @@ export default class extends Controller {
     return filled ? block : null
   }
 
+  // --- section headings (per-band wording overrides; override-only —
+  //     blank keeps the theme's defaults; visibility is each *_title axis)
+
+  headingsEdited() {
+    const block = {}
+    if (this.headingPostsTarget.value.trim()) block.posts = this.headingPostsTarget.value.trim()
+    if (this.headingBooksTarget.value.trim()) block.books = this.headingBooksTarget.value.trim()
+    if (this.headingAuthorsTarget.value.trim()) block.authors = this.headingAuthorsTarget.value.trim()
+    this.headings = Object.keys(block).length ? block : null
+    this.commit()
+  }
+
+  populateHeadingsFields() {
+    if (!this.hasHeadingPostsTarget) return
+    this.headingPostsTarget.value = this.headings?.posts || ""
+    this.headingBooksTarget.value = this.headings?.books || ""
+    this.headingAuthorsTarget.value = this.headings?.authors || ""
+  }
+
+  validHeadings(block) {
+    if (!block || typeof block !== "object") return null
+    const filled = ["posts", "books", "authors"].some(key => typeof block[key] === "string" && block[key])
+    return filled ? block : null
+  }
+
   // --- footer content (the fine-print override — layout and visibility
   //     are footer_* axes; social links are Site settings, not design)
 
@@ -835,7 +871,7 @@ export default class extends Controller {
     localStorage.setItem(this.storageKeyValue,
       JSON.stringify({ design: this.design, nav: this.nav, fonts: this.fonts, colors: this.colors,
         custom_fonts: this.customFonts, hero: this.hero, newsletter: this.newsletter,
-        footer: this.footer, sections: this.sections }))
+        footer: this.footer, sections: this.sections, headings: this.headings }))
   }
 
   // Only a well-shaped block counts — a nav axis value ("split") once leaked
@@ -1054,7 +1090,8 @@ export default class extends Controller {
   // The working design, as the preview build and the save both post it.
   payload() {
     return { design: this.design, nav: this.nav, fonts: this.fonts, colors: this.colors,
-      hero: this.hero, newsletter: this.newsletter, footer: this.footer, sections: this.sections }
+      hero: this.hero, newsletter: this.newsletter, footer: this.footer, sections: this.sections,
+      headings: this.headings }
   }
 
   async build() {

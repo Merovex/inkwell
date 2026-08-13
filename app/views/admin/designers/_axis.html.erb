@@ -7,7 +7,10 @@
     designer's working state; data-label feeds the root menu's summary
     values. `heading:` overrides the legend (a pane that IS the axis titles
     the control by facet, e.g. Buttons' "Rounding"); `variant: "segmented"`
-    joins the chips into one equal-cell track. %>
+    joins the chips into one equal-cell track (the manifest can also declare
+    it, so generically-rendered axes get the track without a render-site
+    override). %>
+<% variant ||= axis["variant"] %>
 <fieldset class="designer__block designer__axis">
   <legend class="designer__block-title"><%= heading || axis["noun"] %></legend>
   <%# chunk drops nil-keyed elements, so ungrouped options key on false. %>

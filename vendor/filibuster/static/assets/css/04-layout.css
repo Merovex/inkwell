@@ -76,9 +76,12 @@ a { color: inherit; }
 .fk-brand-sub {
   font-size: 0.75rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--ink-muted);
 }
-/* Custom logo: fills the header band; `grand` gives it the marquee size. */
-.fk-brand-logo { display: block; max-height: 3rem; max-width: 60vw; width: auto; }
-html[data-nav="grand"] .fk-brand-logo { max-height: 5.5rem; }
+/* Custom logo: fills the header band; `grand` gives it the marquee size.
+   data-logo-size scales either base (regular ×1 / large ×1.5 / huge ×2). */
+.fk-brand-logo { display: block; max-height: calc(var(--logo-scale, 1) * 3rem); max-width: 60vw; width: auto; }
+html[data-nav="grand"] .fk-brand-logo { max-height: calc(var(--logo-scale, 1) * 5.5rem); }
+html[data-logo-size="large"] { --logo-scale: 1.5; }
+html[data-logo-size="huge"] { --logo-scale: 2; }
 /* Logo + visible title lockup (nav.title_as_alt false): the name sits right
    of the logo in split, below it in the centered variants, always in the
    display face. */

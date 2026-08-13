@@ -1,8 +1,11 @@
 {{ $recent := first 3 (sort hugo.Data.posts.posts "published_at" "desc") }}
+{{/* The heading override rides home.headings (site.json); blank keeps the
+     theme default. Visibility is the blog_title axis (CSS). */}}
+{{ $headings := hugo.Data.site.home.headings | default dict }}
 {{ with $recent }}
 <section class="fk-posts-band" aria-labelledby="posts-title">
   <div class="fk-shell">
-    <h2 id="posts-title" class="fk-section-title">From the Blog</h2>
+    <h2 id="posts-title" class="fk-section-title">{{ $headings.posts | default "From the Blog" }}</h2>
     <ul class="fk-post-grid">
       {{ range . }}
       <li>

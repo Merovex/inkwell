@@ -44,13 +44,14 @@ class AdminDesignerTest < ActionDispatch::IntegrationTest
     # books + catalog + alternate + hero_book + hero_many + hero_shadow + the
     # author-grid toggle (authors) + the chrome toggles (nav_show,
     # footer_show, footer_signup, footer_credit) + the two home-visibility
-    # axes (hero_home, bio_home) render as switches; hero_scrim (manifest
-    # control: "slider") as a slider — not fieldsets. hero_art is a 3-way
-    # choice, so it renders as an option-card fieldset like the other
-    # multi-value axes.
+    # axes (hero_home, bio_home) + the section-heading toggles (books_title,
+    # authors_title, blog_title) + the bio About button (bio_more) render as
+    # switches; hero_scrim (manifest control: "slider") as a slider — not
+    # fieldsets. hero_art is a 3-way choice, so it renders as an option-card
+    # fieldset like the other multi-value axes.
     sliders = theme.axes.count { it["control"] == "slider" }
-    assert_select ".designer__axis", count: theme.axes.size - 13 - sliders
-    assert_select ".switch__input[data-designer-target=axisToggle]", count: 13
+    assert_select ".designer__axis", count: theme.axes.size - 17 - sliders
+    assert_select ".switch__input[data-designer-target=axisToggle]", count: 17
     assert_select ".switch__input[data-axis=hero_home]", count: 1
     assert_select ".switch__input[data-axis=bio_home]", count: 1
     assert_select ".switch__input[data-axis=hero_shadow]", count: 1
@@ -273,6 +274,28 @@ class AdminDesignerTest < ActionDispatch::IntegrationTest
     assert_match(/Join the list/, response.body)
   end
 
+  test "the headings block rewords the home bands; absent keeps the defaults" do
+    skip_unless_buildable
+    sign_in_as users(:admin)
+
+    post admin_designer_preview_path, params: {
+      design: {},
+      headings: { posts: "Field Notes", books: "The Library" }
+    }, as: :json
+    assert_response :no_content
+
+    get admin_designer_preview_file_path(path: nil)
+    assert_response :success
+    assert_match(/Field Notes/, response.body)
+    assert_match(/The Library/, response.body)
+
+    # Absent block: the theme's own headings stand.
+    post admin_designer_preview_path, params: { design: {} }, as: :json
+    get admin_designer_preview_file_path(path: nil)
+    assert_match(/From the Blog/, response.body)
+    assert_match(/The Books/, response.body)
+  end
+
   test "the section order reorders the home page and must be a permutation" do
     skip_unless_buildable
     sign_in_as users(:admin)
@@ -298,7 +321,8 @@ class AdminDesignerTest < ActionDispatch::IntegrationTest
       params: { design: { palette: "pine", font: "verse" }, fonts: { display: "Lobster" },
                 colors: { bg: "#0ea5e9", accent: "#f59e0b", ink: "#dc2626" },
                 hero: { banner_credit: "Photo by Jane Doe on Unsplash",
-                        banner_credit_url: "https://unsplash.com/@janedoe" } }, as: :json
+                        banner_credit_url: "https://unsplash.com/@janedoe" },
+                headings: { posts: "Field Notes", books: "" } }, as: :json
     assert_response :no_content
 
     saved = accounts(:merovex).draft_design.reload.data
@@ -306,6 +330,8 @@ class AdminDesignerTest < ActionDispatch::IntegrationTest
     assert_equal "Lobster", saved["fonts"]["display"]
     assert_equal "Photo by Jane Doe on Unsplash", saved["hero"]["banner_credit"]
     assert_equal "https://unsplash.com/@janedoe", saved["hero"]["banner_credit_url"]
+    # Headings ride the bundle override-only: blanks drop out.
+    assert_equal({ "posts" => "Field Notes" }, saved["headings"])
     # Colors are stored RAW — the exporter resolves them per build.
     assert_equal "#0ea5e9", saved["colors"]["bg"]
 

@@ -4,9 +4,10 @@
      axis styles either scope. */}}
 {{ $design := $site.design | default dict }}
 {{ $catalog := $design.catalog | default "series" }}
+{{ $headings := $site.home.headings | default dict }}
 <section id="books" class="fk-books" aria-labelledby="books-title">
   <div class="fk-shell">
-    <h2 id="books-title" class="fk-section-title">The Books</h2>
+    <h2 id="books-title" class="fk-section-title">{{ $headings.books | default "The Books" }}</h2>
     <div class="fk-series-list">
       {{ if eq $catalog "books" }}
         {{ range $i, $b := hugo.Data.books.books }}

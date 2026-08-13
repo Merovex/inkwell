@@ -136,7 +136,8 @@ class Exporter
         colors: resolve_colors(@design[:colors]),
         hero: @design[:hero],
         newsletter: newsletter_block,
-        home: @design[:sections].present? ? { sections: @design[:sections] } : nil
+        home: { sections: @design[:sections].presence,
+                headings: @design[:headings].presence }.compact_blank.presence
       }.compact_blank
     end
 

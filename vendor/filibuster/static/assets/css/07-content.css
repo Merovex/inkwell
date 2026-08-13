@@ -32,6 +32,17 @@ html[data-blog="list"] .fk-post-grid { grid-template-columns: 1fr; max-width: 44
    with the list entries */
 html[data-blog="list"] .fk-posts-band .fk-shell > p { max-width: 44rem; margin-inline: auto; }
 html[data-blog="list"] .fk-post-grid article { background: transparent; border: 0; border-left: 3px solid var(--accent); border-radius: 0; padding-block: 0.25rem; }
+/* Card list: the vertical list's measure and rhythm, but each post keeps
+   its card chrome — a stacked feed of compact cards. */
+html[data-blog="cards"] .fk-post-grid { grid-template-columns: 1fr; max-width: 44rem; margin-inline: auto; gap: 1rem; }
+html[data-blog="cards"] .fk-posts-band .fk-shell > p { max-width: 44rem; margin-inline: auto; }
+html[data-blog="cards"] .fk-post-grid article { padding: 1.25rem 1.5rem; }
+/* Section headings are superset markup (the data-nav pattern): each home
+   band's title hides by axis. aria-labelledby still resolves a hidden
+   target, so the landmark keeps its accessible name. */
+html[data-blog-title="no"] .fk-posts-band .fk-section-title,
+html[data-books-title="no"] .fk-books .fk-section-title,
+html[data-authors-title="no"] .fk-authors-band .fk-section-title { display: none; }
 
 /* ---------- Author grid (data-authors) ---------- */
 .fk-authors-band { padding-block: 3.5rem; border-top: 1px solid var(--line); }
@@ -94,6 +105,11 @@ html[data-avatar-side="right"] .fk-author-inner {
   grid-template-columns: 1fr minmax(0, 16rem);
 }
 html[data-avatar-side="right"] .fk-portrait-band { order: 2; }
+/* centered text (usually paired with no photo): heading, lede, and the
+   About button center in their column */
+html[data-bio-align="centered"] .fk-author-inner > div { text-align: center; }
+/* the About button is superset markup (the data-nav pattern): hidden by axis */
+html[data-bio-more="no"] .fk-author-band .fk-btn { display: none; }
 
 @media (max-width: 48rem) {
   .fk-author-inner,

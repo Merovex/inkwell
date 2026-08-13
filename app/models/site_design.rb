@@ -23,7 +23,7 @@ class SiteDesign
   HERO_HTML_TAGS = %w[ p br strong em b i a ul ol li blockquote ].freeze
   HERO_HTML_ATTRIBUTES = %w[ href ].freeze
 
-  attr_reader :design, :nav, :fonts, :colors, :hero, :newsletter, :footer, :sections
+  attr_reader :design, :nav, :fonts, :colors, :hero, :newsletter, :footer, :sections, :headings
 
   def initialize(params)
     @params = params
@@ -35,6 +35,7 @@ class SiteDesign
     @newsletter = permit_newsletter
     @footer = permit_footer
     @sections = permit_sections
+    @headings = permit_headings
   rescue Theme::InvalidDesign => error
     # The theme's vocabulary check speaks the same 422 as the rest.
     raise Invalid, error.message
@@ -44,7 +45,7 @@ class SiteDesign
   def to_h
     { "design" => design, "nav" => nav, "fonts" => fonts, "colors" => colors,
       "hero" => hero, "newsletter" => newsletter, "footer" => footer,
-      "sections" => sections }.compact_blank
+      "sections" => sections, "headings" => headings }.compact_blank
   end
 
   private
@@ -148,6 +149,17 @@ class SiteDesign
         raise Invalid, "sections must be an ordering of #{HOME_SECTIONS.join(", ")}"
       end
       list
+    end
+
+    # Per-band heading overrides (the home bands with fixed headings:
+    # posts / books / authors), plain strings — Hugo's templates escape them;
+    # blank keeps the theme's defaults. Heading VISIBILITY is each section's
+    # own *_title axis (visibility is an axis, wording is a content block).
+    def permit_headings
+      block = @params[:headings]
+      return nil unless block.is_a?(ActionController::Parameters)
+
+      block.permit(:posts, :books, :authors).to_h.compact_blank.presence
     end
 
     # Prune first: the allowlist pass strips disallowed tags but keeps their

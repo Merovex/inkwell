@@ -3,10 +3,11 @@
      several personas (Ben Wilson, Troy Buzby…) use it in place of, or
      alongside, the single-author bio band. Renders nothing when the account
      has no authors. */}}
+{{ $headings := hugo.Data.site.home.headings | default dict }}
 {{ with hugo.Data.authors.authors }}
 <section class="fk-authors-band" aria-labelledby="authors-title">
   <div class="fk-shell">
-    <h2 id="authors-title" class="fk-section-title">Authors</h2>
+    <h2 id="authors-title" class="fk-section-title">{{ $headings.authors | default "Authors" }}</h2>
     <ul class="fk-author-grid">
       {{ range . }}
       {{ $a := . }}
