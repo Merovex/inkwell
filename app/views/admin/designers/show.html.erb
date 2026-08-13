@@ -316,6 +316,14 @@
             <%# Mode belongs to the palette: it leads the pane. %>
             <%= render "axis", axis: mode_axis %>
             <p class="designer__hint u-text-muted">Auto follows each reader's own system preference; every palette carries a designed light and dark rendition.</p>
+            <label class="switch">
+              <input class="switch__input" type="checkbox"
+                     data-designer-target="axisToggle" data-axis="mode_toggle"
+                     data-on="yes" data-off="no"
+                     data-on-label="Shown" data-off-label="Hidden"
+                     data-action="designer#axisToggled">
+              Let readers switch light and dark themselves
+            </label>
           <% end %>
           <% if axis["key"] == "buttons" %>
             <%# Sample buttons at the working design's shape and palette —

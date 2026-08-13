@@ -202,6 +202,23 @@
       "section": "styles"
     },
     {
+      "key": "mode_toggle",
+      "attr": "data-mode-toggle",
+      "noun": "Reader light/dark toggle",
+      "default": "no",
+      "section": "palette",
+      "options": [
+        {
+          "id": "yes",
+          "label": "Shown"
+        },
+        {
+          "id": "no",
+          "label": "Hidden"
+        }
+      ]
+    },
+    {
       "key": "mode",
       "attr": "data-mode",
       "noun": "Mode",
@@ -1565,6 +1582,8 @@
         "palette": "bone",
         "font": "ledger",
         "nav": "centered",
+        "mode": "auto",
+        "mode_toggle": "yes",
         "hero_home": "no",
         "books": "no",
         "avatar": "none",

@@ -46,12 +46,13 @@ class AdminDesignerTest < ActionDispatch::IntegrationTest
     # footer_show, footer_signup, footer_credit) + the two home-visibility
     # axes (hero_home, bio_home) + the section-heading toggles (books_title,
     # authors_title, blog_title) + the bio About button (bio_more) render as
-    # switches; hero_scrim (manifest control: "slider") as a slider — not
+    # switches, as does the reader light/dark toggle (mode_toggle, palette
+    # pane); hero_scrim (manifest control: "slider") as a slider — not
     # fieldsets. hero_art is a 3-way choice, so it renders as an option-card
     # fieldset like the other multi-value axes.
     sliders = theme.axes.count { it["control"] == "slider" }
-    assert_select ".designer__axis", count: theme.axes.size - 17 - sliders
-    assert_select ".switch__input[data-designer-target=axisToggle]", count: 17
+    assert_select ".designer__axis", count: theme.axes.size - 18 - sliders
+    assert_select ".switch__input[data-designer-target=axisToggle]", count: 18
     assert_select ".switch__input[data-axis=hero_home]", count: 1
     assert_select ".switch__input[data-axis=bio_home]", count: 1
     assert_select ".switch__input[data-axis=hero_shadow]", count: 1

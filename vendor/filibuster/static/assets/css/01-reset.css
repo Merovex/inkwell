@@ -6,6 +6,7 @@
    that keys off html[data-*] is one of the axis-conditional rules:
      data-palette      15 dual-mode palettes (see data/theme.json)
      data-mode         light | dark | auto
+     data-mode-toggle  yes | no (reader cycle button in the nav)
      data-books        yes | no (no CSS — home.html omits the section)
      data-buttons      square | crisp | soft | round (.fk-btn radius)
      data-cards        spread | shelf | grid | panel | carousel | offset | fan

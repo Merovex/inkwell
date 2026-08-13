@@ -101,6 +101,19 @@ html[data-nav="grand"] .fk-brand-lockup { flex-direction: column; gap: 0.35rem; 
 .fk-nav-cta {
   color: var(--accent); font-weight: 700;
 }
+/* Reader light/dark cycle (data-mode-toggle): a quiet icon button at the
+   nav's end; the visible icon tracks data-mode, which the head script
+   rewrites from the reader's stored choice. */
+html[data-mode-toggle="no"] .fk-mode-item { display: none; }
+.fk-mode-toggle {
+  background: none; border: 0; padding: 0.6rem 0.25rem; margin: 0;
+  cursor: pointer; color: inherit; display: inline-flex; align-items: center;
+}
+.fk-mode-toggle:hover { color: var(--accent); }
+.fk-mode-icon { display: none; width: 1.1em; height: 1.1em; }
+html[data-mode="light"] .fk-mode-icon--light,
+html[data-mode="dark"] .fk-mode-icon--dark,
+html[data-mode="auto"] .fk-mode-icon--auto { display: inline-block; }
 
 /* ---------- Header variants (data-nav axis; default "split") ---------- */
 /* The brand is the home link, so the explicit Home item only appears when
