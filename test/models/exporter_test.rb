@@ -86,24 +86,43 @@ class ExporterTest < ActiveSupport::TestCase
     assert_includes standalone, %(name=#{Subscriber::HONEYPOT_FIELD}), "standalone page carries the same form"
   end
 
-  # A published build's assets/nav must resolve at BOTH the canonical domain
-  # root and the platform path prefix (sites.kindredquill.com/<handle>/), so
-  # the config turns on Hugo's page-relative URLs. The designer preview is
-  # served at a fixed non-directory path that matches its base_url, where
-  # page-relative URLs resolve one level too high — so preview keeps them off.
-  test "hugo.toml enables relative URLs for published builds but not for preview" do
+  # A ROOT-based build (custom domain) turns on Hugo's page-relative URLs so
+  # its assets/nav resolve at BOTH the domain root and the platform path
+  # prefix (sites.kindredquill.com/<handle>/). A path-prefixed baseURL
+  # (domain-less account) keeps absolute URLs — Hugo relativizes against the
+  # output path, so relative + prefix emits a doubled /<handle>/<handle>/
+  # that 404s. The designer preview is served at a fixed non-directory path
+  # that matches its base_url, where page-relative URLs resolve one level too
+  # high — so preview keeps them off regardless.
+  test "hugo.toml enables relative URLs for root-based builds only" do
     assert_includes @workspace.join("hugo.toml").read, "relativeURLs = true"
+
+    domain = Exporter.new(accounts(:merovex), base_url: "https://merovex.press/").export!
+    assert_includes domain.join("hugo.toml").read, "relativeURLs = true"
+
+    prefixed = Exporter.new(accounts(:merovex), base_url: "https://sites.kindredquill.com/F3WHRQ/").export!
+    assert_includes prefixed.join("hugo.toml").read, "relativeURLs = false"
 
     preview = Exporter.new(accounts(:merovex), base_url: "/admin/theme/preview/", preview: true).export!
     assert_includes preview.join("hugo.toml").read, "relativeURLs = false"
   end
 
-  test "a published build emits page-relative asset URLs; preview emits absolute" do
+  test "a root-based build emits page-relative asset URLs; prefixed and preview emit absolute" do
     skip "hugo binary not available" unless system("#{HUGO_BIN} version", out: File::NULL, err: File::NULL)
 
     home = Renderer.new(@workspace).render!.join("index.html").read
     assert_includes home, "./assets/css/", "published home links assets relative to the page"
     assert_no_match %r{href=/assets/css/}, home, "no root-absolute asset paths that break under a path prefix"
+
+    prefixed = Exporter.new(accounts(:merovex), base_url: "https://sites.kindredquill.com/F3WHRQ/").export!
+    prefixed_out = Renderer.new(prefixed).render!
+    prefixed_home = prefixed_out.join("index.html").read
+    assert_includes prefixed_home, "/F3WHRQ/assets/css/", "prefixed build anchors assets to its one home"
+    assert_no_match %r{F3WHRQ/F3WHRQ}, prefixed_home, "no doubled prefix (Hugo relativizes against the output path)"
+    # Deep pages are where the doubling bit: ../../F3WHRQ/assets from /F3WHRQ/posts/<slug>/.
+    post = prefixed_out.join("posts", records(:kickoff).to_slug, "index.html").read
+    assert_no_match %r{F3WHRQ/F3WHRQ}, post, "post pages carry no doubled prefix"
+    assert_no_match %r{\.\./}, post, "prefixed build has no page-relative URLs at all"
 
     preview = Exporter.new(accounts(:merovex), base_url: "/admin/theme/preview/", preview: true).export!
     preview_home = Renderer.new(preview).render!.join("index.html").read

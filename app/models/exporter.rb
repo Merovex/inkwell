@@ -64,15 +64,18 @@ class Exporter
     def write_hugo_config
       workspace.join("hugo.toml").write(<<~TOML)
         baseURL = #{@base_url.to_json}
-        # Emit page-relative asset/nav URLs so one published build serves
-        # correctly both at the canonical domain root AND under the platform
-        # path prefix (sites.kindredquill.com/<handle>/) — the pre-domain
-        # fallback host. Absolute .Permalink URLs (canonical, OG, JSON-LD) are
-        # unaffected and stay pinned to baseURL. NOT for preview: the designer
-        # preview is served at a fixed non-directory URL that matches its
-        # base_url, where page-relative URLs resolve one level too high and
-        # break — so preview keeps absolute paths.
-        relativeURLs = #{!@preview}
+        # Page-relative asset/nav URLs are for ROOT-based builds only (custom
+        # domain): one build then serves correctly both at the domain root AND
+        # under the platform path prefix (sites.kindredquill.com/<handle>/) —
+        # the pre-domain fallback host. A path-prefixed baseURL (domain-less
+        # account) must keep absolute URLs instead: Hugo relativizes against
+        # the OUTPUT path, not the URL path, so relative + prefix emits a
+        # doubled /<handle>/<handle>/ that 404s. Absolute .Permalink URLs
+        # (canonical, OG, JSON-LD) are unaffected either way and stay pinned
+        # to baseURL. NOT for preview: the designer preview is served at a
+        # fixed non-directory URL that matches its base_url, where
+        # page-relative URLs resolve one level too high and break.
+        relativeURLs = #{URI(@base_url).path == "/" && !@preview}
         locale = "en-us"
         title = #{account.site.site_name.to_json}
         theme = #{theme.name.to_json}

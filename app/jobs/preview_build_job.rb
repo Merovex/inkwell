@@ -10,8 +10,9 @@ class PreviewBuildJob < ApplicationJob
   limits_concurrency key: ->(account) { account }
 
   def perform(account)
-    # baseURL and serving location must agree; relativeURLs (Exporter) keeps
-    # the assets portable under the handle path prefix on the staging host.
+    # baseURL and serving location must agree; preview_url is path-prefixed,
+    # so the Exporter keeps URLs absolute (/<handle>/assets/…) — page-relative
+    # URLs under a prefixed baseURL emit a doubled /<handle>/<handle>/.
     workspace = Exporter.new(account, design: account.draft_design&.data, base_url: account.preview_url).export!
     output = Renderer.new(workspace).render!
     Publisher.new(account, channel: :preview).publish!(output)
