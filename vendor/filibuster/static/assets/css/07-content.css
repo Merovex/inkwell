@@ -106,8 +106,11 @@ html[data-avatar-side="right"] .fk-author-inner {
 }
 html[data-avatar-side="right"] .fk-portrait-band { order: 2; }
 /* centered text (usually paired with no photo): heading, lede, and the
-   About button center in their column */
-html[data-bio-align="centered"] .fk-author-inner > div { text-align: center; }
+   About button center in a constrained reading column — the same 44rem
+   measure as the list variants, so lines don't rag across the full shell */
+html[data-bio-align="centered"] .fk-author-inner > div {
+  text-align: center; max-width: 44rem; margin-inline: auto;
+}
 /* the About button is superset markup (the data-nav pattern): hidden by axis */
 html[data-bio-more="no"] .fk-author-band .fk-btn { display: none; }
 
