@@ -4,6 +4,7 @@ require "rails/all"
 
 # Rack middleware inserted into the stack below — required here (not autoloaded)
 # because the stack needs the class at boot, before Zeitwerk is set up.
+require_relative "../lib/middleware/client_ip_scrubber"
 require_relative "../lib/middleware/scanner_blocker"
 require_relative "../lib/middleware/account_host"
 require_relative "../lib/middleware/island_host"
@@ -103,6 +104,12 @@ module Inkwell
     # proxy just removes the extra round-trip — and it sends long-lived, immutable
     # cache headers, making the images CDN-cacheable if one is ever added.
     config.active_storage.resolve_model_to_route = :rails_storage_proxy
+
+    # Drop client-controlled IP headers (Client-IP, Forwarded) before anything
+    # reads them: our proxies set neither, and RemoteIp either explodes on the
+    # mismatch (IpSpoofAttackError, on every URL — the request logger asks for
+    # remote_ip) or trusts Forwarded over the X-Forwarded-For the Worker set.
+    config.middleware.insert_before 0, ClientIpScrubber
 
     # Refuse vulnerability-scanner probes (/wp-…, /xmlrpc.php, /.env, …) at the
     # very front of the Rack stack, before routing, so they don't spam the logs
