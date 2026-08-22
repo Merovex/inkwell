@@ -99,11 +99,6 @@ gem "valid_email2"
 # First-party analytics (visits + events), DB-backed [https://github.com/ankane/ahoy]
 gem "ahoy_matey"
 
-# Visit geography: offline GeoLite2 lookups (no IPs leave the server) — the
-# .mmdb file lives in storage/geoip/, refreshed manually. See ahoy initializer.
-gem "geocoder"
-gem "maxminddb"
-
 gem "aws-sdk-rails", "~> 5.1"
 gem "aws-actionmailer-ses", "~> 1.2"
 # SNS message signature verification for the SES event webhook (Webhooks::Ses).

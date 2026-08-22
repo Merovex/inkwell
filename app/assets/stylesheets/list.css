@@ -26,7 +26,8 @@
   /* A row with no avatar keeps the same indent — reserves the avatar column. */
   .list__avatar-spacer { inline-size: var(--size-8); flex-shrink: 0; }
 
-  /* stat/ranking rows (analytics): tighter rhythm, body-size type */
+  /* stat/ranking rows: tighter rhythm, body-size type. No caller since the
+     analytics dashboard came out — kept as list vocabulary, not orphan CSS. */
   .list--compact .list__item { padding-block: calc(var(--u-pad) / 2); align-items: center; }
   .list--compact .list__title { font-size: var(--font-size-1); font-weight: var(--font-weight-6); }
 

@@ -431,9 +431,6 @@ Rails.application.routes.draw do
       # arrive from the public /contact form and are confirmed by double opt-in.
       resources :missives, only: %i[index show destroy]
 
-      # Public-site traffic dashboard (Ahoy) — domain-admin only.
-      resource :analytics, only: :show
-
       # Pen names / author personas — domain-admin managed; content creators select
       # one on the composer. Public bio pages live at /authors/:id.
       resources :authors, except: :show do
@@ -468,8 +465,9 @@ Rails.application.routes.draw do
       get "list-view" => "static#list_view", as: :list_view
       get "item-view" => "static#item_view", as: :item_view
 
-      # Admin landing: the traffic dashboard.
-      root "analytics#show"
+      # Admin landing: the writing desk — the published feed, with counted
+      # links out to drafts, scheduled, and archived work.
+      root "posts#index"
     end
   end
 

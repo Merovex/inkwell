@@ -114,11 +114,12 @@ and the August community arc:
   in `press-utilities.css` (compose utilities, not per-page BEM).
 - **Theme** — rethemed to the **Merovex palette** (syō-ro teal accent +
   mountain-mist neutrals), shared by both sites; see [[theme-background-colors]].
-- **Analytics & ops** — first-party Ahoy analytics (visits + events) with
-  **visitor geography**: offline GeoIP (MMDB in `storage/geoip/`, no IP leaves
-  the server; country/region kept, IP discarded after geocoding) feeding a
-  jsVectorMap choropleth + unique-visitor country/region lists on the admin
-  dashboard. Production error reporting via **Honeybadger**.
+- **Analytics & ops** — Ahoy still records visits + `$view` events, scoped per
+  account, but the only reader left is the weekly digest's per-post reads. The
+  admin traffic dashboard and its visitor geography came out (Aug 2026) — the
+  numbers were vanity and the edge-served sites never fed them anyway. **No IP
+  is stored at all** now (geocoding was what used to discard it). Production
+  error reporting via **Honeybadger**.
 
 ## Core vocabulary
 

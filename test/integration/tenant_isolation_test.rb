@@ -65,7 +65,7 @@ class TenantIsolationTest < ActionDispatch::IntegrationTest
     assert_response :not_found
   end
 
-  test "audience dashboards are per-account: subscribers, broadcasts, analytics" do
+  test "audience data is per-account: subscribers, broadcasts, visits" do
     merovex_subscriber = Current.with_account(@merovex) do
       Subscriber.create!(email_address: "reader@example.com", status: "confirmed", confirmed_at: Time.current)
     end
@@ -81,9 +81,11 @@ class TenantIsolationTest < ActionDispatch::IntegrationTest
     get "/#{@rival.slug}/admin/broadcasts"
     assert_response :success
 
-    get "/#{@rival.slug}/admin/analytics"
-    assert_response :success
-    assert_select ".analytics__number", text: "1", count: 0
+    # Visits outlived the analytics dashboard that read them (they still feed
+    # the weekly digest's per-post reads), so the scoping proof moved off the
+    # HTTP surface and onto the association the tenancy guard watches.
+    assert_not_includes @rival.ahoy_visits.pluck(:visitor_token), "p1"
+    assert_includes @merovex.ahoy_visits.pluck(:visitor_token), "p1"
   end
 
   test "a circle's discussions belong to the circle, never to any account" do

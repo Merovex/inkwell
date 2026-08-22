@@ -1,7 +1,7 @@
 /*
  * .stat — THE big-number: a bare value over a muted one-line description, no
- * box. Used by the broadcasts dashboard, the analytics dashboard, and the
- * pulse rail; documented in the style guide (/admin/theme).
+ * box. Used by the broadcasts and drips dashboards and the pulse rail;
+ * documented in the style guide (/admin/theme).
  *
  * Markup is a <dl>: each stat is a dt (label) + dd (value) group — either the
  * dl itself for a lone stat, or div groups inside a dl.stats row. The label is
