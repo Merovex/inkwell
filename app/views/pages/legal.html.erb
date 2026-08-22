@@ -1,15 +1,17 @@
 <% content_for :title, "#{@title} — #{site_settings.site_name}" %>
 
+<%# As with About: the body supplies the page's heading, so the chrome one is
+    for the empty case only. %>
 <article class="press-shell">
-  <header class="press-header u-flow u-flow-half">
-    <h1 class="press-display-lg"><%= @title %></h1>
-  </header>
+  <% if @body.present? %>
+    <div class="press-body prose"><%= @body %></div>
+  <% else %>
+    <header class="press-header u-flow u-flow-half">
+      <h1 class="press-display-lg"><%= @title %></h1>
+    </header>
 
-  <div class="press-body prose">
-    <% if @body.present? %>
-      <%= @body %>
-    <% else %>
+    <div class="press-body prose">
       <p>This page isn't available yet.</p>
-    <% end %>
-  </div>
+    </div>
+  <% end %>
 </article>

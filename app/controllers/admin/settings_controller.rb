@@ -32,6 +32,6 @@ class Admin::SettingsController < Admin::BaseController
     end
 
     def site_params
-      params.expect(site: [ :site_name, :tagline, :description, :contact_email, :handle, :logo, :privacy_policy, :terms ])
+      params.expect(site: [ :site_name, :tagline, :contact_email, :handle, :logo ])
     end
 end

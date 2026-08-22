@@ -33,7 +33,7 @@ class CircleInvitationsTest < ActionDispatch::IntegrationTest
     assert_no_difference -> { CircleInvitation.count } do
       post circle_invitations_path(@circle), params: { email_address: "nobody@example.com" }
       assert_redirected_to circle_members_path(@circle)
-      assert_match(/join Inkwell first/, flash[:alert])
+      assert_match(/join Kindred Quill first/, flash[:alert])
 
       post circle_invitations_path(@circle), params: { email_address: users(:bob).email_address }
       assert_match(/already a member/, flash[:alert])

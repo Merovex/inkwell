@@ -1,7 +1,7 @@
 {
   "name": "filibuster",
   "version": "0.1.0",
-  "contract_version": 1,
+  "contract_version": 2,
   "axes": [
     {
       "key": "nav",

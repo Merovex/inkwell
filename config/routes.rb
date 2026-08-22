@@ -342,6 +342,17 @@ Rails.application.routes.draw do
       # page. Keyed by the target Record, so one controller serves them all.
       resources :distributors, only: %i[create destroy]
 
+      # The site's standing pages — About, Privacy, Terms, and the invitation
+      # above the newsletter signup. Seeded per account and permanent, so the
+      # set is edit-and-publish only: no new, no destroy. Addressed by the
+      # page's own slug (/admin/pages/about), because that slug IS its
+      # identity — it lives on the record and never changes.
+      resources :pages, only: %i[index edit update], param: :slug do
+        scope module: :pages do
+          resource :publish, only: %i[create destroy]
+        end
+      end
+
       # System settings — the account's one Site (no id), admin only. Distinct
       # from the personal user settings; this shapes the account's public identity.
       resource :settings, only: %i[show update]

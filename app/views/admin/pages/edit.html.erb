@@ -1,0 +1,42 @@
+<% content_for :title, "Edit #{@page.title}" %>
+
+<%= render "admin/shared/canvas_head", crumbs: [["Pages", admin_pages_path], [@page.title, nil]] %>
+
+<header class="perma-header">
+  <h1 class="perma-header__title">Edit page</h1>
+</header>
+
+<div class="settings u-stack u-stack-double u-margin-block-start u-center u-center-narrow">
+  <%= render "admin/shared/error_summary", model: @page %>
+
+  <%= form_with model: @page, url: admin_page_path(@page), class: "settings" do |f| %>
+    <div class="field">
+      <%= f.label :title, "Title", class: "field__label" %>
+      <%= f.text_field :title, class: "field__control", required: true %>
+      <p class="field__hint u-text-muted">
+        Published at <code>/<%= @page.slug %>/</code> — the address is fixed, the title is yours.
+      </p>
+    </div>
+
+    <%# Per-page guidance: what this particular page is for, in the author's
+        terms. Keyed by the permanent slug, so it can't drift off the set. %>
+    <% hints = {
+         "about" => "Starter copy — replace it with who you are and what you write. Also feeds the site's search-result description.",
+         "privacy" => "Starter copy, accurate to how this platform handles data — read it, make it yours, and take legal advice if you need it. Linked from the footer once it has content.",
+         "terms" => "Starter copy to review and adapt, not legal advice. Linked from the footer once it has content.",
+         "newsletter" => "The invitation above your signup form — the reason to join, not the form itself."
+       } %>
+    <div class="field">
+      <%= f.label :content, "Content", class: "field__label" %>
+      <%= f.rich_textarea :content, placeholder: "Write the page…", "aria-label": "Page content" %>
+      <p class="field__hint u-text-muted">Start with a heading — the public site renders this body as the whole page.</p>
+      <% if (hint = hints[@page.slug]) %>
+        <p class="field__hint u-text-muted"><%= hint %></p>
+      <% end %>
+    </div>
+
+    <div class="form__action">
+      <%= f.submit "Save", class: "button button--primary" %>
+    </div>
+  <% end %>
+</div>

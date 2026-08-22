@@ -2,7 +2,7 @@
     site. Pages set content_for(:title / :meta_description / :og_image) to
     override; everything falls back to the site identity. %>
 <% title = content_for(:title).presence || [ site_settings.site_name, site_settings.tagline.presence ].compact.join(" — ") %>
-<% description = content_for(:meta_description).presence || site_settings.description.to_plain_text.presence || site_settings.tagline.to_s %>
+<% description = content_for(:meta_description).presence || site_page("about")&.content&.to_plain_text&.presence || site_settings.tagline.to_s %>
 <% image = content_for(:og_image).presence %>
 <% image ||= url_for(site_settings.logo) if site_settings.logo.attached? %>
 

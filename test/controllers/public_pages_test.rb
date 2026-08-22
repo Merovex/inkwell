@@ -38,8 +38,9 @@ class PublicPagesTest < ActionDispatch::IntegrationTest
     assert_includes response.body, post_url(records(:kickoff).to_slug)
   end
 
-  test "legal pages render the admin-authored rich text" do
-    accounts(:merovex).site.update!(privacy_policy: "<p>We respect your cookies.</p>", terms: "<p>Be excellent.</p>")
+  test "legal pages render their Page content" do
+    write_page "privacy", "<p>We respect your cookies.</p>"
+    write_page "terms", "<p>Be excellent.</p>"
 
     get privacy_path
     assert_response :success
@@ -58,11 +59,19 @@ class PublicPagesTest < ActionDispatch::IntegrationTest
   end
 
   test "the footer links to a legal page only when it has content" do
-    accounts(:merovex).site.update!(privacy_policy: "<p>present</p>", terms: "")
+    write_page "privacy", "<p>present</p>"
 
     get root_path
     assert_select "a[href=?]", privacy_path
     assert_select "a[href=?]", terms_path, count: 0
+  end
+
+  test "the footer drops a legal link when its page is unpublished" do
+    write_page "privacy", "<p>present</p>"
+    accounts(:merovex).page("privacy").unpublish
+
+    get root_path
+    assert_select "a[href=?]", privacy_path, count: 0
   end
 
   test "a buy link counts the click and redirects to the store" do
@@ -74,4 +83,9 @@ class PublicPagesTest < ActionDispatch::IntegrationTest
     end
     assert_redirected_to "https://www.amazon.com/dp/B000"
   end
+
+  private
+    def write_page(slug, html)
+      accounts(:merovex).page(slug).record.save_edit(content: html, creator: users(:alice))
+    end
 end

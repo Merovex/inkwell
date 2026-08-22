@@ -5,6 +5,15 @@ require "test_helper"
 # confirmation link (ADR 0011).
 class SubscriptionsControllerTest < ActionDispatch::IntegrationTest
   include ActionMailer::TestHelper
+  test "the signup page carries the newsletter page's invitation above the form" do
+    accounts(:merovex).page("newsletter").record
+      .save_edit(content: "<p>Cover reveals, once a month.</p>", creator: users(:alice))
+
+    get newsletter_path
+    assert_response :success
+    assert_select ".press-body", text: /Cover reveals/
+  end
+
   test "the subscribe page renders the form" do
     get newsletter_path
     assert_response :success

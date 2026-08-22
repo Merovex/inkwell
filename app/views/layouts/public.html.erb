@@ -69,10 +69,10 @@
         <p class="press-footer__legal">
           &copy; <%= Date.current.year %> <%= site_settings.site_name %>.
           <%= link_to "Contact", contact_path, class: "press-link" %>
-          <% if site_settings.privacy_policy.present? %>
+          <% if site_page("privacy")&.content.present? %>
             <%= link_to "Privacy", privacy_path, class: "press-link" %>
           <% end %>
-          <% if site_settings.terms.present? %>
+          <% if site_page("terms")&.content.present? %>
             <%= link_to "Terms", terms_path, class: "press-link" %>
           <% end %>
           <%= link_to "RSS", posts_feed_path(format: :rss), class: "press-link" %>

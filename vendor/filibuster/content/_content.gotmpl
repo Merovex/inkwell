@@ -1,21 +1,39 @@
-{{/* About page from site.json's description_html. */}}
-{{ $data := hugo.Data.site }}
-{{ if ne (int ($data.contract_version | default 0)) (int hugo.Data.theme.contract_version) }}
-  {{ errorf "site.json: theme expects contract_version %v, got %v" hugo.Data.theme.contract_version $data.contract_version }}
+{{/* The site's standing pages, from data/pages.json: one page per entry at
+     the site root (/about/, /privacy/, /terms/). The slug is the path and
+     the title is the author's; bodies arrive as pre-rendered HTML like every
+     other body in the contract. */}}
+{{ $site := hugo.Data.site }}
+{{ if ne (int ($site.contract_version | default 0)) (int hugo.Data.theme.contract_version) }}
+  {{ errorf "site.json: theme expects contract_version %v, got %v" hugo.Data.theme.contract_version $site.contract_version }}
 {{ end }}
-{{ $.AddPage (dict
-    "path" "about"
-    "title" (printf "About %s" $data.name)
-    "content" (dict "mediaType" "text/html" "value" $data.description_html)
-) }}
+{{ $data := hugo.Data.pages }}
+{{ if ne (int ($data.contract_version | default 0)) (int hugo.Data.theme.contract_version) }}
+  {{ errorf "pages.json: theme expects contract_version %v, got %v" hugo.Data.theme.contract_version $data.contract_version }}
+{{ end }}
 
-{{/* Standalone signup page at /newsletter — the band as a destination.
-     Pre-cutover Rails served a signup page here, so old links and typed
-     URLs keep working. Renders the same sections/newsletter.html partial
-     as the home band: the real form when the contract carries a signup
-     block, the mailto CTA otherwise. */}}
+{{/* /newsletter is the exception: it always exists, because the signup band
+     lives there whether or not the author wrote an invitation above it. Its
+     page is held back from the loop and added last, with the newsletter
+     layout. */}}
+{{ $newsletter := dict }}
+{{ range $data.pages }}
+  {{ if eq .slug "newsletter" }}
+    {{ $newsletter = . }}
+  {{ else }}
+    {{ $.AddPage (dict
+        "path" .slug
+        "title" .title
+        "content" (dict "mediaType" "text/html" "value" .body_html)
+        "params" .
+    ) }}
+  {{ end }}
+{{ end }}
+
+{{/* seo.html appends "| <site name>" to every non-home title, so the
+     fallback title stays a bare noun, like the page's own would be. */}}
 {{ $.AddPage (dict
     "path" "newsletter"
-    "title" (printf "Join the newsletter — %s" $data.name)
+    "title" (or $newsletter.title "Newsletter")
     "layout" "newsletter"
+    "content" (dict "mediaType" "text/html" "value" (or $newsletter.body_html ""))
 ) }}

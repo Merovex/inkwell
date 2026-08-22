@@ -1,0 +1,34 @@
+<% content_for :title, "Pages" %>
+
+<%= render "admin/shared/canvas_head", crumbs: [["Pages", nil]], menu: false %>
+
+<header class="perma-header">
+  <h1 class="perma-header__title">Pages</h1>
+</header>
+
+<p class="u-text-muted u-center u-center-narrow">
+  The standing pages of your public site. Every site has these four and they
+  can't be deleted — their addresses are permanent, so links to them never
+  break.
+</p>
+
+<div class="list u-center u-center-narrow u-margin-block-start">
+  <% @pages.each do |page| %>
+    <% actions = capture do %>
+      <% if page.published? %>
+        <%= button_to "Unpublish", admin_page_publish_path(page), method: :delete, class: "button" %>
+      <% else %>
+        <%= button_to "Publish", admin_page_publish_path(page), method: :post, class: "button button--primary" %>
+      <% end %>
+    <% end %>
+    <%= render "shared/list_item",
+          href: edit_admin_page_path(page),
+          title: page.title,
+          avatar: false,
+          badge: ("Draft" unless page.published?),
+          badge_variant: "warning",
+          excerpt: page.content.to_plain_text.truncate(120).presence || "Nothing written yet.",
+          chips: [ "/#{page.slug}/" ],
+          actions: actions %>
+  <% end %>
+</div>

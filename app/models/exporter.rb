@@ -7,7 +7,7 @@ require "vips" # measured dimensions ride image_sizes.json (not only variants)
 # theme. Writes a fresh workspace under BUILDS_PATH and returns its path.
 # The render/publish steps belong to the Renderer/Publisher.
 class Exporter
-  CONTRACT_VERSION = 1
+  CONTRACT_VERSION = 2
 
   # design is the full SiteDesign bundle (axes + content blocks + escape
   # valves), raw as the author saved it — defaults to the account's persisted
@@ -35,6 +35,7 @@ class Exporter
     write "series.json", series_json
     write "collections.json", collections_json
     write "posts.json",  posts_json
+    write "pages.json",  pages_json
     # Written LAST — populated as the builders above copy images.
     write "image_sizes.json", image_sizes
     write_hugo_config
@@ -116,7 +117,6 @@ class Exporter
         name: site.site_name,
         tagline: site.tagline,
         contact_email: account.contact_email,
-        description_html: html(site.description),
         logo: copy_image(site.logo, "logo"),
         banner: copy_image(site.banner, "banner"),
         hero_image: copy_image(site.hero_image, "hero"),
@@ -228,6 +228,18 @@ class Exporter
       }
     end
 
+    # The standing pages (About, Privacy, Terms, the newsletter invitation) —
+    # published ones only, ordered by slug so the transport is byte-stable
+    # across builds (§2). The theme materializes one page per entry at the
+    # site root; /newsletter/ is the one whose body rides above the signup
+    # band rather than standing alone.
+    def pages_json
+      { pages: account.pages.published.joins(:record).order("records.slug")
+          .includes(:record, body: :rich_text_content).map do |page|
+            { slug: page.slug, title: page.title, body_html: html(page.content) }
+          end }
+    end
+
     def posts_json
       { posts: account.posts.published.feed_ordered.map do |post|
           {
@@ -258,11 +270,18 @@ class Exporter
     end
 
     # Rendered rich text as an HTML string, stripped of dev's template
-    # annotation comments — the transport must be byte-identical across
-    # environments (§2 deterministic builds). User content can't collide:
-    # the sanitizer already strips comments from rich text.
+    # annotation comments (Body::TEMPLATE_ANNOTATION) — the transport must be
+    # byte-identical across environments (§2 deterministic builds). User
+    # content can't collide: the sanitizer already strips comments from rich
+    # text.
     def html(rich_text)
-      rich_text&.to_s&.gsub(/<!-- (?:BEGIN|END) [^>]*-->\n?/m, "")
+      # Cleared rich text still renders its ActionText wrapper div, which is
+      # emphatically not "no content": the theme decides whether to link a
+      # legal page or render a prose block by asking whether the HTML is
+      # empty, so blank has to arrive as blank.
+      return "" if rich_text.blank?
+
+      rich_text.to_s.gsub(Body::TEMPLATE_ANNOTATION, "")
     end
 
     # No public display needs more than this; authors upload raw camera/stock

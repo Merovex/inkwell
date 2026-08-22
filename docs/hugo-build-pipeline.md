@@ -95,6 +95,7 @@ The exporter writes a Hugo workspace per build:
 ├── hugo.toml                  # generated: baseURL, theme, params
 ├── data/
 │   ├── site.json              # identity: name, tagline, contact, socials
+│   ├── pages.json             # standing pages (about, privacy, terms, newsletter)
 │   ├── author.json            # active pen-name persona (versioned record)
 │   ├── books.json             # all published books + distributor links
 │   ├── series.json            # series + ordered installments
@@ -104,6 +105,27 @@ The exporter writes a Hugo workspace per build:
 └── themes/
     └── <theme_name>/          # symlink to pinned theme version (read-only)
 ```
+
+### 4.1a Standing pages (`pages.json`) — contract v2
+
+The site's fixed pages — About, Privacy, Terms, and the invitation above the
+newsletter signup — are Pages on the Record spine, one per account, seeded at
+account creation and addressed by a permanent slug that lives on the *record*
+(`records.slug`, unique per bucket) rather than on the version. Published ones
+are exported as:
+
+```json
+{ "contract_version": 2, "pages": [ { "slug": "about", "title": "About", "body_html": "<p>…</p>" } ] }
+```
+
+The root content adapter materializes one page per entry at the site root.
+`/newsletter/` is the exception: it is always created (the signup band lives
+there regardless), and its `body_html` renders *above* the band rather than as
+a page of its own.
+
+**v2 is a breaking change**: `site.json` no longer carries `description_html`
+(the About copy moved to `pages.json`), so the exporter and the theme must be
+deployed together — the adapters `errorf` on a version mismatch by design.
 
 ### 4.2 Page generation via content adapters
 

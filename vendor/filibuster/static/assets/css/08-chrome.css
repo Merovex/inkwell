@@ -65,6 +65,7 @@ html:is([data-newsletter="envelope"],[data-newsletter="plane"],[data-newsletter=
 .fk-footer { border-top: 1px solid var(--line); background: var(--bg-alt); padding-block: 2rem; }
 .fk-footer-meta { text-align: center; color: var(--ink-muted); font-size: 0.9rem; }
 .fk-footer-meta a { color: inherit; }
+.fk-footer-links { display: flex; justify-content: center; gap: 1rem; margin-block-start: 0.5rem; }
 
 /* ---------- Small screens ---------- */
 @media (max-width: 48rem) {

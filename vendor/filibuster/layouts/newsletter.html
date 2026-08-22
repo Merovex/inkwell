@@ -1,6 +1,16 @@
 {{ define "main" }}
-{{/* /newsletter — the signup band as its own destination (declared by the
-     content adapter). Deliberately EMPTY: baseof already renders the
-     newsletter band on every non-home page, so the band IS this page —
-     rendering it here too doubled it. */}}
+{{/* /newsletter — the author's invitation, then the signup band. The band
+     itself is NOT rendered here: baseof already appends it to every
+     non-home page, so this layout only supplies what sits above it. With no
+     invitation written, the page is the band alone (which is why the
+     content adapter always creates this page, empty body and all). */}}
+{{ with .Content }}
+<article class="fk-page">
+  <div class="fk-shell">
+    <div class="fk-prose">
+      {{ . }}
+    </div>
+  </div>
+</article>
+{{ end }}
 {{ end }}

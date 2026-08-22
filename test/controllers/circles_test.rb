@@ -27,7 +27,7 @@ class CirclesTest < ActionDispatch::IntegrationTest
     assert_select ".canvas__head a[href=?]", new_circle_path
     assert_select ".perma-header__toolbar", count: 0
     # Drafts-style link out to every circle on the platform.
-    assert_select "a[href=?]", all_circles_path, text: "View all 2 circles on Inkwell"
+    assert_select "a[href=?]", all_circles_path, text: "View all 2 circles on Kindred Quill"
   end
 
   test "all circles lists everything, but only yours are doors" do

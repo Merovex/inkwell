@@ -79,35 +79,13 @@
         </div>
       <% end %>
 
-      <% about_panel = capture do %>
-        <div class="field">
-          <%= f.rich_textarea :description, placeholder: "About the site…", "aria-label": "About" %>
-          <p class="field__hint u-text-muted">Feeds the public page description; a plain-text summary is used where formatting can't render.</p>
-        </div>
-      <% end %>
-
-      <% privacy_panel = capture do %>
-        <div class="field">
-          <%= f.rich_textarea :privacy_policy, placeholder: "Your privacy policy (include your cookie notice here)…", "aria-label": "Privacy policy" %>
-          <p class="field__hint u-text-muted">Published at /privacy; leave blank to hide the footer link. Include your cookie notice here.</p>
-        </div>
-      <% end %>
-
-      <% terms_panel = capture do %>
-        <div class="field">
-          <%= f.rich_textarea :terms, placeholder: "Your terms of service…", "aria-label": "Terms of service" %>
-          <p class="field__hint u-text-muted">Published at /terms; leave blank to hide the footer link.</p>
-        </div>
-      <% end %>
-
-      <%# Domain and Email are sibling pages in the same control (their
-          connect/disconnect forms can't nest inside this form); ?tab=
-          deep-links back from them. %>
+      <%# Pages, Domain, and Email are sibling pages in the same control (their
+          own forms can't nest inside this one); ?tab= deep-links back from
+          them. The About/Privacy/Terms copy that used to be edited here lives
+          on those Pages now. %>
       <%= segmented_tabs [
             { id: "identity", label: "Identity", panel: identity_panel },
-            { id: "about", label: "About", panel: about_panel },
-            { id: "privacy", label: "Privacy", panel: privacy_panel },
-            { id: "terms", label: "Terms", panel: terms_panel },
+            { id: "pages", label: "Pages", href: admin_pages_path },
             { id: "domain", label: "Domain", href: admin_custom_domains_path },
             { id: "email", label: "Email", href: admin_sending_domains_path },
           ], aria_label: "Settings sections", selected: params[:tab] %>

@@ -11,7 +11,7 @@ class Record < ApplicationRecord
   has_many :notifications, as: :source, dependent: :nullify
 
   # Content types that may live in the envelope; grows as recordables are added.
-  RECORDABLE_TYPES = %w[ Post Comment ChatLine Message Book Series Collection Author Drip Drop Site Pulse Beat Goal Tally Bulletin ]
+  RECORDABLE_TYPES = %w[ Post Comment ChatLine Message Book Series Collection Author Drip Drop Site Pulse Beat Goal Tally Bulletin Page ]
   # Platform content belongs to the App itself, not any bucket — a NIL bucket
   # is its tenancy (originate with an explicit bucket: nil).
   PLATFORM_TYPES = %w[ Bulletin ].freeze
@@ -28,6 +28,15 @@ class Record < ApplicationRecord
   belongs_to :bucket, polymorphic: true, optional: true,
     default: -> { Current.bucket || Current.account unless PLATFORM_TYPES.include?(recordable_type) }
   validates :bucket, presence: true, unless: -> { PLATFORM_TYPES.include?(recordable_type) }
+
+  # The public path of the types whose URL is their identity (Pages today).
+  # Sparse: everything else leaves it NULL and keeps the id-first #to_slug.
+  # One /about/ per bucket, enforced by a partial unique index — this
+  # validation only exists to turn the collision into a message. Permanent
+  # once set: renaming a page breaks every link that ever pointed at it, so
+  # the answer is a new page, not a moved one.
+  validates :slug, uniqueness: { scope: %i[ bucket_type bucket_id ] }, allow_nil: true
+  validate :slug_is_permanent, on: :update
 
   # Self-referential threading: a comment's record will parent to the record it
   # comments on; same mechanism for any future child content.
@@ -65,6 +74,7 @@ class Record < ApplicationRecord
   scope :tickets, -> { where(recordable_type: "Ticket") }
   scope :tallies, -> { where(recordable_type: "Tally") }
   scope :bulletins, -> { where(recordable_type: "Bulletin") }
+  scope :pages, -> { where(recordable_type: "Page") }
 
   before_destroy :destroy_versions
 
@@ -73,9 +83,9 @@ class Record < ApplicationRecord
   # record's creator is the first version's author, always. Child content
   # (comments) passes the record it hangs from as parent. Platform types get
   # their nil bucket from the bucket default above — by type, not by caller.
-  def self.originate(version, parent: nil)
+  def self.originate(version, parent: nil, slug: nil)
     transaction do
-      create!(recordable_type: version.class.name, creator: version.creator, parent: parent).tap do |record|
+      create!(recordable_type: version.class.name, creator: version.creator, parent: parent, slug: slug).tap do |record|
         version.update!(record: record)
         record.update!(recordable: version)
       end
@@ -101,7 +111,7 @@ class Record < ApplicationRecord
   # Distinct method names — a second after_*_commit registering the same
   # method would silently replace the first. originate's create+update in one
   # transaction commits as a CREATE, so only the create hook sees new records.
-  STATIC_SITE_TYPES = %w[ Site Post Book Series Collection Author ].freeze
+  STATIC_SITE_TYPES = %w[ Site Post Book Series Collection Author Page ].freeze
   after_update_commit :schedule_site_build
   after_create_commit :schedule_site_build_if_born_published
 
@@ -153,6 +163,8 @@ class Record < ApplicationRecord
   # a timing gate, not security (see BlogController#show). Once published the key
   # drops and the clean slug takes over.
   def to_slug
+    return slug if slug.present?
+
     base = [ id, recordable&.try(:title).presence&.parameterize ].compact.join("-")
     recordable.try(:published?) == false ? "#{base}-#{preview_key}" : base
   end
@@ -213,6 +225,10 @@ class Record < ApplicationRecord
   end
 
   private
+    def slug_is_permanent
+      errors.add(:slug, "can't be changed once a page is live") if slug_changed? && slug_was.present?
+    end
+
     def destroy_versions
       versions.find_each(&:destroy)
     end

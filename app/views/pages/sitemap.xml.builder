@@ -4,8 +4,8 @@ xml.urlset xmlns: "http://www.sitemaps.org/schemas/sitemap/0.9" do
   [ root_url, posts_url, books_url, about_url ].each do |loc|
     xml.url { xml.loc loc }
   end
-  xml.url { xml.loc privacy_url } if site_settings.privacy_policy.present?
-  xml.url { xml.loc terms_url } if site_settings.terms.present?
+  xml.url { xml.loc privacy_url } if site_page("privacy")&.content.present?
+  xml.url { xml.loc terms_url } if site_page("terms")&.content.present?
 
   @posts.each do |post|
     xml.url do

@@ -221,6 +221,15 @@
       <div class="fk-footer-meta">
         <p>&copy; {{ now.Year }} {{ $site.name }}. All rights reserved.</p>
         <p>{{ $site.tagline }}</p>
+        {{/* The legal pages, linked only once the author has written them —
+             an empty policy is worse than no link. Both come from
+             pages.json like every other standing page. */}}
+        {{ $legal := where (where ((hugo.Data.pages).pages | default slice) "slug" "in" (slice "privacy" "terms")) "body_html" "!=" "" }}
+        {{ with $legal }}
+        <nav class="fk-footer-links" aria-label="Legal">
+          {{ range . }}<a href="{{ (printf "%s/" .slug) | relURL }}">{{ .title }}</a>{{ end }}
+        </nav>
+        {{ end }}
       </div>
     </div>
   </footer>

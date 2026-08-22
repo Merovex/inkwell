@@ -27,12 +27,22 @@ class ApplicationController < ActionController::Base
   # Changes to the importmap will invalidate the etag for HTML responses
   stale_when_importmap_changes
 
-  helper_method :hotwire_native?, :current_theme, :press_theme, :press_heading_font, :current_tint, :site_settings
+  helper_method :hotwire_native?, :current_theme, :press_theme, :press_heading_font, :current_tint, :site_settings, :site_page
 
   # The account's public identity (name, tagline, logo…), memoized per request.
   # Drives the public site chrome; see the "public" layout.
   def site_settings
     @site_settings ||= Current.account.site
+  end
+
+  # A standing page (about, privacy, terms, newsletter) when it's published
+  # and actually written — what the footer, sitemap, and meta description ask
+  # before linking or quoting it. Memoized per request per slug.
+  def site_page(slug)
+    @site_pages ||= Hash.new do |pages, wanted|
+      pages[wanted] = Current.account.page(wanted)&.then { |page| page if page.published? }
+    end
+    @site_pages[slug]
   end
 
   # True when the request comes from the Hotwire Native wrapper (vs. web/PWA), so

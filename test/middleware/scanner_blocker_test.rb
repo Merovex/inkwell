@@ -20,6 +20,10 @@ class ScannerBlockerTest < ActiveSupport::TestCase
   test "403s WordPress's permalink-less REST probe, whose path is only a slash" do
     status, _headers, _body = call("/?rest_route=/batch/v1")
     assert_equal 403, status
+
+    # The probe arrives as a POST in the wild (batch/v1 takes a body).
+    status, _headers, _body = call("/?rest_route=/batch/v1", method: "POST")
+    assert_equal 403, status
   end
 
   test "lets real requests through" do
@@ -30,8 +34,9 @@ class ScannerBlockerTest < ActiveSupport::TestCase
   end
 
   private
-    def call(path)
+    def call(path, method: "GET")
       app = ->(env) { [ 200, {}, [] ] }
-      ScannerBlocker.new(app).call Rack::MockRequest.env_for("https://app.kindredquill.com#{path}")
+      env = Rack::MockRequest.env_for("https://app.kindredquill.com#{path}", method: method)
+      ScannerBlocker.new(app).call env
     end
 end

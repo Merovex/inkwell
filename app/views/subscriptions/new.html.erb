@@ -6,6 +6,12 @@
     <p class="press-muted">New releases and dispatches from <%= site_settings.site_name %>. No spam; unsubscribe anytime.</p>
   </header>
 
+  <%# The author's invitation, from the newsletter Page (/admin/pages/newsletter) —
+      the same copy the static build renders above the signup band. %>
+  <% if (invitation = site_page("newsletter"))&.content.present? %>
+    <div class="press-body prose"><%= invitation.content %></div>
+  <% end %>
+
   <% if flash[:notice] %>
     <p class="press-form__flash press-form__flash--notice"><%= flash[:notice] %></p>
   <% elsif flash[:alert] %>

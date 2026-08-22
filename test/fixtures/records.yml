@@ -39,3 +39,29 @@ circle_welcome:
   recordable: circle_welcome (Message)
   creator: alice
   bucket: writers (Circle)
+
+# The standing pages every account is seeded with (Account#seed_pages). The
+# slug lives here, on the identity, and never changes.
+about_page:
+  recordable: about_page (Page)
+  creator: alice
+  bucket: merovex (Account)
+  slug: about
+
+privacy_page:
+  recordable: privacy_page (Page)
+  creator: alice
+  bucket: merovex (Account)
+  slug: privacy
+
+terms_page:
+  recordable: terms_page (Page)
+  creator: alice
+  bucket: merovex (Account)
+  slug: terms
+
+newsletter_page:
+  recordable: newsletter_page (Page)
+  creator: alice
+  bucket: merovex (Account)
+  slug: newsletter

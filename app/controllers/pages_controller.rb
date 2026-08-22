@@ -16,26 +16,28 @@ class PagesController < PublicController
     fresh_when etag: [ @scroller_books, site_settings ], public: true
   end
 
-  # Renders the About blurb an admin sets in System settings (Setting#description).
+  # The standing pages, authored at /admin/pages as Pages on the spine. An
+  # unpublished page reads as an empty one out here — site_page only answers
+  # for live ones.
   def about
-    fresh_when etag: site_settings, public: true
+    @page = site_page("about")
+    fresh_when etag: [ @page, site_settings ], public: true
   end
 
-  # Legal pages, authored as rich text in System settings. Cookies live inside
-  # the privacy copy. Both share one template.
+  # Legal pages (cookies live inside the privacy copy) share one template.
   def privacy
-    render_legal "Privacy Policy", site_settings.privacy_policy
+    render_legal site_page("privacy"), "Privacy Policy"
   end
 
   def terms
-    render_legal "Terms of Service", site_settings.terms
+    render_legal site_page("terms"), "Terms of Service"
   end
 
   # XML sitemap of the public surface for search engines.
   def sitemap
     @posts = Current.account.posts.published.includes(:record)
     @books = Current.account.books.published.includes(:record)
-    fresh_when etag: [ @posts, @books, site_settings ], public: true
+    fresh_when etag: [ @posts, @books, site_settings, site_page("privacy"), site_page("terms") ], public: true
   end
 
   # robots.txt — allow everything, point crawlers at the sitemap.
@@ -45,8 +47,11 @@ class PagesController < PublicController
   end
 
   private
-    def render_legal(title, body)
-      @title, @body = title, body
-      render :legal if stale?(etag: site_settings, public: true)
+    # The author may retitle the page; the fallback covers an account whose
+    # pages predate the seeding and were never backfilled.
+    def render_legal(page, fallback_title)
+      @title = page&.title.presence || fallback_title
+      @body = page&.content
+      render :legal if stale?(etag: [ page, site_settings ], public: true)
     end
 end

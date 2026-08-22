@@ -1,4 +1,4 @@
-# The public site's identity — name, tagline, About blurb, legal pages, logo.
+# The public site's identity — name, tagline, contact, logo, imagery.
 # One per account, a recordable on the spine (versioned like everything else),
 # reached through Account#site and edited from /admin/settings. Replaces the
 # old install-wide Setting singleton (ADR 0017 / plan 1.5).
@@ -12,13 +12,10 @@ class Site < ApplicationRecord
   LOGO_CONTENT_TYPES = %w[ image/jpeg image/png image/avif image/webp image/svg+xml ]
   LOGO_MAX_SIZE = 5.megabytes
 
-  # The About blurb — rich text so it can carry formatting on the About page;
-  # its plain-text form feeds the public <meta description>.
-  has_rich_text :description
-
-  # Legal pages, admin-authored rich text (cookies live inside the privacy copy).
-  has_rich_text :privacy_policy
-  has_rich_text :terms
+  # The standing pages (About, Privacy, Terms, the newsletter invitation) used
+  # to be rich text right here. They're Pages on the spine now — versioned,
+  # publishable, and addressed by their own permanent slug — reached through
+  # Account#page. The orphaned action_text rows are left behind by the move.
 
   # The public logo; absent means the built-in wordmark (see the public layout).
   has_one_attached :logo

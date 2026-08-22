@@ -38,7 +38,7 @@ class Account < ApplicationRecord
   has_many :site_design_versions, dependent: :destroy
   has_one :draft_design, -> { drafted }, class_name: "SiteDesignVersion"
   has_one :published_design, -> { published }, class_name: "SiteDesignVersion"
-  after_create :seed_design_versions
+  after_create :seed_design_versions, :seed_pages
 
   validates :name, presence: true, uniqueness: { case_sensitive: false }
 
@@ -96,6 +96,12 @@ class Account < ApplicationRecord
   def drips    = Drip.where(id: records.active.drips.select(:recordable_id))
   def authors  = Author.where(id: records.active.authors.select(:recordable_id))
   def chat_lines = ChatLine.where(id: records.active.chat_lines.select(:recordable_id))
+  def pages    = Page.where(id: records.active.pages.select(:recordable_id))
+
+  # The standing page at a path — the record carries the slug (identity), the
+  # recordable carries the words. Seeded at creation, so a nil here means the
+  # account predates the seeding and hasn't been backfilled.
+  def page(slug) = records.active.pages.find_by(slug: slug)&.recordable
 
   # The account's public-site identity, created on first read so a new account
   # renders sensibly before anyone touches /admin/settings. One indexed query;
@@ -227,5 +233,19 @@ class Account < ApplicationRecord
     def seed_design_versions
       site_design_versions.create!(status: :published, published_at: Time.current)
       site_design_versions.create!(status: :drafted)
+    end
+
+    # The four standing pages (Page::MANDATORY), live from birth so the site
+    # never links at a path that 404s — and carrying Page::Starter's copy, so
+    # "live" never means "blank" on About, Privacy, or Terms. Their slugs are
+    # the record's, permanent from here on.
+    def seed_pages
+      Current.with_account(self) do
+        Page::MANDATORY.each do |slug, title|
+          page = Page.new(title: title, creator: owner, status: :published,
+            published_at: Time.current, content: Page::Starter.html_for(slug, self))
+          Record.originate(page, slug: slug)
+        end
+      end
     end
 end

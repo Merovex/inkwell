@@ -17,13 +17,13 @@ class ExporterTest < ActiveSupport::TestCase
 
   test "the workspace lands under BUILDS_PATH/<account_slug> with every data file" do
     assert_equal accounts(:merovex).slug, @workspace.parent.basename.to_s
-    %w[ site.json author.json books.json series.json posts.json ].each do |file|
+    %w[ site.json author.json books.json series.json posts.json pages.json ].each do |file|
       assert @workspace.join("data", file).exist?, "missing data/#{file}"
     end
   end
 
   test "every file carries the contract version" do
-    %w[ site author books series posts ].each do |name|
+    %w[ site author books series posts pages ].each do |name|
       assert_equal Exporter::CONTRACT_VERSION, data(name)["contract_version"], "#{name}.json"
     end
   end
@@ -127,6 +127,25 @@ class ExporterTest < ActiveSupport::TestCase
     preview = Exporter.new(accounts(:merovex), base_url: "/admin/theme/preview/", preview: true).export!
     preview_home = Renderer.new(preview).render!.join("index.html").read
     assert_includes preview_home, "/admin/theme/preview/assets/css/", "preview keeps absolute paths anchored to base_url"
+  end
+
+  test "pages.json carries the published standing pages, ordered by slug" do
+    accounts(:merovex).page("about").record.save_edit(content: "<p>Two names.</p>", creator: users(:alice))
+    workspace = Exporter.new(accounts(:merovex)).export!
+    pages = JSON.parse(workspace.join("data", "pages.json").read)["pages"]
+
+    assert_equal %w[ about newsletter privacy terms ], pages.map { |page| page["slug"] }
+    about = pages.first
+    assert_equal "About", about["title"]
+    assert_includes about["body_html"], "Two names."
+  end
+
+  test "an unpublished page leaves the build entirely" do
+    accounts(:merovex).page("terms").unpublish
+    workspace = Exporter.new(accounts(:merovex)).export!
+    pages = JSON.parse(workspace.join("data", "pages.json").read)["pages"]
+
+    assert_not_includes pages.map { |page| page["slug"] }, "terms"
   end
 
   private

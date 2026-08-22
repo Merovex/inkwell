@@ -40,6 +40,19 @@ class SiteBuildTriggerTest < ActiveSupport::TestCase
     end
   end
 
+  test "publishing a standing page schedules the site build; a draft edit does not" do
+    page = accounts(:merovex).page("about")
+    page.unpublish
+
+    assert_no_enqueued_jobs(only: SiteBuildJob) do
+      page.record.reload.save_edit(content: "<p>Draft churn.</p>", creator: users(:admin))
+    end
+
+    assert_enqueued_with(job: SiteBuildJob, args: [ accounts(:merovex) ]) do
+      page.record.reload.recordable.publish(creator: users(:admin))
+    end
+  end
+
   test "a domain change schedules the site build (go-live stamp and disconnect clear)" do
     assert_enqueued_with(job: SiteBuildJob, args: [ accounts(:merovex) ]) do
       accounts(:merovex).update!(domain: "example.press")
