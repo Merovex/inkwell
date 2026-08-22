@@ -6,13 +6,13 @@
   <h1 class="perma-header__title">Pages</h1>
 </header>
 
-<p class="u-text-muted u-center u-center-narrow">
+<p class="u-text-muted">
   The standing pages of your public site. Every site has these four and they
   can't be deleted — their addresses are permanent, so links to them never
   break.
 </p>
 
-<div class="list u-center u-center-narrow u-margin-block-start">
+<div class="list u-margin-block-start">
   <% @pages.each do |page| %>
     <% actions = capture do %>
       <% if page.published? %>
