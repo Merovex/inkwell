@@ -3,9 +3,13 @@
      itself is NOT rendered here: baseof already appends it to every
      non-home page, so this layout only supplies what sits above it. With no
      invitation written, the page is the band alone (which is why the
-     content adapter always creates this page, empty body and all). */}}
+     content adapter always creates this page, empty body and all).
+
+     fk-newsletter-intro marks it as the conversion surface it is: an image
+     here is an illustration beside the ask (a giveaway cover, usually), not
+     a hero, so it's capped tighter than prose elsewhere. */}}
 {{ with .Content }}
-<article class="fk-page">
+<article class="fk-page fk-newsletter-intro">
   <div class="fk-shell">
     <div class="fk-prose">
       {{ partial "prose.html" . }}

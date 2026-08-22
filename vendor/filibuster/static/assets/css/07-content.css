@@ -135,8 +135,13 @@ html[data-bio-more="no"] .fk-author-band .fk-btn { display: none; }
 /* Inline body images (rich-text attachments): never wider than the column,
    and the figure keeps its own breathing room. Captions only appear when the
    author wrote one — the exporter drops ActionText's filename/size default. */
-.fk-prose img, .fk-page img { max-width: 100%; height: auto; }
+.fk-prose img, .fk-page img { max-inline-size: 100%; height: auto; }
 .fk-prose figure { margin: 2rem 0; }
+/* The newsletter invitation is a conversion surface, not an essay: an image
+   here sits beside the ask rather than dominating it, so it's capped well
+   short of the column and centered. */
+.fk-newsletter-intro img { max-inline-size: 20rem; }
+.fk-newsletter-intro figure { inline-size: fit-content; margin-inline: auto; }
 .fk-prose figcaption { color: var(--ink-muted); font-size: 0.9rem; margin-top: 0.5rem; text-align: center; }
 /* Centered content column for the index/section pages (posts list, library),
    so their heading and content sit centered like the show pages' prose. */
