@@ -132,6 +132,12 @@ html[data-bio-more="no"] .fk-author-band .fk-btn { display: none; }
 .fk-book-header h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); }
 .fk-book-cover { box-shadow: 0 16px 40px rgb(0 0 0 / 0.3); }
 .fk-prose { max-width: 44rem; margin-inline: auto; }
+/* Inline body images (rich-text attachments): never wider than the column,
+   and the figure keeps its own breathing room. Captions only appear when the
+   author wrote one — the exporter drops ActionText's filename/size default. */
+.fk-prose img, .fk-page img { max-width: 100%; height: auto; }
+.fk-prose figure { margin: 2rem 0; }
+.fk-prose figcaption { color: var(--ink-muted); font-size: 0.9rem; margin-top: 0.5rem; text-align: center; }
 /* Centered content column for the index/section pages (posts list, library),
    so their heading and content sit centered like the show pages' prose. */
 .fk-page-body { max-width: 52rem; margin-inline: auto; }

@@ -10,7 +10,7 @@
         <h1>{{ .Title }}</h1>
         <p class="fk-post-meta">{{ with .Params.byline }}{{ . }} &middot; {{ end }}{{ with $.Params.published_at }}{{ (time .).Format "January 2, 2006" }}{{ end }}</p>
       </header>
-      {{ .Content }}
+      {{ partial "prose.html" .Content }}
     </div>
   </div>
 </article>

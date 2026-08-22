@@ -135,7 +135,9 @@ Content adapters require **Hugo ≥ 0.126**; the pinned version (§5.2) sits com
 
 ### 4.3 Body content
 
-Post and book-description bodies are exported as sanitized, pre-rendered HTML fragments inside the JSON (`"body_html"`), not as markdown. Rationale: Rails already owns rich-text rendering for the admin preview; rendering once in Ruby guarantees admin preview and published page agree, and it removes any dependency on Hugo's markdown pipeline matching ours.
+Post and book-description bodies are exported as sanitized, pre-rendered HTML fragments inside the JSON (`"body_html"`), not as markdown.
+
+Inline images inside those bodies (ActionText attachments) are **localized at export**: the blob is copied into `assets/images/` like any cover, the `<img>` is repointed at the contract path (`images/inline-<blob id>-<name>.webp`) with measured `width`/`height`, and the `<action-text-attachment>` wrapper is unwrapped. The theme resolves those srcs against the site root in `_partials/prose.html`, exactly as `img.html` does for covers — so a body image works at a domain root, under the `/<handle>/` platform prefix, and in the preview. Without this the published page would point back at the Rails app's ActiveStorage URLs. Rationale: Rails already owns rich-text rendering for the admin preview; rendering once in Ruby guarantees admin preview and published page agree, and it removes any dependency on Hugo's markdown pipeline matching ours.
 
 ### 4.4 Example: `books.json` (abridged)
 

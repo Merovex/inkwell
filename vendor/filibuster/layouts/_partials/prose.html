@@ -1,0 +1,9 @@
+{{- /* Body prose from the contract. Rich text can carry inline images, and
+     the exporter hands them over as contract paths ("images/…") exactly like
+     a cover or a logo — so they need resolving against the site root the same
+     way img.html does. That one substitution is what makes an inline image
+     work at a domain root, under the platform's /<handle>/ prefix, and in the
+     designer preview alike.
+
+     Arg: the page's .Content. */ -}}
+{{- replace . "src=\"images/" (printf "src=\"%simages/" site.Home.RelPermalink) | safeHTML -}}

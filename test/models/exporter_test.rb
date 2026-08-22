@@ -148,6 +148,26 @@ class ExporterTest < ActiveSupport::TestCase
     assert_not_includes pages.map { |page| page["slug"] }, "terms"
   end
 
+  test "an inline body image is copied into the build and repointed at the copy" do
+    blob = ActiveStorage::Blob.create_and_upload!(io: file_fixture("avatar.png").open,
+      filename: "inline.png", content_type: "image/png")
+    accounts(:merovex).page("about").record.save_edit(creator: users(:alice), content:
+      %(<p>Look:</p><action-text-attachment sgid="#{blob.attachable_sgid}" content-type="image/png" filename="inline.png"></action-text-attachment>))
+
+    workspace = Exporter.new(accounts(:merovex)).export!
+    body = JSON.parse(workspace.join("data", "pages.json").read)["pages"]
+      .find { |page| page["slug"] == "about" }["body_html"]
+
+    src = body[/src="([^"]+)"/, 1]
+    assert_equal "images/inline-#{blob.id}-inline.webp", src
+    assert workspace.join("assets", src).exist?, "the blob should be copied into the workspace"
+    # Nothing pointing back at Rails, and no custom element left to lay out.
+    assert_not_includes body, "active_storage"
+    assert_not_includes body, "action-text-attachment"
+    # ActionText's filename/size caption is composer chrome, not prose.
+    assert_not_includes body, "figcaption"
+  end
+
   private
     def data(name)
       JSON.parse(@workspace.join("data", "#{name}.json").read)
