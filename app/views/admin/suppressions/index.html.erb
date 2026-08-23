@@ -1,0 +1,70 @@
+<% content_for :title, "Suppressed addresses" %>
+
+<%= render "admin/shared/canvas_head", crumbs: [["Subscribers", admin_subscribers_path], ["Suppressed", nil]] %>
+
+<div class="subscribers">
+<header class="perma-header">
+  <h1 class="perma-header__title">Suppressed addresses</h1>
+  <div class="perma-header__content">
+    <p class="u-text-muted">
+      Addresses on your list that won't be mailed: hard-bounced anywhere on the platform, or
+      marked as spam. A fresh opt-in from the reader lifts it; Reactivate on the roster lifts it
+      for this site.
+    </p>
+  </div>
+  <div class="perma-header__content">
+    <nav class="perma-header__toolbar" aria-label="Suppression views">
+      <%= link_to "Back to roster", admin_subscribers_path, class: "button button--small" %>
+      <%# Screenshot safety, as on the roster: masks every address to cat•••@… %>
+      <label class="switch mask-toggle">
+        <input class="switch__input" type="checkbox" id="mask-addresses" checked>
+        Mask addresses
+      </label>
+    </nav>
+  </div>
+</header>
+
+<% if @suppressions.any? %>
+  <div class="table-scroll">
+    <table class="table">
+      <thead>
+        <tr>
+          <th scope="col">Address</th>
+          <th scope="col">Reason</th>
+          <th scope="col">Applies to</th>
+          <th scope="col">Since</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @suppressions.each do |suppression| %>
+          <tr>
+            <td>
+              <span class="subscriber-address u-text-strong">
+                <span class="subscriber-address__full"><%= suppression.person.email_address %></span>
+                <span class="subscriber-address__masked"><%= redacted_email(suppression.person.email_address) %></span>
+              </span>
+            </td>
+            <td>
+              <% if suppression.hard_bounce? %>
+                <span class="badge badge--warning">Hard bounce</span>
+              <% elsif suppression.complaint? %>
+                <span class="badge badge--danger">Spam complaint</span>
+              <% else %>
+                <span class="badge">Manual</span>
+              <% end %>
+            </td>
+            <td class="u-text-muted"><%= suppression.scope ? "This site" : "Every site" %></td>
+            <td class="u-text-muted"><time datetime="<%= suppression.created_at.iso8601 %>"><%= suppression.created_at.strftime("%b %-d, %Y") %></time></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+<% else %>
+  <div class="empty">
+    <span class="empty__icon"><%= inline_svg_tag "lucide/circle-check.svg", class: "lucide", size: "40px" %></span>
+    <p class="empty__title">Nothing suppressed</p>
+    <p class="empty__text">No one on your list is blocked by a hard bounce or a spam complaint.</p>
+  </div>
+<% end %>
+</div>

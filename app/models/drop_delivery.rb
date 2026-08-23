@@ -7,7 +7,7 @@ class DropDelivery < ApplicationRecord
   belongs_to :stream
   belongs_to :drop_record, class_name: "Record"
   belongs_to :subscriber
-  has_many :delivery_events, as: :delivery, dependent: :delete_all
+  has_many :delivery_events, as: :delivery, dependent: :nullify
 
   # pending → not yet due; sent → mailed; skipped → subscriber ineligible at
   # send time (unsubscribed), recorded (with skip_reason) but never mailed.

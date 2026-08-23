@@ -21,6 +21,8 @@
       <%= link_to admin_subscribers_path(state: @state, format: :csv), class: "button button--small" do %>
         <%= inline_svg_tag "lucide/file-text.svg", class: "lucide", size: "16px" %> Export
       <% end %>
+      <%# The platform's cross-site suppression list as it bears on this roster. %>
+      <%= link_to "Suppressed", admin_suppressions_path, class: "button button--small" %>
       <%# Screenshot safety: masks every address to cat•••@… so the list can be %>
       <%# shared without leaking who's on it. On by default; pure CSS. %>
       <label class="switch mask-toggle">

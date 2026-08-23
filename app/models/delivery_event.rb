@@ -14,6 +14,11 @@
 class DeliveryEvent < ApplicationRecord
   belongs_to :subscriber, optional: true
   belongs_to :delivery, polymorphic: true, optional: true
+  # The cross-site identity behind the recipient (ADR 0027) — resolved from the
+  # address, so an event with no delivery to route to (a confirmation-email
+  # bounce carries no tags) is still actionable. Nil when the address isn't a
+  # Person's (mail to a User, say); never created here.
+  belongs_to :person, optional: true
 
   enum :provider, %w[ postmark ses ].index_by(&:itself)
   enum :event, %w[ delivered opened clicked soft_bounce hard_bounce
@@ -46,6 +51,7 @@ class DeliveryEvent < ApplicationRecord
       e.occurred_at = occurred_at
       e.delivery = delivery
       e.subscriber = delivery&.subscriber
+      e.person = e.subscriber&.person || Person.find_by(email_address: Person.normalize_value_for(:email_address, recipient))
     end
     record.apply! if record.previously_new_record?
     record
@@ -67,15 +73,23 @@ class DeliveryEvent < ApplicationRecord
   end
 
   # The downstream consequences, in canonical terms only. Milestones stamp the
-  # dashboard; suppression flows through the Subscriber state methods (which
-  # append to the consent trail). suppressed/rejected are record-only.
+  # dashboard; the cross-site Suppression ledger takes the hard bounce (global —
+  # a dead mailbox is a fact about the address) and the complaint (scoped to
+  # the site that sent it, global when we can't tell which); then the
+  # Subscriber state methods append to this site's consent trail.
+  # suppressed/rejected are record-only.
   def apply!
     delivery&.record_event!(MILESTONES[event]) if MILESTONES[event]
 
     case event
-    when "hard_bounce" then subscriber&.mark_bounced!(source: provider)
-    when "complaint"   then subscriber&.mark_complained!(source: provider)
-    when "soft_bounce" then suppress_soft_bounced if soft_bounce_exhausted?
+    when "hard_bounce"
+      Suppression.impose!(person:, reason: :hard_bounce, at: occurred_at || created_at) if person
+      subscriber&.mark_bounced!(source: provider)
+    when "complaint"
+      Suppression.impose!(person:, reason: :complaint, scope: subscriber&.account, at: occurred_at || created_at) if person
+      subscriber&.mark_complained!(source: provider)
+    when "soft_bounce"
+      suppress_soft_bounced if soft_bounce_exhausted?
     end
   end
 

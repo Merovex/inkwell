@@ -34,6 +34,15 @@ class StreamAdvanceTest < ActiveSupport::TestCase
     assert_no_emails { @stream.advance! }
   end
 
+  test "records a skip, reason suppressed, when the platform has suppressed the address for this site" do
+    Suppression.impose!(person: @sub.person, reason: :complaint, scope: @sub.account)
+
+    assert_no_emails { @stream.advance! }
+    delivery = @stream.deliveries.find_by(drop_record: @day0.record)
+    assert_equal "skipped", delivery.status
+    assert_equal "suppressed", delivery.skip_reason
+  end
+
   test "records a skip instead of mailing when the subscriber has unsubscribed" do
     @sub.update!(status: :unsubscribed, unsubscribed_at: Time.current)
 

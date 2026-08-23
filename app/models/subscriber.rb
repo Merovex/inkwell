@@ -17,7 +17,10 @@ class Subscriber < ApplicationRecord
   has_many :events, -> { order(:created_at) }, class_name: "SubscriptionEvent", dependent: :destroy
   has_many :broadcast_deliveries, dependent: :destroy
   has_many :streams, dependent: :destroy
-  has_many :delivery_events, dependent: :delete_all
+  # The delivery ledger outlives the subscriber (ADR 0027): a purged row lets
+  # go of its events rather than taking them along — they stay keyed to the
+  # Person, which is what the cross-site suppression list is rebuilt from.
+  has_many :delivery_events, dependent: :nullify
 
   enum :status, %w[ pending confirmed unsubscribed bounced complained ].index_by(&:itself), default: "pending"
 
@@ -138,12 +141,17 @@ class Subscriber < ApplicationRecord
   # Complete double opt-in: the confirmation link was clicked. Confirmation is
   # the drip trigger — enroll into every active Drip, then advance each stream so
   # any day-0 Drop goes out right away (later Drops fire via the daily tick).
+  # It is also proof of life for the address: a click from the mailbox lifts
+  # any global suppression (the hard bounce that put it there is stale) and
+  # any this-site suppression (a complaint here, answered by a fresh opt-in).
   def confirm!(ip: nil)
     return if confirmed?
 
     transaction do
       update!(status: :confirmed, confirmed_at: Time.current)
       log_event!("confirmed", ip:)
+      Suppression.lift!(person:, reason: :reconfirmed)
+      Suppression.lift!(person:, reason: :reconfirmed, scope: account)
     end
 
     # Seeds stop here: the confirmation email is the whole test. No drips.
@@ -190,6 +198,8 @@ class Subscriber < ApplicationRecord
   #   bounced    → straight back to confirmed. The mailbox was the problem;
   #                consent was never revoked, so a full re-opt-in would ask
   #                the reader to answer a question they already answered.
+  #                The admin's word lifts the cross-site suppression for THIS
+  #                site only — one site's say-so never speaks for another.
   #   complained → pending + a fresh double opt-in email. They flagged us —
   #                only their own click brings them back, never our say-so.
   # Anything else (unsubscribed, or not suppressed at all) is a no-op: an
@@ -200,6 +210,7 @@ class Subscriber < ApplicationRecord
       transaction do
         update!(status: :confirmed)
         log_event!("reactivated", ip:, source: "admin")
+        Suppression.lift!(person:, reason: :manual, scope: account)
       end
       true
     when "complained"

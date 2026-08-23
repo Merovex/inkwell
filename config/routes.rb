@@ -420,6 +420,10 @@ Rails.application.routes.draw do
         # never silently. Unsubscribed has no reactivation — they chose.
         resource :reactivation, only: :create, module: :subscribers
       end
+      # The platform's cross-site suppression list as it bears on this site's
+      # readers — read-only (ADR 0027). Nothing to manage: rows are imposed by
+      # bounces and complaints and lifted by a fresh opt-in or Reactivate.
+      resources :suppressions, only: :index
 
       # Broadcasts dashboard — domain-admin only. Read-only send analytics;
       # sending happens from the post page. show is one send's detail:

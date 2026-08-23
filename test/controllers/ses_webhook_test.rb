@@ -35,6 +35,22 @@ class SesWebhookTest < ActionDispatch::IntegrationTest
     assert @subscriber.reload.bounced?
   end
 
+  test "a permanent bounce suppresses the address for every site, keyed to the person" do
+    post_event("Bounce", extra: { "bounce" => { "bounceType" => "Permanent" } })
+
+    event = DeliveryEvent.hard_bounce.sole
+    assert_equal @subscriber.person, event.person
+    assert @subscriber.person.reputation.suppressed?
+  end
+
+  test "a complaint suppresses the address for the sending site only" do
+    post_event("Complaint")
+
+    assert_not @subscriber.person.reputation.suppressed?
+    assert @subscriber.person.reputation.suppressed_for?(@subscriber.account)
+    assert_equal @subscriber.account, Suppression.imposing.complaint.sole.scope
+  end
+
   test "a transient bounce records but doesn't suppress — SES keeps retrying" do
     post_event("Bounce", extra: { "bounce" => { "bounceType" => "Transient" } })
 

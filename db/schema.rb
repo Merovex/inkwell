@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.2].define(version: 2026_08_23_100100) do
+ActiveRecord::Schema[8.2].define(version: 2026_08_23_110100) do
   create_table "account_users", force: :cascade do |t|
     t.integer "account_id", null: false
     t.integer "user_id", null: false
@@ -363,7 +363,9 @@ ActiveRecord::Schema[8.2].define(version: 2026_08_23_100100) do
     t.json "payload", null: false
     t.datetime "occurred_at"
     t.datetime "created_at", null: false
+    t.integer "person_id"
     t.index ["delivery_type", "delivery_id"], name: "index_delivery_events_on_delivery"
+    t.index ["person_id"], name: "index_delivery_events_on_person_id"
     t.index ["provider", "provider_message_id", "event"], name: "index_delivery_events_on_dedupe_key", unique: true
     t.index ["subscriber_id"], name: "index_delivery_events_on_subscriber_id"
   end
@@ -762,6 +764,17 @@ ActiveRecord::Schema[8.2].define(version: 2026_08_23_100100) do
     t.string "source_fingerprint"
     t.index ["source_fingerprint"], name: "index_subscription_events_on_source_fingerprint"
     t.index ["subscriber_id"], name: "index_subscription_events_on_subscriber_id"
+  end
+
+  create_table "suppressions", force: :cascade do |t|
+    t.integer "person_id", null: false
+    t.string "reason", null: false
+    t.string "scope_type"
+    t.integer "scope_id"
+    t.integer "lifted_id"
+    t.datetime "created_at", null: false
+    t.index ["lifted_id"], name: "index_suppressions_on_lifted_id"
+    t.index ["person_id", "scope_type", "scope_id", "created_at"], name: "index_suppressions_on_person_scope_time"
   end
 
   create_table "tallies", force: :cascade do |t|

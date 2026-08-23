@@ -99,7 +99,7 @@ risk, it does not remove the category.
   no IP, no need to have been there at the time.
 - `delivery_events` retention is a separate matter (the suppression pitch
   needs it to survive subscriber deletion — `dependent: :nullify` keyed on a
-  future `person_id`) and is left to that batch.
+  `person_id`) — done the same day in [[0027-person-suppression-ledger]].
 
 ## Alternatives considered
 

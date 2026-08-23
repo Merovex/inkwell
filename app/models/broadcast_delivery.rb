@@ -7,7 +7,7 @@
 class BroadcastDelivery < ApplicationRecord
   belongs_to :broadcast
   belongs_to :subscriber
-  has_many :delivery_events, as: :delivery, dependent: :delete_all
+  has_many :delivery_events, as: :delivery, dependent: :nullify
 
   # Opens and clicks count as engagement — they reset the subscriber's sunset clock.
   ENGAGEMENT = %w[ opened clicked ].freeze

@@ -238,6 +238,10 @@ ships, both gates are needed.
 
 ## Decisions open
 
+- **Cross-site suppression — shipped 2026-08-23** (ADR 0027): a hard bounce
+  or escalated complaint against one site blocks the address on every site
+  at send time, via the `Suppression` ledger and one guard in the send path.
+  The firewall's remaining open piece is the pause/recovery product side, below.
 - **The reputation firewall — design settled, build open.** SES tenants
   (August 2025 feature; `ses-tenants.md`) answer the structural question:
   one tenant per paying Site on the shared `news.` identity, Standard

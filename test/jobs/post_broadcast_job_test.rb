@@ -22,6 +22,18 @@ class PostBroadcastJobTest < ActiveSupport::TestCase
     assert @broadcast.deliveries.all?(&:sent_at)
   end
 
+  test "skips anyone the platform has suppressed for this site, without a delivery row" do
+    suppressed = Subscriber.find_by!(email_address: "b@example.com")
+    Suppression.impose!(person: suppressed.person, reason: :hard_bounce)
+
+    assert_emails 1 do
+      PostBroadcastJob.perform_now(@broadcast)
+    end
+    assert_equal 1, @broadcast.reload.recipients_count
+    assert_nil @broadcast.deliveries.find_by(subscriber: suppressed), "no row — nothing was attempted"
+    assert suppressed.reload.confirmed?, "the suppression is the platform's; this site's roster row is untouched"
+  end
+
   test "re-running does not re-mail anyone (idempotent, resumable)" do
     PostBroadcastJob.perform_now(@broadcast)
 
