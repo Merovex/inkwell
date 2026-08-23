@@ -108,8 +108,10 @@ criterion. No per-tenant buckets; the prefix is the tenancy.
   not memory**. *Status 2026-08-07: the newsletter set is live (plus
   `GET /newsletter/rejected`), with the X-Island-Auth/Host/IP header
   contract — standard forwarding headers don't survive the origin's proxy
-  hops; see [[dynamic-islands]]. The rest below still to land, each with its
-  own hardening pass.* The list: `POST /newsletter` + `GET /newsletter/confirm|unsubscribe|
+  hops; see [[dynamic-islands]]. 2026-08-23: `GET /buy/:id` is live too —
+  the theme's `dist-url` partial emits `buy/<distributor id>` and the Worker
+  proxies it (it had been emitting `out/…`, a path nothing served). The rest
+  below still to land, each with its own hardening pass.* The list: `POST /newsletter` + `GET /newsletter/confirm|unsubscribe|
   keep/:token` + `GET /newsletter/sent`, `POST /contact` +
   `GET /contact/confirm/:token` + `GET /contact/sent`, `GET /buy/:id`
   (click counting), `POST /webhooks/ses` (stays on merovex.press per

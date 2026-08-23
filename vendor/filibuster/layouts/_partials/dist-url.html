@@ -1,4 +1,6 @@
 {{/* Distributor link. When a track_id is present the link routes through the
-     Cloudflare Worker's /out/<track_id> redirect so click counts keep working
-     from a static page; otherwise it links straight to the store. */}}
-{{- with .track_id -}}{{ printf "out/%v" . | relURL }}{{- else -}}{{ .url }}{{- end -}}
+     site's /buy/<track_id> island — the edge Worker proxies it to Rails'
+     GET /buy/:id, which counts the click and redirects to the store — so
+     click counts keep working from a static page; otherwise it links straight
+     to the store. */}}
+{{- with .track_id -}}{{ printf "buy/%v" . | relURL }}{{- else -}}{{ .url }}{{- end -}}

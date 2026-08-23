@@ -24,8 +24,8 @@
   <% end %>
 
   <div class="book-detail">
-    <%# ── Left rail: cover + stats ── %>
-    <aside class="book-detail__left u-flow" aria-label="Cover and details">
+    <%# ── Left rail: cover + stats, then collections + where to buy ── %>
+    <aside class="book-detail__left u-flow" aria-label="Cover, details, collections, and stores">
       <%= turbo_frame_tag "book_cover" do %>
         <% if can_manage %>
           <%= render "cover", book: @book, record: @record %>
@@ -44,6 +44,28 @@
           <div class="facts__row"><dt>ISBN</dt><dd><%= @book.isbn %></dd></div>
         <% end %>
       </dl>
+
+      <section class="u-flow" aria-labelledby="collections-heading">
+        <h2 id="collections-heading" class="subhead">Collections</h2>
+        <p class="u-text-muted book-detail__note">Bundles this book appears in. Unlike the series, a book can sit in several, and a collection can mix series.</p>
+        <% if can_manage %>
+          <%= render "admin/books/collection_membership", record: @record, book: @book, heading: false %>
+        <% else %>
+          <% @book.collections.each do |collection| %>
+            <p><%= link_to collection.title, admin_collection_path(collection.record) %>
+              <span class="u-text-muted">· <%= pluralize(collection.books.count, "book") %><% if collection.unordered %> · unordered<% end %></span></p>
+          <% end %>
+        <% end %>
+      </section>
+
+      <section class="u-flow" aria-labelledby="buy-heading">
+        <h2 id="buy-heading" class="subhead">Where to buy</h2>
+        <% if can_manage %>
+          <%= render "admin/distributors/section", record: @record, heading: false %>
+        <% else %>
+          <%= render "admin/distributors/list", record: @record %>
+        <% end %>
+      </section>
     </aside>
 
     <%# ── Middle: header, tagline, description, series position ── %>
@@ -137,31 +159,6 @@
         <%= render "admin/books/series_membership", record: @record, book: @book, heading: true %>
       <% end %>
     </div>
-
-    <%# ── Right rail: collections + where to buy ── %>
-    <aside class="book-detail__right u-flow" aria-label="Collections and stores">
-      <section class="u-flow" aria-labelledby="collections-heading">
-        <h2 id="collections-heading" class="subhead">Collections</h2>
-        <p class="u-text-muted book-detail__note">Bundles this book appears in. Unlike the series, a book can sit in several, and a collection can mix series.</p>
-        <% if can_manage %>
-          <%= render "admin/books/collection_membership", record: @record, book: @book, heading: false %>
-        <% else %>
-          <% @book.collections.each do |collection| %>
-            <p><%= link_to collection.title, admin_collection_path(collection.record) %>
-              <span class="u-text-muted">· <%= pluralize(collection.books.count, "book") %><% if collection.unordered %> · unordered<% end %></span></p>
-          <% end %>
-        <% end %>
-      </section>
-
-      <section class="u-flow" aria-labelledby="buy-heading">
-        <h2 id="buy-heading" class="subhead">Where to buy</h2>
-        <% if can_manage %>
-          <%= render "admin/distributors/section", record: @record, heading: false %>
-        <% else %>
-          <%= render "admin/distributors/list", record: @record %>
-        <% end %>
-      </section>
-    </aside>
   </div>
 </div>
 

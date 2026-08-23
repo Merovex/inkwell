@@ -172,7 +172,7 @@ SiteDesigner's preview iframe). Reader builds never include them.
 |---|---|---|
 | `/` | site + author + series + books + posts | `home.html` — slot engine: sections render in `site.json` `home.sections` order (default: hero, books, posts, bio, newsletter) |
 | `/books/` | `books.json` + `series.json` | `books/section.html` — the library: cover grids grouped by series (series order), then a Standalone group for books without a series |
-| `/books/<slug>/` | `books.json` | `books/page.html` — cover, buy links (via `/out/<track_id>` when present), series pager |
+| `/books/<slug>/` | `books.json` | `books/page.html` — cover, buy links (via the `/buy/<track_id>` island when present), series pager |
 | `/series/` | `series.json` + `books.json` | `series/section.html` — one series card per series (same cards as the home books section, so the `cards` axis applies) |
 | `/series/<slug>/` | `series.json` + `books.json` | `series/page.html` — description, installment list |
 | `/posts/` + `/posts/<slug>/` | `posts.json` | `section.html` / `posts/page.html` |

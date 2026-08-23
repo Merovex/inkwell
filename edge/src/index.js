@@ -59,14 +59,19 @@ function siteRoot(slug, preview) {
 
 // Dynamic islands — the enumerated allowlist of Rails-backed paths the
 // Worker proxies to the origin (docs/phase-2-static-serving.md §2.5,
-// enumerated from routes.rb). Newsletter only so far; contact/buy/ahoy join
-// as their own hardening passes land (the contact controller still carries
-// session-backed spam traps that would discard every static submit —
-// docs/newsletter-bot-protection-plan.md). Everything else is static bytes.
+// enumerated from routes.rb). Newsletter and the buy-link click counter so
+// far; contact/ahoy join as their own hardening passes land (the contact
+// controller still carries session-backed spam traps that would discard every
+// static submit — docs/newsletter-bot-protection-plan.md). Everything else is
+// static bytes.
 const ISLANDS = [
   { method: "POST", pattern: /^\/newsletter$/ },
   { method: "GET", pattern: /^\/newsletter\/(sent|rejected)$/ },
   { method: "GET", pattern: /^\/newsletter\/(confirm|unsubscribe|keep)(\/[^/]*)?$/ },
+  // Buy links: the theme's dist-url partial emits buy/<distributor id>; Rails
+  // counts the click and 302s to the store (redirect:"manual" below hands
+  // that off-site Location straight back to the browser).
+  { method: "GET", pattern: /^\/buy\/\d+$/ },
 ];
 
 function isIsland(method, pathname) {

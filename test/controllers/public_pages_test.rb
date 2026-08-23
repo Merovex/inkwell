@@ -84,7 +84,30 @@ class PublicPagesTest < ActionDispatch::IntegrationTest
     assert_redirected_to "https://www.amazon.com/dp/B000"
   end
 
+  test "with island auth provisioned, a buy link without the Worker's header is refused" do
+    record = Record.create!(recordable_type: "Book", creator: users(:alice))
+    distributor = Distributor.create!(record: record, url: "https://www.amazon.com/dp/B000")
+
+    with_island_auth_secrets [ "edge-secret" ] do
+      assert_no_difference -> { distributor.reload.clicks } do
+        get buy_path(distributor)
+      end
+      assert_response :forbidden
+
+      get buy_path(distributor), headers: { "X-Island-Auth" => "edge-secret" }
+      assert_redirected_to "https://www.amazon.com/dp/B000"
+    end
+  end
+
   private
+    def with_island_auth_secrets(secrets)
+      original = Rails.configuration.x.island_auth_secrets
+      Rails.configuration.x.island_auth_secrets = secrets
+      yield
+    ensure
+      Rails.configuration.x.island_auth_secrets = original
+    end
+
     def write_page(slug, html)
       accounts(:merovex).page(slug).record.save_edit(content: html, creator: users(:alice))
     end

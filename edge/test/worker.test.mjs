@@ -102,6 +102,29 @@ await check("custom-domain island still proxies its own host and bare path", asy
   assert.equal(proxied.init.headers.get("x-island-host"), "merovex.press");
 });
 
+await check("buy-link click counter proxies to Rails' GET /buy/:id on a custom domain", async () => {
+  proxied = undefined;
+  const res = await island("https://merovex.press/buy/7");
+  assert.equal(res.status, 200); // proxied, NOT an R2 404
+  assert.equal(proxied.url, "https://app.kindredquill.com/buy/7");
+  assert.equal(proxied.init.headers.get("x-island-host"), "merovex.press");
+  assert.equal(proxied.init.redirect, "manual"); // the store 302 passes through untouched
+});
+
+await check("buy-link click counter proxies the prefixed path on the platform host", async () => {
+  proxied = undefined;
+  await island("https://sites.kindredquill.com/merovexpress/buy/7");
+  assert.equal(proxied.url, "https://app.kindredquill.com/merovexpress/buy/7");
+});
+
+await check("buy island is GET-only and numeric-only — /buy/abc and POST fall through to static", async () => {
+  proxied = undefined;
+  await island("https://merovex.press/buy/abc");
+  assert.equal(proxied, undefined);
+  await island("https://merovex.press/buy/7", "POST");
+  assert.equal(proxied, undefined);
+});
+
 await check("preview host stays static-only — islands never proxy drafts", async () => {
   proxied = undefined;
   const res = await island("https://preview.kindredquill.com/merovexpress/newsletter", "POST");
