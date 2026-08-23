@@ -13,8 +13,19 @@ const htmlObject = (body) => ({
 });
 
 // Slug resolves to MEROVEXPRESS (no handle alias in KV → segment upcased).
+const cssObject = (body) => ({
+  body,
+  httpEtag: '"etag"',
+  writeHttpMetadata(h) {
+    h.set("content-type", "text/css");
+  },
+});
+
+const SHA = "0a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f9";
 const store = {
   "sites/MEROVEXPRESS/pointer.json": { json: async () => ({ build_id: "PROD1" }) },
+  [`sites/MEROVEXPRESS/builds/PROD1/css/06-sections.${SHA}.css`]: cssObject(".fk{}"),
+  "sites/MEROVEXPRESS/builds/PROD1/css/legacy.css": cssObject(".old{}"),
   "sites/MEROVEXPRESS/preview/pointer.json": { json: async () => ({ build_id: "PREV1" }) },
   "sites/MEROVEXPRESS/builds/PROD1/index.html": htmlObject("<html>production</html>"),
   "sites/MEROVEXPRESS/preview/builds/PREV1/index.html": htmlObject("<html>draft preview</html>"),
@@ -53,6 +64,17 @@ await check("platform host serves production and is NOT noindexed", async () => 
   assert.equal(res.status, 200);
   assert.match(await res.text(), /production/);
   assert.equal(res.headers.get("x-robots-tag"), null);
+});
+
+await check("fingerprinted theme assets are immutable; unfingerprinted ones keep the day+SWR policy", async () => {
+  const fp = await call(`https://sites.kindredquill.com/merovexpress/css/06-sections.${SHA}.css`);
+  assert.equal(fp.status, 200);
+  assert.equal(fp.headers.get("cache-control"), "public, max-age=31536000, immutable");
+  const plain = await call("https://sites.kindredquill.com/merovexpress/css/legacy.css");
+  assert.equal(plain.status, 200);
+  assert.equal(plain.headers.get("cache-control"), "public, max-age=86400, stale-while-revalidate=604800");
+  const html = await call("https://sites.kindredquill.com/merovexpress/");
+  assert.equal(html.headers.get("cache-control"), "public, max-age=0, must-revalidate");
 });
 
 await check("preview host still trailing-slash redirects deep directories", async () => {

@@ -154,7 +154,12 @@ class AdminDesignerTest < ActionDispatch::IntegrationTest
     # server must serve JS (forgery protection 422s controller-served JS
     # on plain GETs unless skipped).
     post admin_designer_preview_path, params: { design: { cards: "carousel" } }, as: :json
-    get admin_designer_preview_file_path(path: "assets/js/carousel.js")
+    get admin_designer_preview_file_path(path: nil)
+    # Theme assets are fingerprinted (js/carousel.<sha>.js), so take the
+    # script's path from the page rather than guessing it.
+    script = response.body[%r{js/carousel\.[0-9a-f]+\.js}]
+    assert script, "the carousel layout should link the fingerprinted reader script"
+    get admin_designer_preview_file_path(path: script)
     assert_response :success
     assert_match(/pointerdown/, response.body)
 

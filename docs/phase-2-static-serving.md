@@ -119,6 +119,12 @@ criterion. No per-tenant buckets; the prefix is the tenancy.
   visits/events are client-posted; miss this and analytics silently die at
   cut-over). Explicit allowlist; everything else static.
 - The Worker never renders; it routes bytes.
+- **Asset caching (2026-08-23).** Theme CSS/JS and the font sheet are
+  fingerprinted by the Hugo build (`css/06-sections.<sha256>.css`, `js/…`,
+  `fonts/…`) and the Worker serves any `.<hex>.css|js` filename
+  `max-age=31536000, immutable` — a theme change reaches readers on their
+  next page load. Everything else at a stable URL (HTML, covers, feeds, font
+  files) keeps `max-age=0` (HTML) or a day + a week of SWR.
 
 ## 2.6 Merovex cut-over
 

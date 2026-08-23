@@ -79,7 +79,7 @@ At build time `baseof.html` writes each value as a `data-*` attribute on
 <html data-palette="nebula" data-cards="spread" data-hero="split" …>
 ```
 
-All axis-conditional rules in `static/assets/css/*.css` (the numbered,
+All axis-conditional rules in `assets/css/*.css` (the numbered,
 parallel-loaded modules) key off those
 attributes — `html[data-palette="grimoire"]` swaps the CSS custom properties,
 `html[data-hero="name"] .fk-hero-art { display: none }` restructures the

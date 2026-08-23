@@ -281,16 +281,24 @@ function headersFor(object, key, buildId, preview = false) {
   h.set("x-kq-build", buildId);
   // The staging host serves unpublished drafts — keep it out of search.
   if (preview) h.set("x-robots-tag", "noindex");
-  // Assets live at STABLE urls whose bytes change when a build publishes, so
-  // no `immutable` — a day of freshness plus a week of serve-stale-while-
-  // revalidating keeps repeat visits fast without freezing rebuilds out.
-  h.set(
-    "cache-control",
-    extOf(key) === "html"
-      ? "public, max-age=0, must-revalidate"
-      : "public, max-age=86400, stale-while-revalidate=604800",
-  );
+  // Theme CSS/JS (and the font sheet) are FINGERPRINTED by the Hugo build —
+  // the content hash rides in the filename (css/06-sections.<sha256>.css), so a
+  // changed file is a new URL and these can be cached forever: a rebuild
+  // reaches every reader on their next page load. Everything else lives at
+  // a STABLE url whose bytes change when a build publishes (covers, feeds,
+  // font files), so no `immutable` there — a day of freshness plus a week of
+  // serve-stale-while-revalidating keeps repeat visits fast without
+  // freezing rebuilds out.
+  h.set("cache-control", cacheControlFor(key));
   return h;
+}
+
+const FINGERPRINTED = /\.[0-9a-f]{16,}\.(css|js)$/;
+
+function cacheControlFor(key) {
+  if (extOf(key) === "html") return "public, max-age=0, must-revalidate";
+  if (FINGERPRINTED.test(key)) return "public, max-age=31536000, immutable";
+  return "public, max-age=86400, stale-while-revalidate=604800";
 }
 
 async function missing(env, prefix, buildId, preview = false) {

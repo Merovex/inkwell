@@ -61,7 +61,7 @@
       {{ range findRE `files/[^)]+\.woff2` .Content }}
         {{ $published := (resources.Get (printf "fonts/%s" .)).RelPermalink }}
       {{ end }}
-      {{ $fontCSS = .RelPermalink }}
+      {{ $fontCSS = (. | fingerprint).RelPermalink }}
     {{ end }}
   {{ end }}
   {{ with $fontCSS }}
@@ -76,9 +76,16 @@
        FILENAME ORDER IS CASCADE ORDER — <link>s apply in DOM order regardless
        of which finishes downloading first — so keep the numeric prefixes.
        HOUSE RULE: linked files, never inlined — PSI's render-blocking audit
-       notwithstanding (owner decision, 2026-08-05). */}}
+       notwithstanding (owner decision, 2026-08-05).
+       Every sheet (the font sheet above and the script below too) is
+       FINGERPRINTED: the content hash rides in the filename, so a changed
+       file is a new URL and the edge Worker serves these immutable — a theme
+       change reaches every reader on their next page load instead of after
+       the old copy's max-age runs out (owner decision, 2026-08-23). */}}
   {{ range slice "01-reset" "02-fonts" "03-palettes" "04-layout" "05-hero" "06-sections" "07-content" "08-chrome" }}
-  <link rel="stylesheet" href="{{ site.Home.RelPermalink }}assets/css/{{ . }}.css">
+  {{ with resources.Get (printf "css/%s.css" .) }}
+  <link rel="stylesheet" href="{{ (. | fingerprint).RelPermalink }}">
+  {{ else }}{{ errorf "theme stylesheet css/%s.css is missing" . }}{{ end }}
   {{ end }}
   {{/* Custom heading/body override (site.json fonts — the designer's escape
        valve past the pairings). Families load at regular weight only:
@@ -239,7 +246,7 @@
        Every other design stays zero-JS. */}}
   {{ $cardsAxis := index (where $theme.axes "key" "cards") 0 }}
   {{ if eq ((index $design "cards") | default $cardsAxis.default) "carousel" }}
-  <script src="{{ site.Home.RelPermalink }}assets/js/carousel.js" defer></script>
+  <script src="{{ (resources.Get "js/carousel.js" | fingerprint).RelPermalink }}" defer></script>
   {{ end }}
 </body>
 </html>

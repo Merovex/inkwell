@@ -111,13 +111,13 @@ class ExporterTest < ActiveSupport::TestCase
     skip "hugo binary not available" unless system("#{HUGO_BIN} version", out: File::NULL, err: File::NULL)
 
     home = Renderer.new(@workspace).render!.join("index.html").read
-    assert_includes home, "./assets/css/", "published home links assets relative to the page"
-    assert_no_match %r{href=/assets/css/}, home, "no root-absolute asset paths that break under a path prefix"
+    assert_match %r{href=\./css/01-reset\.[0-9a-f]+\.css}, home, "published home links fingerprinted assets relative to the page"
+    assert_no_match %r{href=/css/}, home, "no root-absolute asset paths that break under a path prefix"
 
     prefixed = Exporter.new(accounts(:merovex), base_url: "https://sites.kindredquill.com/F3WHRQ/").export!
     prefixed_out = Renderer.new(prefixed).render!
     prefixed_home = prefixed_out.join("index.html").read
-    assert_includes prefixed_home, "/F3WHRQ/assets/css/", "prefixed build anchors assets to its one home"
+    assert_includes prefixed_home, "/F3WHRQ/css/01-reset.", "prefixed build anchors assets to its one home"
     assert_no_match %r{F3WHRQ/F3WHRQ}, prefixed_home, "no doubled prefix (Hugo relativizes against the output path)"
     # Deep pages are where the doubling bit: ../../F3WHRQ/assets from /F3WHRQ/posts/<slug>/.
     post = prefixed_out.join("posts", records(:kickoff).to_slug, "index.html").read
@@ -126,7 +126,7 @@ class ExporterTest < ActiveSupport::TestCase
 
     preview = Exporter.new(accounts(:merovex), base_url: "/admin/theme/preview/", preview: true).export!
     preview_home = Renderer.new(preview).render!.join("index.html").read
-    assert_includes preview_home, "/admin/theme/preview/assets/css/", "preview keeps absolute paths anchored to base_url"
+    assert_includes preview_home, "/admin/theme/preview/css/01-reset.", "preview keeps absolute paths anchored to base_url"
   end
 
   test "pages.json carries the published standing pages, ordered by slug" do
