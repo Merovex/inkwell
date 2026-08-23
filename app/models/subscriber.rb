@@ -63,6 +63,10 @@ class Subscriber < ApplicationRecord
   # Who actually gets broadcasts and drips: confirmed, and not a seed.
   scope :sendable, -> { confirmed.readers }
 
+  # The platform's cross-site suppression list says this site may not mail this
+  # address (ADR 0027) — the one question every broadcast and drip send asks.
+  def suppressed? = person.suppressed_for?(account)
+
   # Engagement-based sunset thresholds (ADR 0014). "Engagement" is any open or
   # click; any of them resets the clock. Ask ("still want these?") at the later
   # of DAYS/EMAILS since last engagement, but no later than the ask cap; then, if

@@ -70,15 +70,17 @@ projection is ever doubted it is rebuilt from the ledgers (`Suppression.rebuild!
    - Idempotent imposition: an identical row already binding at that exact
      scope is not written again (webhook retries, rebuilds).
 
-3. **`Person::Reputation`** — a PORO over Person with `suppressed?` and
-   `suppressed_for?(account)`. Nothing else: no score, no cluster, no
-   thresholds.
+3. **`Person#suppressed?` / `Person#suppressed_for?(account)`**, and
+   `Subscriber#suppressed?` (= `person.suppressed_for?(account)`) for the send
+   path. Nothing else: no score, no cluster, no thresholds. (The pitch asked
+   for a `Person::Reputation` PORO; two one-line predicates didn't earn a
+   class — reviewed out the same day.)
 
 4. **One guard, two call sites.** `PostBroadcastJob#perform` skips a
    suppressed recipient before any delivery row exists (logged);
    `Stream#advance!` records `skipped` / `skip_reason: "suppressed"`. Not a
-   validation, not a callback. Both key on `subscriber.person`, never on the
-   `subscribers.email_address` copy.
+   validation, not a callback. Both ask `subscriber.suppressed?`, which keys
+   on `person`, never on the `subscribers.email_address` copy.
 
 5. **Read-only admin list** — `/admin/suppressions` (`resources
    :suppressions, only: :index`): suppressions in force for this site whose

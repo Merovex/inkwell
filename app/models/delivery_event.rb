@@ -83,15 +83,18 @@ class DeliveryEvent < ApplicationRecord
 
     case event
     when "hard_bounce"
-      Suppression.impose!(person:, reason: :hard_bounce, at: occurred_at || created_at) if person
+      Suppression.impose!(person:, reason: :hard_bounce, at: happened_at) if person
       subscriber&.mark_bounced!(source: provider)
     when "complaint"
-      Suppression.impose!(person:, reason: :complaint, scope: subscriber&.account, at: occurred_at || created_at) if person
+      Suppression.impose!(person:, reason: :complaint, scope: subscriber&.account, at: happened_at) if person
       subscriber&.mark_complained!(source: provider)
     when "soft_bounce"
       suppress_soft_bounced if soft_bounce_exhausted?
     end
   end
+
+  # When it happened by the provider's clock, falling back to when we heard.
+  def happened_at = occurred_at || created_at
 
   private
     # "Consecutive" means since the last successful delivery — any delivered

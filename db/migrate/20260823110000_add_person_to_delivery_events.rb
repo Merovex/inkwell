@@ -5,7 +5,7 @@
 # delivery tags) become actionable by identity.
 class AddPersonToDeliveryEvents < ActiveRecord::Migration[8.2]
   def change
-    add_reference :delivery_events, :person, null: true, index: true
+    add_reference :delivery_events, :person
 
     reversible do |direction|
       direction.up do

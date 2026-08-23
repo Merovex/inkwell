@@ -33,8 +33,6 @@ class Suppression < ApplicationRecord
   # reader's wishes, not one author's list.
   ESCALATE_AFTER = 2
 
-  validates :reason, inclusion: { in: ->(row) { row.lift? ? LIFTING_REASONS : IMPOSING_REASONS } }
-
   before_update { raise ActiveRecord::ReadOnlyRecord, "suppressions are append-only" }
 
   scope :imposing, -> { where(lifted_id: nil) }
@@ -55,15 +53,21 @@ class Suppression < ApplicationRecord
     imposing.covering(scope).where.not(id: lifting.covering(scope).select(:lifted_id))
   end
 
+  # Same, but only rows imposed at exactly this scope — not the global ones
+  # that also happen to cover it.
+  def self.in_force_at(scope)
+    imposing.where(scope: scope).where.not(id: lifting.covering(scope).select(:lifted_id))
+  end
+
   # Write a suppression unless an identical one is already in force at that
   # exact scope (ingest retries and rebuilds must not stack duplicates).
   # Returns the row, or nil when nothing new was written.
   def self.impose!(person:, reason:, scope: nil, at: Time.current)
-    binding_here = imposing.where(person:, reason:, scope:).where.not(id: lifting.covering(scope).select(:lifted_id))
-    return if binding_here.exists?
+    reason = reason.to_s
+    return if in_force_at(scope).where(person:, reason:).exists?
 
     create!(person:, reason:, scope:, created_at: at).tap do
-      escalate!(person, at:) if reason.to_s == "complaint" && scope
+      escalate!(person, at:) if reason == "complaint" && scope
     end
   end
 
@@ -88,31 +92,41 @@ class Suppression < ApplicationRecord
     transaction do
       delete_all
 
-      imposers = DeliveryEvent.where(event: %w[ hard_bounce complaint ]).where.not(person_id: nil)
-        .includes(subscriber: :account).map { |e| [ e.occurred_at || e.created_at, :impose, e ] }
-      lifters = SubscriptionEvent.where(action: %w[ confirmed reactivated ]).includes(subscriber: %i[ person account ])
-        .map { |e| [ e.created_at, :lift, e ] }
+      imposers = DeliveryEvent.where(event: %w[ hard_bounce complaint ]).where.not(person_id: nil).includes(subscriber: :account)
+      lifters  = SubscriptionEvent.where(action: %w[ confirmed reactivated ]).includes(subscriber: %i[ person account ])
 
-      (imposers + lifters).sort_by { |at, _, e| [ at, e.id ] }.each do |at, kind, e|
-        if kind == :impose
-          if e.hard_bounce?
-            impose!(person: e.person, reason: :hard_bounce, at:)
-          else
-            impose!(person: e.person, reason: :complaint, scope: e.subscriber&.account, at:)
-          end
-        elsif e.action == "confirmed"
-          lift!(person: e.subscriber.person, reason: :reconfirmed, at:)
-          lift!(person: e.subscriber.person, reason: :reconfirmed, scope: e.subscriber.account, at:)
-        else
-          lift!(person: e.subscriber.person, reason: :manual, scope: e.subscriber.account, at:)
+      (imposers + lifters).sort_by { [ it.happened_at, it.id ] }.each do |event|
+        case event
+        when DeliveryEvent then impose_from(event)
+        when SubscriptionEvent then lift_from(event)
         end
       end
     end
   end
 
-  def self.escalate!(person, at: Time.current)
-    sites = imposing.complaint.where(person:).where.not(scope_id: nil).distinct.count(:scope_id)
-    impose!(person:, reason: :complaint, at:) if sites >= ESCALATE_AFTER
+  class << self
+    private
+      def impose_from(event)
+        if event.hard_bounce?
+          impose!(person: event.person, reason: :hard_bounce, at: event.happened_at)
+        else
+          impose!(person: event.person, reason: :complaint, scope: event.subscriber&.account, at: event.happened_at)
+        end
+      end
+
+      def lift_from(event)
+        person, account, at = event.subscriber.person, event.subscriber.account, event.happened_at
+        if event.action == "confirmed"
+          lift!(person:, reason: :reconfirmed, at:)
+          lift!(person:, reason: :reconfirmed, scope: account, at:)
+        else
+          lift!(person:, reason: :manual, scope: account, at:)
+        end
+      end
+
+      def escalate!(person, at: Time.current)
+        sites = imposing.complaint.where(person:).where.not(scope_id: nil).distinct.count(:scope_id)
+        impose!(person:, reason: :complaint, at:) if sites >= ESCALATE_AFTER
+      end
   end
-  private_class_method :escalate!
 end

@@ -17,7 +17,7 @@ class Stream < ApplicationRecord
 
   # Send every Drop now due to this subscriber, or record a skip if they've
   # become ineligible by the time it comes due — unsubscribed here, or on the
-  # platform's cross-site suppression list for this site (Person::Reputation,
+  # platform's cross-site suppression list for this site (Subscriber#suppressed?,
   # ADR 0027; skip_reason "suppressed"). Idempotent: a delivery already
   # sent/skipped is left alone, so re-running the tick — or a retried job —
   # never re-mails. Drops come due in position order.
@@ -30,7 +30,7 @@ class Stream < ApplicationRecord
 
       if !subscriber.confirmed?
         delivery.update!(status: :skipped, skip_reason: subscriber.status)
-      elsif subscriber.person.reputation.suppressed_for?(subscriber.account)
+      elsif subscriber.suppressed?
         delivery.update!(status: :skipped, skip_reason: "suppressed")
       else
         message = DropMailer.step(self, drop).deliver_now

@@ -40,14 +40,14 @@ class SesWebhookTest < ActionDispatch::IntegrationTest
 
     event = DeliveryEvent.hard_bounce.sole
     assert_equal @subscriber.person, event.person
-    assert @subscriber.person.reputation.suppressed?
+    assert @subscriber.person.suppressed?
   end
 
   test "a complaint suppresses the address for the sending site only" do
     post_event("Complaint")
 
-    assert_not @subscriber.person.reputation.suppressed?
-    assert @subscriber.person.reputation.suppressed_for?(@subscriber.account)
+    assert_not @subscriber.person.suppressed?
+    assert @subscriber.person.suppressed_for?(@subscriber.account)
     assert_equal @subscriber.account, Suppression.imposing.complaint.sole.scope
   end
 

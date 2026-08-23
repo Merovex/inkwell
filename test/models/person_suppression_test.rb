@@ -1,7 +1,8 @@
 require "test_helper"
 
-# The send path's question, end to end: events in, sends skipped, lifts honored.
-class PersonReputationTest < ActiveSupport::TestCase
+# The send path's question (Person#suppressed_for?, Subscriber#suppressed?),
+# end to end: events in, sends skipped, lifts honored.
+class PersonSuppressionTest < ActiveSupport::TestCase
   setup do
     @site = accounts(:merovex)
     @other = Account.create!(name: "Second Press", owner: users(:bob))
@@ -15,7 +16,7 @@ class PersonReputationTest < ActiveSupport::TestCase
     DeliveryEvent.ingest!(provider: "ses", event: "hard_bounce", payload: {}, provider_message_id: "m1",
       recipient: "reader@example.com", delivery: nil)
 
-    assert there.person.reputation.suppressed_for?(@other)
+    assert there.person.suppressed_for?(@other)
     assert here.reload.confirmed?, "no delivery to route to, so this site's row is untouched — the guard does the work"
   end
 
@@ -26,7 +27,7 @@ class PersonReputationTest < ActiveSupport::TestCase
       recipient: "Typo@Example.com")
 
     assert_equal subscriber.person, event.person
-    assert subscriber.person.reputation.suppressed?
+    assert subscriber.person.suppressed?
   end
 
   test "confirming lifts the global suppression and this site's own" do
@@ -37,10 +38,10 @@ class PersonReputationTest < ActiveSupport::TestCase
 
     subscriber.confirm!
 
-    reputation = subscriber.person.reputation
-    assert_not reputation.suppressed_for?(@site)
-    assert_not reputation.suppressed?, "proof of life lifts the global rows (the bounce and the escalated complaint)"
-    assert reputation.suppressed_for?(@other), "the other site's own complaint stands"
+    person = subscriber.person
+    assert_not person.suppressed_for?(@site)
+    assert_not person.suppressed?, "proof of life lifts the global rows (the bounce and the escalated complaint)"
+    assert person.suppressed_for?(@other), "the other site's own complaint stands"
     assert_equal %w[reconfirmed], Suppression.lifting.pluck(:reason).uniq
     assert_equal 2, Suppression.lifting.where(scope: nil).count
     assert_equal 1, Suppression.lifting.where(scope: @site).count
@@ -52,8 +53,8 @@ class PersonReputationTest < ActiveSupport::TestCase
 
     assert subscriber.reactivate!
 
-    assert_not subscriber.person.reputation.suppressed_for?(@site)
-    assert subscriber.person.reputation.suppressed_for?(@other)
+    assert_not subscriber.person.suppressed_for?(@site)
+    assert subscriber.person.suppressed_for?(@other)
     assert_equal "manual", Suppression.lifting.sole.reason
   end
 
@@ -68,6 +69,6 @@ class PersonReputationTest < ActiveSupport::TestCase
     assert DeliveryEvent.exists?(event.id)
     assert_equal person, event.reload.person
     assert_nil event.subscriber_id
-    assert person.reputation.suppressed?
+    assert person.suppressed?
   end
 end

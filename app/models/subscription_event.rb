@@ -23,6 +23,9 @@ class SubscriptionEvent < ApplicationRecord
 
   before_create { self.source_fingerprint ||= self.class.fingerprint(ip_address) }
 
+  # Same clock as DeliveryEvent#happened_at, so the two ledgers interleave.
+  alias_attribute :happened_at, :created_at
+
   # Append-only: an event is a historical fact. Creating is allowed; changing a
   # persisted one is not.
   before_update { raise ActiveRecord::ReadOnlyRecord, "subscription events are append-only" }
