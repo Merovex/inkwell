@@ -231,9 +231,10 @@ class Subscriber < ApplicationRecord
     streams.active.find_each { |stream| stream.end!("complained") }
   end
 
-  # Append one immutable event to the consent log.
+  # Append one immutable event to the consent log, and its identity-free
+  # shadow to the platform's signup-source residue (which outlives this row).
   def log_event!(action, ip: nil, source: nil)
-    events.create!(action: action, ip_address: ip, source: source)
+    events.create!(action: action, ip_address: ip, source: source).tap { SignupSource.trace(it) }
   end
 
   # ── Engagement-based sunset ────────────────────────────────────────────────

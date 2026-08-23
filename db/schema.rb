@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.2].define(version: 2026_08_21_090200) do
+ActiveRecord::Schema[8.2].define(version: 2026_08_23_100100) do
   create_table "account_users", force: :cascade do |t|
     t.integer "account_id", null: false
     t.integer "user_id", null: false
@@ -671,6 +671,15 @@ ActiveRecord::Schema[8.2].define(version: 2026_08_21_090200) do
     t.index ["user_id"], name: "index_sign_in_codes_on_user_id"
   end
 
+  create_table "signup_sources", force: :cascade do |t|
+    t.integer "account_id", null: false
+    t.string "source_fingerprint", null: false
+    t.string "action", null: false
+    t.datetime "created_at", null: false
+    t.index ["account_id"], name: "index_signup_sources_on_account_id"
+    t.index ["source_fingerprint", "created_at"], name: "index_signup_sources_on_source_fingerprint_and_created_at"
+  end
+
   create_table "site_design_versions", force: :cascade do |t|
     t.integer "account_id", null: false
     t.json "data", default: {}, null: false
@@ -750,6 +759,8 @@ ActiveRecord::Schema[8.2].define(version: 2026_08_21_090200) do
     t.string "ip_address"
     t.string "source"
     t.datetime "created_at", null: false
+    t.string "source_fingerprint"
+    t.index ["source_fingerprint"], name: "index_subscription_events_on_source_fingerprint"
     t.index ["subscriber_id"], name: "index_subscription_events_on_subscriber_id"
   end
 

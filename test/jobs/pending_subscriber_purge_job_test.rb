@@ -23,6 +23,18 @@ class PendingSubscriberPurgeJobTest < ActiveSupport::TestCase
     assert Subscriber.exists?(fresh.id)
   end
 
+  test "leaves the identity-free signup-source residue behind" do
+    stale = pending_since(31.days.ago, ip: "203.0.113.7")
+    fingerprint = stale.events.first.source_fingerprint
+
+    PendingSubscriberPurgeJob.perform_now
+
+    assert_not Subscriber.exists?(stale.id)
+    residue = SignupSource.find_by(source_fingerprint: fingerprint)
+    assert_equal "subscribed", residue.action
+    assert_equal stale.account, residue.account
+  end
+
   test "never touches a confirmed subscriber, however old" do
     confirmed = pending_since(1.year.ago)
     confirmed.confirm!
@@ -34,8 +46,8 @@ class PendingSubscriberPurgeJobTest < ActiveSupport::TestCase
   end
 
   private
-    def pending_since(time)
-      subscriber = Subscriber.opt_in(email_address: "pending-#{SecureRandom.hex(4)}@example.com")
+    def pending_since(time, ip: nil)
+      subscriber = Subscriber.opt_in(email_address: "pending-#{SecureRandom.hex(4)}@example.com", ip:)
       subscriber.update_column(:created_at, time)
       subscriber
     end

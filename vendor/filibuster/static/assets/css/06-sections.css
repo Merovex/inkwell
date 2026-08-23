@@ -115,8 +115,10 @@ html[data-cards="carousel"] .fk-series:nth-child(even) .fk-series-cover { order:
 html[data-cards="carousel"] .fk-series-cover { max-width: 100%; }
 html[data-cards="carousel"] .fk-series-excerpt { display: none; }
 /* the whole card is the link (stretched from the title anchor), so the
-   action button is redundant noise in a carousel */
-html[data-cards="carousel"] .fk-series-actions { display: none; }
+   action button is redundant noise in a carousel. Scoped to the card —
+   .fk-series-actions also carries the buy buttons on book pages and the
+   "Start with" button on series/collection pages, which must survive. */
+html[data-cards="carousel"] .fk-series .fk-series-actions { display: none; }
 html[data-cards="carousel"] .fk-series-title a::after { content: ""; position: absolute; inset: 0; }
 
 /* fan: every installment's cover fanned like a hand of cards (first four;
