@@ -12,6 +12,17 @@ class PostsControllerTest < ActionDispatch::IntegrationTest
     assert_select "a.list__body[href=?]", admin_post_path(records(:kickoff))
   end
 
+  test "index and show carry the same length fact as the composer's live counter" do
+    length = ApplicationController.helpers.post_length(posts(:kickoff).content)
+    assert_match(/\A\d+ words, about \d+ minutes?\z/, length)
+
+    get admin_posts_path
+    assert_select ".list__meta", text: /#{Regexp.escape(length)}/
+
+    get admin_post_path(records(:kickoff))
+    assert_select ".perma-header__content", text: /#{Regexp.escape(length)}/
+  end
+
   test "index hides trashed posts" do
     records(:kickoff).trash
 
@@ -82,7 +93,7 @@ class PostsControllerTest < ActionDispatch::IntegrationTest
 
   test "composer autosaves: new posts share one draft slot, edits key to the record" do
     get new_admin_post_path
-    assert_select "form#composer[data-controller=autosave][data-autosave-key-value=?]", "posts/new"
+    assert_select "form#composer[data-controller~=autosave][data-autosave-key-value=?]", "posts/new"
 
     get edit_admin_post_path(records(:kickoff))
     assert_select "form#composer[data-autosave-key-value=?]", "Record/#{records(:kickoff).id}/edit"

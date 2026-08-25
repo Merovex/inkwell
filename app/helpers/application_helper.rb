@@ -41,23 +41,31 @@ module ApplicationHelper
   # app/assets/images (e.g. app/assets/images/lucide/*.svg). Never hand-write
   # icon path data here.
 
-  # List-row excerpt from rich text (or any to_plain_text-able), truncated at a
-  # word boundary so rows never end mid-wor…
-  def plain_excerpt(content, length: 140)
-    content.to_plain_text.to_s.truncate(length, separator: " ")
+  # Rich text as plain text. A list row reads a post's body twice — excerpt and
+  # length — so callers that need both parse once and pass the string back in.
+  def plain_text(content)
+    content.respond_to?(:to_plain_text) ? content.to_plain_text.to_s : content.to_s
   end
 
-  # The length fact in a post's status line: "1,840 words" alone, or with a
-  # reading estimate — "1,840 words, about 8 minutes" — for published/scheduled
-  # posts (a reader-facing signal; a draft just shows the raw count). ~225 wpm.
+  # List-row excerpt from rich text (or plain_text output), truncated at a
+  # word boundary so rows never end mid-wor…
+  def plain_excerpt(content, length: 140)
+    plain_text(content).truncate(length, separator: " ")
+  end
+
+  # The length fact in a post's status line and list row: "1,840 words, about 8
+  # minutes" at ~225 wpm. The word-count Stimulus controller phrases the live
+  # count in the composer identically, so the same post reads the same
+  # everywhere. An empty body gets a bare "0 words" — estimating a read of
+  # nothing yet written is noise.
   WORDS_PER_MINUTE = 225
-  def post_length(content, reading: false)
-    words = content.to_plain_text.to_s.split.size
-    phrase = "#{number_with_delimiter(words)} #{"word".pluralize(words)}"
-    return phrase unless reading
+  def post_length(content)
+    words = plain_text(content).split.size
+    count = "#{number_with_delimiter(words)} #{"word".pluralize(words)}"
+    return count if words.zero?
 
     minutes = [ (words / WORDS_PER_MINUTE.to_f).round, 1 ].max
-    "#{phrase}, about #{pluralize(minutes, "minute")}"
+    "#{count}, about #{pluralize(minutes, "minute")}"
   end
 
   # Status chips for a post row: its state (green Published / yellow Scheduled /

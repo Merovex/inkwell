@@ -51,7 +51,7 @@
       <% if @post.published? %>
         <span class="badge badge--success">Published</span>
         · <time datetime="<%= @post.published_at.to_date.iso8601 %>"><%= l @post.published_at.to_date, format: :long %></time>
-        · <%= post_length(@post.content, reading: true) %>
+        · <%= post_length(@post.content) %>
         <% broadcast = @record.broadcast %>
         <% if broadcast&.sent? %>
           · Emailed to <%= pluralize(broadcast.recipients_count, "subscriber") %> on <%= l broadcast.sent_at.to_date, format: :long %>
@@ -63,7 +63,7 @@
         · <span class="u-text-strong">Publishes
           <time datetime="<%= @post.published_at.iso8601 %>" data-controller="local-time"
                 data-local-time-datetime-value="<%= @post.published_at.iso8601 %>"><%= @post.published_at.strftime("%A, %B %-d at %-l:%M %p") %></time></span>
-        · <%= post_length(@post.content, reading: true) %>
+        · <%= post_length(@post.content) %>
       <% else %>
         <span class="badge">Draft</span>
         · Started <time datetime="<%= @post.created_at.to_date.iso8601 %>"><%= l @post.created_at.to_date, format: :long %></time>

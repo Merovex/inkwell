@@ -6,9 +6,10 @@
 <%# Autosaved to localStorage: new posts share the posts/new draft slot; %>
 <%# edits key to the record, guarded by the current version id. %>
 <%= form_with model: post, url: url, id: "composer", class: "composer",
-      data: { controller: "autosave",
+      data: { controller: "autosave word-count",
               autosave_key_value: (post.record_id ? "Record/#{post.record_id}/edit" : "posts/new"),
-              autosave_revision_value: post.record&.recordable_id } do |f| %>
+              autosave_revision_value: post.record&.recordable_id,
+              word_count_words_per_minute_value: ApplicationHelper::WORDS_PER_MINUTE } do |f| %>
   <%= f.text_field :title, class: "composer__title", placeholder: "Post title",
         "aria-label": "Title", required: true, autofocus: true %>
 
@@ -30,5 +31,11 @@
 
   <%= render "admin/shared/author_select", f: f, resource: post %>
 
-  <%= f.rich_textarea :content, placeholder: "Write away…", "aria-label": "Body" %>
+  <%# The body, and under it a live word count + reading estimate (word-count
+      controller), worded exactly like post_length on the index and post pages.
+      The hint is a sibling, not a wrapper: .composer lexxy-editor flex-grows to
+      fill the canvas and a wrapper div would swallow that. %>
+  <%= f.rich_textarea :content, placeholder: "Write away…", "aria-label": "Body",
+        data: { word_count_target: "source", action: "lexxy:change->word-count#update lexxy:initialize->word-count#update" } %>
+  <p class="composer__hint u-text-muted"><span data-word-count-target="output">0 words</span></p>
 <% end %>
