@@ -31,7 +31,8 @@ class CustomDomain::Diagnosis
     return @reason if defined?(@reason)
 
     @reason = begin
-      if cname.nil? && addresses.empty? then :unresolved
+      if routing_settled? then txt_fault || :pending
+      elsif cname.nil? && addresses.empty? then :unresolved
       else routing_fault || txt_fault || :pending
       end
     rescue Resolv::ResolvError, Resolv::ResolvTimeout, IOError, SystemCallError
@@ -39,6 +40,7 @@ class CustomDomain::Diagnosis
     end
   end
 
+  # Cloudflare has verified the hostname itself, so routing demonstrably works
   # Does DNS already point this hostname at us? True while the certificate is
   # still pending — reaching the TXT checks at all means the records resolve
   # here, and everything left is Cloudflare's side of the handshake. The build
@@ -46,6 +48,16 @@ class CustomDomain::Diagnosis
   # one.
   ROUTED = %i[ txt_missing txt_mismatch pending ].freeze
   def routed? = ROUTED.include?(reason)
+
+  # The first outstanding record DNS doesn't already satisfy — what the author
+  # has to do next, named exactly. Nil once every record is published.
+  def blocking_record
+    return @blocking_record if defined?(@blocking_record)
+
+    @blocking_record = @domain.validation_records.find do |record|
+      txt_values(record.txt_name).exclude?(record.txt_value)
+    end
+  end
 
   def message
     case reason
@@ -58,10 +70,11 @@ class CustomDomain::Diagnosis
       "certificate validates against. Set it to DNS-only — the site may look fine meanwhile, but the " \
       "hostname will never finish."
     when :txt_missing
-      "#{hostname} points here correctly. The TXT record #{@domain.txt_name} isn't in DNS yet — add it exactly as shown below."
+      "#{hostname} points here correctly. The TXT record #{blocking_record.txt_name} isn't in DNS yet — " \
+      "add it exactly as shown below."
     when :txt_mismatch
-      "#{hostname} points here correctly, but the TXT record #{@domain.txt_name} has the wrong value. " \
-      "Replace it with the one shown below."
+      "#{hostname} points here correctly, but #{blocking_record.txt_name} doesn't carry the value Cloudflare " \
+      "is waiting for. Add the value shown below — keep any other values already on that name."
     when :undetermined
       "Couldn't read DNS just now. Try again in a moment."
     else
@@ -71,6 +84,18 @@ class CustomDomain::Diagnosis
 
   private
     def hostname = @domain.hostname
+
+    # Cloudflare has verified the hostname itself, so routing demonstrably
+    # works and our own resolver's reading of it is not evidence of anything.
+    # This matters for an author whose zone is also on Cloudflare: an
+    # orange-clouded record answers with THEIR proxy addresses and never
+    # exposes the CNAME, so the checks below conclude :proxied and tell them to
+    # turn off a proxy that is carrying their traffic perfectly well.
+    # Believing our guess over Cloudflare's answer sent exactly that advice to
+    # a working domain (2026-08-26).
+    def routing_settled?
+      CustomDomain::ACTIVE_HOSTNAME_STATUSES.include?(@domain.cloudflare_status)
+    end
 
     # A CNAME must name the target. An apex can't be a CNAME — DNS hosts
     # flatten it to A records — so it has to land on the target's own
@@ -88,14 +113,15 @@ class CustomDomain::Diagnosis
       end
     end
 
-    # Nothing to check until Cloudflare has minted the record — the page says
-    # as much on its own.
+    # Nothing to check until Cloudflare has minted the records — the page says
+    # as much on its own. Every outstanding record has to be published, not
+    # just the first: a rotated order leaves two pending, and reporting on one
+    # of them let an author satisfy the record we named while the one actually
+    # blocking issuance went unmentioned.
     def txt_fault
-      return if @domain.txt_name.blank? || @domain.txt_value.blank?
+      return if blocking_record.nil?
 
-      if txt_values.empty? then :txt_missing
-      elsif txt_values.exclude?(@domain.txt_value) then :txt_mismatch
-      end
+      txt_values(blocking_record.txt_name).empty? ? :txt_missing : :txt_mismatch
     end
 
     # The onboarding only ever instructs an apex and its www (see the DNS
@@ -116,7 +142,12 @@ class CustomDomain::Diagnosis
       @target_addresses ||= lookup(@cname_target, Resolv::DNS::Resource::IN::A).map { |a| a.address.to_s }
     end
 
-    def txt_values = @txt_values ||= lookup(@domain.txt_name, Resolv::DNS::Resource::IN::TXT).flat_map(&:strings)
+    # Memoised per name — the apex and its www validate under different names,
+    # and a name can carry several records.
+    def txt_values(name)
+      @txt_values ||= {}
+      @txt_values[name] ||= lookup(name, Resolv::DNS::Resource::IN::TXT).flat_map(&:strings)
+    end
 
     def lookup(name, type) = resolver.getresources(name.to_s, type)
 

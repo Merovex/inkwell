@@ -76,10 +76,25 @@ to five minutes to propagate.
 
 ### Step 4 — Show DNS instructions (`custom_domains/index.html.erb`)
 > **Record 1** — Type: `CNAME` · Name: `www` · Target: `sites.kindredquill.com`
-> **Record 2** — Type: `TXT` · Name: `_cf-custom-hostname.www` · Value: *(txt_value)*
+> **Record 2** — Type: `TXT` · Name: `_acme-challenge.www` · Value: *(each
+> outstanding `validation_records` entry)*
 
 Kept literally "type, name, value" — that's what every registrar's form asks.
-The TXT proves control; it can be deleted once the hostname goes active.
+
+Two things the first cut of this page got wrong, both of which stranded a real
+domain (benwilsondev.com, 2026-08-26):
+
+- **`ssl.validation_records` is a list, not a record.** Cloudflare carries one
+  entry per in-flight validation attempt, so a rotated order leaves the old
+  value *and* a new one outstanding, and the certificate issues only when every
+  one of them is published. Rendering `.first` hid the blocking value while the
+  author dutifully re-added the one they already had. The rows store the whole
+  set (`custom_domains.validation_records`, JSON) and the page renders all of
+  them, saying explicitly that the values coexist on one name.
+- **The records are not one-time.** Cloudflare re-uses them at renewal, so
+  nothing should tell the author to delete them. Only rows still short of
+  `live` render instructions at all — a finished hostname kept advertising its
+  spent token otherwise.
 
 ### Step 5 — Poll until active (`CustomDomainStatusJob`)
 `GET …/custom_hostnames/{id}` on a backing-off background job. A domain is
@@ -88,6 +103,26 @@ The TXT proves control; it can be deleted once the hostname goes active.
 loaded for me" is not the signal. When every row is live the job bridges the
 canonical apex onto `accounts.domain` (legacy host resolution + apex redirect)
 and emails the author (`DomainMailer#live`).
+
+The chain runs ~25h (30 attempts, backoff capped at an hour). It used to run
+~2.6h, which was shorter than the time it takes most authors to get to their
+registrar — so the common case was the chain dying before DNS landed, and then
+nothing ever looking at the row again. When it does run out the rows go to
+`status: "error"`, which means *nothing is watching any more*, not *this domain
+is broken*: `CustomDomain::UNRESOLVED_STATUSES` keeps them eligible, opening the
+domains page re-enqueues the poll, and the Check badge still polls inline. The
+page says so rather than showing a "verifying" that will never change.
+
+### Diagnosing a stuck row (`CustomDomain::Diagnosis`)
+Reads public DNS and names the first unmet precondition. One rule matters more
+than the DNS reading itself: **when `cloudflare_status` is active, Cloudflare
+has verified the hostname and routing is settled**, whatever our resolver
+infers. An author whose own zone is on Cloudflare orange-clouds the record, so
+it answers with *their* proxy addresses and never exposes the CNAME — reading
+DNS alone concludes `:proxied` and tells them to disable a proxy that is
+carrying their traffic perfectly well (and their own wildcard certificate makes
+the site look finished meanwhile). Believing our own guess over Cloudflare's
+answer is how that advice reached a working domain.
 
 ## The merovex.press wrinkle
 

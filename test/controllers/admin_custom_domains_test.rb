@@ -45,7 +45,8 @@ class AdminCustomDomainsTest < ActionDispatch::IntegrationTest
 
   test "the check badge names why a domain is stuck instead of just saying it waited" do
     accounts(:merovex).custom_domains.create!(hostname: "www.merovex.press", canonical: true,
-      status: "verifying", cloudflare_id: "id", txt_name: "_cf-custom-hostname.www.merovex.press", txt_value: "tv")
+      status: "verifying", cloudflare_id: "id",
+      validation_records: [ { "txt_name" => "_acme-challenge.www.merovex.press", "txt_value" => "tv" } ])
     CustomDomainStatusJob.client_override = FakeCloudflare.new(status: "pending", ssl_status: "pending_validation")
     sign_in_as users(:admin)
 
@@ -81,12 +82,66 @@ class AdminCustomDomainsTest < ActionDispatch::IntegrationTest
 
   test "index shows DNS instructions for a verifying domain" do
     accounts(:merovex).custom_domains.create!(hostname: "www.merovex.press", canonical: true,
-      status: "verifying", cloudflare_id: "id", txt_name: "_cf-custom-hostname.www.merovex.press", txt_value: "tv")
+      status: "verifying", cloudflare_id: "id",
+      validation_records: [ { "txt_name" => "_acme-challenge.www.merovex.press", "txt_value" => "tv" } ])
     sign_in_as users(:admin)
     get admin_custom_domains_path
     assert_response :success
-    assert_select ".field__label", text: /_cf-custom-hostname\.www\.merovex\.press/
+    assert_select ".field__label", text: /_acme-challenge\.www\.merovex\.press/
     assert_select ".copy-field__value[value=?]", "tv"
     assert_select ".copy-field__value[value=?]", Rails.configuration.x.cloudflare.cname_target
+  end
+
+  test "index shows every outstanding validation record for a hostname" do
+    # The bug this replaces: only the first was ever rendered, so the record
+    # actually blocking issuance stayed invisible and the author added the one
+    # they already had, forever.
+    accounts(:merovex).custom_domains.create!(hostname: "www.merovex.press", canonical: true,
+      status: "verifying", cloudflare_id: "id",
+      validation_records: [ { "txt_name" => "_acme-challenge.www.merovex.press", "txt_value" => "already-published" },
+                            { "txt_name" => "_acme-challenge.www.merovex.press", "txt_value" => "the-blocking-one" } ])
+    sign_in_as users(:admin)
+
+    get admin_custom_domains_path
+
+    assert_select ".copy-field__value[value=?]", "already-published"
+    assert_select ".copy-field__value[value=?]", "the-blocking-one"
+    # And says they coexist, so nobody replaces one with the other.
+    assert_select "p", text: /add every value/
+  end
+
+  test "index stops asking for records from a hostname that is already live" do
+    account = accounts(:merovex)
+    account.custom_domains.create!(hostname: "merovex.press", status: "live", cloudflare_id: "id-apex",
+      validation_records: [ { "txt_name" => "_acme-challenge.merovex.press", "txt_value" => "spent" } ])
+    account.custom_domains.create!(hostname: "www.merovex.press", canonical: true, status: "verifying",
+      cloudflare_id: "id-www",
+      validation_records: [ { "txt_name" => "_acme-challenge.www.merovex.press", "txt_value" => "still-needed" } ])
+    sign_in_as users(:admin)
+
+    get admin_custom_domains_path
+
+    assert_select ".copy-field__value[value=?]", "still-needed"
+    assert_select ".copy-field__value[value=?]", "spent", false,
+      "a live hostname must stop advertising its spent DV token"
+  end
+
+  test "index says so when the poll has given up instead of showing a waiting badge" do
+    accounts(:merovex).custom_domains.create!(hostname: "www.merovex.press", canonical: true,
+      status: "error", cloudflare_id: "id", last_checked_at: 1.minute.ago)
+    sign_in_as users(:admin)
+
+    get admin_custom_domains_path
+
+    assert_select ".alert--warning", text: /Automatic checking has stopped/
+    assert_select ".check-badge", text: /Check again/
+  end
+
+  test "index revives the poll for a domain the chain gave up on" do
+    accounts(:merovex).custom_domains.create!(hostname: "www.merovex.press", canonical: true,
+      status: "error", cloudflare_id: "id", last_checked_at: 3.hours.ago)
+    sign_in_as users(:admin)
+
+    assert_enqueued_with(job: CustomDomainStatusJob) { get admin_custom_domains_path }
   end
 end

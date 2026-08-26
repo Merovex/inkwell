@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.2].define(version: 2026_08_26_003804) do
+ActiveRecord::Schema[8.2].define(version: 2026_08_26_090000) do
   create_table "account_users", force: :cascade do |t|
     t.integer "account_id", null: false
     t.integer "user_id", null: false
@@ -343,12 +343,11 @@ ActiveRecord::Schema[8.2].define(version: 2026_08_26_003804) do
     t.string "status", default: "pending", null: false
     t.string "cloudflare_id"
     t.string "ssl_status"
-    t.string "txt_name"
-    t.string "txt_value"
     t.datetime "last_checked_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "cloudflare_status"
+    t.json "validation_records", default: [], null: false
     t.index ["account_id"], name: "index_custom_domains_on_account_id"
     t.index ["hostname"], name: "index_custom_domains_on_hostname", unique: true
   end

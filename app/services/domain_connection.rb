@@ -75,7 +75,7 @@ class DomainConnection
       domain.update!(
         canonical: canonical, status: "verifying",
         cloudflare_id: created.id, ssl_status: created.ssl_status,
-        txt_name: created.txt_name, txt_value: created.txt_value,
+        validation_records: created.validation_records,
         last_checked_at: Time.current
       )
       domain

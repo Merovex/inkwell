@@ -36,7 +36,7 @@ class CustomDomainDiagnosisTest < ActiveSupport::TestCase
   test "a www CNAME pointing at the target with a matching TXT is just waiting on Cloudflare" do
     assert_equal :pending, diagnose(www,
       "www.merovex.press" => { cname: TARGET },
-      "_cf-custom-hostname.www.merovex.press" => { txt: "tv" })
+      "_acme-challenge.www.merovex.press" => { txt: "tv" })
   end
 
   test "a hostname that resolves to nothing is unresolved" do
@@ -62,7 +62,7 @@ class CustomDomainDiagnosisTest < ActiveSupport::TestCase
     assert_equal :pending, diagnose(apex,
       "merovex.press" => { a: TARGET_IPS },
       TARGET => { a: TARGET_IPS },
-      "_cf-custom-hostname.merovex.press" => { txt: "tv" })
+      "_acme-challenge.merovex.press" => { txt: "tv" })
   end
 
   test "an apex flattened onto someone else's addresses is misrouted, not proxied" do
@@ -74,13 +74,13 @@ class CustomDomainDiagnosisTest < ActiveSupport::TestCase
     diagnosis = build(www, "www.merovex.press" => { cname: TARGET })
 
     assert_equal :txt_missing, diagnosis.reason
-    assert_match(/_cf-custom-hostname\.www\.merovex\.press/, diagnosis.message)
+    assert_match(/_acme-challenge\.www\.merovex\.press/, diagnosis.message)
   end
 
   test "a TXT with the wrong value is distinguished from a missing one" do
     assert_equal :txt_mismatch, diagnose(www,
       "www.merovex.press" => { cname: TARGET },
-      "_cf-custom-hostname.www.merovex.press" => { txt: "stale" })
+      "_acme-challenge.www.merovex.press" => { txt: "stale" })
   end
 
   test "routing is reported ahead of the TXT — the broken site outranks the pending certificate" do
@@ -88,10 +88,52 @@ class CustomDomainDiagnosisTest < ActiveSupport::TestCase
   end
 
   test "a TXT Cloudflare hasn't minted yet is not the author's problem" do
-    domain = www
-    domain.txt_name = domain.txt_value = nil
+    assert_equal :pending, diagnose(www(records: []), "www.merovex.press" => { cname: TARGET })
+  end
 
-    assert_equal :pending, diagnose(domain, "www.merovex.press" => { cname: TARGET })
+  # The case this suite was missing: Cloudflare lists one record per in-flight
+  # validation attempt, so a rotated order leaves the published one AND a new
+  # one outstanding. Judging only the first said everything was fine while the
+  # certificate sat unissued (benwilsondev.com, 2026-08-26).
+  test "an earlier record already published doesn't excuse the one still outstanding" do
+    diagnosis = build(www(records: [ validation("www.merovex.press", "published"),
+                                     validation("www.merovex.press", "outstanding") ]),
+      "www.merovex.press" => { cname: TARGET },
+      "_acme-challenge.www.merovex.press" => { txt: "published" })
+
+    assert_equal :txt_mismatch, diagnosis.reason
+    assert_equal "outstanding", diagnosis.blocking_record.txt_value
+    # Add, don't swap — replacing the published value would undo working DNS.
+    assert_match(/keep any other values/, diagnosis.message)
+  end
+
+  test "every outstanding record published is what settles the TXT check" do
+    assert_equal :pending, diagnose(www(records: [ validation("www.merovex.press", "one"),
+                                                   validation("www.merovex.press", "two") ]),
+      "www.merovex.press" => { cname: TARGET },
+      "_acme-challenge.www.merovex.press" => { txt: %w[ one two ] })
+  end
+
+  # An author whose own zone is on Cloudflare orange-clouds the record: it
+  # answers with THEIR proxy addresses and never exposes the CNAME, so reading
+  # DNS alone concludes :proxied and tells them to disable a proxy that is
+  # carrying their traffic perfectly well. Cloudflare verified the hostname, so
+  # routing demonstrably works and our guess is not evidence.
+  test "a hostname Cloudflare has verified is never blamed for its routing" do
+    diagnosis = build(www(cloudflare_status: "active", records: []),
+      "www.merovex.press" => { a: %w[ 104.21.53.21 172.67.207.200 ] })
+
+    assert_equal :pending, diagnosis.reason
+    assert_no_match(/DNS-only/, diagnosis.message)
+  end
+
+  test "a verified hostname still reports an outstanding TXT record" do
+    diagnosis = build(www(cloudflare_status: "active"),
+      "www.merovex.press" => { a: %w[ 104.21.53.21 ] })
+
+    assert_equal :txt_missing, diagnosis.reason
+    # Routing is settled, so the build must target the domain regardless.
+    assert diagnosis.routed?
   end
 
   test "a resolver that can't answer says so instead of blaming DNS" do
@@ -102,14 +144,18 @@ class CustomDomainDiagnosisTest < ActiveSupport::TestCase
   end
 
   private
-    def www
+    def www(records: [ validation("www.merovex.press", "tv") ], **attributes)
       accounts(:merovex).custom_domains.new(hostname: "www.merovex.press", status: "verifying",
-        txt_name: "_cf-custom-hostname.www.merovex.press", txt_value: "tv")
+        validation_records: records, **attributes)
     end
 
-    def apex
+    def apex(records: [ validation("merovex.press", "tv") ], **attributes)
       accounts(:merovex).custom_domains.new(hostname: "merovex.press", status: "verifying",
-        txt_name: "_cf-custom-hostname.merovex.press", txt_value: "tv")
+        validation_records: records, **attributes)
+    end
+
+    def validation(hostname, value)
+      { "txt_name" => "_acme-challenge.#{hostname}", "txt_value" => value }
     end
 
     def build(domain, zone = {})

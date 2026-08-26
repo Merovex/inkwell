@@ -16,6 +16,10 @@
     <% canonical = @domains.find(&:canonical?) || @domains.first %>
     <% apex = canonical.hostname.delete_prefix("www.") %>
     <% all_live = @domains.all?(&:live?) %>
+    <%# Only hostnames still short of live have anything left to ask of the
+        author — a finished one kept advertising its (by then meaningless) DV
+        token, which is how a working apex sent someone chasing a dead record. %>
+    <% pending = @domains.reject(&:live?) %>
 
     <section class="card" aria-label="Connected domain">
       <header class="card__header u-cluster u-cluster-between">
@@ -23,7 +27,10 @@
         <% if all_live %>
           <span class="badge badge--success">Live</span>
         <% else %>
-          <%= render "shared/check_badge", url: admin_custom_domain_check_path %>
+          <%# Once the poll has given up, "Waiting for DNS" is a lie — nothing
+              is waiting. Name the button for the action that resumes it. %>
+          <%= render "shared/check_badge", url: admin_custom_domain_check_path,
+                label: pending.any?(&:error?) ? "Check again" : "Waiting for DNS" %>
         <% end %>
       </header>
 
@@ -43,6 +50,16 @@
         </dl>
 
         <% unless all_live %>
+          <% if pending.any?(&:error?) %>
+            <div class="alert alert--warning">
+              <div>
+                <span class="alert__title">Automatic checking has stopped.</span>
+                We watched for these records for a day without seeing all of them. Add what's below, then press
+                Check again at the top of this card — that restarts the checks right away.
+              </div>
+            </div>
+          <% end %>
+
           <div class="u-stack">
             <h3>Add these records where <%= apex %>'s DNS lives</h3>
 
@@ -57,15 +74,26 @@
                   hint: "Most DNS hosts call this ALIAS, ANAME, or CNAME flattening. If yours has none of " \
                         "those at the root, set up a redirect from #{apex} to www.#{apex} instead." %>
 
-            <% @domains.each do |domain| %>
-              <% next if domain.txt_name.blank? %>
-              <%= render "shared/copy_field",
-                    label: "TXT — name: #{domain.txt_name}",
-                    value: domain.txt_value,
-                    hint: "Proves you control #{domain.hostname} so the certificate can issue before any traffic moves." %>
+            <%# Every outstanding record, for every hostname that isn't done.
+                Cloudflare lists one per in-flight validation attempt, so a
+                rotated order leaves two on the same name and the certificate
+                issues only when both are published. %>
+            <% pending.each do |domain| %>
+              <% domain.validation_records.each do |record| %>
+                <%= render "shared/copy_field",
+                      label: "TXT — name: #{record.txt_name}",
+                      value: record.txt_value,
+                      hint: "Proves you control #{domain.hostname} so the certificate can issue before any traffic moves." %>
+              <% end %>
             <% end %>
 
-            <% if @domains.all? { |d| d.txt_name.blank? } %>
+            <% if pending.any? { |d| d.validation_records.many? } %>
+              <p class="u-text-muted">Where a name is listed more than once, add every value — Cloudflare is
+                 waiting on all of them, and they sit alongside each other on the same record rather than
+                 replacing one another.</p>
+            <% end %>
+
+            <% if pending.all? { |d| d.validation_records.none? } %>
               <p class="u-text-muted">The TXT verification records are still being issued — check back in a minute.</p>
             <% end %>
 

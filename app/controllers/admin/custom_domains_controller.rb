@@ -36,13 +36,17 @@ class Admin::CustomDomainsController < Admin::BaseController
       @cname_target = Rails.configuration.x.cloudflare.cname_target
     end
 
-    # The status poll re-enqueues itself for only ~2.6h after connect; authors
-    # publish DNS on their own clock, so a row can validate after the poll
-    # dies and freeze at "verifying". The author checking this page is the
-    # natural retry signal — restart the poll when the row's gone stale (the
-    # job touches last_checked_at every pass, so this can't storm).
+    # The status poll's chain is finite; authors publish DNS on their own clock,
+    # so a row can validate after the poll stops and freeze short of live. The
+    # author opening this page is the natural retry signal — restart the poll
+    # when a row's gone stale (the job touches last_checked_at every pass, so
+    # this can't storm). Rows the chain gave up on (error) are included: that
+    # status means "nothing is watching", which is precisely when a visit
+    # should start watching again.
     def repoll_if_stale
-      return unless @domains.any? { |d| d.verifying? && (d.last_checked_at.nil? || d.last_checked_at < 10.minutes.ago) }
+      return unless @domains.any? { |d| CustomDomain::UNRESOLVED_STATUSES.include?(d.status) && stale?(d) }
       CustomDomainStatusJob.perform_later(Current.account)
     end
+
+    def stale?(domain) = domain.last_checked_at.nil? || domain.last_checked_at < 10.minutes.ago
 end

@@ -5,15 +5,21 @@ class CustomDomainStatusJobTest < ActiveSupport::TestCase
   include ActionMailer::TestHelper
 
   # Returns the given hostname/ssl statuses for every custom hostname it's asked
-  # about — injected through the job's client_override seam.
+  # about — injected through the job's client_override seam. `validations` are
+  # the txt_value strings Cloudflare is still listing, in the shape it uses.
   class FakeClient
-    def initialize(status:, ssl_status:)
+    def initialize(status:, ssl_status:, validations: [])
       @status = status
       @ssl_status = ssl_status
+      @validations = validations
     end
 
     def get_custom_hostname(id)
-      Cloudflare::CustomHostname.new("id" => id, "status" => @status, "ssl" => { "status" => @ssl_status })
+      Cloudflare::CustomHostname.new("id" => id, "status" => @status,
+        "ssl" => { "status" => @ssl_status,
+                   "validation_records" => @validations.map { |value|
+                     { "txt_name" => "_acme-challenge.merovex.press", "txt_value" => value }
+                   } })
     end
   end
 
@@ -97,6 +103,69 @@ class CustomDomainStatusJobTest < ActiveSupport::TestCase
       # The alert carries the worked-out DNS reason, so it is actionable on sight.
       assert_equal :unresolved, alerts.dig(0, 1, :context, :domains, 0, :diagnosis)
     end
+  end
+
+  test "marks a domain the chain gave up on so the page can stop claiming it is verifying" do
+    account = accounts(:merovex)
+    domain = account.custom_domains.create!(hostname: "merovex.press", status: "verifying", cloudflare_id: "id-apex")
+    CustomDomainStatusJob.client_override = FakeClient.new(status: "pending", ssl_status: "pending_validation")
+
+    capturing_alerts do
+      CustomDomainStatusJob.perform_now(account, attempt: CustomDomainStatusJob::MAX_ATTEMPTS)
+    end
+
+    assert domain.reload.error?
+  end
+
+  test "a domain the chain gave up on is still polled, and can still go live" do
+    account = accounts(:merovex)
+    account.update!(domain: nil)
+    domain = account.custom_domains.create!(hostname: "merovex.press", status: "error",
+      cloudflare_id: "id-apex", canonical: true)
+    CustomDomainStatusJob.client_override = FakeClient.new(status: "active", ssl_status: "active")
+
+    CustomDomainStatusJob.perform_now(account)
+
+    assert domain.reload.live?
+  end
+
+  test "stores every outstanding validation record, not just the first" do
+    account = accounts(:merovex)
+    domain = account.custom_domains.create!(hostname: "merovex.press", status: "verifying", cloudflare_id: "id-apex")
+    # A rotated order leaves the old and the new both pending; keeping only the
+    # first hid the record that was actually blocking issuance.
+    CustomDomainStatusJob.client_override = FakeClient.new(status: "active", ssl_status: "pending_validation",
+      validations: %w[ old-token new-token ])
+
+    CustomDomainStatusJob.perform_now(account)
+
+    assert_equal %w[ old-token new-token ], domain.reload.validation_records.map(&:txt_value)
+  end
+
+  test "clears the validation records once the certificate issues" do
+    account = accounts(:merovex)
+    domain = account.custom_domains.create!(hostname: "merovex.press", status: "verifying", cloudflare_id: "id-apex",
+      validation_records: [ { "txt_name" => "_acme-challenge.merovex.press", "txt_value" => "spent" } ])
+    # Cloudflare stops listing records once the cert is deployed. Keeping the
+    # last one seen is what left a finished hostname demanding a dead token.
+    CustomDomainStatusJob.client_override = FakeClient.new(status: "active", ssl_status: "active")
+
+    CustomDomainStatusJob.perform_now(account)
+
+    assert_empty domain.reload.validation_records
+  end
+
+  test "keeps the known records while Cloudflare is still minting them" do
+    account = accounts(:merovex)
+    domain = account.custom_domains.create!(hostname: "merovex.press", status: "verifying", cloudflare_id: "id-apex",
+      validation_records: [ { "txt_name" => "_acme-challenge.merovex.press", "txt_value" => "minted" } ])
+    # ssl "initializing" answers with no records yet; blanking here would wipe
+    # instructions the author may be halfway through following.
+    CustomDomainStatusJob.client_override = FakeClient.new(status: "pending", ssl_status: "initializing")
+
+    CustomDomainStatusJob.perform_now(account)
+
+    assert_equal %w[ minted ], domain.reload.validation_records.map(&:txt_value)
   end
 
   private

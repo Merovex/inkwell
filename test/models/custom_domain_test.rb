@@ -39,4 +39,28 @@ class CustomDomainTest < ActiveSupport::TestCase
 
     assert domain.provisioned?
   end
+
+  test "provisioned? still flips a row the poll chain gave up on" do
+    # "error" means nothing is watching any more, not that the domain is
+    # unsalvageable — the author publishing the record later must still count.
+    domain = accounts(:merovex).custom_domains.create!(hostname: "example.com", status: "error", ssl_status: "active")
+    domain.cloudflare_status = "active"
+
+    assert domain.provisioned?
+  end
+
+  test "validation_records round-trip through the JSON column as value objects" do
+    domain = accounts(:merovex).custom_domains.create!(hostname: "example.com",
+      validation_records: [ { "txt_name" => "_acme-challenge.example.com", "txt_value" => "one" },
+                            { "txt_name" => "_acme-challenge.example.com", "txt_value" => "two" } ])
+
+    records = domain.reload.validation_records
+    assert_equal 2, records.size
+    assert_equal "_acme-challenge.example.com", records.first.txt_name
+    assert_equal %w[ one two ], records.map(&:txt_value)
+  end
+
+  test "validation_records defaults to empty rather than nil" do
+    assert_empty accounts(:merovex).custom_domains.create!(hostname: "example.com").validation_records
+  end
 end

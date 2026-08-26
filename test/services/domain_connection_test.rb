@@ -21,7 +21,7 @@ class DomainConnectionTest < ActiveSupport::TestCase
       Cloudflare::CustomHostname.new(
         "id" => "id-#{hostname}", "hostname" => hostname, "status" => "pending",
         "ssl" => { "status" => "pending_validation",
-                   "validation_records" => [ { "txt_name" => "_cf-custom-hostname.#{hostname}",
+                   "validation_records" => [ { "txt_name" => "_acme-challenge.#{hostname}",
                                                "txt_value" => "tv-#{hostname}" } ] }
       )
     end
@@ -65,7 +65,9 @@ class DomainConnectionTest < ActiveSupport::TestCase
     assert_equal %w[merovex.press www.merovex.press], rows.map(&:hostname)
     assert rows.all?(&:verifying?)
     assert_equal "www.merovex.press", rows.find(&:canonical?).hostname
-    assert_equal "_cf-custom-hostname.www.merovex.press", rows.find(&:canonical?).txt_name
+    canonical = rows.find(&:canonical?)
+    assert_equal "_acme-challenge.www.merovex.press", canonical.validation_records.sole.txt_name
+    assert_equal "tv-www.merovex.press", canonical.validation_records.sole.txt_value
   end
 
   test "connect refuses a hostname already connected to another account" do

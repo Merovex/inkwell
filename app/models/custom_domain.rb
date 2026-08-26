@@ -9,9 +9,15 @@ class CustomDomain < ApplicationRecord
   # pending    — row created, Cloudflare custom hostname + KV not yet written
   # verifying  — hostname created; waiting on DV-TXT + certificate (poll job)
   # live       — result.status AND result.ssl.status both active
-  # error      — validation stuck / provisioning failed (surface the reason)
+  # error      — the poll chain ran out before this validated; nothing is
+  #              watching it any more, and the page says so instead of showing
+  #              a "verifying" that will never change on its own
   # disconnected — author removed it; KV key + custom hostname torn down
   STATUSES = %w[ pending verifying live error disconnected ].freeze
+
+  # Still on its way to live: the poll may have stopped watching (error), but
+  # a later check can still flip either of these.
+  UNRESOLVED_STATUSES = %w[ verifying error ].freeze
 
   validates :hostname, presence: true,
     uniqueness: { case_sensitive: false } # advisory; the unique index is authoritative
@@ -19,8 +25,19 @@ class CustomDomain < ApplicationRecord
   validate :hostname_is_acceptable, on: :create
 
   scope :connected, -> { where.not(status: "disconnected") }
+  scope :unresolved, -> { where(status: UNRESOLVED_STATUSES) }
 
   STATUSES.each { |s| define_method("#{s}?") { status == s } }
+
+  # The DV TXT records Cloudflare is still waiting on, as value objects rather
+  # than raw JSON hashes — see CustomDomain::ValidationRecord. Empty once the
+  # certificate issues (Cloudflare stops listing them), which is exactly what
+  # the DNS instructions should show: nothing left to add.
+  def validation_records = ValidationRecord.wrap(super)
+
+  def validation_records=(records)
+    super(ValidationRecord.wrap(records).map(&:as_json))
+  end
 
   # The KV value the edge Worker expects for this hostname: the plain account
   # slug, no JSON wrapper (edge/src/index.js reads it as a bare string).
@@ -42,8 +59,12 @@ class CustomDomain < ApplicationRecord
   # permanently: nothing revisits a row that never flips.
   ACTIVE_HOSTNAME_STATUSES = %w[ active active_redeploying ].freeze
 
+  # Either unresolved status can still flip: a row the poll gave up on (error)
+  # validates the moment the author finally publishes the record, and the next
+  # check must be allowed to notice.
   def provisioned?
-    status == "verifying" && ACTIVE_HOSTNAME_STATUSES.include?(cloudflare_status) && ssl_status == "active"
+    UNRESOLVED_STATUSES.include?(status) && ACTIVE_HOSTNAME_STATUSES.include?(cloudflare_status) &&
+      ssl_status == "active"
   end
 
   # Why this row hasn't validated, read from public DNS (CustomDomain::Diagnosis).

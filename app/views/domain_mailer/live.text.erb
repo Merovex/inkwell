@@ -5,8 +5,8 @@ Your custom domain is live.
   https://<%= @domain.hostname %>/
   https://<%= @apex %>/
 
-The certificate is deployed and traffic is flowing through Cloudflare. You can
-delete the temporary _cf-custom-hostname TXT record from your DNS now if you'd
-like — it was only needed to prove you control the domain.
+The certificate is deployed and traffic is flowing through Cloudflare. Leave the
+_acme-challenge TXT records in your DNS — they aren't one-time, and the
+certificate uses them again each time it renews.
 
 — Kindred Quill

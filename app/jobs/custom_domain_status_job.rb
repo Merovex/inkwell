@@ -11,13 +11,17 @@ class CustomDomainStatusJob < ApplicationJob
   # be a job argument (not serializable), so tests set this instead of stubbing.
   cattr_accessor :client_override
 
-  MAX_ATTEMPTS = 20
+  # Long enough to cover a full day. The old ceiling (20 attempts capped at
+  # 10 minutes) gave up after ~2.6h, but authors publish DNS on a registrar's
+  # clock — often the next day — so every slow author was guaranteed to fall
+  # off the end and never be looked at again.
+  MAX_ATTEMPTS = 30
 
   def perform(account, attempt: 1)
-    verifying = account.custom_domains.where(status: "verifying")
-    return if verifying.empty?
+    unresolved = account.custom_domains.unresolved
+    return if unresolved.empty?
 
-    verifying.each { |domain| refresh(domain) }
+    unresolved.each { |domain| refresh(domain) }
 
     if account.custom_domains.connected.where.not(status: "live").none?
       go_live(account)
@@ -35,15 +39,22 @@ class CustomDomainStatusJob < ApplicationJob
   private
     def refresh(domain)
       hostname = cf_client.get_custom_hostname(domain.cloudflare_id)
-      # Cloudflare mints the DV-TXT record asynchronously (ssl "initializing"
-      # at creation) — backfill it so the DNS instructions can render.
       domain.update!(cloudflare_status: hostname.status,
         ssl_status: hostname.ssl_status, last_checked_at: Time.current,
-        txt_name: hostname.txt_name || domain.txt_name,
-        txt_value: hostname.txt_value || domain.txt_value)
+        validation_records: validations_for(domain, hostname))
       domain.update!(status: "live") if domain.provisioned?
     rescue Cloudflare::Client::Error => error
       Rails.logger.warn("[custom-domain] poll failed for #{domain.hostname}: #{error.message}")
+    end
+
+    # Cloudflare's list replaces ours outright — that is how a rotated record
+    # reaches the author, and how a finished hostname stops advertising a token
+    # nobody needs. The one exception is the gap right after creation, when the
+    # records aren't minted yet (ssl "initializing"): there an empty answer
+    # would blank instructions the author may be halfway through following.
+    def validations_for(domain, hostname)
+      return hostname.validation_records if hostname.validation_records.any? || hostname.certificate_active?
+      domain.validation_records
     end
 
     # Certificate deployed and hostname proxied for every row. Bridge the
@@ -79,22 +90,28 @@ class CustomDomainStatusJob < ApplicationJob
     end
 
     # The chain stops here, and nothing revisits the row on its own — only the
-    # author opening the domains page restarts it (see
-    # Admin::CustomDomainsController#repoll_if_stale). Going quiet on a stalled
-    # domain is how one sits broken for days, so say so, with the DNS reason
-    # already worked out.
+    # author opening the domains page or pressing Check restarts it (see
+    # Admin::CustomDomainsController#repoll_if_stale). Alerting us is not
+    # enough: the author is the one who has to act, and a row left saying
+    # "verifying" tells them something is still happening when nothing is. Mark
+    # it so the page can say the watching stopped — the row stays eligible for
+    # a later check (CustomDomain::UNRESOLVED_STATUSES), so this is a pause the
+    # author can end, not a dead end.
     def give_up(account)
-      stalled = account.custom_domains.connected.where.not(status: "live")
+      stalled = account.custom_domains.connected.unresolved
       Honeybadger.notify("Custom domain never provisioned",
         context: { account_id: account.id,
                    domains: stalled.map { |d|
                      { hostname: d.hostname, status: d.status, cloudflare_status: d.cloudflare_status,
                        ssl_status: d.ssl_status, diagnosis: d.diagnosis.reason }
                    } })
+      stalled.each { |domain| domain.update!(status: "error") }
     end
 
-    # Gentle exponential backoff, capped — DV + issuance is usually minutes.
-    def backoff(attempt) = [ 30 * (2**(attempt - 1)), 600 ].min.seconds
+    # Gentle exponential backoff, capped at an hour: DV + issuance is usually
+    # minutes, but the wait that matters is the author getting to their
+    # registrar, so the tail is cheap hourly checks rather than a fast give-up.
+    def backoff(attempt) = [ 30 * (2**(attempt - 1)), 1.hour.to_i ].min.seconds
 
     def cf_client = self.class.client_override || Cloudflare::Client.new
 end
