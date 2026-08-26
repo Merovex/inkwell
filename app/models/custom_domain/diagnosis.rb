@@ -39,6 +39,14 @@ class CustomDomain::Diagnosis
     end
   end
 
+  # Does DNS already point this hostname at us? True while the certificate is
+  # still pending — reaching the TXT checks at all means the records resolve
+  # here, and everything left is Cloudflare's side of the handshake. The build
+  # target keys off this: where a site is mounted is a DNS question, not a TLS
+  # one.
+  ROUTED = %i[ txt_missing txt_mismatch pending ].freeze
+  def routed? = ROUTED.include?(reason)
+
   def message
     case reason
     when :unresolved

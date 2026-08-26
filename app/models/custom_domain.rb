@@ -36,7 +36,15 @@ class CustomDomain < ApplicationRecord
   # not an attr_accessor: it is half the evidence for provisioned?, and a
   # column is what lets that question be answered — and this row explained —
   # outside a live poll.
-  def provisioned? = status == "verifying" && cloudflare_status == "active" && ssl_status == "active"
+  # Cloudflare's hostname state has more than two values, and not every healthy
+  # one is the literal "active" — a certificate rotation parks a perfectly good
+  # hostname at "active_redeploying". Exact equality reads that as failure, and
+  # permanently: nothing revisits a row that never flips.
+  ACTIVE_HOSTNAME_STATUSES = %w[ active active_redeploying ].freeze
+
+  def provisioned?
+    status == "verifying" && ACTIVE_HOSTNAME_STATUSES.include?(cloudflare_status) && ssl_status == "active"
+  end
 
   # Why this row hasn't validated, read from public DNS (CustomDomain::Diagnosis).
   def diagnosis

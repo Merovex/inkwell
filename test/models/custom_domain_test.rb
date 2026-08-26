@@ -30,4 +30,13 @@ class CustomDomainTest < ActiveSupport::TestCase
     domain.ssl_status = "pending_validation"
     assert_not domain.provisioned?
   end
+
+  test "provisioned? accepts a hostname mid-rotation, not just the literal active" do
+    # active_redeploying is a healthy hostname; exact equality would strand it
+    # forever, since nothing revisits a row that never flips.
+    domain = accounts(:merovex).custom_domains.create!(hostname: "example.com", status: "verifying", ssl_status: "active")
+    domain.cloudflare_status = "active_redeploying"
+
+    assert domain.provisioned?
+  end
 end
