@@ -28,11 +28,20 @@ class CustomDomain < ApplicationRecord
 
   # Both statuses must be active before we call a domain live — a TLS handshake
   # can succeed before ssl.status flips, so "the site loaded" is not the signal.
+  # (Learned the hard way: an author whose own zone proxies the hostname serves
+  # a valid cert of their own while this one never validates.)
+  #
+  # cloudflare_status is the poll's fetched result.status — the hostname's own
+  # verification state, distinct from the certificate's ssl_status. Persisted,
+  # not an attr_accessor: it is half the evidence for provisioned?, and a
+  # column is what lets that question be answered — and this row explained —
+  # outside a live poll.
   def provisioned? = status == "verifying" && cloudflare_status == "active" && ssl_status == "active"
 
-  # Set from the poll job's fetched result (result.status), distinct from the
-  # certificate's ssl_status; kept only to compute provisioned?.
-  attr_accessor :cloudflare_status
+  # Why this row hasn't validated, read from public DNS (CustomDomain::Diagnosis).
+  def diagnosis
+    Diagnosis.new(self, cname_target: Rails.configuration.x.cloudflare.cname_target)
+  end
 
   private
     def hostname_is_acceptable

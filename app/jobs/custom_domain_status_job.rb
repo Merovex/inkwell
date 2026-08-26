@@ -29,10 +29,10 @@ class CustomDomainStatusJob < ApplicationJob
   private
     def refresh(domain)
       hostname = cf_client.get_custom_hostname(domain.cloudflare_id)
-      domain.cloudflare_status = hostname.status
       # Cloudflare mints the DV-TXT record asynchronously (ssl "initializing"
       # at creation) — backfill it so the DNS instructions can render.
-      domain.update!(ssl_status: hostname.ssl_status, last_checked_at: Time.current,
+      domain.update!(cloudflare_status: hostname.status,
+        ssl_status: hostname.ssl_status, last_checked_at: Time.current,
         txt_name: hostname.txt_name || domain.txt_name,
         txt_value: hostname.txt_value || domain.txt_value)
       domain.update!(status: "live") if domain.provisioned?

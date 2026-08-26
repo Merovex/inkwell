@@ -43,6 +43,43 @@ class AdminCustomDomainsTest < ActionDispatch::IntegrationTest
     CustomDomainStatusJob.client_override = nil
   end
 
+  # No zone at all, so every lookup comes back empty — enough to reach a
+  # verdict without asking the real network.
+  class SilentResolver
+    def getresources(*) = []
+  end
+
+  test "the check badge names why a domain is stuck instead of just saying it waited" do
+    accounts(:merovex).custom_domains.create!(hostname: "www.merovex.press", canonical: true,
+      status: "verifying", cloudflare_id: "id", txt_name: "_cf-custom-hostname.www.merovex.press", txt_value: "tv")
+    CustomDomainStatusJob.client_override = FakeCloudflare.new(status: "pending", ssl_status: "pending_validation")
+    CustomDomain::Diagnosis.resolver_override = SilentResolver.new
+    sign_in_as users(:admin)
+
+    post admin_custom_domain_check_path
+    assert_redirected_to admin_custom_domains_path
+    assert_match(/www\.merovex\.press isn't resolving yet/, flash[:notice])
+  ensure
+    CustomDomainStatusJob.client_override = nil
+    CustomDomain::Diagnosis.resolver_override = nil
+  end
+
+  test "the poll persists the hostname's own status, not just the certificate's" do
+    domain = accounts(:merovex).custom_domains.create!(hostname: "www.merovex.press", canonical: true,
+      status: "verifying", cloudflare_id: "id")
+    CustomDomainStatusJob.client_override = FakeCloudflare.new(status: "active", ssl_status: "pending_validation")
+
+    CustomDomainStatusJob.perform_now(accounts(:merovex))
+
+    # Both halves of provisioned? survive the poll, so the row can be explained
+    # later without asking Cloudflare again.
+    assert_equal "active", domain.reload.cloudflare_status
+    assert_equal "pending_validation", domain.ssl_status
+    assert_not domain.provisioned?
+  ensure
+    CustomDomainStatusJob.client_override = nil
+  end
+
   test "index renders the connect form" do
     sign_in_as users(:admin)
     get admin_custom_domains_path
