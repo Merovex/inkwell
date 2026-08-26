@@ -93,8 +93,16 @@
                  replacing one another.</p>
             <% end %>
 
+            <%# "Still being issued" was a guess dressed as a fact: an empty set
+                also means we simply haven't read Cloudflare since something
+                cleared it, and telling an author to wait for records that
+                already exist leaves them with nothing to do and no way to see
+                them. Say what we actually know, and name the button that
+                fetches them. %>
             <% if pending.all? { |d| d.validation_records.none? } %>
-              <p class="u-text-muted">The TXT verification records are still being issued — check back in a minute.</p>
+              <p class="u-text-muted">We don't have the TXT verification records for this domain right now.
+                 Cloudflare issues them within a few seconds of connecting a domain — press Check again at the
+                 top of this card to fetch them.</p>
             <% end %>
 
             <p class="u-text-muted">We'll email you when the certificate is live (usually within the hour).</p>

@@ -44,9 +44,19 @@ class Admin::CustomDomainsController < Admin::BaseController
     # status means "nothing is watching", which is precisely when a visit
     # should start watching again.
     def repoll_if_stale
-      return unless @domains.any? { |d| CustomDomain::UNRESOLVED_STATUSES.include?(d.status) && stale?(d) }
+      return unless @domains.any? { |domain| pollable?(domain) }
       CustomDomainStatusJob.perform_later(Current.account)
     end
 
-    def stale?(domain) = domain.last_checked_at.nil? || domain.last_checked_at < 10.minutes.ago
+    # A row with no validation records is the urgent case — the page has
+    # nothing to tell the author at all — so it re-reads on a much shorter
+    # leash than the routine staleness check. Both are time-bounded, and the
+    # job stamps last_checked_at every pass, so neither can storm.
+    def pollable?(domain)
+      return false unless CustomDomain::UNRESOLVED_STATUSES.include?(domain.status)
+
+      stale?(domain, domain.validation_records.none? ? 1.minute : 10.minutes)
+    end
+
+    def stale?(domain, window) = domain.last_checked_at.nil? || domain.last_checked_at < window.ago
 end

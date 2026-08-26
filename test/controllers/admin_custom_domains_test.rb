@@ -23,7 +23,16 @@ class AdminCustomDomainsTest < ActionDispatch::IntegrationTest
 
   test "index leaves a freshly-polled domain alone" do
     accounts(:merovex).custom_domains.create!(hostname: "www.merovex.press", canonical: true,
-      status: "verifying", cloudflare_id: "id", last_checked_at: 1.minute.ago)
+      status: "verifying", cloudflare_id: "id", last_checked_at: 1.minute.ago,
+      validation_records: [ { "txt_name" => "_acme-challenge.www.merovex.press", "txt_value" => "tv" } ])
+    sign_in_as users(:admin)
+
+    assert_no_enqueued_jobs(only: CustomDomainStatusJob) { get admin_custom_domains_path }
+  end
+
+  test "the shorter leash for a record-less row still can't storm" do
+    accounts(:merovex).custom_domains.create!(hostname: "www.merovex.press", canonical: true,
+      status: "verifying", cloudflare_id: "id", validation_records: [], last_checked_at: 5.seconds.ago)
     sign_in_as users(:admin)
 
     assert_no_enqueued_jobs(only: CustomDomainStatusJob) { get admin_custom_domains_path }
@@ -135,6 +144,29 @@ class AdminCustomDomainsTest < ActionDispatch::IntegrationTest
 
     assert_select ".alert--warning", text: /Automatic checking has stopped/
     assert_select ".check-badge", text: /Check again/
+  end
+
+  test "index re-reads promptly when a row has no records to show at all" do
+    # The page has nothing to tell the author in this state, so it must not sit
+    # on the routine ten-minute leash waiting to find out.
+    accounts(:merovex).custom_domains.create!(hostname: "www.merovex.press", canonical: true,
+      status: "verifying", cloudflare_id: "id", validation_records: [], last_checked_at: 2.minutes.ago)
+    sign_in_as users(:admin)
+
+    assert_enqueued_with(job: CustomDomainStatusJob) { get admin_custom_domains_path }
+  end
+
+  test "index doesn't claim missing records are still being issued" do
+    # They may well be issued already and simply unread on our side — telling
+    # the author to wait leaves them nothing to do and nothing to see.
+    accounts(:merovex).custom_domains.create!(hostname: "www.merovex.press", canonical: true,
+      status: "verifying", cloudflare_id: "id", validation_records: [], last_checked_at: 1.second.ago)
+    sign_in_as users(:admin)
+
+    get admin_custom_domains_path
+
+    assert_select "p", text: /press Check again/
+    assert_select "p", text: /still being issued/, count: 0
   end
 
   test "index revives the poll for a domain the chain gave up on" do

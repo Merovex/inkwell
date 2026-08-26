@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "deny": [
+      "Bash(kamal:*)",
+      "Bash(bin/kamal:*)",
+      "Bash(./bin/kamal:*)",
+      "Bash(bundle exec kamal:*)",
+      "Bash(bundle exec bin/kamal:*)"
+    ]
+  }
+}
