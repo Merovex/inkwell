@@ -17,8 +17,6 @@ class Admin::SettingsController < Admin::BaseController
     end
 
     if saved
-      # "Remove logo and use the wordmark" — purge only once the save sticks.
-      @site.logo.purge if params.dig(:site, :remove_logo) == "1"
       redirect_to admin_settings_path, notice: "Settings saved."
     else
       @site.account.errors.each { |error| @site.errors.import(error) }
@@ -31,7 +29,9 @@ class Admin::SettingsController < Admin::BaseController
       @site = Current.account.site
     end
 
+    # The logo is NOT here — it saves through its own auto-submitting
+    # resource (Admin::Settings::LogosController), never this form.
     def site_params
-      params.expect(site: [ :site_name, :tagline, :contact_email, :handle, :logo ])
+      params.expect(site: [ :site_name, :tagline, :contact_email, :handle ])
     end
 end

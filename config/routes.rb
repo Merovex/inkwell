@@ -357,6 +357,15 @@ Rails.application.routes.draw do
       # from the personal user settings; this shapes the account's public identity.
       resource :settings, only: %i[show update]
 
+      # The site logo is its own auto-submitting resource — picking/dropping a
+      # file uploads it immediately (the avatar-well pattern), DELETE reverts
+      # to the wordmark. Independent of the settings form's Save on purpose:
+      # sharing that Save let an upload and the old remove-checkbox collide,
+      # attaching the new file and purging it in the same request.
+      namespace :settings do
+        resource :logo, only: %i[update destroy]
+      end
+
       # Connect-your-domain (Cloudflare for SaaS, docs/custom-domain-onboarding.md):
       # index shows status + the form and the author's DNS instructions; create
       # provisions the custom hostnames + KV; destroy tears the whole connection

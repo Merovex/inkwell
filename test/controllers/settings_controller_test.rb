@@ -11,8 +11,10 @@ class SettingsControllerTest < ActionDispatch::IntegrationTest
     assert_select "input[name='site[site_name]']"
     assert_select "input[name='site[tagline]']"
     assert_select "input[name='site[contact_email]']"
-    # Multipart is load-bearing for the logo upload.
-    assert_select "form[action=?][enctype=?]", admin_settings_path, "multipart/form-data"
+    # The logo is its own auto-submitting form (multipart is load-bearing
+    # there); the identity form itself carries no file fields.
+    assert_select "form[action=?][enctype=?]", admin_settings_logo_path, "multipart/form-data"
+    assert_select "form[action=?] input[type=file]", admin_settings_path, count: 0
   end
 
   test "the admin updates the identity" do

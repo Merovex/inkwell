@@ -14,30 +14,34 @@
   <section class="settings__section" aria-label="Site identity">
     <%= render "admin/shared/error_summary", model: @site %>
 
+    <%# The logo well is its OWN form (settings/logo) and saves the moment a
+        file is picked or dropped — the avatar-well pattern. It sits outside
+        the settings form below (forms can't nest), so an upload can never
+        collide with that form's Save or a removal. %>
+    <%= form_with url: admin_settings_logo_path, method: :patch, multipart: true, class: "field logo-upload",
+          data: { controller: "avatar-upload",
+                  action: "dragover->avatar-upload#dragover dragleave->avatar-upload#dragleave drop->avatar-upload#drop" } do %>
+      <% if @site.logo.attached? %>
+        <%= image_tag @site.logo, class: "logo-upload__preview", alt: "Current logo" %>
+      <% else %>
+        <span class="logo-upload__placeholder" aria-hidden="true">No logo</span>
+      <% end %>
+      <label class="button">
+        <%= @site.logo.attached? ? "Change logo…" : "Upload a logo…" %>
+        <%= file_field_tag "site[logo]", accept: Site::LOGO_CONTENT_TYPES.join(","), hidden: true,
+              "aria-label": "Upload logo",
+              data: { avatar_upload_target: "input", action: "change->avatar-upload#submit" } %>
+      </label>
+      <p class="field__hint u-text-muted">Shown in the public site header. Click the button or drop an image — it saves immediately. JPG, PNG, AVIF, WebP, or SVG, up to <%= Site::LOGO_MAX_SIZE / 1.megabyte %> MB.</p>
+    <% end %>
+    <% if @site.logo.attached? %>
+      <%= button_to "Remove logo and use the wordmark", admin_settings_logo_path, method: :delete, class: "button" %>
+    <% end %>
+
     <%# dirty-form: Save wakes up only once something changes. %>
-    <%= form_with model: @site, url: admin_settings_path, method: :patch, multipart: true, class: "u-full-width",
+    <%= form_with model: @site, url: admin_settings_path, method: :patch, class: "u-full-width",
           data: { controller: "dirty-form", action: "input->dirty-form#dirty change->dirty-form#dirty" } do |f| %>
       <% identity_panel = capture do %>
-        <div class="field logo-upload">
-          <% if @site.logo.attached? %>
-            <%= image_tag @site.logo, class: "logo-upload__preview", alt: "Current logo" %>
-          <% else %>
-            <span class="logo-upload__placeholder" aria-hidden="true">No logo</span>
-          <% end %>
-          <%# A styled label opens the (hidden) picker — like the avatar control. %>
-          <label class="button">
-            <%= @site.logo.attached? ? "Change logo…" : "Upload a logo…" %>
-            <%= f.file_field :logo, accept: Site::LOGO_CONTENT_TYPES.join(","), hidden: true %>
-          </label>
-          <% if @site.logo.attached? %>
-            <label class="logo-upload__remove">
-              <%= check_box_tag "site[remove_logo]", "1" %>
-              Remove logo and use the wordmark
-            </label>
-          <% end %>
-          <p class="field__hint u-text-muted">Shown in the public site header. JPG, PNG, AVIF, WebP, or SVG, up to <%= Site::LOGO_MAX_SIZE / 1.megabyte %> MB.</p>
-        </div>
-
         <div class="field-row">
           <div class="field">
             <%= f.label :site_name, "Site name", class: "field__label" %>
