@@ -1,5 +1,7 @@
 <%= @drop.body.to_plain_text %>
-
+<% if @magnet %>
+Get <%= @magnet.title %>: <%= @claim_url %>
+<% end %>
 ---
 
 You're receiving this because you subscribed to <%= @site_name %>.

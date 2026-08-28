@@ -448,6 +448,11 @@ Rails.application.routes.draw do
         end
       end
 
+      # Reader magnets — the free ebooks welcome campaigns hand out. Plain
+      # CRUD (no show; the edit page is the magnet's home). Files upload
+      # through the form to the private R2 bucket.
+      resources :magnets, except: :show
+
       # Drip campaigns (welcome sequences) and their ordered drops (emails).
       # Activate/deactivate gates enrollment; reorder drags the drops into send order.
       resources :drips do
@@ -537,6 +542,17 @@ Rails.application.routes.draw do
     # island like sent, because the static site can't render a flash and
     # GET /newsletter isn't on the Worker allowlist.
     get  "newsletter/rejected" => "subscriptions#rejected", as: :newsletter_rejected
+
+    # Reader-magnet claim pages (Worker-proxied islands, like newsletter). The
+    # token is a signed Grant token; optional so a stripped/truncated link
+    # lands on the branded expired page, not a raw 404. Downloads are POSTs —
+    # scanners prefetch GETs, and only a pressed button may spend the cap.
+    get  "claim(/:token)" => "claims#show", as: :claim
+    post "claim/:token/downloads" => "claims/downloads#create", as: :claim_downloads
+    # "Send me a new link" from an expired claim page: fresh claim links to
+    # the address on file. sent is the interstitial, like newsletter/sent.
+    post "claim_renewal" => "claim_renewals#create", as: :claim_renewal
+    get  "claim_renewal/sent" => "claim_renewals#sent", as: :claim_renewal_sent
 
     # Contact form (anonymous, double opt-in) at /contact. create records an
     # unconfirmed Missive and emails a fixed-template confirmation; the token link

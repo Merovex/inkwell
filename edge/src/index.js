@@ -72,6 +72,14 @@ const ISLANDS = [
   // counts the click and 302s to the store (redirect:"manual" below hands
   // that off-site Location straight back to the browser).
   { method: "GET", pattern: /^\/buy\/\d+$/ },
+  // Reader-magnet claim pages: the tokened landing (optional token — a
+  // stripped link still reaches the branded expired page), the download POST
+  // (302s to a presigned R2 URL, handed straight back to the browser), and
+  // the "send me a new link" form + its interstitial.
+  { method: "GET", pattern: /^\/claim(\/[^/]*)?$/ },
+  { method: "POST", pattern: /^\/claim\/[^/]+\/downloads$/ },
+  { method: "POST", pattern: /^\/claim_renewal$/ },
+  { method: "GET", pattern: /^\/claim_renewal\/sent$/ },
 ];
 
 function isIsland(method, pathname) {

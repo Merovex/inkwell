@@ -54,6 +54,12 @@ class Admin::Drips::DropsController < Admin::BaseController
     end
 
     def drop_params
-      params.expect(drop: [ :subject, :body, :delay_days, :notes ])
+      params.expect(drop: [ :subject, :body, :delay_days, :notes, :magnet_id ]).tap do |permitted|
+        # Tenant boundary: a posted magnet_id must be one of THIS account's
+        # magnets — anything else (another press's id, a stale id) drops to nil.
+        if permitted.key?(:magnet_id)
+          permitted[:magnet_id] = Current.account.magnets.find_by(id: permitted[:magnet_id])&.id
+        end
+      end
     end
 end

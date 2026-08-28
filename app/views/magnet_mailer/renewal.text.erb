@@ -1,0 +1,7 @@
+Here are fresh download links for your books from <%= @site_name %>:
+
+<% @claims.each do |claim| %>
+<%= claim[:title] %>: <%= claim[:url] %>
+<% end %>
+
+Each link works for <%= Grant::TOKEN_LIFETIME.inspect %>. If you didn't request this, you can ignore this email.

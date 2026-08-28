@@ -100,6 +100,10 @@ gem "valid_email2"
 gem "ahoy_matey"
 
 gem "aws-sdk-rails", "~> 5.1"
+# Active Storage's S3 service — pointed at R2 (S3-compatible) for the private
+# reader-magnet bucket. Declared explicitly: Publisher and the r2_magnets
+# service both need it even if the SES gems ever stop pulling it in.
+gem "aws-sdk-s3", require: false
 gem "aws-actionmailer-ses", "~> 1.2"
 # SNS message signature verification for the SES event webhook (Webhooks::Ses).
 gem "aws-sdk-sns", "~> 1.90"

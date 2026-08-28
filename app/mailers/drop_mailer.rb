@@ -18,6 +18,16 @@ class DropMailer < ApplicationMailer
     headers["List-Unsubscribe"] = "<#{@unsubscribe_url}>"
     headers["List-Unsubscribe-Post"] = "List-Unsubscribe=One-Click"
 
+    # A magnet-bearing drop mints (or reuses) this subscriber's Grant and
+    # appends a "Get {title}" claim button. The link tolerates this stream's
+    # click-rewriting: the claim page GET is idempotent and only the download
+    # POST spends anything, so a tracker redirect costs nothing.
+    if (magnet = drop.magnet)
+      @magnet = magnet
+      @claim_url = claim_url(token: magnet.grant_to(subscriber).claim_token,
+        **public_url_options(subscriber.account))
+    end
+
     options = {
       to: subscriber.email_address,
       subject: drop.subject,

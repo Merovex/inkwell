@@ -147,6 +147,38 @@ await check("buy island is GET-only and numeric-only — /buy/abc and POST fall 
   assert.equal(proxied, undefined);
 });
 
+await check("claim page proxies tokened GETs, bare /claim included, never slash-mangled", async () => {
+  proxied = undefined;
+  const res = await island("https://merovex.press/claim/tok123");
+  assert.equal(res.status, 200); // proxied, NOT an R2 404
+  assert.equal(proxied.url, "https://app.kindredquill.com/claim/tok123");
+
+  proxied = undefined;
+  await island("https://merovex.press/claim"); // stripped token → branded expired page
+  assert.equal(proxied.url, "https://app.kindredquill.com/claim");
+});
+
+await check("claim download POST proxies, and its 302 to R2 passes through untouched", async () => {
+  proxied = undefined;
+  await island("https://merovex.press/claim/tok123/downloads", "POST");
+  assert.equal(proxied.url, "https://app.kindredquill.com/claim/tok123/downloads");
+  assert.equal(proxied.init.redirect, "manual"); // the presigned-URL 302 goes to the browser
+
+  proxied = undefined;
+  await island("https://merovex.press/claim/tok123/downloads"); // GET spends nothing → static
+  assert.equal(proxied, undefined);
+});
+
+await check("claim renewal form POST and its sent page proxy, prefixed on the platform host", async () => {
+  proxied = undefined;
+  await island("https://merovex.press/claim_renewal", "POST");
+  assert.equal(proxied.url, "https://app.kindredquill.com/claim_renewal");
+
+  proxied = undefined;
+  await island("https://sites.kindredquill.com/merovexpress/claim_renewal/sent");
+  assert.equal(proxied.url, "https://app.kindredquill.com/merovexpress/claim_renewal/sent");
+});
+
 await check("preview host stays static-only — islands never proxy drafts", async () => {
   proxied = undefined;
   const res = await island("https://preview.kindredquill.com/merovexpress/newsletter", "POST");

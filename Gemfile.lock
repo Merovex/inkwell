@@ -515,6 +515,7 @@ DEPENDENCIES
   aws-actionmailbox-ses (~> 0.2.0)
   aws-actionmailer-ses (~> 1.2)
   aws-sdk-rails (~> 5.1)
+  aws-sdk-s3
   aws-sdk-sns (~> 1.90)
   bootsnap
   brakeman

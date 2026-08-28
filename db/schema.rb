@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.2].define(version: 2026_08_26_090000) do
+ActiveRecord::Schema[8.2].define(version: 2026_08_28_100000) do
   create_table "account_users", force: :cascade do |t|
     t.integer "account_id", null: false
     t.integer "user_id", null: false
@@ -386,6 +386,13 @@ ActiveRecord::Schema[8.2].define(version: 2026_08_26_090000) do
     t.index ["record_id"], name: "index_distributors_on_record_id"
   end
 
+  create_table "downloads", force: :cascade do |t|
+    t.integer "grant_id", null: false
+    t.string "format", null: false
+    t.datetime "created_at", null: false
+    t.index ["grant_id"], name: "index_downloads_on_grant_id"
+  end
+
   create_table "drips", force: :cascade do |t|
     t.integer "record_id", null: false
     t.integer "creator_id", null: false
@@ -431,7 +438,9 @@ ActiveRecord::Schema[8.2].define(version: 2026_08_26_090000) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.text "notes"
+    t.integer "magnet_id"
     t.index ["creator_id"], name: "index_drops_on_creator_id"
+    t.index ["magnet_id"], name: "index_drops_on_magnet_id"
     t.index ["record_id", "id"], name: "index_drops_on_record_id_and_id"
   end
 
@@ -450,6 +459,15 @@ ActiveRecord::Schema[8.2].define(version: 2026_08_26_090000) do
     t.date "ends_on"
     t.index ["creator_id"], name: "index_goals_on_creator_id"
     t.index ["record_id", "id"], name: "index_goals_on_record_id_and_id"
+  end
+
+  create_table "grants", force: :cascade do |t|
+    t.integer "magnet_id", null: false
+    t.integer "subscriber_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["magnet_id", "subscriber_id"], name: "index_grants_on_magnet_id_and_subscriber_id", unique: true
+    t.index ["subscriber_id"], name: "index_grants_on_subscriber_id"
   end
 
   create_table "installments", force: :cascade do |t|
@@ -471,6 +489,15 @@ ActiveRecord::Schema[8.2].define(version: 2026_08_26_090000) do
     t.datetime "updated_at", null: false
     t.index ["code"], name: "index_join_codes_on_code", unique: true
     t.index ["user_id"], name: "index_join_codes_on_user_id", unique: true
+  end
+
+  create_table "magnets", force: :cascade do |t|
+    t.integer "account_id", null: false
+    t.string "title", null: false
+    t.text "description"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id"], name: "index_magnets_on_account_id"
   end
 
   create_table "messages", force: :cascade do |t|

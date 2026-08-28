@@ -50,6 +50,19 @@
       </p>
     </section>
 
+    <section>
+      <h2 class="step-editor__section-title u-microcaps u-text-muted">Reader magnet</h2>
+      <div class="field">
+        <%= f.label :magnet_id, "Free book this email gives away", class: "u-visually-hidden" %>
+        <%= f.collection_select :magnet_id, Current.account.magnets.ordered, :id, :title,
+              { include_blank: "None" }, class: "field__control" %>
+        <span class="field__hint">
+          Adds a "Get the book" button at the bottom of this email —
+          <%= link_to "manage magnets", admin_magnets_path %>.
+        </span>
+      </div>
+    </section>
+
     <% if stats %>
       <section>
         <h2 class="step-editor__section-title u-microcaps u-text-muted">How it is doing</h2>

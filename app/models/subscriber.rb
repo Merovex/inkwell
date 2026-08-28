@@ -17,6 +17,9 @@ class Subscriber < ApplicationRecord
   has_many :events, -> { order(:created_at) }, class_name: "SubscriptionEvent", dependent: :destroy
   has_many :broadcast_deliveries, dependent: :destroy
   has_many :streams, dependent: :destroy
+  # Reader-magnet keys (claim links). A purged subscriber takes their grants
+  # along — the claim token dies with the row, which is the right default.
+  has_many :grants, dependent: :destroy
   # The delivery ledger outlives the subscriber (ADR 0027): a purged row lets
   # go of its events rather than taking them along — they stay keyed to the
   # Person, which is what the cross-site suppression list is rebuilt from.
