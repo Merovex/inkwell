@@ -1,0 +1,15 @@
+<%# locals: (site:, class_name: nil, label: nil) %>
+<%# The site logo, rendered one way everywhere (admin preview, app-served
+    site header): an SVG renders as a currentColor-tinted mask (.logo-tint) —
+    its own colors are ignored, the mark takes the surrounding text color — a
+    raster logo renders as itself. label: the accessible name; nil marks the
+    logo decorative (aria-hidden / empty alt) for contexts where the wrapping
+    link already carries the name. Callers handle the no-logo case — the
+    fallbacks differ (placeholder well, wordmark). The static site's twin is
+    fk-brand-logo-tint in the filibuster theme. %>
+<% if site.logo_svg? %>
+  <%= tag.span class: [ "logo-tint", class_name ], style: svg_logo_style(site.logo),
+        role: (label ? "img" : nil), "aria-label": label, "aria-hidden": (label ? nil : true) %>
+<% else %>
+  <%= image_tag site.logo, class: class_name, alt: label.to_s %>
+<% end %>
