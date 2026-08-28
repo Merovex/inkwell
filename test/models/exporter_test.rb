@@ -50,6 +50,23 @@ class ExporterTest < ActiveSupport::TestCase
     assert exported["logo"].present?, "the file itself still ships"
   end
 
+  test "the built header renders an SVG logo as a tinted mask, unmangled by Go's sanitizer" do
+    skip "hugo binary not available" unless system("#{HUGO_BIN} version", out: File::NULL, err: File::NULL)
+
+    site = accounts(:merovex).site
+    site.logo.attach(io: StringIO.new(%(<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 40"></svg>)),
+      filename: "mark.svg", content_type: "image/svg+xml")
+    site.save!
+    workspace = Exporter.new(accounts(:merovex)).export!
+
+    home = Renderer.new(workspace).render!.join("index.html").read
+    brand = home[/fk-brand[^>]*>.*?<\/a>/m]
+    assert_includes brand, "fk-brand-logo-tint"
+    assert_includes brand, "url(data:image/svg+xml;base64,", "the mask data: URI survives templating"
+    assert_match(/--logo-ratio:\s*3\b/, brand, "viewBox ratio rides along (Hugo minifies the spacing)")
+    assert_not_includes home, "ZgotmplZ", "Go's sanitizer must not reject the style value"
+  end
+
   test "posts.json holds published posts only, rendered as HTML" do
     slugs = data("posts")["posts"].map { it["slug"] }
     assert_includes slugs, records(:kickoff).to_slug

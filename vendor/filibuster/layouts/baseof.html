@@ -176,10 +176,13 @@
         {{/* SVG logo: a currentColor mask (data: URI from the exporter), so
              the mark takes the brand text color and re-tints per palette;
              logo_ratio sizes the box (a mask has no intrinsic size). */}}
-        {{/* safeCSS: Go's template sanitizer rejects data: URIs in style
-             attributes (ZgotmplZ) without it; the value is exporter-built,
-             never reader input. */}}
-        <span class="fk-brand-logo fk-brand-logo-tint" style="--logo-url: url({{ . | safeCSS }}){{ with $site.logo_ratio }}; --logo-ratio: {{ . }}{{ end }}"{{ if $titleAsAlt }} role="img" aria-label="{{ $site.name }}"{{ else }} aria-hidden="true"{{ end }}></span>
+        {{/* The whole style value is built first and marked safeCSS in one
+             piece: inside url() Go's sanitizer applies its URL filter, which
+             rejects data: URIs (→ ZgotmplZ) even when the inner value is
+             marked safe. The value is exporter-built, never reader input. */}}
+        {{- $tint := printf "--logo-url: url(%s)" . -}}
+        {{- with $site.logo_ratio }}{{ $tint = printf "%s; --logo-ratio: %v" $tint . }}{{ end -}}
+        <span class="fk-brand-logo fk-brand-logo-tint" style="{{ $tint | safeCSS }}"{{ if $titleAsAlt }} role="img" aria-label="{{ $site.name }}"{{ else }} aria-hidden="true"{{ end }}></span>
         {{- else -}}
         {{- partial "img.html" (dict "class" "fk-brand-logo" "src" . "alt" $logoAlt "loading" "eager") -}}
         {{- end -}}
