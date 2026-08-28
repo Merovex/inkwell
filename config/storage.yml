@@ -21,6 +21,12 @@ r2_magnets:
   # entry landed as secret_key_id (see Publisher#client).
   access_key_id: <%= Rails.application.credentials.dig(:r2, :access_key_id) || Rails.application.credentials.dig(:r2, :secret_key_id) %>
   secret_access_key: <%= Rails.application.credentials.dig(:r2, :secret_access_key) %>
+  # R2 rejects an upload carrying two checksums ("You can only specify one
+  # non-default checksum at a time"): aws-sdk-s3 ≥ 1.178 adds CRC32 by
+  # default, and Active Storage already sends its MD5. Cloudflare's documented
+  # compat setting — only checksum when an API requires it.
+  request_checksum_calculation: when_required
+  response_checksum_validation: when_required
 <% else %>
   service: Disk
   root: <%= Rails.root.join(Rails.env.test? ? "tmp/storage" : "storage") %>
