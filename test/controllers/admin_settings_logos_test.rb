@@ -31,6 +31,21 @@ class AdminSettingsLogosTest < ActionDispatch::IntegrationTest
     assert_not accounts(:merovex).site.reload.logo.attached?
   end
 
+  test "an SVG logo previews as a currentColor-tinted mask, not an <img>" do
+    sign_in_as users(:admin)
+    svg = %(<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 40"><path d="M0 0h120v40H0z"/></svg>)
+    file = Rack::Test::UploadedFile.new(StringIO.new(svg), "image/svg+xml", original_filename: "mark.svg")
+
+    patch admin_settings_logo_path, params: { site: { logo: file } }
+    follow_redirect!
+
+    assert_select "span.logo-tint.logo-upload__preview[role=img]" do |(span)|
+      assert_includes span["style"], "--logo-url: url(data:image/svg+xml;base64,"
+      assert_includes span["style"], "--logo-ratio: 3.0"
+    end
+    assert_select "img.logo-upload__preview", count: 0
+  end
+
   test "DELETE removes the logo and returns to the wordmark" do
     sign_in_as users(:admin)
     patch admin_settings_logo_path, params: { site: { logo: png_upload } }

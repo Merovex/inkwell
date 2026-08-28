@@ -47,6 +47,11 @@ class Site < ApplicationRecord
 
   def mutable? = true
 
+  # An SVG logo renders as a currentColor-tinted mask (its own colors are
+  # ignored, the mark takes the surrounding text color); raster logos render
+  # as themselves. The views and the Exporter both branch on this.
+  def logo_svg? = logo.attached? && logo.content_type == "image/svg+xml"
+
   # A Site is only ever an Account's (the press's public identity), so its
   # bucket is that Account.
   def account = record&.bucket

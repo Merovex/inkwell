@@ -80,6 +80,18 @@ a { color: inherit; }
    data-logo-size scales either base (regular ×1 / large ×1.5 / huge ×2). */
 .fk-brand-logo { display: block; max-height: calc(var(--logo-scale, 1) * 3rem); max-width: 60vw; width: auto; }
 html[data-nav="grand"] .fk-brand-logo { max-height: calc(var(--logo-scale, 1) * 5.5rem); }
+/* SVG logo, currentColor-tinted: the file is a mask (--logo-url, a data: URI
+   from the exporter), so the mark ignores its own colors and takes the brand
+   text color — re-tinting per palette. A mask box has no intrinsic size:
+   height mirrors the img rules above, --logo-ratio (from the SVG's viewBox)
+   supplies the width. */
+.fk-brand-logo-tint {
+  background-color: currentColor;
+  mask: var(--logo-url) no-repeat center / contain;
+  height: calc(var(--logo-scale, 1) * 3rem);
+  aspect-ratio: var(--logo-ratio, 1);
+}
+html[data-nav="grand"] .fk-brand-logo-tint { height: calc(var(--logo-scale, 1) * 5.5rem); }
 html[data-logo-size="large"] { --logo-scale: 1.5; }
 html[data-logo-size="huge"] { --logo-scale: 2; }
 /* Logo + visible title lockup (nav.title_as_alt false): the name sits right

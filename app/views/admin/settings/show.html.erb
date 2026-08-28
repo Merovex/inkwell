@@ -22,7 +22,7 @@
           data: { controller: "avatar-upload",
                   action: "dragover->avatar-upload#dragover dragleave->avatar-upload#dragleave drop->avatar-upload#drop" } do %>
       <% if @site.logo.attached? %>
-        <%= image_tag @site.logo, class: "logo-upload__preview", alt: "Current logo" %>
+        <%= render "shared/logo", site: @site, class_name: "logo-upload__preview", label: "Current logo" %>
       <% else %>
         <span class="logo-upload__placeholder" aria-hidden="true">No logo</span>
       <% end %>

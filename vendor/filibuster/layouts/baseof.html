@@ -172,7 +172,17 @@
       <a class="fk-brand{{ if and $site.logo (not $titleAsAlt) }} fk-brand-lockup{{ end }}" href="{{ site.Home.RelPermalink }}">
         {{- with $site.logo -}}
         {{- $logoAlt := "" }}{{ if $titleAsAlt }}{{ $logoAlt = $site.name }}{{ end -}}
+        {{- with $site.logo_mask -}}
+        {{/* SVG logo: a currentColor mask (data: URI from the exporter), so
+             the mark takes the brand text color and re-tints per palette;
+             logo_ratio sizes the box (a mask has no intrinsic size). */}}
+        {{/* safeCSS: Go's template sanitizer rejects data: URIs in style
+             attributes (ZgotmplZ) without it; the value is exporter-built,
+             never reader input. */}}
+        <span class="fk-brand-logo fk-brand-logo-tint" style="--logo-url: url({{ . | safeCSS }}){{ with $site.logo_ratio }}; --logo-ratio: {{ . }}{{ end }}"{{ if $titleAsAlt }} role="img" aria-label="{{ $site.name }}"{{ else }} aria-hidden="true"{{ end }}></span>
+        {{- else -}}
         {{- partial "img.html" (dict "class" "fk-brand-logo" "src" . "alt" $logoAlt "loading" "eager") -}}
+        {{- end -}}
         {{- if not $titleAsAlt }}<span class="fk-brand-name">{{ $site.name }}</span>{{ end -}}
         {{- else -}}
         {{ $site.name }}<span class="fk-brand-sub">{{ $author.name }}</span>

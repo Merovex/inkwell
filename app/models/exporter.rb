@@ -118,6 +118,7 @@ class Exporter
         tagline: site.tagline,
         contact_email: account.contact_email,
         logo: copy_image(site.logo, "logo"),
+        **svg_logo_extras(site),
         banner: copy_image(site.banner, "banner"),
         hero_image: copy_image(site.hero_image, "hero"),
         newsletter_photo: copy_image(site.newsletter_photo, "newsletter"),
@@ -354,6 +355,21 @@ class Exporter
       return nil unless attachment&.attached?
 
       copy_blob(attachment.blob, prefix)
+    end
+
+    # A currentColor-tintable SVG logo ships as a data: URI mask plus its
+    # aspect ratio (a mask box can't size itself from the file) — the theme's
+    # fk-brand-logo-tint reads both. A data: URI on purpose: an inline-style
+    # url() dodges Hugo's relativeURLs rewriting, which only touches
+    # href/src, so a file path here would break on one of the two mounts
+    # (domain root vs path prefix). Raster logos carry no extras.
+    def svg_logo_extras(site)
+      return {} unless site.logo_svg?
+
+      bytes = site.logo.download
+      extras = { logo_mask: "data:image/svg+xml;base64,#{Base64.strict_encode64(bytes)}" }
+      ratio = Svg.aspect_ratio(bytes)
+      ratio ? extras.merge(logo_ratio: ratio) : extras
     end
 
     # The workspace copy of one blob, at the contract path the theme reads

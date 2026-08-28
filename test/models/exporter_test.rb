@@ -35,6 +35,21 @@ class ExporterTest < ActiveSupport::TestCase
     assert_equal Theme.current.defaults, site["design"]
   end
 
+  test "an SVG logo ships as a data-URI mask with its aspect ratio; other logos carry no extras" do
+    assert_nil data("site")["logo_mask"], "no logo → no mask extras"
+
+    site = accounts(:merovex).site
+    site.logo.attach(io: StringIO.new(%(<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 40"></svg>)),
+      filename: "mark.svg", content_type: "image/svg+xml")
+    site.save!
+    workspace = Exporter.new(accounts(:merovex)).export!
+    exported = JSON.parse(workspace.join("data", "site.json").read)
+
+    assert_match %r{\Adata:image/svg\+xml;base64,}, exported["logo_mask"]
+    assert_equal 3.0, exported["logo_ratio"]
+    assert exported["logo"].present?, "the file itself still ships"
+  end
+
   test "posts.json holds published posts only, rendered as HTML" do
     slugs = data("posts")["posts"].map { it["slug"] }
     assert_includes slugs, records(:kickoff).to_slug

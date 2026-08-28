@@ -142,4 +142,18 @@ module ApplicationHelper
       ].compact
     end
   end
+
+  # Inline custom properties for a currentColor-tinted SVG logo (.logo-tint):
+  # the file rides in as a data: URI mask — the blob proxy serves SVG as
+  # application/octet-stream, which browsers refuse as an image source — and
+  # the drawing's aspect ratio sizes the mask box. Cached per blob; a new
+  # upload is a new blob, so staleness can't happen.
+  def svg_logo_style(attachment)
+    Rails.cache.fetch([ attachment.blob, "svg-logo-style" ]) do
+      bytes = attachment.download
+      style = "--logo-url: url(data:image/svg+xml;base64,#{Base64.strict_encode64(bytes)})"
+      ratio = Svg.aspect_ratio(bytes)
+      ratio ? "#{style}; --logo-ratio: #{ratio}" : style
+    end
+  end
 end
