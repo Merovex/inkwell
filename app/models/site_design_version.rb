@@ -14,4 +14,11 @@ class SiteDesignVersion < ApplicationRecord
 
   # Newest first — the archived rows read as a history stack.
   scope :recent, -> { order(published_at: :desc, created_at: :desc) }
+  # The revert trail the designer's History pane lists: retired versions,
+  # newest save first (published_at only marks the ones that were once live).
+  scope :history, -> { archived.order(created_at: :desc) }
+
+  # Whether this version was ever the live production design — publishing
+  # stamps published_at, and archiving keeps it.
+  def was_live? = published_at.present?
 end

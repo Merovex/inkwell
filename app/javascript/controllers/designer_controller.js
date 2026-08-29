@@ -1,10 +1,11 @@
 import { Controller } from "@hotwired/stimulus"
 
-// The SiteDesigner rail (ADR 0022, docs/site-designer.md). The working
-// design lives in localStorage — scaffolding while the design.json schema
-// settles; Save-to-press replaces it later. Every change debounces a
-// stateless preview build (POST the design, Hugo renders it against real
-// content) and reloads the iframe when the build lands.
+// The SiteDesigner rail (ADR 0022, docs/site-designer.md). The designer
+// boots from the account's saved draft (the draft value); localStorage only
+// carries unsaved work until a draft exists. Save writes a new draft VERSION
+// server-side — the History pane restores any of them. Every change
+// debounces a stateless preview build (POST the design, Hugo renders it
+// against real content) and reloads the iframe when the build lands.
 // Until the nav block reaches the contract, these mirror the theme's own
 // default links (baseof.html) — schema-lab duplication, settled at the
 // contract bump.
@@ -37,6 +38,8 @@ export default class extends Controller {
     "headingPosts", "headingBooks", "headingAuthors"]
   static values = {
     buildUrl: String, frameUrl: String, storageKey: String, defaults: Object,
+    // The account's saved draft design — the boot source when present.
+    draft: Object,
     saveUrl: String,
     // Explicit deploys: draft → staging host, draft → live production.
     previewDeployUrl: String, publishUrl: String, previewSiteUrl: String,
@@ -48,11 +51,17 @@ export default class extends Controller {
   }
 
   connect() {
+    // The account's saved draft is the source of truth — booting from it is
+    // what makes versions real: a fresh browser sees the saved design
+    // instead of defaults it could clobber by saving. localStorage stands in
+    // only while nothing has been saved yet.
+    const draft = this.hasDraftValue && Object.keys(this.draftValue).length ? this.draftValue : null
+    const stored = draft || this.stored()
     // Legacy stored shape was the flat axes hash; the current shape is
-    // { design, nav }. Detect by the design key — in the flat shape, a
-    // stored `nav` is the AXIS value (a string), not the content block.
-    const stored = this.stored()
-    const legacyFlat = !("design" in stored)
+    // { design, nav } (server drafts are always structured). Detect by the
+    // design key — in the flat shape, a stored `nav` is the AXIS value (a
+    // string), not the content block.
+    const legacyFlat = !draft && !("design" in stored)
     this.design = { ...this.defaultsValue, ...(legacyFlat ? stored : stored.design) }
     // Schema-lab migrations: scrim/blur/3d graduated from hero LAYOUTS to
     // the orthogonal hero_book / hero_bg axes; then the layouts collapsed

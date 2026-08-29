@@ -381,9 +381,10 @@ Rails.application.routes.draw do
       resource :sending_domain_check, only: :create
 
       # The SiteDesigner (ADR 0022, docs/site-designer.md): the author designs
-      # the public site against a live preview. The working design lives in
-      # localStorage until Save (PATCH designer) graduates it to the account,
-      # where the next real build reads it. The preview endpoint is stateless:
+      # the public site against a live preview. The designer boots from the
+      # account's saved draft (localStorage only carries unsaved work); Save
+      # (PATCH designer) writes a new draft version, retiring the old one to
+      # history. The preview endpoint is stateless:
       # POST builds the posted design + current published content through the
       # real exporter/Hugo pipeline; GET serves the built files into the
       # editor's iframe.
@@ -395,6 +396,11 @@ Rails.application.routes.draw do
         # deliberate steps modeled as resource creates (never member verbs).
         resource :preview_deployment, only: :create
         resource :publication, only: :create
+        # Revert points: every save archives the outgoing draft as a version;
+        # POSTing a version's restoration copies it back into a fresh draft.
+        resources :versions, only: [] do
+          resource :restoration, only: :create
+        end
         # Declared before the wildcard so "version" isn't swallowed as a file path.
         get "preview/version" => "previews#version", as: :preview_version
         get "preview/(*path)" => "previews#show", as: :preview_file, format: false

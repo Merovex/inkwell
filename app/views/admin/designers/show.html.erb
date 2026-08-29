@@ -6,8 +6,8 @@
     controller, teardown-style). Axis grouping comes from the theme
     manifest's per-axis `section`; rows for parts the theme can't customize
     yet render as disabled placeholders, so the full menu shape is always on
-    screen. The working design lives in localStorage until Save exists
-    (docs/site-designer.md §2.2). %>
+    screen. The designer boots from the account's saved draft; localStorage
+    only carries unsaved work (docs/site-designer.md §2.2). %>
 <%
   hero_axes = @theme.axes.select { |axis| axis["section"] == "hero" }
   style_axes = @theme.axes.select { |axis| axis["section"] == "styles" }
@@ -25,6 +25,7 @@
      data-designer-build-url-value="<%= admin_designer_preview_path %>"
      data-designer-frame-url-value="<%= admin_designer_preview_file_path(path: nil) %>/"
      data-designer-storage-key-value="inkwell:design:<%= Current.account.slug %>"
+     data-designer-draft-value="<%= Current.account.draft_design.data.to_json %>"
      data-designer-defaults-value="<%= @theme.defaults.to_json %>"
      data-designer-version-url-value="<%= admin_designer_preview_version_path %>"
      data-designer-images-url-value="<%= admin_designer_image_path(slot: "__SLOT__") %>"
@@ -198,7 +199,26 @@
           </button>
         </section>
 
-        <p class="designer__hint u-text-muted">Choices are kept in this browser only while the design schema is being worked out. Saving to the account comes later.</p>
+        <section class="designer__group" aria-label="Design history">
+          <h3 class="designer__group-title u-microcaps u-text-muted">Design history</h3>
+          <% if @versions.any? %>
+            <% @versions.each do |version| %>
+              <div class="designer__row">
+                <span class="designer__row-label">
+                  <time datetime="<%= version.created_at.iso8601 %>"><%= version.created_at.strftime("%b %-d, %-l:%M %p") %></time>
+                </span>
+                <span class="designer__row-value">
+                  <%= version.was_live? ? "Was live" : "Saved" %><% if version.created_by %> &middot; <%= version.created_by.display_name %><% end %>
+                </span>
+                <%= button_to "Restore", admin_designer_version_restoration_path(version), class: "button" %>
+              </div>
+            <% end %>
+          <% else %>
+            <p class="designer__hint u-text-muted">No saved versions yet.</p>
+          <% end %>
+        </section>
+
+        <p class="designer__hint u-text-muted">Save keeps your work on the account and adds a version above &mdash; restore any of them at any time. Nothing reaches readers until you deploy or publish.</p>
       </div>
 
       <%# --- sub-panes: hero, preset, one per style axis, one per page section --- %>

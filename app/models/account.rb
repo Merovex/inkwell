@@ -167,6 +167,26 @@ class Account < ApplicationRecord
     "https://#{Rails.configuration.x.cloudflare.preview_host}/#{handle.presence || slug}/"
   end
 
+  # Save the working design as a NEW draft version: the old draft steps down
+  # to history instead of being overwritten in place, so every deliberate
+  # Save is a revert point (the table doubles as the design's undo trail).
+  # Saving the same payload twice is a no-op — no junk versions.
+  def save_design!(data, by: Current.user)
+    return draft_design if draft_design.data == data
+
+    transaction do
+      draft_design.update!(status: :archived)
+      site_design_versions.create!(status: :drafted, data: data, created_by: by)
+    end.tap { reload_draft_design }
+  end
+
+  # Revert: copy a historical version's payload back into a fresh draft. The
+  # current draft is archived by the save path, so restoring never loses
+  # anything — it only adds another version.
+  def restore_design!(version, by: Current.user)
+    save_design!(version.data, by: by)
+  end
+
   # Promote the working design to production: the current live design steps
   # down to history, the draft becomes live, and a fresh draft is forked from
   # it so the author keeps editing where they left off. The production rebuild

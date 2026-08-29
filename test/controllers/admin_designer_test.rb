@@ -534,6 +534,31 @@ class AdminDesignerTest < ActionDispatch::IntegrationTest
     assert_response :not_found
   end
 
+  test "each save retires the old draft as a version, and restoring reverts to it" do
+    sign_in_as users(:admin)
+    account = accounts(:merovex)
+
+    patch admin_designer_path, params: { design: { palette: "pine" } }, as: :json
+    patch admin_designer_path, params: { design: { palette: "ink" } }, as: :json
+    assert_equal "ink", account.draft_design.data.dig("design", "palette")
+
+    keeper = account.site_design_versions.history.find { |version| version.data.dig("design", "palette") == "pine" }
+    assert keeper, "the first save should be in the history"
+
+    post admin_designer_version_restoration_path(keeper)
+    assert_redirected_to admin_designer_path
+    assert_equal "pine", account.reload_draft_design.data.dig("design", "palette")
+  end
+
+  test "restoration is admin-only: a member gets a 404" do
+    accounts(:merovex).save_design!({ "design" => { "palette" => "pine" } })
+    version = accounts(:merovex).site_design_versions.history.first
+
+    sign_in_as users(:bob)
+    post admin_designer_version_restoration_path(version)
+    assert_response :not_found
+  end
+
   private
     # The preview pipeline needs the filibuster checkout (a sibling repo in
     # dev) and the pinned Hugo binary; CI wiring for both is the planned

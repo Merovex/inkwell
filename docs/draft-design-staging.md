@@ -54,10 +54,25 @@ Full suite: 741 runs, 0 errors; the one failure is a **pre-existing**
 Underpinned by the earlier fix — see [[relativeurls-trailing-slash-fix]] (Hugo
 `relativeURLs` for path-prefixed sites + the Worker trailing-slash 301).
 
+## Done later (2026-08-29): versioned saves + restore
+
+After a design was lost demoing on a second browser (the designer booted from
+that browser's empty localStorage and Save clobbered the draft), the gap was
+closed: the designer now **boots from the account's saved draft**
+(`data-designer-draft-value`; localStorage only stands in while nothing has
+been saved), every **Save retires the outgoing draft to history** as an
+`archived` version (`Account#save_design!` — no-op when unchanged), and the
+rail's **Design history pane restores any version** into a fresh draft
+(`POST designer/versions/:id/restoration`, `Account#restore_design!` — the
+current draft is archived by the save path, so restore never destroys).
+Production rollback = restore the "Was live" version, then Publish.
+
 ## NOT done — pick up here
 
-1. **Revert / rollback UI (open, the pivot point).** The model already keeps
-   `archived` versions, so rollback is data-ready but has **no UI**. The verbs
+1. **Revert / rollback UI (open, the pivot point).** ~~The model already keeps
+   `archived` versions, so rollback is data-ready but has **no UI**.~~
+   *(2026-08-29: draft-level restore shipped, see above; a one-click
+   production rollback — `DELETE site_publication` — remains open.)* The verbs
    are forward-only (Save → Deploy to preview → Publish); there's no undo.
    Design agreed in principle, semantics unconfirmed:
    - **#1 Roll back production** — republish the previous (`archived`) design.

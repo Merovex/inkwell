@@ -15,15 +15,18 @@ class Admin::DesignersController < Admin::BaseController
     # The hero content editor's featured-book picker: same published scope
     # the exporter snapshots, so the picker offers exactly what can render.
     @books = Current.account.books.published.feed_ordered
+    # The History pane's revert trail (Designers::Restorations restores one).
+    @versions = Current.account.site_design_versions.history.limit(20)
   end
 
   # Save-to-draft: the working design graduates from the browser onto the
-  # account's draft version. Validated by the same SiteDesign the preview
+  # account's draft version — retiring the old draft to history, so every
+  # save is a revert point. Validated by the same SiteDesign the preview
   # uses — a design that wouldn't preview can't be saved. Saving no longer
   # publishes anything; deploying to preview or production is a separate,
   # deliberate step (Designers::PreviewDeployments / Publications).
   def update
-    Current.account.draft_design.update!(data: SiteDesign.new(params).to_h)
+    Current.account.save_design!(SiteDesign.new(params).to_h)
     head :no_content
   rescue SiteDesign::Invalid => error
     render json: { error: error.message }, status: :unprocessable_entity

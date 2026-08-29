@@ -130,4 +130,41 @@ class AccountTest < ActiveSupport::TestCase
     assert_not_equal editing, account.draft_design
     assert_equal editing.data, account.draft_design.data
   end
+
+  test "saving retires the old draft to history — every save is a revert point" do
+    account = accounts(:merovex)
+    account.save_design!({ "design" => { "palette" => "pine" } }, by: users(:admin))
+    first_save = account.draft_design
+
+    account.save_design!({ "design" => { "palette" => "ink" } }, by: users(:admin))
+
+    assert_equal "archived", first_save.reload.status
+    assert_equal({ "design" => { "palette" => "ink" } }, account.draft_design.data)
+    assert_includes account.site_design_versions.history, first_save
+    assert_equal users(:admin), account.draft_design.created_by
+  end
+
+  test "saving an unchanged design is a no-op — no junk versions" do
+    account = accounts(:merovex)
+    account.save_design!({ "design" => { "palette" => "pine" } })
+    draft = account.draft_design
+
+    assert_no_difference -> { account.site_design_versions.count } do
+      account.save_design!({ "design" => { "palette" => "pine" } })
+    end
+    assert_equal draft, account.draft_design
+  end
+
+  test "restoring a version copies it back into a fresh draft without losing the current one" do
+    account = accounts(:merovex)
+    account.save_design!({ "design" => { "palette" => "pine" } })
+    keeper = account.draft_design
+    account.save_design!({ "design" => { "palette" => "ink" } })
+    working = account.draft_design
+
+    account.restore_design!(keeper, by: users(:admin))
+
+    assert_equal({ "design" => { "palette" => "pine" } }, account.draft_design.data)
+    assert_equal "archived", working.reload.status, "the outgoing draft joins the history"
+  end
 end
