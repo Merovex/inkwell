@@ -93,12 +93,13 @@
                   <%= button_to "Resend confirmation", resend_admin_subscriber_path(subscriber), method: :post, class: "menu__item",
                         form: { data: { turbo_confirm: "Resend the confirmation email to #{redacted}?" } } %>
                 <% end %>
-                <%# One re-send per magnet they hold — the reader lost the claim
-                    email; confirmed only (the controller enforces it too). %>
+                <%# One send per site magnet — mints the Grant when the reader
+                    never held one (the magnet postdates their signup);
+                    confirmed only (the controller enforces it too). %>
                 <% if subscriber.confirmed? %>
-                  <% subscriber.grants.each do |grant| %>
-                    <%= button_to "Re-send #{grant.magnet.title} link", admin_grant_claim_renewal_path(grant), method: :post, class: "menu__item",
-                          form: { data: { turbo_confirm: "Email a fresh #{grant.magnet.title} download link to #{redacted}?" } } %>
+                  <% @magnets.each do |magnet| %>
+                    <%= button_to "Send #{magnet.title} link", admin_subscriber_magnet_claim_renewal_path(subscriber, magnet), method: :post, class: "menu__item",
+                          form: { data: { turbo_confirm: "Email a fresh #{magnet.title} download link to #{redacted}?" } } %>
                   <% end %>
                 <% end %>
                 <% if subscriber.bounced? %>
