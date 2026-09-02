@@ -435,6 +435,13 @@ Rails.application.routes.draw do
         # never silently. Unsubscribed has no reactivation — they chose.
         resource :reactivation, only: :create, module: :subscribers
       end
+      # One grant's claim link, re-sent by staff (a reader lost the email and
+      # wrote in): POST mails a fresh tokened link for that magnet to its
+      # subscriber. Confirmed readers only — pending hasn't proved the address,
+      # and the suppressed states recover through Reactivation instead.
+      resources :grants, only: [] do
+        resource :claim_renewal, only: :create, module: :grants
+      end
       # The platform's cross-site suppression list as it bears on this site's
       # readers — read-only (ADR 0027). Nothing to manage: rows are imposed by
       # bounces and complaints and lifted by a fresh opt-in or Reactivate.

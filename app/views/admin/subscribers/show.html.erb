@@ -43,6 +43,29 @@
           <% end %>
         </dl>
 
+        <% if @grants.any? %>
+          <section class="u-stack-half" aria-labelledby="downloads">
+            <h3 class="u-microcaps u-text-muted" id="downloads">Downloads</h3>
+            <div class="list">
+              <% @grants.each do |grant| %>
+                <%= render "shared/list_item",
+                      avatar: false,
+                      title_tag: "span",
+                      title: grant.magnet.title,
+                      date: l(grant.created_at.to_date, format: :short),
+                      actions: (capture do
+                        if @subscriber.confirmed?
+                          button_to "Re-send link", admin_grant_claim_renewal_path(grant),
+                            class: "button button--small",
+                            form: { data: { turbo_frame: "_top",
+                              turbo_confirm: "Email a fresh #{grant.magnet.title} download link to #{@subscriber.email_address}?" } }
+                        end
+                      end) %>
+              <% end %>
+            </div>
+          </section>
+        <% end %>
+
         <% if @deliveries.any? %>
           <section class="u-stack-half" aria-labelledby="recent-sends">
             <h3 class="u-microcaps u-text-muted" id="recent-sends">Recent sends</h3>

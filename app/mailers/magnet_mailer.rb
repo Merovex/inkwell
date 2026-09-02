@@ -7,20 +7,36 @@ class MagnetMailer < ApplicationMailer
   default message_stream: "outbound"
 
   def renewal(subscriber)
-    setting = subscriber.account.site
-    @site_name = setting.site_name
+    @site_name = subscriber.account.site.site_name
     url_options = public_url_options(subscriber.account)
     @claims = subscriber.grants.includes(:magnet).map do |grant|
       { title: grant.magnet.title, url: claim_url(token: grant.claim_token, **url_options) }
     end
 
-    options = { to: subscriber.email_address, subject: "Your #{@site_name} download links",
-      from: broadcast_from(subscriber.account), delivery_method_options: transactional_options(subscriber.account) }
-    options[:reply_to] = setting.contact_email if setting.contact_email.present?
-    mail(options)
+    magnet_mail(subscriber, subject: "Your #{@site_name} download links")
+  end
+
+  # One grant's claim link, re-sent by staff from the roster
+  # (Admin::Grants::ClaimRenewals) — same transactional footing as renewal,
+  # scoped to the single magnet the reader asked about.
+  def claim(grant)
+    subscriber = grant.subscriber
+    @site_name = subscriber.account.site.site_name
+    @title = grant.magnet.title
+    @url = claim_url(token: grant.claim_token, **public_url_options(subscriber.account))
+
+    magnet_mail(subscriber, subject: "Your #{@title} download link")
   end
 
   private
+    def magnet_mail(subscriber, subject:)
+      setting = subscriber.account.site
+      options = { to: subscriber.email_address, subject: subject,
+        from: broadcast_from(subscriber.account), delivery_method_options: transactional_options(subscriber.account) }
+      options[:reply_to] = setting.contact_email if setting.contact_email.present?
+      mail(options)
+    end
+
     def transactional_options(account)
       { configuration_set_name: Rails.application.credentials.dig(:ses, :transactional_config_set),
         **site_tenant_options(account) }

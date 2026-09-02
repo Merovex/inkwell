@@ -11,7 +11,9 @@ class Admin::SubscribersController < Admin::BaseController
 
   def index
     @state = STATES.include?(params[:state]) ? params[:state] : "confirmed"
-    @subscribers = Current.account.subscribers.where(status: @state).order(created_at: :desc)
+    # Grants feed the per-magnet "Re-send … link" row actions.
+    @subscribers = Current.account.subscribers.where(status: @state)
+      .includes(grants: :magnet).order(created_at: :desc)
     # Seeds stay visible in the roster (badged) but out of the headline counts —
     # they're diagnostics, not readers.
     @counts = Current.account.subscribers.readers.group(:status).count
@@ -30,6 +32,7 @@ class Admin::SubscribersController < Admin::BaseController
     @received = @deliveries.count
     @opened = @deliveries.count { |d| d.opened_at.present? }
     @last_opened_at = @deliveries.filter_map(&:opened_at).max
+    @grants = @subscriber.grants.joins(:magnet).includes(:magnet).merge(Magnet.ordered)
   end
 
   # Manual opt-out on someone's behalf (a reply-to-email request, say). Same
