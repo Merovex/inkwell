@@ -2,6 +2,13 @@
 
 Append-only. Newest first. Format defined in [[CLAUDE]] (`CLAUDE.md`).
 
+## [2026-09-02] build | Suggest excerpt — in-browser summarizer, ADR 0028
+- The excerpt field (meta description, JSON-LD, Hugo `.Params.excerpt` — all via `Post#summary`) gets a **Suggest excerpt** button in the composer. Xenova/distilbart-cnn-6-6 (quantized, ~150 MB) runs **in the author's browser** via transformers.js in a module Web Worker — zero server load on the one prod box, and the draft never leaves the machine. Optional and opt-in: first click shows a consent row naming the one-time download, that it's local, and that hand-writing stays fine; consent remembered at `alcovo/excerpt_suggest/consent`.
+- transformers.js pinned at `@4.2.0` via jsdelivr (import maps don't reach workers; wasm + weights are CDN fetches regardless). Worker lives in `public/` — undigested, so the controller's `?v=` query is the cache buster. Source text strips `{% tipin %}` and keeps the ~2,500-char lead; output word-boundary-trims to the 160 cap like `plain_excerpt`. The fill dispatches `input` so char-count and the localStorage autosave both see it; the author reviews and saves normally (versions stay author-authored, ADR 0007).
+- Testing is honest about its limits: a controller test proves the wiring (button, polite live region, hidden consent row, targets); the download/generate flow is manual-only — CI must never pull 150 MB. The trim/strip helpers are exported pure functions for later unit testing.
+- pages touched: [[0028-client-side-excerpt-suggestions]], [[index]]
+- refs: ../app/javascript/controllers/excerpt_suggest_controller.js, ../public/excerpt_suggester_worker.js, ../app/views/admin/posts/_form.html.erb, ../test/controllers/posts_controller_test.rb
+
 ## [2026-08-26] fix | Custom-domain status told authors nothing usable
 - Found via benwilsondev.com, which sat "verifying" for hours with a valid certificate in the browser. Cloudflare's own answer: apex `active`/`active`, **`www` `active`/`pending_validation`** — the KQ certificate genuinely had not issued. The browser cert was the author's *own* Cloudflare Universal SSL wildcard (`*.benwilsondev.com`, Google Trust Services), because both names are orange-clouded and TLS terminates at their edge under orange-to-orange. Site perfectly healthy the whole time; only the status was stuck.
 - **The blocker was invisible by construction.** `ssl.validation_records` is a list — Cloudflare carries one entry per in-flight validation attempt — and `Cloudflare::CustomHostname` read `.first`. `www` had two outstanding; the second (`shQ1…`) had never once been rendered. The author had already added the two values the page *had* shown over successive rotations, which is why DNS held two stale-or-partial tokens.

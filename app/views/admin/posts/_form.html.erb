@@ -6,7 +6,7 @@
 <%# Autosaved to localStorage: new posts share the posts/new draft slot; %>
 <%# edits key to the record, guarded by the current version id. %>
 <%= form_with model: post, url: url, id: "composer", class: "composer",
-      data: { controller: "autosave word-count tipin",
+      data: { controller: "autosave word-count tipin excerpt-suggest",
               autosave_key_value: (post.record_id ? "Record/#{post.record_id}/edit" : "posts/new"),
               autosave_revision_value: post.record&.recordable_id,
               word_count_words_per_minute_value: ApplicationHelper::WORDS_PER_MINUTE } do |f| %>
@@ -23,9 +23,26 @@
     <%= f.text_area :excerpt, class: "composer__excerpt u-surface", rows: 2, maxlength: 160,
           placeholder: "Optional summary for the blog list and search results…",
           "aria-label": "Excerpt",
-          data: { char_count_target: "field", action: "input->char-count#update" } %>
+          data: { char_count_target: "field", excerpt_suggest_target: "field",
+                  action: "input->char-count#update" } %>
     <p class="composer__hint u-text-muted">
       <span data-char-count-target="count">0</span>/160 — aim for 50–160 characters, with your keywords in the first 120.
+      <button type="button" class="button button--small"
+              data-excerpt-suggest-target="button"
+              data-action="excerpt-suggest#suggest">Suggest excerpt</button>
+      <span data-excerpt-suggest-target="status" role="status" aria-live="polite"></span>
+    </p>
+    <%# One-time, per-browser consent for the optional suggester: the model is
+        a real download, so nothing fetches until the author says yes here.
+        The choice is remembered in localStorage. %>
+    <p class="composer__hint u-text-muted" data-excerpt-suggest-target="consent" hidden>
+      Optional: suggestions run entirely on your machine. A small AI model
+      (~150&nbsp;MB) downloads once from huggingface.co into your browser's cache —
+      your draft is never sent anywhere, and you can always write the excerpt yourself.
+      <button type="button" class="button button--small"
+              data-action="excerpt-suggest#accept">Download &amp; suggest</button>
+      <button type="button" class="button button--small"
+              data-action="excerpt-suggest#decline">Not now</button>
     </p>
   </div>
 
@@ -51,7 +68,7 @@
       The hint is a sibling, not a wrapper: .composer lexxy-editor flex-grows to
       fill the canvas and a wrapper div would swallow that. %>
   <%= f.rich_textarea :content, placeholder: "Write away…", "aria-label": "Body",
-        data: { word_count_target: "source", tipin_target: "body",
+        data: { word_count_target: "source", tipin_target: "body", excerpt_suggest_target: "body",
                 action: "lexxy:change->word-count#update lexxy:initialize->word-count#update" } %>
   <p class="composer__hint u-text-muted"><span data-word-count-target="output">0 words</span></p>
 <% end %>

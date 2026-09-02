@@ -101,6 +101,21 @@ class PostsControllerTest < ActionDispatch::IntegrationTest
     assert_select "form#composer[data-autosave-revision-value=?]", posts(:kickoff).id.to_s
   end
 
+  test "composer offers the optional client-side excerpt suggester, opt-in and announced politely" do
+    get new_admin_post_path
+    assert_response :success
+    assert_select "form#composer[data-controller~=excerpt-suggest]"
+    assert_select "button[data-action='excerpt-suggest#suggest']", text: "Suggest excerpt"
+    assert_select "[data-excerpt-suggest-target=status][aria-live=polite]"
+    # Nothing downloads until the author accepts the hidden consent row, which
+    # spells out the one-time download, that it runs locally, and that it's optional.
+    assert_select "[data-excerpt-suggest-target=consent][hidden]", text: /Optional.*downloads once.*write the excerpt yourself/m do
+      assert_select "button[data-action='excerpt-suggest#accept']"
+      assert_select "button[data-action='excerpt-suggest#decline']"
+    end
+    assert_select "lexxy-editor[data-excerpt-suggest-target=body]"
+  end
+
   test "create as draft wraps the post in a record" do
     assert_difference [ "Post.count", "Record.count" ], 1 do
       post admin_posts_path, params: { post: { title: "Hello spine", content: "<p>Hi</p>" } }

@@ -62,6 +62,7 @@ for canonical naming.
 | [0025](decisions/0025-canonical-delivery-events.md) | Canonical delivery events — one vocabulary, two ESP adapters (Postmark + SES) | accepted | 2026-08-05 |
 | [0026](decisions/0026-signup-source-retention.md) | Signup source retention — fingerprint the neighborhood, keep consent IPs, never visit IPs | accepted | 2026-08-23 |
 | [0027](decisions/0027-person-suppression-ledger.md) | Person suppression ledger — cross-site bounce/complaint suppression, one guard in the send path | accepted | 2026-08-23 |
+| [0028](decisions/0028-client-side-excerpt-suggestions.md) | Client-side ML — excerpt suggestions run in the browser | accepted | 2026-09-02 |
 
 ## Concepts
 
