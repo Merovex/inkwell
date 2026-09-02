@@ -1,0 +1,29 @@
+<%# The magnet hand-over section — title, blurb, one download button per
+    attached format — shared by the tokened claim page and the ungated
+    delivery page so the two can't drift. Locals:
+      magnet:     the Magnet on offer
+      files_path: where the format buttons POST (claim_downloads_path with
+                  its token, or delivery_files_path) %>
+<%# locals: (magnet:, files_path:) %>
+<section class="press-shell">
+  <header class="press-header u-flow u-flow-half">
+    <h1 class="press-display-lg"><%= magnet.title %></h1>
+    <p class="press-muted">Your free book from <%= site_settings.site_name %>. Pick the format your reader likes.</p>
+  </header>
+
+  <% if magnet.description.present? %>
+    <p class="press-body"><%= magnet.description %></p>
+  <% end %>
+
+  <div class="press-form__row">
+    <% magnet.formats.each do |format| %>
+      <%= button_to "Download #{format.upcase}", files_path,
+            params: { kind: format }, class: "press-btn press-btn--primary" %>
+    <% end %>
+  </div>
+
+  <p class="press-muted">
+    EPUB works everywhere — Kindle (via Send&nbsp;to&nbsp;Kindle), Apple Books, and Google Play Books.
+    PDF is best for reading on a computer.
+  </p>
+</section>

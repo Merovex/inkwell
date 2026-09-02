@@ -63,6 +63,7 @@ class ClaimsTest < ActionDispatch::IntegrationTest
     assert_response :redirect
     assert_match "the-bargain.epub", response.location
     assert_equal "epub", @grant.downloads.last.format
+    assert_equal @magnet, @grant.downloads.last.magnet, "claim downloads stamp the magnet too"
   end
 
   test "an unknown kind or an unattached format 404s without spending the cap" do

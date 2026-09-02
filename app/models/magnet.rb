@@ -1,13 +1,19 @@
 # A reader magnet — the free ebook a welcome campaign gives new subscribers.
-# Attach one to a Drop and that email grows a "Get {title}" claim button; the
-# email itself never carries a file or a file URL. A plain account-scoped
-# model, not a recordable: this is fulfillment bookkeeping, not site content,
-# so no versioning ceremony and no site rebuilds.
+# Two delivery doors: attach one to a Drop and that email grows a "Get
+# {title}" claim button (tokened, capped); and every magnet also has an
+# ungated direct-download page at /download/<to_param> for readers already on
+# the list — the link authors paste into newsletters and the welcome
+# sequence. A plain account-scoped model, not a recordable: this is
+# fulfillment bookkeeping, not site content, so no versioning ceremony and no
+# site rebuilds. Sluggable so the direct link is anchored to a permanent slug
+# column — title edits (or future re-modeling) never rot a pasted link.
 #
 # Files live in the PRIVATE r2_magnets bucket — never kindredquill-sites,
 # which the edge Worker serves publicly by path. Readers only ever see
-# short-lived presigned URLs, minted per download by Claims::Downloads.
+# short-lived presigned URLs, minted per download by Claims::Downloads and
+# Deliveries::Files.
 class Magnet < ApplicationRecord
+  include Sluggable
   # epub + pdf covers everyone: Send-to-Kindle has taken epub since 2022
   # (mobi is retired), Apple Books and Play Books read epub natively.
   FORMATS = %w[ epub pdf ].freeze
@@ -20,6 +26,9 @@ class Magnet < ApplicationRecord
   has_one_attached :pdf,  service: :r2_magnets
 
   has_many :grants, dependent: :destroy
+  # Every redeemed fetch, tokened or direct (grantless rows have no cascade
+  # path through grants, so the sweep lives here too).
+  has_many :downloads, dependent: :delete_all
   # Drop versions keep their magnet_id through revisions (Recordable#build_successor
   # dups scalars); deleting the magnet unhooks them rather than orphaning the FK.
   has_many :drops, dependent: :nullify
@@ -28,6 +37,9 @@ class Magnet < ApplicationRecord
   validate :acceptable_files
 
   scope :ordered, -> { order(:title) }
+
+  # Sluggable's to_param leads with to_s — /download/the-bargain-K7TXM4.
+  def to_s = title
 
   # The formats a claim page can actually offer.
   def formats = FORMATS.select { |format| file_for(format).attached? }

@@ -22,6 +22,26 @@ class MagnetTest < ActiveSupport::TestCase
     assert_equal %w[ epub pdf ], new_magnet(pdf: true).formats
   end
 
+  test "mints a permanent slug and resolves any spelling of it" do
+    magnet = new_magnet
+
+    assert_match Sluggable::SLUG_FORMAT, magnet.slug
+    assert_equal magnet, Magnet.find(magnet.to_param)
+    assert_equal magnet, Magnet.find(magnet.to_param.downcase)
+  end
+
+  test "destroy sweeps grants and both kinds of downloads" do
+    magnet = new_magnet
+    subscriber = Subscriber.create!(email_address: "reader@example.com", status: :confirmed, confirmed_at: Time.current)
+    magnet.grant_to(subscriber).downloads.create!(format: "epub")
+    magnet.downloads.create!(format: "epub")
+
+    magnet.destroy
+
+    assert_equal 0, Grant.count
+    assert_equal 0, Download.count
+  end
+
   test "grant_to mints one grant per subscriber and reuses it" do
     magnet = new_magnet
     subscriber = Subscriber.create!(email_address: "reader@example.com", status: :confirmed, confirmed_at: Time.current)

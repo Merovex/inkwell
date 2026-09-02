@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.2].define(version: 2026_09_02_100000) do
+ActiveRecord::Schema[8.2].define(version: 2026_09_02_110001) do
   create_table "account_users", force: :cascade do |t|
     t.integer "account_id", null: false
     t.integer "user_id", null: false
@@ -387,10 +387,12 @@ ActiveRecord::Schema[8.2].define(version: 2026_09_02_100000) do
   end
 
   create_table "downloads", force: :cascade do |t|
-    t.integer "grant_id", null: false
+    t.integer "grant_id"
     t.string "format", null: false
     t.datetime "created_at", null: false
+    t.integer "magnet_id", null: false
     t.index ["grant_id"], name: "index_downloads_on_grant_id"
+    t.index ["magnet_id"], name: "index_downloads_on_magnet_id"
   end
 
   create_table "drips", force: :cascade do |t|
@@ -498,7 +500,9 @@ ActiveRecord::Schema[8.2].define(version: 2026_09_02_100000) do
     t.text "description"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "slug", null: false
     t.index ["account_id"], name: "index_magnets_on_account_id"
+    t.index ["slug"], name: "index_magnets_on_slug", unique: true
   end
 
   create_table "messages", force: :cascade do |t|

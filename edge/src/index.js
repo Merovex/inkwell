@@ -80,6 +80,11 @@ const ISLANDS = [
   { method: "POST", pattern: /^\/claim\/[^/]+\/downloads$/ },
   { method: "POST", pattern: /^\/claim_renewal$/ },
   { method: "GET", pattern: /^\/claim_renewal\/sent$/ },
+  // Direct-download delivery pages: the ungated twin of /claim (the slugged
+  // link authors paste into newsletters). GET shows the format buttons; the
+  // files POST 302s to a presigned R2 URL, handed straight to the browser.
+  { method: "GET", pattern: /^\/download\/[^/]+$/ },
+  { method: "POST", pattern: /^\/download\/[^/]+\/files$/ },
 ];
 
 function isIsland(method, pathname) {

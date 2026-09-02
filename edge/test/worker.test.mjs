@@ -169,6 +169,26 @@ await check("claim download POST proxies, and its 302 to R2 passes through untou
   assert.equal(proxied, undefined);
 });
 
+await check("delivery page proxies slugged GETs and its files POST, GET-files stays static", async () => {
+  proxied = undefined;
+  const res = await island("https://merovex.press/download/the-bargain-K7TXM4");
+  assert.equal(res.status, 200); // proxied, NOT an R2 404
+  assert.equal(proxied.url, "https://app.kindredquill.com/download/the-bargain-K7TXM4");
+
+  proxied = undefined;
+  await island("https://merovex.press/download/the-bargain-K7TXM4/files", "POST");
+  assert.equal(proxied.url, "https://app.kindredquill.com/download/the-bargain-K7TXM4/files");
+  assert.equal(proxied.init.redirect, "manual"); // the presigned-URL 302 goes to the browser
+
+  proxied = undefined;
+  await island("https://merovex.press/download/the-bargain-K7TXM4/files"); // GET spends nothing → static
+  assert.equal(proxied, undefined);
+
+  proxied = undefined;
+  await island("https://merovex.press/download/a/b"); // deeper paths are not islands
+  assert.equal(proxied, undefined);
+});
+
 await check("claim renewal form POST and its sent page proxy, prefixed on the platform host", async () => {
   proxied = undefined;
   await island("https://merovex.press/claim_renewal", "POST");

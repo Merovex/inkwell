@@ -579,6 +579,14 @@ Rails.application.routes.draw do
     post "claim_renewal" => "claim_renewals#create", as: :claim_renewal
     get  "claim_renewal/sent" => "claim_renewals#sent", as: :claim_renewal_sent
 
+    # Direct-download delivery pages — the ungated twin of /claim, for readers
+    # already on the list (the link authors paste into newsletters and the
+    # welcome sequence). :id is the magnet's Sluggable to_param, permanent
+    # through title edits. GET only shows the format buttons; the files POST
+    # redeems one, so scanner prefetches stay free (same split as /claim).
+    get  "download/:id" => "deliveries#show", as: :delivery
+    post "download/:id/files" => "deliveries/files#create", as: :delivery_files
+
     # Contact form (anonymous, double opt-in) at /contact. create records an
     # unconfirmed Missive and emails a fixed-template confirmation; the token link
     # confirms it. Content is only ever read in /admin/missives, never emailed out.

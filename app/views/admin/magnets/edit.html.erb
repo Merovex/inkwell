@@ -6,6 +6,13 @@
   <h1 class="perma-header__title"><%= @magnet.title %></h1>
 </header>
 
-<div class="u-center u-center-narrow">
+<div class="u-center u-center-narrow u-flow">
   <%= render "form", magnet: @magnet, url: admin_magnet_path(@magnet) %>
+
+  <%= render "shared/copy_field",
+        label: "Direct download link",
+        value: delivery_url(@magnet, **AccountHost.public_url_options(Current.account)),
+        hint: "Ungated — hands the file to anyone who has it, no signup. " \
+              "Paste it into newsletters and the welcome sequence; the link survives title edits. " \
+              "New-subscriber emails should keep using the claim button on the drip step instead." %>
 </div>

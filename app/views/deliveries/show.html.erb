@@ -1,4 +1,4 @@
 <% content_for :title, "Download #{@magnet.title} — #{site_settings.site_name}" %>
 
 <%= render "shared/magnet_download", magnet: @magnet,
-      files_path: claim_downloads_path(token: params[:token]) %>
+      files_path: delivery_files_path(@magnet) %>
