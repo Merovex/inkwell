@@ -249,7 +249,9 @@ class Exporter
             published_at: post.published_at&.iso8601,
             byline: post.byline,
             excerpt: post.summary,
-            body_html: html(post.content)
+            # public_content, not content: the {% tipin %} marker and its
+            # email-only splice must never reach the static site.
+            body_html: html(post.public_content)
           }
         end }
     end

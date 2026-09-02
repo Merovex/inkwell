@@ -11,7 +11,7 @@ xml.rss version: "2.0", "xmlns:atom": "http://www.w3.org/2005/Atom" do
       url = post_url(post.record.to_slug)
       xml.item do
         xml.title post.title
-        xml.description post.content.to_plain_text.to_s.truncate(500)
+        xml.description post.public_content.to_plain_text.to_s.truncate(500)
         xml.pubDate post.published_at.to_fs(:rfc822)
         xml.link url
         xml.guid url, isPermaLink: "true"

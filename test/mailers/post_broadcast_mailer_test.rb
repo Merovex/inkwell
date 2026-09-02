@@ -30,6 +30,18 @@ class PostBroadcastMailerTest < ActionMailer::TestCase
     assert_match "<img", email.html_part.decoded
   end
 
+  test "issue splices the tip-in at the marker, in both parts" do
+    subscriber = Subscriber.create!(email_address: "reader@example.com", status: :confirmed)
+    posts(:kickoff).update!(content: "<p>Hello.</p><p>{% tipin %}</p>", tipin: "<p>Free novella inside.</p>")
+    broadcast = records(:kickoff).create_broadcast!
+
+    email = PostBroadcastMailer.issue(broadcast, subscriber)
+
+    assert_match "Free novella inside", email.html_part.decoded
+    assert_match "Free novella inside", email.text_part.decoded
+    assert_no_match(/\{%\s*tipin/, email.html_part.decoded)
+  end
+
   test "issue's reader-facing links land on the account's own domain, never the app host" do
     subscriber = Subscriber.create!(email_address: "reader@example.com", status: :confirmed)
     broadcast = records(:kickoff).create_broadcast!

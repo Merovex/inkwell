@@ -1,0 +1,3 @@
+#!/usr/bin/bash
+kamal deploy                      # Rails + the two migrations
+cd edge && pnpm exec wrangler deploy

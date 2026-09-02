@@ -6,7 +6,7 @@
 <%# Autosaved to localStorage: new posts share the posts/new draft slot; %>
 <%# edits key to the record, guarded by the current version id. %>
 <%= form_with model: post, url: url, id: "composer", class: "composer",
-      data: { controller: "autosave word-count",
+      data: { controller: "autosave word-count tipin",
               autosave_key_value: (post.record_id ? "Record/#{post.record_id}/edit" : "posts/new"),
               autosave_revision_value: post.record&.recordable_id,
               word_count_words_per_minute_value: ApplicationHelper::WORDS_PER_MINUTE } do |f| %>
@@ -31,11 +31,27 @@
 
   <%= render "admin/shared/author_select", f: f, resource: post %>
 
+  <%# The email-only tip-in: spliced into the newsletter at the {% tipin %}
+      marker (after the article when there's no marker); never rendered on
+      the site. Rides the metadata band so the body stays the last, growing
+      element. Open when it has content so it can't hide what will send. %>
+  <details class="composer__field" <%= "open" if post.tipin.present? %>>
+    <summary class="u-text-muted">Email-only tip-in</summary>
+    <%= f.rich_textarea :tipin, placeholder: "Only newsletter readers see this…",
+          "aria-label": "Email-only tip-in" %>
+    <p class="composer__hint u-text-muted">
+      Goes out only in the email, where <code>{% tipin %}</code> sits in the post —
+      or after the article if there's no marker.
+      <button type="button" class="u-unbutton u-link" data-action="tipin#insert">Insert the marker at the cursor</button>
+    </p>
+  </details>
+
   <%# The body, and under it a live word count + reading estimate (word-count
       controller), worded exactly like post_length on the index and post pages.
       The hint is a sibling, not a wrapper: .composer lexxy-editor flex-grows to
       fill the canvas and a wrapper div would swallow that. %>
   <%= f.rich_textarea :content, placeholder: "Write away…", "aria-label": "Body",
-        data: { word_count_target: "source", action: "lexxy:change->word-count#update lexxy:initialize->word-count#update" } %>
+        data: { word_count_target: "source", tipin_target: "body",
+                action: "lexxy:change->word-count#update lexxy:initialize->word-count#update" } %>
   <p class="composer__hint u-text-muted"><span data-word-count-target="output">0 words</span></p>
 <% end %>

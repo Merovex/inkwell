@@ -87,7 +87,7 @@ class Admin::PostsController < Admin::BaseController
 
   private
     def post_params
-      params.expect(post: [ :title, :content, :excerpt, :author_record_id ])
+      params.expect(post: [ :title, :content, :excerpt, :tipin, :author_record_id ])
     end
 
     def create_notice
