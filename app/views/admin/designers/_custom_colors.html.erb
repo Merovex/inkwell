@@ -1,0 +1,74 @@
+<%# The escape valve past the palettes: pick a HUE for each of background /
+    accent / text — the exact shades are assigned server-side per role and
+    mode so contrast holds in both light and dark (a11y is ours, hue is
+    theirs). No mode control here: the palette pane's mode chips govern,
+    and custom palettes are dual-mode by construction. %>
+<section class="designer__block" aria-label="Custom palette">
+  <h3 class="designer__block-title">Custom palette</h3>
+  <span data-controller="dialog">
+    <button type="button" class="button" data-action="dialog#open designer#openColors">Pick your colors</button>
+    <dialog class="modal designer__colors-modal" data-dialog-target="modal" data-action="click->dialog#backdrop"
+            aria-labelledby="designer-colors-title">
+      <div class="modal__header">
+        <span class="modal__title" id="designer-colors-title">Custom palette</span>
+        <button type="button" class="button button--icon button--ghost" data-action="dialog#close" aria-label="Close">
+          <%= inline_svg_tag "lucide/x.svg", class: "lucide", size: "20px" %>
+        </button>
+      </div>
+      <div class="modal__body u-flow">
+        <p class="u-text-muted">Pick a role, then tap a color. Shades are set for you.</p>
+        <div class="designer__color-slots u-cluster" role="group" aria-label="Color roles">
+          <% { "bg" => "Background", "accent" => "Accent", "ink" => "Text" }.each_with_index do |(slot, label), i| %>
+            <button type="button" class="designer__color-slot <%= "is-active" if i.zero? %>"
+                    data-designer-target="colorSlot" data-slot="<%= slot %>" data-action="designer#selectColorSlot">
+              <span class="designer__color-slot-chip" data-designer-target="colorChip" data-slot="<%= slot %>"></span>
+              <%= label %>
+            </button>
+          <% end %>
+        </div>
+        <%# Free entry into the same pipeline: the wheel populates this; any
+            #rrggbb submits. Only the color's hue and chroma are kept — the
+            shades are still set per role and mode. %>
+        <input type="text" class="field__control designer__hex" maxlength="8" spellcheck="false"
+               placeholder="#4f46e5" aria-label="Hex color for the selected role"
+               data-designer-target="hexInput" data-action="input->designer#hexEdited">
+        <%# The chromatic hues ride a color wheel in spectral order (red at
+            twelve, clockwise); the neutrals and house ramps (merovex token
+            system, OKLCH → hex) sit below as muted tones. Discs fill with
+            the 500 stop, ringed two stops lighter (300). %>
+        <% wheel = %w[red orange amber yellow lime green emerald teal cyan sky blue indigo violet purple fuchsia pink rose] %>
+        <% muted = %w[slate gray zinc neutral stone taupe mauve mist olive] %>
+        <div class="designer__wheel" role="listbox" aria-label="Colors"
+             data-action="pointerover->designer#hueHovered pointerout->designer#hueLeft">
+          <% wheel.each_with_index do |name, i| %>
+            <% stops = TailwindColors.scales.fetch(name) %>
+            <button type="button" class="designer__hue designer__hue--wheel"
+                    style="--wheel-angle: <%= (360.0 / wheel.size * i).round(1) %>deg"
+                    data-action="designer#colorPicked" data-designer-hex-param="<%= stops["500"] %>"
+                    aria-label="<%= name %>" title="<%= name %>">
+              <span class="designer__hue-chip" style="background: <%= stops["500"] %>; border-color: <%= stops["300"] %>"></span>
+            </button>
+          <% end %>
+          <%# Desaturation belongs at the center of a color wheel: the
+              neutrals + house ramps ride an inner ring. %>
+          <div class="designer__wheel-center" role="group" aria-label="Muted tones">
+            <% muted.each_with_index do |name, i| %>
+              <% stops = TailwindColors.scales.fetch(name) %>
+              <button type="button" class="designer__hue designer__hue--muted"
+                      style="--wheel-angle: <%= (360.0 / muted.size * i).round(1) %>deg"
+                      data-action="designer#colorPicked" data-designer-hex-param="<%= stops["500"] %>"
+                      aria-label="<%= name %>" title="<%= name %>">
+                <span class="designer__hue-chip" style="background: <%= stops["500"] %>; border-color: <%= stops["300"] %>"></span>
+              </button>
+            <% end %>
+          </div>
+        </div>
+        <p class="designer__assigning u-text-muted" data-designer-target="assigning" aria-live="polite">Assigning: Background</p>
+      </div>
+      <div class="modal__footer">
+        <button type="button" class="button button--ghost" data-action="designer#clearColors">Back to the palettes</button>
+        <button type="button" class="button button--primary" data-action="dialog#close">Done</button>
+      </div>
+    </dialog>
+  </span>
+</section>

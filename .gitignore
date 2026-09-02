@@ -33,3 +33,7 @@
 # Ignore key files for decrypting credentials and more.
 /config/*.key
 
+# Node dependencies — the Rails app uses importmap (no build step); the edge
+# Worker's node_modules are restored with `npm install` and never committed.
+node_modules/
+

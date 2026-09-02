@@ -1,0 +1,5 @@
+<%# The @mention chip — how a user renders when attached in circle content
+    (User#to_attachable_partial_path). Inline avatar + name, sage like the
+    text-token mentions in mention.css. Action Text passes the attachable
+    as `user`. %>
+<span class="mention"><span class="avatar mention__avatar" aria-hidden="true"><%= avatar_content(user) %></span><%= user.display_name %></span>

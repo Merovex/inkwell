@@ -1,0 +1,31 @@
+<% content_for :title, "Edit answer — #{@circle.name}" %>
+
+<%# Rendered into the beat's turbo frame on the pulse page: the row keeps its %>
+<%# .list__item shape but the content column becomes an editor. "Never mind" %>
+<%# navigates the frame back to the pulse page, which restores the answer. %>
+<%= turbo_frame_tag "beat_#{@beat_record.id}", class: "list__item comment" do %>
+  <span class="avatar list__avatar" aria-hidden="true"><%= avatar_content(@beat.creator) %></span>
+
+  <div class="comment__content">
+    <%= render "admin/shared/error_summary", model: @beat %>
+    <%# Autosaved to localStorage; the revision guard drops the draft if the %>
+    <%# answer was edited elsewhere since it was typed. %>
+    <%= form_with model: @beat, url: circle_pulse_beat_path(@circle, @record, @beat_record),
+          method: :patch, class: "u-stack u-stack-half lexxy-compact",
+          data: { controller: "autosave",
+                  autosave_key_value: "Record/#{@beat_record.id}/edit",
+                  autosave_revision_value: @beat_record.recordable_id } do |f| %>
+      <%= f.rich_textarea :content, "aria-label": "Your answer" do %><%= mention_prompt(@circle) %><% end %>
+      <div class="field">
+        <%= f.label :word_count, "Words this week (optional)", class: "field__label" %>
+        <%= f.number_field :word_count, class: "field__control", min: 0, placeholder: "e.g. 1500", inputmode: "numeric" %>
+      </div>
+      <div class="form__action">
+        <%= f.submit "Save changes", class: "button button--primary" %>
+        <%= link_to "Never mind", circle_pulse_path(@circle, @record), class: "button" %>
+      </div>
+    <% end %>
+  </div>
+
+  <div class="list__action comment__actions"></div>
+<% end %>

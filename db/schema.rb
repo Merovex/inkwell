@@ -10,7 +10,47 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.2].define(version: 2026_07_12_180003) do
+ActiveRecord::Schema[8.2].define(version: 2026_09_02_100000) do
+  create_table "account_users", force: :cascade do |t|
+    t.integer "account_id", null: false
+    t.integer "user_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "user_id"], name: "index_account_users_on_account_id_and_user_id", unique: true
+    t.index ["account_id"], name: "index_account_users_on_account_id"
+    t.index ["user_id"], name: "index_account_users_on_user_id"
+  end
+
+  create_table "accounts", force: :cascade do |t|
+    t.string "name", null: false, collation: "NOCASE"
+    t.string "slug", null: false
+    t.integer "owner_id", null: false
+    t.string "domain"
+    t.string "contact_email"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.string "site_build_status"
+    t.datetime "site_built_at"
+    t.datetime "ses_tenant_provisioned_at"
+    t.string "handle"
+    t.string "turnstile_site_key"
+    t.string "turnstile_secret_key"
+    t.index ["domain"], name: "index_accounts_on_domain", unique: true
+    t.index ["handle"], name: "index_accounts_on_handle", unique: true
+    t.index ["name"], name: "index_accounts_on_name", unique: true
+    t.index ["owner_id"], name: "index_accounts_on_owner_id"
+    t.index ["slug"], name: "index_accounts_on_slug", unique: true
+  end
+
+  create_table "action_mailbox_inbound_emails", force: :cascade do |t|
+    t.integer "status", default: 0, null: false
+    t.string "message_id", null: false
+    t.string "message_checksum", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["message_id", "message_checksum"], name: "index_action_mailbox_inbound_emails_uniqueness", unique: true
+  end
+
   create_table "action_text_rich_texts", force: :cascade do |t|
     t.string "name", null: false
     t.text "body"
@@ -87,6 +127,8 @@ ActiveRecord::Schema[8.2].define(version: 2026_07_12_180003) do
     t.string "platform"
     t.datetime "started_at"
     t.string "country_code"
+    t.integer "account_id"
+    t.index ["account_id"], name: "index_ahoy_visits_on_account_id"
     t.index ["user_id"], name: "index_ahoy_visits_on_user_id"
     t.index ["visit_token"], name: "index_ahoy_visits_on_visit_token", unique: true
     t.index ["visitor_token", "started_at"], name: "index_ahoy_visits_on_visitor_token_and_started_at"
@@ -100,9 +142,22 @@ ActiveRecord::Schema[8.2].define(version: 2026_07_12_180003) do
     t.string "event", default: "created", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "tagline"
     t.index ["creator_id"], name: "index_authors_on_creator_id"
     t.index ["record_id", "id"], name: "index_authors_on_record_id_and_id"
     t.index ["record_id"], name: "index_authors_on_record_id"
+  end
+
+  create_table "beats", force: :cascade do |t|
+    t.integer "record_id", null: false
+    t.integer "creator_id", null: false
+    t.string "event", default: "created", null: false
+    t.date "asked_on", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.integer "word_count"
+    t.index ["creator_id"], name: "index_beats_on_creator_id"
+    t.index ["record_id", "id"], name: "index_beats_on_record_id_and_id"
   end
 
   create_table "bodies", force: :cascade do |t|
@@ -124,6 +179,9 @@ ActiveRecord::Schema[8.2].define(version: 2026_07_12_180003) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.integer "author_record_id"
+    t.integer "word_count"
+    t.string "isbn"
+    t.string "tagline"
     t.index ["author_record_id"], name: "index_books_on_author_record_id"
     t.index ["body_id"], name: "index_books_on_body_id"
     t.index ["creator_id"], name: "index_books_on_creator_id"
@@ -154,6 +212,8 @@ ActiveRecord::Schema[8.2].define(version: 2026_07_12_180003) do
     t.datetime "bounced_at"
     t.datetime "complained_at"
     t.datetime "unsubscribed_at"
+    t.string "provider"
+    t.string "provider_message_id"
     t.index ["broadcast_id", "subscriber_id"], name: "index_broadcast_deliveries_on_broadcast_id_and_subscriber_id", unique: true
     t.index ["broadcast_id"], name: "index_broadcast_deliveries_on_broadcast_id"
     t.index ["subscriber_id"], name: "index_broadcast_deliveries_on_subscriber_id"
@@ -175,12 +235,28 @@ ActiveRecord::Schema[8.2].define(version: 2026_07_12_180003) do
     t.index ["record_id"], name: "index_broadcasts_on_record_id", unique: true
   end
 
+  create_table "bulletins", force: :cascade do |t|
+    t.string "title", null: false
+    t.string "status", default: "drafted", null: false
+    t.datetime "published_at"
+    t.datetime "pinned_at"
+    t.integer "record_id"
+    t.integer "creator_id", null: false
+    t.integer "body_id", null: false
+    t.string "event", default: "created", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["record_id"], name: "index_bulletins_on_record_id"
+  end
+
   create_table "categories", force: :cascade do |t|
     t.string "name", null: false
     t.string "icon", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["name"], name: "index_categories_on_name", unique: true
+    t.integer "account_id", null: false
+    t.index ["account_id", "name"], name: "index_categories_on_account_id_and_name", unique: true
+    t.index ["account_id"], name: "index_categories_on_account_id"
   end
 
   create_table "chat_lines", force: :cascade do |t|
@@ -193,6 +269,63 @@ ActiveRecord::Schema[8.2].define(version: 2026_07_12_180003) do
     t.index ["record_id", "id"], name: "index_chat_lines_on_record_id_and_id"
   end
 
+  create_table "circle_invitations", force: :cascade do |t|
+    t.integer "circle_id", null: false
+    t.integer "user_id", null: false
+    t.integer "inviter_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["circle_id", "user_id"], name: "index_circle_invitations_on_circle_id_and_user_id", unique: true
+    t.index ["inviter_id"], name: "index_circle_invitations_on_inviter_id"
+    t.index ["user_id"], name: "index_circle_invitations_on_user_id"
+  end
+
+  create_table "circle_memberships", force: :cascade do |t|
+    t.integer "circle_id", null: false
+    t.integer "user_id", null: false
+    t.string "role", default: "member", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["circle_id", "user_id"], name: "index_circle_memberships_on_circle_id_and_user_id", unique: true
+    t.index ["user_id"], name: "index_circle_memberships_on_user_id"
+  end
+
+  create_table "circles", force: :cascade do |t|
+    t.string "name", null: false
+    t.string "slug", null: false
+    t.integer "owner_id", null: false
+    t.integer "member_limit"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.text "description"
+    t.boolean "commons", default: false, null: false
+    t.text "charter"
+    t.index ["commons"], name: "index_circles_on_commons", unique: true, where: "commons"
+    t.index ["owner_id"], name: "index_circles_on_owner_id"
+    t.index ["slug"], name: "index_circles_on_slug", unique: true
+  end
+
+  create_table "collections", force: :cascade do |t|
+    t.string "title", null: false
+    t.string "status", default: "drafted", null: false
+    t.datetime "published_at"
+    t.datetime "pinned_at"
+    t.integer "record_id", null: false
+    t.integer "creator_id", null: false
+    t.integer "body_id", null: false
+    t.string "event", default: "created", null: false
+    t.integer "author_record_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.boolean "unordered", default: false, null: false
+    t.index ["author_record_id"], name: "index_collections_on_author_record_id"
+    t.index ["body_id"], name: "index_collections_on_body_id"
+    t.index ["creator_id"], name: "index_collections_on_creator_id"
+    t.index ["record_id", "id"], name: "index_collections_on_record_id_and_id"
+    t.index ["record_id"], name: "index_collections_on_record_id"
+    t.index ["status", "published_at"], name: "index_collections_on_status_and_published_at"
+  end
+
   create_table "comments", force: :cascade do |t|
     t.integer "record_id", null: false
     t.integer "creator_id", null: false
@@ -201,6 +334,40 @@ ActiveRecord::Schema[8.2].define(version: 2026_07_12_180003) do
     t.datetime "updated_at", null: false
     t.index ["creator_id"], name: "index_comments_on_creator_id"
     t.index ["record_id", "id"], name: "index_comments_on_record_id_and_id"
+  end
+
+  create_table "custom_domains", force: :cascade do |t|
+    t.integer "account_id", null: false
+    t.string "hostname", null: false
+    t.boolean "canonical", default: false, null: false
+    t.string "status", default: "pending", null: false
+    t.string "cloudflare_id"
+    t.string "ssl_status"
+    t.datetime "last_checked_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.string "cloudflare_status"
+    t.json "validation_records", default: [], null: false
+    t.index ["account_id"], name: "index_custom_domains_on_account_id"
+    t.index ["hostname"], name: "index_custom_domains_on_hostname", unique: true
+  end
+
+  create_table "delivery_events", force: :cascade do |t|
+    t.string "provider", null: false
+    t.string "event", null: false
+    t.string "provider_message_id"
+    t.string "recipient"
+    t.integer "subscriber_id"
+    t.string "delivery_type"
+    t.integer "delivery_id"
+    t.json "payload", null: false
+    t.datetime "occurred_at"
+    t.datetime "created_at", null: false
+    t.integer "person_id"
+    t.index ["delivery_type", "delivery_id"], name: "index_delivery_events_on_delivery"
+    t.index ["person_id"], name: "index_delivery_events_on_person_id"
+    t.index ["provider", "provider_message_id", "event"], name: "index_delivery_events_on_dedupe_key", unique: true
+    t.index ["subscriber_id"], name: "index_delivery_events_on_subscriber_id"
   end
 
   create_table "depictions", force: :cascade do |t|
@@ -217,6 +384,13 @@ ActiveRecord::Schema[8.2].define(version: 2026_07_12_180003) do
     t.datetime "updated_at", null: false
     t.index ["record_id", "url"], name: "index_distributors_on_record_id_and_url", unique: true
     t.index ["record_id"], name: "index_distributors_on_record_id"
+  end
+
+  create_table "downloads", force: :cascade do |t|
+    t.integer "grant_id", null: false
+    t.string "format", null: false
+    t.datetime "created_at", null: false
+    t.index ["grant_id"], name: "index_downloads_on_grant_id"
   end
 
   create_table "drips", force: :cascade do |t|
@@ -247,6 +421,8 @@ ActiveRecord::Schema[8.2].define(version: 2026_07_12_180003) do
     t.datetime "unsubscribed_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "provider"
+    t.string "provider_message_id"
     t.index ["drop_record_id"], name: "index_drop_deliveries_on_drop_record_id"
     t.index ["stream_id", "drop_record_id"], name: "index_drop_deliveries_on_stream_id_and_drop_record_id", unique: true
     t.index ["stream_id"], name: "index_drop_deliveries_on_stream_id"
@@ -261,19 +437,68 @@ ActiveRecord::Schema[8.2].define(version: 2026_07_12_180003) do
     t.integer "delay_days", default: 0, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.text "notes"
+    t.integer "magnet_id"
     t.index ["creator_id"], name: "index_drops_on_creator_id"
+    t.index ["magnet_id"], name: "index_drops_on_magnet_id"
     t.index ["record_id", "id"], name: "index_drops_on_record_id_and_id"
   end
 
+  create_table "goals", force: :cascade do |t|
+    t.integer "record_id", null: false
+    t.integer "creator_id", null: false
+    t.string "event", default: "created", null: false
+    t.string "title", null: false
+    t.string "unit", default: "words", null: false
+    t.integer "target"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.string "per"
+    t.text "displays"
+    t.date "starts_on"
+    t.date "ends_on"
+    t.index ["creator_id"], name: "index_goals_on_creator_id"
+    t.index ["record_id", "id"], name: "index_goals_on_record_id_and_id"
+  end
+
+  create_table "grants", force: :cascade do |t|
+    t.integer "magnet_id", null: false
+    t.integer "subscriber_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.datetime "renewed_at"
+    t.index ["magnet_id", "subscriber_id"], name: "index_grants_on_magnet_id_and_subscriber_id", unique: true
+    t.index ["subscriber_id"], name: "index_grants_on_subscriber_id"
+  end
+
   create_table "installments", force: :cascade do |t|
-    t.integer "series_record_id", null: false
+    t.integer "container_record_id", null: false
     t.integer "book_record_id", null: false
     t.integer "position"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["book_record_id"], name: "index_installments_on_book_record_id"
-    t.index ["series_record_id", "book_record_id"], name: "index_installments_on_series_record_id_and_book_record_id", unique: true
-    t.index ["series_record_id", "position"], name: "index_installments_on_series_record_id_and_position"
+    t.index ["container_record_id", "book_record_id"], name: "index_installments_on_container_record_id_and_book_record_id", unique: true
+    t.index ["container_record_id", "position"], name: "index_installments_on_container_record_id_and_position"
+  end
+
+  create_table "join_codes", force: :cascade do |t|
+    t.integer "user_id", null: false
+    t.string "code", null: false
+    t.datetime "rotated_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["code"], name: "index_join_codes_on_code", unique: true
+    t.index ["user_id"], name: "index_join_codes_on_user_id", unique: true
+  end
+
+  create_table "magnets", force: :cascade do |t|
+    t.integer "account_id", null: false
+    t.string "title", null: false
+    t.text "description"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id"], name: "index_magnets_on_account_id"
   end
 
   create_table "messages", force: :cascade do |t|
@@ -306,8 +531,51 @@ ActiveRecord::Schema[8.2].define(version: 2026_07_12_180003) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.datetime "trashed_at"
+    t.integer "account_id"
+    t.string "source_message_id"
+    t.index ["account_id"], name: "index_missives_on_account_id"
     t.index ["confirmed_at"], name: "index_missives_on_confirmed_at"
     t.index ["created_at"], name: "index_missives_on_created_at"
+    t.index ["source_message_id"], name: "index_missives_on_source_message_id", unique: true, where: "source_message_id IS NOT NULL"
+  end
+
+  create_table "notifications", force: :cascade do |t|
+    t.integer "user_id", null: false
+    t.string "source_type"
+    t.integer "source_id"
+    t.string "kind", null: false
+    t.datetime "read_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.integer "actor_id"
+    t.string "title"
+    t.string "url"
+    t.datetime "emailed_at"
+    t.index ["source_type", "source_id"], name: "index_notifications_on_source_type_and_source_id"
+    t.index ["user_id", "read_at"], name: "index_notifications_on_user_id_and_read_at"
+  end
+
+  create_table "pages", force: :cascade do |t|
+    t.string "title", null: false
+    t.string "status", default: "drafted", null: false
+    t.datetime "published_at"
+    t.datetime "pinned_at"
+    t.integer "record_id", null: false
+    t.integer "creator_id", null: false
+    t.integer "body_id", null: false
+    t.string "event", default: "created", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["body_id"], name: "index_pages_on_body_id"
+    t.index ["creator_id"], name: "index_pages_on_creator_id"
+    t.index ["record_id"], name: "index_pages_on_record_id"
+  end
+
+  create_table "people", force: :cascade do |t|
+    t.string "email_address", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["email_address"], name: "index_people_on_email_address", unique: true
   end
 
   create_table "posts", force: :cascade do |t|
@@ -331,6 +599,32 @@ ActiveRecord::Schema[8.2].define(version: 2026_07_12_180003) do
     t.index ["status", "published_at"], name: "index_posts_on_status_and_published_at"
   end
 
+  create_table "pulse_subscriptions", force: :cascade do |t|
+    t.integer "pulse_record_id", null: false
+    t.integer "user_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["pulse_record_id", "user_id"], name: "index_pulse_subscriptions_on_pulse_record_id_and_user_id", unique: true
+    t.index ["user_id"], name: "index_pulse_subscriptions_on_user_id"
+  end
+
+  create_table "pulses", force: :cascade do |t|
+    t.integer "record_id", null: false
+    t.integer "creator_id", null: false
+    t.string "event", default: "created", null: false
+    t.text "question", null: false
+    t.string "cadence", default: "weekly", null: false
+    t.integer "days_of_week", default: 0, null: false
+    t.integer "ask_at_minutes", default: 540, null: false
+    t.boolean "active", default: true, null: false
+    t.date "last_asked_on"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.string "description"
+    t.index ["creator_id"], name: "index_pulses_on_creator_id"
+    t.index ["record_id", "id"], name: "index_pulses_on_record_id_and_id"
+  end
+
   create_table "records", force: :cascade do |t|
     t.string "recordable_type", null: false
     t.bigint "recordable_id"
@@ -341,10 +635,29 @@ ActiveRecord::Schema[8.2].define(version: 2026_07_12_180003) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.datetime "purge_after"
+    t.string "bucket_type"
+    t.integer "bucket_id"
+    t.datetime "archived_at"
+    t.string "slug"
+    t.index ["bucket_type", "bucket_id", "recordable_type"], name: "index_records_on_bucket_and_recordable_type"
+    t.index ["bucket_type", "bucket_id", "slug"], name: "index_records_on_bucket_and_slug", unique: true, where: "slug IS NOT NULL"
     t.index ["creator_id"], name: "index_records_on_creator_id"
     t.index ["parent_id"], name: "index_records_on_parent_id"
     t.index ["purge_after"], name: "index_records_on_purge_after"
     t.index ["recordable_type", "recordable_id"], name: "index_records_on_recordable_type_and_recordable_id", unique: true
+  end
+
+  create_table "sending_domains", force: :cascade do |t|
+    t.integer "account_id", null: false
+    t.string "domain", null: false
+    t.string "status", default: "pending", null: false
+    t.json "dkim_tokens"
+    t.string "mail_from_domain"
+    t.datetime "last_checked_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id"], name: "index_sending_domains_on_account_id"
+    t.index ["domain"], name: "index_sending_domains_on_domain", unique: true
   end
 
   create_table "series", force: :cascade do |t|
@@ -359,6 +672,7 @@ ActiveRecord::Schema[8.2].define(version: 2026_07_12_180003) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.integer "author_record_id"
+    t.string "state", default: "in_progress", null: false
     t.index ["author_record_id"], name: "index_series_on_author_record_id"
     t.index ["body_id"], name: "index_series_on_body_id"
     t.index ["creator_id"], name: "index_series_on_creator_id"
@@ -376,14 +690,6 @@ ActiveRecord::Schema[8.2].define(version: 2026_07_12_180003) do
     t.index ["user_id"], name: "index_sessions_on_user_id"
   end
 
-  create_table "settings", force: :cascade do |t|
-    t.string "site_name"
-    t.string "tagline"
-    t.string "contact_email"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-  end
-
   create_table "sign_in_codes", force: :cascade do |t|
     t.integer "user_id", null: false
     t.string "code_digest", null: false
@@ -393,6 +699,42 @@ ActiveRecord::Schema[8.2].define(version: 2026_07_12_180003) do
     t.datetime "updated_at", null: false
     t.index ["code_digest"], name: "index_sign_in_codes_on_code_digest", unique: true
     t.index ["user_id"], name: "index_sign_in_codes_on_user_id"
+  end
+
+  create_table "signup_sources", force: :cascade do |t|
+    t.integer "account_id", null: false
+    t.string "source_fingerprint", null: false
+    t.string "action", null: false
+    t.datetime "created_at", null: false
+    t.index ["account_id"], name: "index_signup_sources_on_account_id"
+    t.index ["source_fingerprint", "created_at"], name: "index_signup_sources_on_source_fingerprint_and_created_at"
+  end
+
+  create_table "site_design_versions", force: :cascade do |t|
+    t.integer "account_id", null: false
+    t.json "data", default: {}, null: false
+    t.string "status", default: "drafted", null: false
+    t.string "label"
+    t.integer "created_by_id"
+    t.datetime "published_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id"], name: "index_site_design_versions_on_account_id"
+    t.index ["account_id"], name: "index_site_design_versions_one_draft", unique: true, where: "status = 'drafted'"
+    t.index ["account_id"], name: "index_site_design_versions_one_published", unique: true, where: "status = 'published'"
+    t.index ["created_by_id"], name: "index_site_design_versions_on_created_by_id"
+  end
+
+  create_table "sites", force: :cascade do |t|
+    t.string "site_name", null: false
+    t.string "tagline"
+    t.integer "record_id", null: false
+    t.integer "creator_id", null: false
+    t.string "event", default: "created", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["record_id", "id"], name: "index_sites_on_record_id_and_id"
+    t.index ["record_id"], name: "index_sites_on_record_id"
   end
 
   create_table "streams", force: :cascade do |t|
@@ -408,6 +750,18 @@ ActiveRecord::Schema[8.2].define(version: 2026_07_12_180003) do
     t.index ["subscriber_id"], name: "index_streams_on_subscriber_id"
   end
 
+  create_table "subscriber_snapshots", force: :cascade do |t|
+    t.integer "account_id", null: false
+    t.date "week_of", null: false
+    t.integer "confirmed_count", default: 0, null: false
+    t.integer "joined_count", default: 0, null: false
+    t.integer "unsubscribed_count", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "week_of"], name: "index_subscriber_snapshots_on_account_id_and_week_of", unique: true
+    t.index ["account_id"], name: "index_subscriber_snapshots_on_account_id"
+  end
+
   create_table "subscribers", force: :cascade do |t|
     t.string "email_address", null: false
     t.string "status", default: "pending", null: false
@@ -419,7 +773,13 @@ ActiveRecord::Schema[8.2].define(version: 2026_07_12_180003) do
     t.datetime "updated_at", null: false
     t.datetime "last_engaged_at"
     t.datetime "re_engagement_sent_at"
-    t.index ["email_address"], name: "index_subscribers_on_email_address", unique: true
+    t.integer "account_id", null: false
+    t.integer "person_id", null: false
+    t.boolean "seed", default: false, null: false
+    t.index ["account_id", "status"], name: "index_subscribers_on_account_id_and_status"
+    t.index ["email_address"], name: "index_subscribers_on_email_address"
+    t.index ["person_id", "account_id"], name: "index_subscribers_on_person_id_and_account_id", unique: true
+    t.index ["person_id"], name: "index_subscribers_on_person_id"
     t.index ["status", "last_engaged_at"], name: "index_subscribers_on_status_and_last_engaged_at"
   end
 
@@ -429,7 +789,47 @@ ActiveRecord::Schema[8.2].define(version: 2026_07_12_180003) do
     t.string "ip_address"
     t.string "source"
     t.datetime "created_at", null: false
+    t.string "source_fingerprint"
+    t.index ["source_fingerprint"], name: "index_subscription_events_on_source_fingerprint"
     t.index ["subscriber_id"], name: "index_subscription_events_on_subscriber_id"
+  end
+
+  create_table "suppressions", force: :cascade do |t|
+    t.integer "person_id", null: false
+    t.string "reason", null: false
+    t.string "scope_type"
+    t.integer "scope_id"
+    t.integer "lifted_id"
+    t.datetime "created_at", null: false
+    t.index ["lifted_id"], name: "index_suppressions_on_lifted_id"
+    t.index ["person_id", "scope_type", "scope_id", "created_at"], name: "index_suppressions_on_person_scope_time"
+  end
+
+  create_table "tallies", force: :cascade do |t|
+    t.integer "record_id", null: false
+    t.integer "creator_id", null: false
+    t.string "event", default: "created", null: false
+    t.date "logged_on", null: false
+    t.integer "amount", null: false
+    t.string "note"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["creator_id"], name: "index_tallies_on_creator_id"
+    t.index ["record_id", "id"], name: "index_tallies_on_record_id_and_id"
+  end
+
+  create_table "tickets", force: :cascade do |t|
+    t.integer "record_id", null: false
+    t.integer "creator_id", null: false
+    t.string "event", default: "created", null: false
+    t.string "title", null: false
+    t.string "status", default: "open", null: false
+    t.datetime "resolved_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["creator_id"], name: "index_tickets_on_creator_id"
+    t.index ["record_id", "id"], name: "index_tickets_on_record_id_and_id"
+    t.index ["record_id"], name: "index_tickets_on_record_id"
   end
 
   create_table "users", force: :cascade do |t|
@@ -438,30 +838,53 @@ ActiveRecord::Schema[8.2].define(version: 2026_07_12_180003) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "role", default: "member", null: false
+    t.integer "inviter_id"
+    t.string "digest_cadence", default: "weekly", null: false
+    t.datetime "last_digest_at"
     t.index ["email_address"], name: "index_users_on_email_address", unique: true
+    t.index ["inviter_id"], name: "index_users_on_inviter_id"
+    t.index ["name"], name: "index_users_on_name", unique: true
   end
 
+  add_foreign_key "account_users", "accounts"
+  add_foreign_key "account_users", "users"
+  add_foreign_key "accounts", "users", column: "owner_id"
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "ahoy_visits", "accounts"
   add_foreign_key "boosts", "records"
   add_foreign_key "boosts", "users", column: "creator_id"
   add_foreign_key "broadcast_deliveries", "broadcasts"
   add_foreign_key "broadcast_deliveries", "subscribers"
+  add_foreign_key "categories", "accounts"
+  add_foreign_key "custom_domains", "accounts"
   add_foreign_key "drop_deliveries", "records", column: "drop_record_id"
   add_foreign_key "drop_deliveries", "streams"
   add_foreign_key "drop_deliveries", "subscribers"
+  add_foreign_key "join_codes", "users"
   add_foreign_key "messages", "bodies"
   add_foreign_key "messages", "categories"
   add_foreign_key "messages", "records"
   add_foreign_key "messages", "users", column: "creator_id"
+  add_foreign_key "missives", "accounts"
   add_foreign_key "posts", "bodies"
   add_foreign_key "posts", "records"
   add_foreign_key "posts", "users", column: "creator_id"
+  add_foreign_key "pulse_subscriptions", "users"
   add_foreign_key "records", "records", column: "parent_id"
   add_foreign_key "records", "users", column: "creator_id"
+  add_foreign_key "sending_domains", "accounts"
   add_foreign_key "sessions", "users"
   add_foreign_key "sign_in_codes", "users"
+  add_foreign_key "site_design_versions", "accounts"
+  add_foreign_key "site_design_versions", "users", column: "created_by_id"
+  add_foreign_key "sites", "records"
+  add_foreign_key "sites", "users", column: "creator_id"
   add_foreign_key "streams", "records", column: "drip_record_id"
   add_foreign_key "streams", "subscribers"
+  add_foreign_key "subscriber_snapshots", "accounts"
+  add_foreign_key "subscribers", "accounts"
+  add_foreign_key "subscribers", "people"
   add_foreign_key "subscription_events", "subscribers"
+  add_foreign_key "users", "users", column: "inviter_id"
 end

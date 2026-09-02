@@ -1,0 +1,31 @@
+<% content_for :title, "Notifications" %>
+
+<%= render "admin/shared/canvas_head", crumbs: [["Notifications", nil]] %>
+
+<header class="perma-header">
+  <h1 class="perma-header__title">Notifications</h1>
+  <div class="perma-header__content">
+    <p class="u-text-muted">The last 30 days. Read ones retire after that — everything here also lives where it happened.</p>
+  </div>
+</header>
+
+<% if @notifications.any? %>
+  <div class="list">
+    <% @notifications.each do |notification| %>
+      <%= render "shared/list_item",
+            href: notification.url,
+            title: notification.title,
+            title_tag: "span",
+            icon: notification.icon,
+            avatar_user: notification.actor,
+            avatar: notification.actor.present?,
+            date: time_ago_tag(notification.created_at) %>
+    <% end %>
+  </div>
+<% else %>
+  <div class="empty">
+    <span class="empty__icon"><%= inline_svg_tag "lucide/bell.svg", class: "lucide", size: "40px" %></span>
+    <p class="empty__title">You're all caught up</p>
+    <p class="empty__text">When someone does something that concerns you — an invitation, a reply — it lands here.</p>
+  </div>
+<% end %>

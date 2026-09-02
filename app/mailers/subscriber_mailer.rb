@@ -1,24 +1,28 @@
 # Newsletter emails to anonymous subscribers. `confirmation` is the double
 # opt-in step: it carries the tokened confirm link that flips a pending
 # subscriber to confirmed, plus a stable one-click unsubscribe link. From/site
-# name come from Setting.current so the press's identity drives the mail.
+# name come from the account's Site so the press's identity drives the mail.
 class SubscriberMailer < ApplicationMailer
   # These are transactional in nature — the confirm and "keep subscribed" links
   # are critical actions, so they must NOT be click-rewritten. Route through the
-  # transactional config set (no open/click tracking). The From still comes from
-  # the news.merovex.press identity, so newsletter reputation stays isolated;
+  # transactional config set (no open/click tracking). The From is still the
+  # site's broadcast address, so newsletter reputation stays with the site;
   # only the broadcast issues (PostBroadcastMailer) use the tracked marketing set.
-  default delivery_method_options: {
-    configuration_set_name: Rails.application.credentials.dig(:ses, :transactional_config_set)
-  }
+  # Transactional on Postmark — the confirm and "keep subscribed" links ride the
+  # default `outbound` stream, never the bulk Broadcast stream, so they're not
+  # click-rewritten. The tenant stamp is per-account, so the SES options live in
+  # transactional_options rather than a class default.
+  default message_stream: "outbound"
 
   def confirmation(subscriber, token)
-    setting = Setting.current
+    setting = subscriber.account.site
     @site_name = setting.site_name
-    @confirm_url = confirm_newsletter_url(token: token)
-    @unsubscribe_url = unsubscribe_newsletter_url(token: subscriber.generate_token_for(:unsubscribe))
+    url_options = public_url_options(subscriber.account)
+    @confirm_url = confirm_newsletter_url(token: token, **url_options)
+    @unsubscribe_url = unsubscribe_newsletter_url(token: subscriber.generate_token_for(:unsubscribe), **url_options)
 
-    options = { to: subscriber.email_address, subject: "Confirm your #{@site_name} subscription", from: marketing_from(setting) }
+    options = { to: subscriber.email_address, subject: "Confirm your #{@site_name} subscription",
+      from: broadcast_from(subscriber.account), delivery_method_options: transactional_options(subscriber.account) }
     options[:reply_to] = setting.contact_email if setting.contact_email.present?
     mail(options)
   end
@@ -28,13 +32,21 @@ class SubscriberMailer < ApplicationMailer
   # depend on the SES open pixel); ignoring it leads to an automatic
   # unsubscribe after the grace window.
   def re_engagement(subscriber, token)
-    setting = Setting.current
+    setting = subscriber.account.site
     @site_name = setting.site_name
-    @keep_url = keep_newsletter_url(token: token)
-    @unsubscribe_url = unsubscribe_newsletter_url(token: token)
+    url_options = public_url_options(subscriber.account)
+    @keep_url = keep_newsletter_url(token: token, **url_options)
+    @unsubscribe_url = unsubscribe_newsletter_url(token: token, **url_options)
 
-    options = { to: subscriber.email_address, subject: "Still want emails from #{@site_name}?", from: marketing_from(setting) }
+    options = { to: subscriber.email_address, subject: "Still want emails from #{@site_name}?",
+      from: broadcast_from(subscriber.account), delivery_method_options: transactional_options(subscriber.account) }
     options[:reply_to] = setting.contact_email if setting.contact_email.present?
     mail(options)
   end
+
+  private
+    def transactional_options(account)
+      { configuration_set_name: Rails.application.credentials.dig(:ses, :transactional_config_set),
+        **site_tenant_options(account) }
+    end
 end

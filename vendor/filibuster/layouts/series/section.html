@@ -1,0 +1,17 @@
+{{ define "main" }}
+{{/* Series index: one card per series in series.json order. The cards are
+     the same series-card partial the home "books" section uses, so the
+     data-cards axis (spread/shelf/grid/dossier/panel) applies here too. */}}
+<article class="fk-page">
+  <div class="fk-shell">
+    <header class="fk-page-header">
+      <h1>The Series</h1>
+    </header>
+    <div class="fk-series-list">
+      {{ range $i, $s := hugo.Data.series.series }}
+        {{ partial "series-card.html" (dict "series" $s "index" $i) }}
+      {{ end }}
+    </div>
+  </div>
+</article>
+{{ end }}

@@ -20,6 +20,18 @@ RUN apt-get update -qq && \
     ln -s /usr/lib/$(uname -m)-linux-gnu/libjemalloc.so.2 /usr/local/lib/libjemalloc.so && \
     rm -rf /var/lib/apt/lists /var/cache/apt/archives
 
+# Hugo renders the public static sites (docs/hugo-build-pipeline.md §5.2).
+# Pinned + checksummed: build output is a product surface, so upgrades are
+# deliberate one-line diffs that rebuild the image. Keep the version in sync
+# with the dev pin (mise). Extended build in case a theme ever uses SCSS.
+ARG HUGO_VERSION=0.164.0
+ARG HUGO_SHA256=fea17b8c076f950bb2e9f9486667bdaa29422883888d509d63931c73e8a9b3a4
+RUN curl -sL "https://github.com/gohugoio/hugo/releases/download/v${HUGO_VERSION}/hugo_extended_${HUGO_VERSION}_linux-amd64.tar.gz" -o /tmp/hugo.tar.gz && \
+    echo "${HUGO_SHA256}  /tmp/hugo.tar.gz" | sha256sum -c - && \
+    tar -xzf /tmp/hugo.tar.gz -C /usr/local/bin hugo && \
+    rm /tmp/hugo.tar.gz
+ENV HUGO_BIN="/usr/local/bin/hugo"
+
 # Set production environment variables and enable jemalloc for reduced memory usage and latency.
 ENV RAILS_ENV="production" \
     BUNDLE_DEPLOYMENT="1" \

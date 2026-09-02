@@ -15,6 +15,6 @@
      enough to seat the eight-box code input on one line. */
   .auth__card {
     inline-size: 100%;
-    max-inline-size: 28rem;
+    max-inline-size: var(--measure-card);
   }
 }

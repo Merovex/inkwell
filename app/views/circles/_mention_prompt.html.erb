@@ -1,0 +1,18 @@
+<%# locals: (circle:) %>
+<%# Lexxy's native @-prompt: type @ and pick a member. Picking inserts the
+    member as an Action Text attachment (sgid → User), shown as the same
+    avatar+name chip in the editor and in rendered content (users/_mention).
+    Typed plain tokens (@handle, @email) still work via the Mentions scanner. %>
+<lexxy-prompt name="mention" trigger="@" empty-results="No member by that name">
+  <% circle.members.order(:name).each do |member| %>
+    <lexxy-prompt-item sgid="<%= member.attachable_sgid %>" search="<%= member.name %> <%= member.email_address %>">
+      <template type="menu">
+        <span class="mention-option">
+          <span class="avatar mention-option__avatar" aria-hidden="true"><%= avatar_content(member) %></span>
+          <span class="mention-option__name"><%= member.display_name %></span>
+        </span>
+      </template>
+      <template type="editor"><%= render "users/mention", user: member %></template>
+    </lexxy-prompt-item>
+  <% end %>
+</lexxy-prompt>

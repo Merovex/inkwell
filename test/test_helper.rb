@@ -19,14 +19,17 @@ module ActiveSupport
     # Setup all fixtures in test/fixtures/*.yml for all tests in alphabetical order.
     fixtures :all
 
-    # Run a block with the magic-link registration policy temporarily overridden.
-    def with_registration_policy(policy)
-      config = Rails.configuration.x.authentication
-      original = config.registration_policy
-      config.registration_policy = policy
-      yield
-    ensure
-      config.registration_policy = original
+    # Mirror the middleware's resolution: tests run inside the fixture
+    # account unless they say otherwise (Current resets between tests).
+    setup { Current.account = accounts(:merovex) }
+
+    # No test asks the real network a DNS question. CustomDomain::Diagnosis
+    # resolves through an empty zone by default — every lookup comes back with
+    # nothing — and a test that cares installs its own answers.
+    class EmptyZone
+      def getresources(*) = []
     end
+    setup { CustomDomain::Diagnosis.resolver_override = EmptyZone.new }
+    teardown { CustomDomain::Diagnosis.resolver_override = nil }
   end
 end

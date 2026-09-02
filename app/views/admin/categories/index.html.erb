@@ -1,36 +1,27 @@
-<% content_for :title, "Categories — Inkwell" %>
+<% content_for :title, "Categories" %>
 
-<%= render "admin/shared/canvas_head", crumbs: [["Forum", admin_messages_path], ["Categories", nil]] %>
+<%= render "admin/shared/canvas_head", crumbs: [["Forum", admin_messages_path], ["Categories", nil]], menu: false do %>
+  <%= link_to new_admin_category_path, class: "button button--primary" do %>
+    <%= inline_svg_tag "lucide/plus.svg", class: "lucide", size: "16px" %> New category
+  <% end %>
+<% end %>
 
 <header class="perma-header">
   <h1 class="perma-header__title">Categories</h1>
-  <div class="perma-header__content">
-    <nav class="perma-header__toolbar" aria-label="Actions">
-      <%= link_to new_admin_category_path, class: "button button--primary button--small" do %>
-        <%= inline_svg_tag "lucide/plus.svg", class: "lucide", size: "16px" %> New category
-      <% end %>
-    </nav>
-  </div>
 </header>
 
 <% if @categories.any? %>
-  <ul class="list">
+  <div class="list">
     <% @categories.each do |category| %>
-      <li class="list__item">
-        <%= link_to edit_admin_category_path(category), class: "list__body" do %>
-          <span class="list__titlerow">
-            <span class="list__title"><%= category.label %></span>
-          </span>
-        <% end %>
-        <%= button_to admin_category_path(category), method: :delete, form_class: "list__action",
-              class: "button button--icon button--ghost", title: "Delete",
-              "aria-label": "Delete #{category.name}",
-              form: { data: { turbo_confirm: "Delete the “#{category.name}” category?" } } do %>
-          <%= inline_svg_tag "lucide/trash-2.svg", class: "lucide", size: "16px" %>
-        <% end %>
-      </li>
+      <%= render "shared/list_item",
+            href: edit_admin_category_path(category),
+            title: category.label,
+            avatar: false,
+            discard_path: admin_category_path(category),
+            discard_aria: "Delete #{category.name}",
+            discard_confirm: "Delete the “#{category.name}” category?" %>
     <% end %>
-  </ul>
+  </div>
 <% else %>
   <div class="empty">
     <span class="empty__icon"><%= inline_svg_tag "lucide/inbox.svg", class: "lucide", size: "40px" %></span>

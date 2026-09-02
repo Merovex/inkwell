@@ -1,0 +1,15 @@
+{{/* Materialize one page per series from data/series.json. The series'
+     `books` key is an ordered list of book slugs; templates resolve them
+     against data/books.json. */}}
+{{ $data := hugo.Data.series }}
+{{ if ne (int ($data.contract_version | default 0)) (int hugo.Data.theme.contract_version) }}
+  {{ errorf "series.json: theme expects contract_version %v, got %v" hugo.Data.theme.contract_version $data.contract_version }}
+{{ end }}
+{{ range $i, $s := $data.series }}
+  {{ $.AddPage (dict
+      "path" $s.slug
+      "title" $s.title
+      "content" (dict "mediaType" "text/html" "value" $s.description_html)
+      "params" (merge $s (dict "order" $i))
+  ) }}
+{{ end }}

@@ -16,15 +16,33 @@ class ApplicationController < ActionController::Base
   # were. Probing ids is indistinguishable from a typo.
   rescue_from ActiveRecord::RecordNotFound, with: :render_not_found
 
+  # Root-only surfaces (support desk, staff directory, Mission Control):
+  # platform staff or a bare 404 — what exists is nobody's business but its
+  # audience's. Bare head, not the friendly errors page: engine-hosted
+  # surfaces (Mission Control) would render that under the wrong layout.
+  def self.require_root
+    before_action -> { head :not_found unless Current.user&.root? }
+  end
+
   # Changes to the importmap will invalidate the etag for HTML responses
   stale_when_importmap_changes
 
-  helper_method :hotwire_native?, :current_theme, :press_theme, :press_heading_font, :current_tint, :site_settings
+  helper_method :hotwire_native?, :current_theme, :press_theme, :press_heading_font, :current_tint, :site_settings, :site_page
 
-  # The install's public identity (name, tagline, logo…), memoized per request.
-  # Drives the public Merovex Press chrome; see the "public" layout.
+  # The account's public identity (name, tagline, logo…), memoized per request.
+  # Drives the public site chrome; see the "public" layout.
   def site_settings
-    @site_settings ||= Setting.current
+    @site_settings ||= Current.account.site
+  end
+
+  # A standing page (about, privacy, terms, newsletter) when it's published
+  # and actually written — what the footer, sitemap, and meta description ask
+  # before linking or quoting it. Memoized per request per slug.
+  def site_page(slug)
+    @site_pages ||= Hash.new do |pages, wanted|
+      pages[wanted] = Current.account.page(wanted)&.then { |page| page if page.published? }
+    end
+    @site_pages[slug]
   end
 
   # True when the request comes from the Hotwire Native wrapper (vs. web/PWA), so
@@ -67,7 +85,7 @@ class ApplicationController < ActionController::Base
     # button never sends anyone off-site; direct hits fall back to home.
     def render_not_found
       @back_url = url_from(request.referer)
-      render "errors/not_found", status: :not_found
+      render "errors/not_found", status: :not_found, formats: :html
     end
 
     # The page a record's boost strip lives on, anchored to the strip: the
@@ -80,6 +98,7 @@ class ApplicationController < ActionController::Base
       case record.recordable_type
       when "ChatLine" then admin_chatroom_path(anchor: anchor)
       when "Comment"  then helpers.commentable_path(record.parent, anchor: anchor)
+      when "Beat"     then circle_pulse_path(record.bucket, record.parent_id, anchor: anchor)
       else helpers.commentable_path(record, anchor: anchor)
       end
     end

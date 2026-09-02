@@ -1,0 +1,24 @@
+{{/* One book as a card, wearing the SAME classes as series-card so every
+     data-cards variant (spread/shelf/grid/dossier/panel/carousel/offset)
+     styles both scopes identically. Context: dict with "book" (books.json
+     entry) and "index" (position). */}}
+{{ $b := .book }}
+{{ $i := .index }}
+{{ $series := index (where hugo.Data.series.series "slug" ($b.series_slug | default "")) 0 }}
+<article class="fk-series" aria-labelledby="book-{{ $i }}-title">
+  {{ with $b.cover }}
+  <a class="fk-series-cover" href="{{ site.Home.RelPermalink }}books/{{ $b.slug }}/" tabindex="-1" aria-hidden="true">
+    {{ partial "img.html" (dict "src" . "alt" "") }}
+  </a>
+  {{ end }}
+  <div class="fk-series-body">
+    <p class="fk-kicker">{{ with $series }}{{ .title }} &middot; {{ end }}{{ substr $b.publication_date 0 4 }}</p>
+    <h3 id="book-{{ $i }}-title" class="fk-series-title">
+      <a href="{{ site.Home.RelPermalink }}books/{{ $b.slug }}/">{{ $b.title }}</a>
+    </h3>
+    <p class="fk-series-excerpt">{{ plainify $b.description_html | truncate 180 }}</p>
+    <p class="fk-series-actions">
+      <a class="fk-btn fk-btn-primary" href="{{ site.Home.RelPermalink }}books/{{ $b.slug }}/">About the book</a>
+    </p>
+  </div>
+</article>

@@ -1,0 +1,6 @@
+<% content_for :title, "That didn't go through — #{site_settings.site_name}" %>
+<%# Deliberately vague — hygiene rejects, rate limits, and failed Turnstile
+    checks all land here, with no oracle saying which tripped. %>
+<%= render "shared/await_confirmation",
+      heading: "That didn't go through",
+      message: "We couldn't sign that address up just now. Please head back and try again, or use a different address." %>

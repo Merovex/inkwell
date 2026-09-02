@@ -1,0 +1,7 @@
+<%# locals: (unread:, notification: nil) %>
+<%# The bell's dot — the ONLY attention mechanic. Also the Turbo Stream
+    replace target when a notification arrives live. `notification` is unused
+    here: turbo-rails reverse_merges the broadcasting model into locals on
+    every broadcast_*_to, and strict locals would 500 the broadcast job
+    without accepting it. %>
+<span id="notification-indicator" class="notifications__dot<%= " notifications__dot--on" if unread %>" aria-hidden="true"></span>

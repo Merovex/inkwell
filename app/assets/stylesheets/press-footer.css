@@ -1,15 +1,15 @@
 /* Merovex Press — site footer (public `.press` styles). */
 .press-footer {
   border-block-start: 1px solid var(--border-1);
-  padding-block: 3rem;
+  padding-block: var(--size-8);
   text-align: center;
 }
-.press-footer__inner { max-width: 1100px; margin-inline: auto; padding-inline: 1.5rem; }
+.press-footer__inner { max-width: var(--shell-wide); margin-inline: auto; padding-inline: var(--size-5); }
 .press-footer__mark {
   display: block;
-  width: 40px;
-  margin: 0 auto 1.5rem;
+  width: calc(var(--u-pad, 1rem) * 2.5);
+  margin: 0 auto var(--size-5);
   color: var(--text-3);
 }
 .press-footer__mark svg { width: 100%; height: 100%; }
-.press-footer__legal { margin: 0.5rem 0 0; color: var(--text-2); font-size: 0.875rem; }
+.press-footer__legal { margin: var(--size-2) 0 0; color: var(--text-2); font-size: var(--press-size-meta); }

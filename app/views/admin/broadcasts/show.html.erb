@@ -1,0 +1,98 @@
+<% title = @broadcast.post&.title.presence || "Untitled" %>
+<% content_for :title, "#{title} — broadcast" %>
+<% live = !@broadcast.record.trashed_at? %>
+
+<%= render "admin/shared/canvas_head",
+      crumbs: [["Broadcasts", admin_broadcasts_path], [title, nil]],
+      menu: false do %>
+  <% if live %>
+    <%= link_to "View the post", admin_post_path(@broadcast.record), class: "button" %>
+  <% end %>
+<% end %>
+
+<header class="perma-header">
+  <h1 class="perma-header__title"><%= title %></h1>
+  <p class="perma-header__content u-text-muted">
+    <% if @broadcast.sent? %>
+      Sent <time datetime="<%= @broadcast.sent_at.iso8601 %>"><%= @broadcast.sent_at.strftime("%B %-d, %Y at %-l:%M %p") %></time>
+      to <%= pluralize(@broadcast.recipients_count, "subscriber") %>
+      <% if live %>
+        · <%= link_to "See the email as they received it",
+              post_url(@broadcast.record.to_slug, **AccountHost.public_url_options(Current.account)),
+              class: "u-text-strong", target: "_blank", rel: "noopener" %>
+      <% end %>
+    <% elsif @broadcast.scheduled? %>
+      Scheduled for <time datetime="<%= @broadcast.scheduled_at.iso8601 %>"><%= l @broadcast.scheduled_at.to_date, format: :long %></time>
+    <% else %>
+      Sending…
+    <% end %>
+  </p>
+</header>
+
+<%# The send at a glance — delivered, clicks (the real signal), and trouble. %>
+<dl class="stats">
+  <div class="stat">
+    <dt class="stat__label">delivered of <%= @broadcast.recipients_count %></dt>
+    <dd class="stat__value"><%= @broadcast.delivered_count %></dd>
+  </div>
+  <div class="stat">
+    <dt class="stat__label">clicked through</dt>
+    <dd class="stat__value"><%= @broadcast.clicked_count %></dd>
+  </div>
+  <div class="stat<%= " stat--trouble" if @broadcast.bounced_count.positive? %>">
+    <dt class="stat__label"><%= "hard bounce".pluralize(@broadcast.bounced_count) %></dt>
+    <dd class="stat__value"><%= @broadcast.bounced_count %></dd>
+  </div>
+  <div class="stat<%= " stat--trouble" if @broadcast.unsubscribed_count.positive? %>">
+    <dt class="stat__label"><%= "unsubscribe".pluralize(@broadcast.unsubscribed_count) %></dt>
+    <dd class="stat__value"><%= @broadcast.unsubscribed_count %></dd>
+  </div>
+</dl>
+
+<% if @bounced.any? %>
+  <aside class="broadcast-alert">
+    <div class="broadcast-alert__body">
+      <p class="broadcast-alert__lead"><strong><%= @bounced.one? ? "One address bounced hard." : "#{@bounced.size} addresses bounced hard." %></strong></p>
+      <p class="u-text-muted">
+        <% if @bounced.one? %>
+          <%= @bounced.first.subscriber.email_address %> no longer exists. It won't be emailed again.
+        <% else %>
+          Those mailboxes no longer exist. They won't be emailed again.
+        <% end %>
+      </p>
+    </div>
+    <% if @bounced.one? %>
+      <%= button_to "Remove it", unsubscribe_admin_subscriber_path(@bounced.first.subscriber), method: :patch,
+            class: "button button--small", form: { data: { turbo_frame: "_top" } },
+            data: { turbo_confirm: "Remove #{@bounced.first.subscriber.email_address} from the list?" } %>
+    <% end %>
+  </aside>
+<% end %>
+
+<section aria-labelledby="received-heading">
+  <h2 class="u-microcaps u-text-muted u-margin-block-end" id="received-heading">Who received it</h2>
+  <% if @deliveries.any? %>
+    <div class="recipients u-surface">
+      <table class="table recipients__table">
+        <tbody>
+          <% @deliveries.each do |delivery| %>
+            <% trouble = delivery.bounced_at || delivery.complained_at %>
+            <tr>
+              <td class="u-text-strong u-truncate recipients__who"><%= delivery.subscriber.email_address %></td>
+              <td data-align="end" class="recipients__status<%= " recipients__status--trouble" if trouble %>">
+                <% if delivery.complained_at %>Complained<% elsif delivery.bounced_at %>Bounced<% else %>Delivered<% end %>
+              </td>
+              <td data-align="end" class="recipients__engagement<%= delivery.clicked_at ? " recipients__engagement--clicked" : (" recipients__status--trouble" if delivery.bounced_at) %>">
+                <% if delivery.clicked_at %>Clicked <%= delivery.clicked_at.strftime("%b %-d") %>
+                <% elsif delivery.bounced_at %>Mailbox not found
+                <% else %>No click<% end %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% else %>
+    <p class="u-text-muted">No recipients yet — the fan-out hasn't run.</p>
+  <% end %>
+</section>

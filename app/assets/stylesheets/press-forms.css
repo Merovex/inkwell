@@ -1,36 +1,36 @@
 /* Merovex Press — newsletter + contact forms (public `.press` styles). */
-.press-form { max-width: 42rem; margin-inline: auto; padding-inline: 1.5rem; }
+.press-form { max-width: var(--shell-narrow); margin-inline: auto; padding-inline: var(--size-5); }
 .press-form__label {
   display: block;
-  font-size: 0.72rem;
+  font-size: var(--press-size-micro);
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: var(--press-tracking-kicker);
   color: var(--text-2);
-  margin-block-end: 0.5rem;
+  margin-block-end: var(--size-2);
 }
-.press-form__row { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+.press-form__row { display: flex; gap: calc(var(--u-pad) * 0.75); flex-wrap: wrap; }
 .press-form__input {
-  flex: 1 1 16rem;
+  flex: 1 1 var(--size-13);
   box-sizing: border-box;
-  padding: 0.75rem 1rem;
+  padding: calc(var(--u-pad) * 0.75) var(--u-pad);
   font: inherit;
   color: var(--text-1);
   background: var(--surface-1);
   border: 1px solid var(--border-1);
-  border-radius: 0.5rem;
+  border-radius: var(--press-radius-sm);
 }
 .press-form__input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
 
 /* Stacked fields (contact form) fill the form's prose width and space out; the
    row layout (input + inline submit) keeps flexing on its own. */
-.press-form > .press-form__input { width: 100%; margin-block-end: 1.25rem; }
-textarea.press-form__input { resize: vertical; min-height: 9rem; line-height: 1.5; }
+.press-form > .press-form__input { width: 100%; margin-block-end: var(--size-4); }
+textarea.press-form__input { resize: vertical; min-height: var(--size-12); line-height: 1.5; }
 .press-form__flash {
-  max-width: 42rem;
-  margin: 0 auto 1.5rem;
-  padding: 0.75rem 1rem;
-  border-radius: 0.5rem;
-  font-size: 0.9rem;
+  max-width: var(--shell-narrow);
+  margin: 0 auto var(--size-5);
+  padding: calc(var(--u-pad) * 0.75) var(--u-pad);
+  border-radius: var(--press-radius-sm);
+  font-size: var(--press-size-meta);
 }
 .press-form__flash--notice { background: var(--surface-2); color: var(--text-1); }
 .press-form__flash--alert { background: var(--surface-2); color: var(--accent); }

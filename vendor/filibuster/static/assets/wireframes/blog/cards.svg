@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 110" role="img" aria-label="Post card-list wireframe">
+  <rect width="200" height="110" fill="#f4f4f2"/>
+  <rect x="14" y="12" width="30" height="7" rx="2" fill="#8b8b87"/>
+  <g>
+    <rect x="22" y="26" width="156" height="22" rx="3" fill="#ffffff" stroke="#c2c2be"/>
+    <rect x="30" y="32" width="70" height="5" rx="2" fill="#8b8b87"/>
+    <rect x="30" y="40" width="120" height="3" rx="1.5" fill="#c2c2be"/>
+  </g>
+  <g>
+    <rect x="22" y="52" width="156" height="22" rx="3" fill="#ffffff" stroke="#c2c2be"/>
+    <rect x="30" y="58" width="86" height="5" rx="2" fill="#8b8b87"/>
+    <rect x="30" y="66" width="120" height="3" rx="1.5" fill="#c2c2be"/>
+  </g>
+  <g>
+    <rect x="22" y="78" width="156" height="22" rx="3" fill="#ffffff" stroke="#c2c2be"/>
+    <rect x="30" y="84" width="60" height="5" rx="2" fill="#8b8b87"/>
+    <rect x="30" y="92" width="108" height="3" rx="1.5" fill="#c2c2be"/>
+  </g>
+</svg>

@@ -1,0 +1,44 @@
+{{ define "main" }}
+{{/* Generic section index. Posts get the dated list; books and series have
+     dedicated templates (books/section.html, series/section.html), so the
+     fallback below only serves sections the theme doesn't know yet. */}}
+<article class="fk-page">
+  <div class="fk-shell">
+    {{ if eq .Section "posts" }}
+    {{/* Same markup as the home index's posts section (fk-post-grid), so the
+         blog axis (grid | list) styles the full listing identically. */}}
+    <header class="fk-page-header">
+      <h1>{{ .Title | humanize }}</h1>
+    </header>
+    <ul class="fk-post-grid">
+      {{ range .Pages.ByDate.Reverse }}
+      <li>
+        <article>
+          <h2 class="fk-post-title"><a href="{{ .RelPermalink }}">{{ .Title }}</a></h2>
+          <p class="fk-post-meta">{{ with .Params.byline }}{{ . }} &middot; {{ end }}{{ with .Params.published_at }}{{ (time .).Format "January 2, 2006" }}{{ end }}</p>
+          {{ with .Params.excerpt }}<p>{{ . }}</p>{{ end }}
+        </article>
+      </li>
+      {{ end }}
+    </ul>
+    {{ else }}
+    <div class="fk-page-body">
+      <header class="fk-page-header">
+        <h1>{{ .Title | humanize }}</h1>
+      </header>
+      <ol class="fk-title-list">
+        {{ range .Pages.ByDate.Reverse }}
+        <li class="fk-title-item">
+          {{ with .Params.cover }}{{ partial "img.html" (dict "src" . "alt" (printf "Cover of %s" $.Title)) }}{{ end }}
+          <div>
+            <a class="fk-title-name" href="{{ .RelPermalink }}">{{ .Title }}</a>
+            <span class="fk-title-meta">{{ with .Params.publication_date }}{{ substr . 0 4 }}{{ end }}</span>
+          </div>
+        </li>
+        {{ end }}
+      </ol>
+    </div>
+    {{ end }}
+  </div>
+</article>
+{{ end }}

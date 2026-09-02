@@ -6,7 +6,7 @@
  *
  * Color model: semantic tokens (--ink, --canvas, --site-bg, --line, --accent)
  * that components read. Inkwell shares the Merovex Press palette so the admin
- * backend and the public site converge: the accent is the "syō-ro" teal family
+ * backend and the public site converge: the accent is the muted "pine" teal family
  * and the neutral surfaces are the "mountain-mist" family (both ported from
  * ~/Work/merovex.press/assets/css/colors.css as OKLCH literals). Dark mode
  * overrides the structural neutrals. The rotating account tint is retired — the
@@ -18,24 +18,65 @@
   /* --- spacing alias (Open Props supplies the scale) --- */
   --u-pad: var(--size-3); /* 1rem — the standard pad unit; half/double derive from it */
 
+  /* --- breakpoints --- */
+  /* CSS cannot read custom properties inside @media conditions, so these two
+     are documentation constants: every media query repeats the literal with a
+     "--breakpoint-md" / "--breakpoint-lg" comment. em units so the boundary
+     scales with the user's font size (px spec / 16). */
+  --breakpoint-md: 48em; /* 768px — the mobile/desktop edge */
+  --breakpoint-lg: 64em; /* 1024px */
+
+  /* --- motion durations (Open Props has no duration scale) --- */
+  --speed-quick: 120ms;  /* hover/open micro-transitions (menus, chevrons) */
+  --speed-gentle: 180ms; /* entrances/exits (toasts) */
+  --speed-slow: 1.2s;    /* long one-shot announcements (notification ping) */
+
   /* --- type / radius / elevation aliases (Open Props) --- */
   --font-body: var(--font-sans, system-ui, sans-serif);
   --radius-ui: var(--radius-2);
   --radius-card: var(--radius-3);
   --elevation-card: var(--shadow-2);
+  /* Flyout panels (switcher, subnav menus): one deep, soft shadow — was two
+     hand-tweaked near-copies that had already drifted apart. */
+  --elevation-flyout:
+    0 18px 44px -12px oklch(0% 0 0 / 0.38),
+    0 4px 12px -4px oklch(0% 0 0 / 0.22);
+  /* Hover glow on card-doors: a soft drop-shadow tinted with the stat accent,
+     so the door glows in the page's own hue. */
+  --elevation-glow: 0 10px 28px -10px color-mix(in oklab, var(--stat-accent) 45%, transparent);
 
-  /* --- syō-ro: the Merovex teal accent scale --- */
-  --color-syo-ro-50:  oklch(94.8% 0.066 179.56);
-  --color-syo-ro-100: oklch(89.6% 0.142 179.34);
-  --color-syo-ro-200: oklch(81.9% 0.130 179.39);
-  --color-syo-ro-300: oklch(73.5% 0.116 179.27);
-  --color-syo-ro-400: oklch(66.0% 0.105 179.47);
-  --color-syo-ro-500: oklch(57.7% 0.091 179.50);
-  --color-syo-ro-600: oklch(49.1% 0.078 179.63);
-  --color-syo-ro-700: oklch(39.8% 0.063 179.53);
-  --color-syo-ro-800: oklch(31.2% 0.049 180.39);
-  --color-syo-ro-900: oklch(22.0% 0.035 179.11);
-  --color-syo-ro-950: oklch(17.3% 0.028 177.86);
+  /* --- intent-named measures (widths with a job, not on the Open Props scale) --- */
+  --measure-prose: 65ch;      /* long-form reading/writing column (.prose, composer body) */
+  --measure-menu: 12rem;      /* action-menu min width (.menu, subnav flyouts) */
+  --measure-menu-wide: 14rem; /* the roomier context menu */
+  --measure-toast: 22rem;     /* toast column on desktop */
+  --measure-flyout: 26rem;    /* workspace switcher panel */
+  --measure-card: 28rem;      /* centered auth card */
+  --measure-form-wide: 56rem; /* wide form surfaces: pulse setup, wide settings */
+  --measure-rail: 22rem;      /* the site designer's fixed options rail */
+  --measure-cover: 12.5rem;   /* 200px — book cover display width (2:3 ratio) */
+  --frame-phone: 24.375rem;   /* 390px — phone-width preview frame (designer stage) */
+
+  /* text on brand-strong fills (buttons, selected pills) — AAA on teal-800 */
+  --on-brand: #fff;
+
+  /* --- pine: the Merovex muted-teal brand scale. Hue + lightness keep the
+     retired syō-ro curve (every documented contrast ratio below still holds);
+     chroma is ported per-stop from marketing's "Pine" accent
+     (~/Work/merovexpress.com/assets/css/tokens.css) — the same
+     lightness-from-one-scale, chroma-from-another move that built Pine
+     itself. Page backgrounds stay mountain-mist; pine is brand only. --- */
+  --color-pine-50:  oklch(94.8% 0 179.56);
+  --color-pine-100: oklch(89.6% 0.003 179.34);
+  --color-pine-200: oklch(81.9% 0.005 179.39);
+  --color-pine-300: oklch(73.5% 0.012 179.27);
+  --color-pine-400: oklch(66.0% 0.019 179.47);
+  --color-pine-500: oklch(57.7% 0.034 179.50);
+  --color-pine-600: oklch(49.1% 0.029 179.63);
+  --color-pine-700: oklch(39.8% 0.029 179.53);
+  --color-pine-800: oklch(31.2% 0.024 180.39);
+  --color-pine-900: oklch(22.0% 0.019 179.11);
+  --color-pine-950: oklch(17.3% 0.008 177.86);
 
   /* --- mountain-mist: the Merovex neutral surface/ink scale (warm-tinted).
      Evenly stepped in OKLCH lightness (~8-9% per level) — no cliffs. --- */
@@ -54,6 +95,7 @@
   /* --- structural colors (light) --- */
   --neutral-bg: var(--color-mountain-mist-200); /* fallback when no account tint is set */
   --tint: var(--neutral-bg);                    /* rotating account tint slots in here */
+  --tint-soft: var(--color-mountain-mist-300);  /* the tint ramp's pill stop (one step past the page bg) */
   --site-bg: var(--tint);                       /* the outer page */
   --canvas: #ffffff;                            /* card / article surface */
   --ink: var(--color-mountain-mist-900);        /* primary text */
@@ -61,6 +103,15 @@
   --line: var(--color-mountain-mist-300);       /* borders / hairlines */
   --scrim: oklch(0% 0 0 / 0.4);                 /* overlay behind modals & bottom sheets */
   --fill-subtle: var(--color-mountain-mist-100); /* subtle neutral fill: code bg, quiet hovers */
+  /* Derived washes — color-mix over the structural colors above, so they track
+     both themes for free. */
+  --line-faint: color-mix(in oklab, var(--line), transparent 45%); /* quieter hairline: row dividers inside a list/surface */
+  --fill-track: color-mix(in oklab, var(--ink) 12%, transparent);  /* the empty track behind meters and sparklines */
+  --canvas-sunken: color-mix(in oklab, var(--canvas), var(--ink) 3%); /* a step into the canvas: modal footers, neutral banners */
+  /* Raised/floating surface (flyouts, popovers): the canvas in light mode, a
+     step LIGHTER than the dark canvas in dark mode so panels read as elevated
+     without a border. Was duplicated locally by switcher + subnav. */
+  --surface-raised: var(--canvas);
 
   /* --- code syntax highlighting (GitHub light palette) --- */
   --code-att:         #d73a49;
@@ -72,22 +123,22 @@
   --code-selector:    #22863a;
   --code-variable:    #e36209;
 
-  /* --- brand: the syō-ro teal family --- */
-  --brand-deep:   var(--color-syo-ro-950); /* deep bg, sidebars, strong text */
-  --brand-strong: var(--color-syo-ro-800); /* solid fill for white text (AAA) — primary buttons */
-  --brand-muted:  var(--color-syo-ro-600); /* secondary borders, inactive states */
-  --brand:        var(--color-syo-ro-500); /* key interactive: focus rings, switches, progress */
+  /* --- brand: the pine muted-teal family --- */
+  --brand-deep:   var(--color-pine-950); /* deep bg, sidebars, strong text */
+  --brand-strong: var(--color-pine-800); /* solid fill for white text (AAA) — primary buttons */
+  --brand-muted:  var(--color-pine-600); /* secondary borders, inactive states */
+  --brand:        var(--color-pine-500); /* key interactive: focus rings, switches, progress */
 
   --accent: var(--brand);                  /* interactive color the components read */
   --accent-ink: var(--brand-deep);         /* dark teal text reads on the brand fill */
-  --accent-soft: var(--color-syo-ro-100);  /* subtle fill: hover / selected */
-  --menu-context-bg: var(--color-syo-ro-800); /* dark teal — AAA with near-white ink */
+  --accent-soft: var(--color-pine-100);  /* subtle fill: hover / selected */
+  --menu-context-bg: var(--color-pine-800); /* dark teal — AAA with near-white ink */
   --menu-context-ink: var(--color-mountain-mist-50); /* near-white text on the dark teal */
 
   /* AAA (7:1) foregrounds — muted metadata intentionally stays AA */
-  --link: var(--color-syo-ro-700);         /* dark teal link on the canvas (underlined) */
-  --ink-on-soft: var(--color-syo-ro-800);  /* text on --accent-soft: avatar initials, accent badge */
-  --brand-text: var(--color-syo-ro-700);   /* teal-tinted body text at 7:1 on the canvas */
+  --link: var(--color-pine-700);         /* dark teal link on the canvas (underlined) */
+  --ink-on-soft: var(--color-pine-800);  /* text on --accent-soft: avatar initials, accent badge */
+  --brand-text: var(--color-pine-700);   /* teal-tinted body text at 7:1 on the canvas */
 
   /* semantic surfaces + AAA inks (light pills; shared by badges + alerts) */
   --success-surface: oklch(94% 0.06 150);
@@ -106,17 +157,67 @@
  * element's own tint (works whether it sits on <html> or a descendant). Dark mode
  * below pins the background regardless of tint.
  */
-[data-tint="olive"] { --tint: oklch(96.6% 0.005 106.5);   } /* olive-100 */
-[data-tint="taupe"] { --tint: oklch(96%   0.002  17.2);   } /* taupe-100 */
-[data-tint="mauve"] { --tint: oklch(96%   0.003 325.6);   } /* mauve-100 */
-[data-tint="mist"]  { --tint: oklch(96.3% 0.002 197.1);   } /* mist-100 */
-[data-tint="zinc"]  { --tint: oklch(96.7% 0.001 286.375); } /* zinc-100 */
-[data-tint] { --site-bg: var(--tint); }
+/* The five tint ramps in full (vendored from app/assets/data/tailwind_colors.json —
+   zinc is Tailwind's, the rest are house ramps), so tinted UI can pick any stop. */
+:root {
+  --color-olive-50: #fbfbf9; --color-olive-100: #f4f4f0; --color-olive-200: #e8e8e3;
+  --color-olive-300: #d8d8d0; --color-olive-400: #abab9c; --color-olive-500: #7c7c67;
+  --color-olive-600: #5b5b4b; --color-olive-700: #474739; --color-olive-800: #2b2b22;
+  --color-olive-900: #1d1d16; --color-olive-950: #0c0c09;
+
+  --color-taupe-50: #fbfaf9; --color-taupe-100: #f3f1f1; --color-taupe-200: #e8e4e3;
+  --color-taupe-300: #d8d2d0; --color-taupe-400: #aba09c; --color-taupe-500: #7c6d67;
+  --color-taupe-600: #5b4f4b; --color-taupe-700: #473c39; --color-taupe-800: #2b2422;
+  --color-taupe-900: #1d1816; --color-taupe-950: #0c0a09;
+
+  --color-mauve-50: #fafafa; --color-mauve-100: #f3f1f3; --color-mauve-200: #e7e4e7;
+  --color-mauve-300: #d7d0d7; --color-mauve-400: #a89ea9; --color-mauve-500: #79697b;
+  --color-mauve-600: #594c5b; --color-mauve-700: #463947; --color-mauve-800: #2a212c;
+  --color-mauve-900: #1d161e; --color-mauve-950: #0c090c;
+
+  --color-mist-50: #f9fbfb; --color-mist-100: #f1f3f3; --color-mist-200: #e3e7e8;
+  --color-mist-300: #d0d6d8; --color-mist-400: #9ca8ab; --color-mist-500: #67787c;
+  --color-mist-600: #4b585b; --color-mist-700: #394447; --color-mist-800: #22292b;
+  --color-mist-900: #161b1d; --color-mist-950: #090b0c;
+
+  --color-zinc-50: #fafafa; --color-zinc-100: #f4f4f5; --color-zinc-200: #e4e4e7;
+  --color-zinc-300: #d4d4d8; --color-zinc-400: #a1a1aa; --color-zinc-500: #71717a;
+  --color-zinc-600: #52525b; --color-zinc-700: #3f3f46; --color-zinc-800: #27272a;
+  --color-zinc-900: #18181b; --color-zinc-950: #09090b;
+
+  /* Stat/metric accent (goal tiles, charts, rings, heat cells): the page
+     tint's VIBRANT hue-equivalent (olive→lime, taupe→rose, mauve→fuchsia,
+     mist→teal, zinc→violet), falling back to pine when no tint is set.
+     Levels: -600 on light stepping to -700 where the hue runs bright (lime,
+     teal — their 600s miss the 3:1 graphics bar and 4.5:1 white-text bar);
+     -300 on dark (7.8–15:1 on the dark surfaces). --stat-accent-ink is the
+     text color ON the accent: white in light, near-black over a -300 in dark
+     (white there would be ~1.5:1). */
+  --stat-accent: var(--brand-strong);
+  --stat-accent-ink: #fff;
+}
+
+[data-tint="olive"] { --tint: oklch(96.6% 0.005 106.5);   --tint-soft: var(--color-olive-200); --tint-strong: #4d7c0f; --tint-strong-dark: #bef264; } /* olive-100 · lime-700/300 */
+[data-tint="taupe"] { --tint: oklch(96%   0.002  17.2);   --tint-soft: var(--color-taupe-200); --tint-strong: #e11d48; --tint-strong-dark: #fda4af; } /* taupe-100 · rose-600/300 */
+[data-tint="mauve"] { --tint: oklch(96%   0.003 325.6);   --tint-soft: var(--color-mauve-200); --tint-strong: #c026d3; --tint-strong-dark: #f0abfc; } /* mauve-100 · fuchsia-600/300 */
+[data-tint="mist"]  { --tint: oklch(96.3% 0.002 197.1);   --tint-soft: var(--color-mist-200);  --tint-strong: #0f766e; --tint-strong-dark: #5eead4; } /* mist-100 · teal-700/300 */
+[data-tint="zinc"]  { --tint: oklch(96.7% 0.001 286.375); --tint-soft: var(--color-zinc-200);  --tint-strong: #7c3aed; --tint-strong-dark: #c4b5fd; } /* zinc-100 · violet-600/300 */
+[data-tint] { --site-bg: var(--tint); --stat-accent: var(--tint-strong); }
+
+/* Dark mode lifts the stat accent to a -300 so it pops on the dark canvas
+   (pine-300 untinted, the tint's -300 when tinted — mirrors the pine accent's
+   light/dark flip) and flips the on-accent ink dark. */
+[data-theme="dark"] { --stat-accent: var(--color-pine-300); --stat-accent-ink: var(--color-mountain-mist-950); }
+[data-theme="dark"][data-tint] { --stat-accent: var(--tint-strong-dark); }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --stat-accent: var(--color-pine-300); --stat-accent-ink: var(--color-mountain-mist-950); }
+  :root:not([data-theme="light"])[data-tint] { --stat-accent: var(--tint-strong-dark); }
+}
 
 /*
  * Dark mode. Applies via explicit [data-theme="dark"] or the OS preference when
  * no explicit theme is set. Structural neutrals drop down the mountain-mist
- * scale; the syō-ro accent lifts to a lighter shade so it pops on the dark canvas.
+ * scale; the pine accent lifts to a lighter shade so it pops on the dark canvas.
  */
 [data-theme="dark"],
 :root:not([data-theme="light"]) {
@@ -130,6 +231,7 @@
   --ink-muted: var(--color-mountain-mist-400);
   --line: var(--color-mountain-mist-700);
   --fill-subtle: var(--color-mountain-mist-800); /* a step lighter than the dark canvas */
+  --surface-raised: var(--color-mountain-mist-700); /* flyouts lift a step off the dark canvas */
 
   /* code syntax (GitHub dark palette) */
   --code-att:         #ff7b72;
@@ -140,14 +242,14 @@
   --code-punctuation: #c9d1d9;
   --code-selector:    #7ee787;
   --code-variable:    #ffa657;
-  --accent: var(--color-syo-ro-300);              /* lighter teal pops on dark */
-  --accent-ink: var(--color-syo-ro-950);
-  --accent-soft: var(--color-syo-ro-800);
-  --menu-context-bg: var(--color-syo-ro-300);     /* light teal — AAA with syō-ro-950 ink */
-  --menu-context-ink: var(--color-syo-ro-950);    /* dark teal text on the light teal */
-  --link: var(--color-syo-ro-300);                /* light teal link on the dark canvas */
-  --ink-on-soft: var(--color-syo-ro-100);         /* light teal on syō-ro-800 (avatar, accent badge) */
-  --brand-text: var(--color-syo-ro-300);          /* teal-tinted body text on dark */
+  --accent: var(--color-pine-300);              /* lighter teal pops on dark */
+  --accent-ink: var(--color-pine-950);
+  --accent-soft: var(--color-pine-800);
+  --menu-context-bg: var(--color-pine-300);     /* light teal — AAA with pine-950 ink */
+  --menu-context-ink: var(--color-pine-950);    /* dark teal text on the light teal */
+  --link: var(--color-pine-300);                /* light teal link on the dark canvas */
+  --ink-on-soft: var(--color-pine-100);         /* light teal on pine-800 (avatar, accent badge) */
+  --brand-text: var(--color-pine-300);          /* teal-tinted body text on dark */
 }
 
 @media (prefers-color-scheme: dark) {
@@ -158,6 +260,7 @@
     --ink-muted: var(--color-mountain-mist-400);
     --line: var(--color-mountain-mist-700);
     --fill-subtle: var(--color-mountain-mist-800);
+    --surface-raised: var(--color-mountain-mist-700);
 
     /* code syntax (GitHub dark palette) */
     --code-att:         #ff7b72;
@@ -168,13 +271,13 @@
     --code-punctuation: #c9d1d9;
     --code-selector:    #7ee787;
     --code-variable:    #ffa657;
-    --accent: var(--color-syo-ro-300);
-    --accent-ink: var(--color-syo-ro-950);
-    --accent-soft: var(--color-syo-ro-800);
-    --menu-context-bg: var(--color-syo-ro-300);
-    --menu-context-ink: var(--color-syo-ro-950);
-    --link: var(--color-syo-ro-300);
-    --ink-on-soft: var(--color-syo-ro-100);
-    --brand-text: var(--color-syo-ro-300);
+    --accent: var(--color-pine-300);
+    --accent-ink: var(--color-pine-950);
+    --accent-soft: var(--color-pine-800);
+    --menu-context-bg: var(--color-pine-300);
+    --menu-context-ink: var(--color-pine-950);
+    --link: var(--color-pine-300);
+    --ink-on-soft: var(--color-pine-100);
+    --brand-text: var(--color-pine-300);
   }
 }

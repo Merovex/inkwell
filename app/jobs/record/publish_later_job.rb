@@ -13,5 +13,6 @@ class Record::PublishLaterJob < ApplicationJob
     return if publishable.published_at.future?
 
     publishable.publish
+    Mentions.deliver_for(record) # circle content only; no-ops elsewhere
   end
 end

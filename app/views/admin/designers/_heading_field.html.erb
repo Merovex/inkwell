@@ -1,0 +1,13 @@
+<%# locals: (key:, default:, target:) %>
+<%# One band's heading-wording override (the headings content block, the
+    newsletter-copy pattern): override-only — blank keeps the theme default.
+    Visibility is the pane's own "Show the section heading" switch. %>
+<section class="designer__block" aria-label="Section heading wording">
+  <h3 class="designer__block-title">Heading wording</h3>
+  <div class="field">
+    <label class="field__label" for="designer-heading-<%= key %>">Heading</label>
+    <input type="text" id="designer-heading-<%= key %>" class="field__control"
+           placeholder="<%= default %> (default)" maxlength="80"
+           data-designer-target="<%= target %>" data-action="input->designer#headingsEdited">
+  </div>
+</section>

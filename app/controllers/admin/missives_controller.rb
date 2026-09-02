@@ -10,12 +10,16 @@ class Admin::MissivesController < Admin::BaseController
 
   def index
     @state = STATES.include?(params[:state]) ? params[:state] : "active"
-    @missives = Missive.public_send(@state)
-    @counts = { "active" => Missive.active.count, "trashed" => Missive.trashed.count }
+    @missives = Current.account.missives.public_send(@state)
+    @counts = { "active" => Current.account.missives.active.count, "trashed" => Current.account.missives.trashed.count }
+  end
+
+  def show
+    @missive = Current.account.missives.find(params[:id])
   end
 
   def destroy
-    Missive.find(params[:id]).trash!
+    Current.account.missives.find(params[:id]).trash!
     redirect_to admin_missives_path(state: params[:state]), notice: "Message moved to Trash."
   end
 end

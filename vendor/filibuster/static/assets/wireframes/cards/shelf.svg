@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 110" role="img" aria-label="shelf layout wireframe">
+  <rect width="200" height="110" fill="#f4f4f2"/>
+  <line x1="14" y1="10" x2="186" y2="10" stroke="#d8d8d4" stroke-width="2"/>
+  <rect x="14" y="18" width="24" height="34" rx="2" fill="#8b8b87"/>
+  <rect x="48" y="20" width="38" height="5" rx="2" fill="#c2c2be"/>
+  <rect x="48" y="29" width="90" height="5" rx="2" fill="#c2c2be"/>
+  <rect x="48" y="38" width="70" height="5" rx="2" fill="#c2c2be"/>
+  <line x1="14" y1="60" x2="186" y2="60" stroke="#d8d8d4" stroke-width="2"/>
+  <rect x="14" y="68" width="24" height="34" rx="2" fill="#8b8b87"/>
+  <rect x="48" y="70" width="44" height="5" rx="2" fill="#c2c2be"/>
+  <rect x="48" y="79" width="90" height="5" rx="2" fill="#c2c2be"/>
+  <rect x="48" y="88" width="62" height="5" rx="2" fill="#c2c2be"/>
+</svg>

@@ -1,0 +1,11 @@
+<% content_for :title, "Edit goal" %>
+
+<%= render "admin/shared/canvas_head", crumbs: [["Goals", goals_path], [@goal.title, goal_path(@record)], ["Edit", nil]] %>
+
+<header class="perma-header">
+  <h1 class="perma-header__title">Edit goal</h1>
+</header>
+
+<div class="u-center u-center-prose">
+  <%= render "form", goal: @goal, url: goal_path(@record), submit: "Save changes" %>
+</div>

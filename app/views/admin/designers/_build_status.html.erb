@@ -1,0 +1,15 @@
+<%# locals: (account:) %>
+<%# The LIVE site's build state (SiteBuildJob) — distinct from the preview
+    status beside it. Broadcast-replaced when the job stamps a new status
+    (Account#stamp_build_status!), so "building" flips to "live" without a
+    reload. %>
+<p id="site-build-status" class="designer__status">
+  <span class="badge <%= { "live" => "badge--success", "building" => "badge--warning",
+                           "queued" => "badge--warning", "failed" => "badge--danger" }
+                          .fetch(account.site_build_status, "badge--accent") %>">
+    Site: <%= account.site_build_status || "not published" %>
+  </span>
+  <% if account.site_built_at %>
+    <span class="u-text-muted"><%= l account.site_built_at, format: :short %></span>
+  <% end %>
+</p>

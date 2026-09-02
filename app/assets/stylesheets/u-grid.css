@@ -1,0 +1,12 @@
+/*
+ * u-grid — a grid with a uniform gap: u-stack's grid sibling (grid tracks
+ * instead of flex children; pair with grid-template rules or leave single
+ * column). Tune via --u-grid-gap.
+ */
+@layer utilities {
+  .u-grid { display: grid; gap: var(--u-grid-gap, var(--u-pad)); }
+  .u-grid-half { --u-grid-gap: calc(var(--u-pad) / 2); }
+  /* Two equal columns that fold to one when the container gets narrow — no
+     media query needed (each column keeps a sensible min measure). */
+  .u-grid-2 { grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--size-14)), 1fr)); }
+}

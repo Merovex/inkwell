@@ -1,0 +1,175 @@
+/* filibuster stylesheet, split into parallel-loadable modules.
+   Loaded in filename order by layouts/baseof.html; that order IS the
+   cascade order, so keep the numeric prefixes. See 01-reset.css for the
+   axis vocabulary this sheet keys off. */
+
+/* ---------- Font pairings ---------- */
+:root {
+  /* epic (default): Cinzel — inscriptional Roman caps, reads epic —
+     over EB Garamond, the classical roomy SF&F body face. */
+  --font-display: 'Cinzel', 'Times New Roman', serif;
+  --font-body: 'EB Garamond', Georgia, serif;
+  --display-tracking: 0.02em;
+  --display-transform: none;
+  --display-weight: 600;
+}
+html[data-font="classical"] {
+  /* Marcellus + Vollkorn: quieter classical option, warmer color on the page. */
+  --font-display: 'Marcellus', 'Times New Roman', serif;
+  --font-body: 'Vollkorn', Georgia, serif;
+  --display-tracking: 0.04em;
+  --display-weight: 400;
+}
+html[data-font="inscribed"] {
+  /* Spectral SC + Cardo: small-caps display over the roomiest classical body. */
+  --font-display: 'Spectral SC', Georgia, serif;
+  --font-body: 'Cardo', Georgia, serif;
+  --display-tracking: 0.05em;
+  --display-weight: 600;
+}
+
+/* — Crime / Mystery / Thriller: tight and invisible; condensed sans display
+     against a serif body is the category standard. — */
+html[data-font="thriller"] {
+  --font-display: 'Barlow Condensed', 'Arial Narrow', sans-serif;
+  --font-body: 'Source Serif 4', Georgia, serif;
+  --display-tracking: 0.05em;
+  --display-transform: uppercase;
+  --display-weight: 600;
+}
+html[data-font="noir"] {
+  --font-display: 'Oswald', 'Arial Narrow', sans-serif;
+  --font-body: 'Spectral', Georgia, serif;
+  --display-tracking: 0.06em;
+  --display-transform: uppercase;
+  --display-weight: 600;
+}
+html[data-font="procedural"] {
+  --font-display: 'Archivo', Arial, sans-serif;
+  --font-body: 'Faustina', Georgia, serif;
+  --display-tracking: 0.01em;
+  --display-weight: 700;
+}
+
+/* — Romance: warm and high contrast; the page should read soft. — */
+html[data-font="romance"] {
+  --font-display: 'Cormorant Garamond', Georgia, serif;
+  --font-body: 'Crimson Pro', Georgia, serif;
+  --display-tracking: 0.02em;
+  --display-weight: 600;
+}
+html[data-font="commercial"] {
+  --font-display: 'Playfair Display', Georgia, serif;
+  --font-body: 'Alegreya', Georgia, serif;
+  --display-tracking: 0.01em;
+  --display-weight: 600;
+}
+
+/* — Young Adult: larger x-height, open counters, generous leading. — */
+html[data-font="ya-soft"] {
+  --font-display: 'Fraunces', Georgia, serif;
+  --font-body: 'Literata', Georgia, serif;
+  --display-tracking: 0;
+  --display-weight: 600;
+}
+html[data-font="ya-modern"] {
+  --font-display: 'Outfit', Arial, sans-serif;
+  --font-body: 'Newsreader', Georgia, serif;
+  --display-tracking: 0.01em;
+  --display-weight: 600;
+}
+html[data-font="ya-grotesque"] {
+  --font-display: 'Bricolage Grotesque', Arial, sans-serif;
+  --font-body: 'Andada Pro', Georgia, serif;
+  --display-tracking: 0;
+  --display-weight: 600;
+}
+
+/* — Horror: darker color on the page, sharper serifs, slightly cramped. — */
+html[data-font="gothic"] {
+  --font-display: 'IM Fell English SC', Georgia, serif;
+  --font-body: 'Frank Ruhl Libre', Georgia, serif;
+  --display-tracking: 0.03em;
+  --display-weight: 400;
+}
+html[data-font="clinical"] {
+  --font-display: 'Bodoni Moda', 'Didot', serif;
+  --font-body: 'Manuale', Georgia, serif;
+  --display-tracking: 0.04em;
+  --display-transform: uppercase;
+  --display-weight: 600;
+}
+
+/* — Sci-fi beyond the clinic: chrome-edged geometry for space opera. — */
+html[data-font="starfall"] {
+  --font-display: 'Exo 2', 'Arial Narrow', sans-serif;
+  --font-body: 'IBM Plex Serif', Georgia, serif;
+  --display-tracking: 0.05em;
+  --display-transform: uppercase;
+  --display-weight: 800;
+}
+
+/* — Modern horror: stark compressed caps, classic readable text. — */
+html[data-font="dread"] {
+  --font-display: 'Anton', 'Arial Narrow', sans-serif;
+  --font-body: 'Lora', Georgia, serif;
+  --display-tracking: 0.08em;
+  --display-transform: uppercase;
+  --display-weight: 400;
+}
+
+/* — Westerns: wood-type ornament over a sturdy slab text face. — */
+html[data-font="frontier"] {
+  --font-display: 'Rye', Georgia, serif;
+  --font-body: 'Bitter', Georgia, serif;
+  --display-tracking: 0.02em;
+  --display-weight: 400;
+}
+
+/* — Cozy mystery / cottagecore: brush warmth over a friendly serif. — */
+html[data-font="hearth"] {
+  --font-display: 'Berkshire Swash', Georgia, serif;
+  --font-body: 'Gelasio', Georgia, serif;
+  --display-tracking: 0.01em;
+  --display-weight: 400;
+}
+
+/* — Children's / middle grade: round and sturdy, easy-reading text. — */
+html[data-font="storybook"] {
+  --font-display: 'Baloo 2', Verdana, sans-serif;
+  --font-body: 'Andika', Verdana, sans-serif;
+  --display-tracking: 0.01em;
+  --display-weight: 700;
+}
+
+/* — Memoir / faith: plainspoken serif display, gentle humanist text. — */
+html[data-font="testament"] {
+  --font-display: 'DM Serif Text', Georgia, serif;
+  --font-body: 'Mulish', Verdana, sans-serif;
+  --display-tracking: 0.01em;
+  --display-weight: 400;
+}
+
+/* — Big-idea nonfiction: confident grotesk over a neutral text face. — */
+html[data-font="ledger"] {
+  --font-display: 'Space Grotesk', Arial, sans-serif;
+  --font-body: 'Inter', Arial, sans-serif;
+  --display-tracking: 0.01em;
+  --display-weight: 700;
+}
+html[data-font="gazette"] {
+  /* Archivo Narrow: heavy condensed newsroom caps over Merriweather, the
+     steady long-form reading serif. Editorial / literary nonfiction. */
+  --font-display: 'Archivo Narrow', 'Arial Narrow', sans-serif;
+  --font-body: 'Merriweather', Georgia, serif;
+  --display-tracking: 0.005em;
+  --display-weight: 800;
+}
+
+/* — Poetry / literary: hairline elegance over a quiet modern serif. — */
+html[data-font="verse"] {
+  --font-display: 'Italiana', 'Didot', serif;
+  --font-body: 'Petrona', Georgia, serif;
+  --display-tracking: 0.06em;
+  --display-weight: 400;
+}

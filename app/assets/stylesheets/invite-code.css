@@ -1,0 +1,39 @@
+/*
+ * .invite-code — the invite-code card on personal settings: the code large and
+ * transcribable on the left, actions on the right, and a "Copied" overlay the
+ * clipboard controller reveals by toggling .is-copied (see broadcast.css for
+ * the same pattern).
+ * Structure: .invite-code > code.invite-code__code + .invite-code__actions
+ *            + .invite-code__copied
+ */
+@layer components {
+  .invite-code {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--u-pad);
+    padding: var(--u-pad);
+    background: var(--canvas);
+    border: var(--border-size-1) solid var(--line);
+    border-radius: var(--radius-ui);
+    overflow: hidden;
+  }
+
+  .invite-code__code {
+    font-family: var(--font-mono, ui-monospace, monospace);
+    font-size: var(--font-size-3);
+    font-weight: var(--font-weight-6);
+    letter-spacing: var(--font-letterspacing-3);
+    color: var(--ink);
+  }
+
+  .invite-code__actions {
+    display: flex;
+    align-items: center;
+    gap: calc(var(--u-pad) / 2);
+    flex-shrink: 0;
+  }
+
+  /* The "Copied" overlay is u-copied-veil in the markup. */
+}

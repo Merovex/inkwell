@@ -1,0 +1,17 @@
+<%# locals: (record:) %>
+<%# The modal's pinned comment composer — replaced wholesale by the
+    comment-create stream, so a successful post leaves a fresh empty editor
+    (autosave clears its draft on submit-end, before the swap). %>
+<footer class="wall-thread__composer" id="wall-thread-composer">
+  <%= form_with model: Comment.new, url: commentable_comments_path(record),
+        class: "u-stack u-stack-half lexxy-compact",
+        data: { turbo_frame: "modal",
+                controller: "autosave",
+                autosave_key_value: "Record/#{record.id}/comment" } do |f| %>
+    <%= hidden_field_tag :back, "wall" %>
+    <%= f.rich_textarea :content, placeholder: "Add a comment…", "aria-label": "Comment" do %><%= mention_prompt(record.bucket) %><% end %>
+    <div class="form__action">
+      <%= f.submit "Add this comment", class: "button button--primary" %>
+    </div>
+  <% end %>
+</footer>

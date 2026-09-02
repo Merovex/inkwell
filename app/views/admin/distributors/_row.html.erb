@@ -1,11 +1,16 @@
 <%# locals: (distributor:, manage: false) %>
-<li class="mrow u-surface" id="<%= dom_id(distributor) %>">
-  <span class="mrow__platform"><%= distributor.display_name %></span>
-  <span class="mrow__label"><%= link_to distributor.url, distributor.url, target: "_blank", rel: "noopener" %></span>
+<%# A where-to-buy row: platform monogram · name over a compact URL · remove. %>
+<li class="buy-link" id="<%= dom_id(distributor) %>">
+  <span class="buy-link__mark" aria-hidden="true"><%= distributor.display_name.scan(/[[:alpha:]]+/).map(&:first).first(2).join.upcase %></span>
+  <span class="buy-link__body">
+    <span class="buy-link__name u-text-strong"><%= distributor.display_name %></span>
+    <%= link_to distributor.display_url, distributor.url, class: "buy-link__url u-truncate u-text-muted",
+          target: "_blank", rel: "noopener" %>
+  </span>
   <% if manage %>
-    <%= button_to admin_distributor_path(distributor), method: :delete, class: "mrow__remove u-unbutton",
+    <%= button_to admin_distributor_path(distributor), method: :delete, class: "buy-link__remove u-unbutton",
           aria: { label: "Remove the #{distributor.display_name} link" } do %>
-      <%= inline_svg_tag "lucide/trash-2.svg", class: "lucide", size: "16px" %>
+      <%= inline_svg_tag "lucide/x.svg", class: "lucide", size: "16px" %>
     <% end %>
   <% end %>
 </li>

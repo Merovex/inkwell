@@ -1,0 +1,8 @@
+<% content_for :title, "Progress — #{@circle.name}" %>
+
+<% content_for :board_body do %>
+  <%= render "circles/progress", circle: @circle, ledger: @ledger %>
+<% end %>
+
+<%= render "circles/board", current: :progress,
+      action_href: (circle_pulse_path(@circle, @pulse.record) if @pulse), action_label: "Log this week" %>

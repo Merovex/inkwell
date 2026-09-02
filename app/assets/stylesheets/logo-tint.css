@@ -1,0 +1,16 @@
+/* currentColor-tinted SVG logo: the uploaded file is a CSS mask, so the mark
+   ignores its own colors and takes the surrounding text color (and re-tints
+   with the theme). --logo-url and --logo-ratio arrive inline per record
+   (ApplicationHelper#svg_logo_style) — data-driven values, not design
+   constants. Raster logos keep their <img> and their own colors.
+   The static-site twin is .fk-brand-logo-tint in the filibuster theme. */
+@layer components {
+  .logo-tint {
+    display: inline-block;
+    background-color: currentColor;
+    mask: var(--logo-url) no-repeat center / contain;
+    block-size: var(--logo-size, var(--size-10));
+    aspect-ratio: var(--logo-ratio, 1);
+    max-inline-size: 100%;
+  }
+}

@@ -1,0 +1,34 @@
+# The SiteDesigner (ADR 0022, docs/site-designer.md): a two-pane editor —
+# live preview iframe on the left, an option rail generated from the theme
+# manifest on the right. Rails never renders site markup: the preview is a
+# real Hugo build of the theme, and the rail is built from Theme#axes, so a
+# vocabulary change in the theme surfaces here with no code change.
+class Admin::DesignersController < Admin::BaseController
+  layout "book_designer"
+
+  def show
+    @theme = Theme.current
+    # Without a provisioned theme manifest there's no option rail to render;
+    # degrade to a clear notice instead of 500ing deep in the view (Theme#axes).
+    return render :unavailable, layout: false, status: :service_unavailable unless @theme.available?
+
+    # The hero content editor's featured-book picker: same published scope
+    # the exporter snapshots, so the picker offers exactly what can render.
+    @books = Current.account.books.published.feed_ordered
+    # The History pane's revert trail (Designers::Restorations restores one).
+    @versions = Current.account.site_design_versions.history.limit(20)
+  end
+
+  # Save-to-draft: the working design graduates from the browser onto the
+  # account's draft version — retiring the old draft to history, so every
+  # save is a revert point. Validated by the same SiteDesign the preview
+  # uses — a design that wouldn't preview can't be saved. Saving no longer
+  # publishes anything; deploying to preview or production is a separate,
+  # deliberate step (Designers::PreviewDeployments / Publications).
+  def update
+    Current.account.save_design!(SiteDesign.new(params).to_h)
+    head :no_content
+  rescue SiteDesign::Invalid => error
+    render json: { error: error.message }, status: :unprocessable_entity
+  end
+end

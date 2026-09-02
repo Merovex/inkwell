@@ -1,0 +1,41 @@
+{{/* Renders one shelf cluster (a series OR a collection — same data shape)
+     from data. Context: dict with "series" (the shelf entry) and "index"
+     (position), plus optional "kind" (the URL segment: "series" [default] or
+     "collections") and "noun" (the label: "series" [default] or "collection").
+     Collections reuse this so they're identical to series apart from wording. */}}
+{{ $s := .series }}
+{{ $i := .index }}
+{{ $kind := .kind | default "series" }}
+{{ $noun := .noun | default "series" }}
+{{ $installments := slice }}
+{{ range $s.books }}
+  {{ with partial "book-by-slug.html" . }}{{ $installments = $installments | append . }}{{ end }}
+{{ end }}
+{{ $first := index $installments 0 }}
+{{ $years := slice }}
+{{ range $installments }}{{ $years = $years | append (substr .publication_date 0 4) }}{{ end }}
+{{ $years = sort (uniq $years) }}
+<article class="fk-series" aria-labelledby="series-{{ $i }}-title">
+  {{ with $first }}
+  {{/* Superset markup: EVERY installment's cover renders; base CSS shows
+       only the first, the fan variant fans them all. */}}
+  <a class="fk-series-cover" href="{{ site.Home.RelPermalink }}{{ $kind }}/{{ $s.slug }}/" tabindex="-1" aria-hidden="true">
+    {{ range $installments }}{{ with .cover }}
+    {{ partial "img.html" (dict "src" . "alt" "") }}
+    {{ end }}{{ end }}
+  </a>
+  {{ end }}
+  <div class="fk-series-body">
+    <p class="fk-kicker">{{ len $installments }} {{ if eq (len $installments) 1 }}book{{ else }}books{{ end }} &middot; {{ index $years 0 }}{{ if gt (len $years) 1 }}&ndash;{{ index $years (sub (len $years) 1) }}{{ end }}</p>
+    <h3 id="series-{{ $i }}-title" class="fk-series-title">
+      <a href="{{ site.Home.RelPermalink }}{{ $kind }}/{{ $s.slug }}/">{{ $s.title }}</a>
+    </h3>
+    <p class="fk-series-excerpt">{{ plainify $s.description_html | truncate 180 }}</p>
+    <p class="fk-series-actions">
+      {{ with $first }}
+      <a class="fk-btn fk-btn-primary" href="{{ site.Home.RelPermalink }}books/{{ .slug }}/">Start with {{ .title }}</a>
+      {{ end }}
+      <a class="fk-btn fk-btn-ghost" href="{{ site.Home.RelPermalink }}{{ $kind }}/{{ $s.slug }}/">Explore the {{ $noun }}</a>
+    </p>
+  </div>
+</article>

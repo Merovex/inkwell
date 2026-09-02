@@ -7,12 +7,12 @@
   .canvas {
     flex: 1;
     position: relative;
-    width: calc(100% - 3rem);     /* 48px gutter, 24px (1.5rem) each side */
-    max-width: 68rem;             /* 1088px hard cap */
+    width: calc(100% - var(--size-8)); /* 48px gutter, 24px each side */
+    max-width: var(--size-lg);         /* 1024px hard cap (Open Props lg) */
     margin-inline: auto;
     margin-block: var(--u-pad);
     padding-block: calc(var(--u-pad) * 2);
-    padding-inline: 2.5rem;       /* 40px each side */
+    padding-inline: calc(var(--u-pad) * 2.5); /* 40px each side */
     background: var(--canvas);
     border-radius: var(--radius-2); /* one level less round than cards */
     box-sizing: border-box;
@@ -30,10 +30,10 @@
     justify-content: space-between;
     gap: var(--u-pad);
     margin-block-start: calc(var(--u-pad) * -2);
-    margin-inline: -2.5rem;       /* mirror the canvas padding-inline to reach the edges */
+    margin-inline: calc(var(--u-pad) * -2.5); /* mirror the canvas padding-inline to reach the edges */
     margin-block-end: calc(var(--u-pad) * 2);
     padding-block: 0;
-    padding-inline: 2.5rem 0;     /* breadcrumb aligns with content; toggle flush right */
+    padding-inline: calc(var(--u-pad) * 2.5) 0; /* breadcrumb aligns with content; toggle flush right */
     /* ≈ the ⋯ icon-button height, so heads without the menu keep the standard strip size */
     min-block-size: calc(var(--u-pad) * 2.5);
     background: var(--canvas);    /* opaque so scrolling content doesn't show through */
@@ -41,6 +41,26 @@
     border-start-start-radius: var(--radius-2); /* match the canvas top corners */
     border-start-end-radius: var(--radius-2);
   }
+
+  /* Editor pages (composer): let the canvas be a flex column so the composer —
+     and its Lexxy body — can grow to fill exactly the space down to the viewport
+     bottom, then push the page taller only once the prose overflows. */
+  .canvas--fill { display: flex; flex-direction: column; }
+
+  /* Site name at the far left of the head, doubling as the "home" link. */
+  .canvas__head-start {
+    display: flex;
+    align-items: center;
+    gap: var(--size-1);
+    min-width: 0;
+  }
+  .canvas__home {
+    font-weight: var(--font-weight-7);
+    color: var(--ink);
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .canvas__home-sep { color: var(--ink-muted); }
 
   /* Right-side group on menu pages: keeps Edit snug against the ... trigger
      (the head is space-between, so they must share one flex child). Half a
@@ -82,7 +102,7 @@
   /* Mobile: the desktop treatment (24px gutters + 40px inline padding) eats a
      third of a phone screen. Go full-bleed with a single pad unit; the head's
      negative margins mirror the reduced padding so it still reaches the edges. */
-  @media (max-width: 640px) {
+  @media (max-width: 48em) { /* --breakpoint-md */
     .canvas {
       width: 100%;
       margin-block: 0;

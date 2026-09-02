@@ -1,4 +1,4 @@
-<% content_for :title, "Chatroom — Inkwell" %>
+<% content_for :title, "Chatroom" %>
 
 <%= render "admin/shared/canvas_head", crumbs: [ [ "Chatroom", nil ] ] %>
 
@@ -7,7 +7,7 @@
 </header>
 
 <section class="chat" aria-label="Chatroom">
-  <div class="chat__transcript">
+  <div class="u-stack">
     <%= render partial: "admin/chat_lines/chat_line", collection: @chat_lines %>
   </div>
 

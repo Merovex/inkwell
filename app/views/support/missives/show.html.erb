@@ -1,0 +1,29 @@
+<% content_for :title, "#{@missive.subject} — Support inbox" %>
+
+<%= render "admin/shared/canvas_head",
+      crumbs: [["Support inbox", missives_path], [@missive.subject, nil]] %>
+
+<header class="perma-header u-center u-center-prose">
+  <h1 class="perma-header__title"><%= @missive.subject %></h1>
+  <p class="perma-header__content u-text-muted">
+    <span class="u-text-strong"><%= @missive.name %></span>
+    &lt;<%= @missive.email_address %>&gt;
+    · <time datetime="<%= @missive.created_at.iso8601 %>"><%= l @missive.created_at.to_date, format: :long %></time>
+  </p>
+</header>
+
+<article class="u-center u-center-prose u-flow">
+  <%= simple_format @missive.body %>
+</article>
+
+<div class="u-center u-center-prose u-margin-block-start-double u-cluster">
+  <%= link_to missive_reply_mailto(@missive), class: "button button--primary" do %>
+    <%= inline_svg_tag "lucide/message-square.svg", class: "lucide", size: "16px" %> Reply
+  <% end %>
+  <% if @missive.trashed_at.nil? %>
+    <%= button_to missive_path(@missive), method: :delete, class: "button",
+          form: { data: { turbo_confirm: "Move this message to Trash?" } } do %>
+      <%= inline_svg_tag "lucide/trash-2.svg", class: "lucide", size: "16px" %> Move to Trash
+    <% end %>
+  <% end %>
+</div>

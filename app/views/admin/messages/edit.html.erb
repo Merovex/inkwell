@@ -1,4 +1,4 @@
-<% content_for :title, "#{@message.title} — Inkwell" %>
+<% content_for :title, @message.title %>
 
 <%= render "admin/shared/canvas_head", crumbs: [["Forum", admin_messages_path], [@message.title, nil]], menu: false do %>
   <%= render "composer_actions", message: @message %>

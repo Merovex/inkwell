@@ -1,0 +1,155 @@
+<%# Email-safe HTML (tables + inline styles — the mailer convention; the app's
+    no-inline-CSS rule is for the web app, not mail). One white card per owned
+    site, matching the digest mockup, then a shared footer. %>
+<%
+  ink   = "#20242b"; muted = "#6b7280"; line = "#ece9e1"
+  green = "#1f4d36"; bar_lt = "#c3d2c4"; amber = "#8a6a1f"; red = "#a1381f"
+  page  = "#f0efe9"
+  font  = "-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif"
+  section = "padding:22px 32px; border-top:1px solid #{line};"
+  title   = "margin:0 0 16px; font:700 18px/1.2 #{font}; color:#{ink};"
+  caps    = "font:700 12px/1 #{font}; letter-spacing:.06em; text-transform:uppercase; color:#{muted};"
+%>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:<%= page %>; margin:0; padding:24px 12px;">
+  <tr><td align="center">
+    <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="width:600px; max-width:600px;">
+
+      <% @reports.each do |report| %>
+        <% account = report.account %>
+        <tr><td style="padding-bottom:24px;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#ffffff; border-radius:5px; overflow:hidden;">
+            <%# top bar %>
+            <tr><td style="height:6px; background:<%= green %>; font-size:0; line-height:6px;">&nbsp;</td></tr>
+
+            <%# header %>
+            <tr><td style="padding:28px 32px 18px;">
+              <table role="presentation" width="100%"><tr>
+                <td valign="top" style="font:700 22px/1.15 <%= font %>; color:<%= ink %>;">
+                  <%= account.name %><br>
+                  <span style="font:400 15px/1.3 <%= font %>; color:<%= muted %>;">Your week</span>
+                </td>
+                <td valign="top" align="right" style="font:600 15px/1.35 <%= font %>; color:<%= ink %>;">
+                  <%= @user.display_name %><br>
+                  <span style="font-weight:400; color:<%= muted %>;"><%= report.starts_on.strftime("%b %-d") %> – <%= report.ends_on.strftime("%b %-d, %Y") %></span>
+                </td>
+              </tr></table>
+            </td></tr>
+
+            <%# Subscribers %>
+            <tr><td style="<%= section %>">
+              <h2 style="<%= title %>">Subscribers</h2>
+              <table role="presentation" width="100%"><tr>
+                <% confirmed_sub = if report.confirmed_delta.nil? then "New this week"
+                                   elsif report.confirmed_delta.positive? then "Up #{report.confirmed_delta} on last week"
+                                   elsif report.confirmed_delta.negative? then "Down #{report.confirmed_delta.abs} on last week"
+                                   else "No change" end %>
+                <% joined_sub = report.joined.zero? ? "No new signups" :
+                                report.joined_by_source.map { |src, n| "#{n} from #{src}" }.join(", ") %>
+                <% [ [ report.confirmed_count, "confirmed", confirmed_sub, ink ],
+                     [ report.joined, "joined", joined_sub, ink ],
+                     [ report.unsubscribed, "unsubscribed", report.unsubscribed.zero? ? "No change" : "in the last 7 days", ink ] ].each do |value, label, sub, color| %>
+                  <td width="33%" valign="top" style="font-family:<%= font %>;">
+                    <div style="font:800 34px/1 <%= font %>; color:<%= color %>;"><%= value %></div>
+                    <div style="font-size:15px; color:<%= ink %>; padding-top:8px;"><%= label %></div>
+                    <div style="font-size:13px; color:<%= muted %>; padding-top:3px;"><%= sub %></div>
+                  </td>
+                <% end %>
+              </tr></table>
+
+              <% if report.snapshots.size >= 2 %>
+                <% peak = [ report.trend.max, 1 ].max %>
+                <div style="<%= caps %> padding:22px 0 10px;">Last eight weeks</div>
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="height:60px;"><tr>
+                  <% report.snapshots.each_with_index do |snap, i| %>
+                    <% last = i == report.snapshots.size - 1 %>
+                    <td valign="bottom" style="padding:0 3px;">
+                      <div style="height:<%= [ (snap.confirmed_count.to_f / peak * 56).round, 4 ].max %>px; background:<%= last ? green : bar_lt %>; border-radius:2px 2px 0 0; font-size:0; line-height:0;">&nbsp;</div>
+                    </td>
+                  <% end %>
+                </tr></table>
+                <table role="presentation" width="100%"><tr>
+                  <td style="font-size:12px; color:<%= muted %>;"><%= report.snapshots.first.week_of.strftime("%b %-d") %></td>
+                  <td align="right" style="font-size:12px; color:<%= muted %>;">This week</td>
+                </tr></table>
+              <% end %>
+            </td></tr>
+
+            <%# Newsletter %>
+            <% if report.sent_any? %>
+              <% first_send = report.sends.first %>
+              <tr><td style="<%= section %>">
+                <h2 style="<%= title %>">Newsletter
+                  <span style="font:600 12px/1 <%= font %>; color:<%= muted %>; border:1px solid <%= line %>; border-radius:4px; padding:4px 8px; margin-left:6px;"><%= pluralize(report.sends.size, "send") %></span>
+                </h2>
+                <table role="presentation" width="100%"><tr>
+                  <% [ [ report.delivered, "delivered", first_send.sent_at&.strftime("%A, %-l:%M %p"), ink ],
+                       [ report.bounced, "bounced", "#{number_to_percentage(report.bounce_rate * 100, precision: 1)} of this send", report.bounced.positive? ? red : ink ],
+                       [ report.complained, "spam reports", "No change", report.complained.positive? ? red : ink ] ].each do |value, label, sub, color| %>
+                    <td width="33%" valign="top" style="font-family:<%= font %>;">
+                      <div style="font:800 34px/1 <%= font %>; color:<%= color %>;"><%= value %></div>
+                      <div style="font-size:15px; color:<%= ink %>; padding-top:8px;"><%= label %></div>
+                      <div style="font-size:13px; color:<%= muted %>; padding-top:3px;"><%= sub %></div>
+                    </td>
+                  <% end %>
+                </tr></table>
+
+                <% if report.bounced_addresses.any? %>
+                  <div style="font:700 15px/1.2 <%= font %>; color:<%= ink %>; padding:20px 0 8px;">Bounces</div>
+                  <% report.bounced_addresses.each do |address| %>
+                    <table role="presentation"><tr>
+                      <td valign="middle" style="padding-right:10px;"><div style="width:14px; height:14px; background:<%= red %>; border-radius:2px; font-size:0;">&nbsp;</div></td>
+                      <td valign="middle" style="font:400 15px/1.3 <%= font %>; color:<%= green %>;"><%= address %></td>
+                    </tr></table>
+                  <% end %>
+                  <p style="margin:8px 0 0; font:400 14px/1.4 <%= font %>; color:<%= muted %>;"><%= pluralize(report.bounced_addresses.size, "hard bounce") %>, removed automatically. Nothing to do unless you recognize an address.</p>
+                <% end %>
+              </td></tr>
+            <% end %>
+
+            <%# Posts %>
+            <% if report.published_posts.any? || report.unmailed_posts.any? %>
+              <tr><td style="<%= section %>">
+                <h2 style="<%= title %>">Posts</h2>
+                <% report.published_posts.each do |post| %>
+                  <div style="font:700 16px/1.3 <%= font %>; color:<%= ink %>; padding-bottom:2px;"><%= post.title %></div>
+                  <p style="margin:0 0 16px; font:400 14px/1.4 <%= font %>; color:<%= muted %>;">
+                    Published <%= post.published_at.strftime("%A") %><% if report.emailed?(post) %> · emailed to <%= report.recipients_for(post) %><% end %> · <%= report.reads_for(post) %> reads (estimated)
+                  </p>
+                <% end %>
+                <% report.unmailed_posts.each do |post| %>
+                  <div style="font:700 16px/1.3 <%= font %>; color:<%= ink %>; padding-bottom:2px;"><%= post.title %></div>
+                  <p style="margin:0 0 16px; font:400 14px/1.4 <%= font %>; color:<%= amber %>;">
+                    Published in <%= post.published_at.strftime("%B") %>, never emailed — <%= report.confirmed_count %> <%= "person".pluralize(report.confirmed_count) %> haven't seen it
+                  </p>
+                <% end %>
+              </td></tr>
+            <% end %>
+
+            <%# Scheduled + write CTA %>
+            <tr><td style="<%= section %>">
+              <table role="presentation" width="100%"><tr>
+                <td valign="middle" style="font-family:<%= font %>;">
+                  <div style="font:700 16px/1.2 <%= font %>; color:<%= ink %>;"><%= report.scheduled? ? pluralize(report.scheduled_posts.size, "post") + " scheduled" : "Nothing scheduled" %></div>
+                  <div style="font-size:14px; color:<%= muted %>; padding-top:3px;">Pick up where you left off.</div>
+                </td>
+                <td valign="middle" align="right">
+                  <a href="<%= @base_url %><%= account.admin_path %>/posts/new" style="display:inline-block; background:<%= green %>; color:#ffffff; text-decoration:none; font:700 15px/1 <%= font %>; padding:12px 18px; border-radius:5px;">Write a post</a>
+                </td>
+              </tr></table>
+            </td></tr>
+          </table>
+        </td></tr>
+      <% end %>
+
+      <%# Shared footer — one-click cadence links (tokened, no login). %>
+      <% other = @user.digest_fortnightly? ? "weekly" : "fortnightly" %>
+      <% other_label = @user.digest_fortnightly? ? "Switch to weekly" : "Get this every other week" %>
+      <tr><td style="padding:8px 32px 24px; text-align:center; font:400 14px/1.5 <%= font %>; color:<%= muted %>;">
+        Sent <%= @user.digest_fortnightly? ? "every other Tuesday" : "every Tuesday" %> at 8:00 AM.
+        <a href="<%= @base_url %>/digest/<%= other %>/<%= @digest_token %>" style="color:<%= green %>;"><%= other_label %></a> ·
+        <a href="<%= @base_url %>/digest/off/<%= @digest_token %>" style="color:<%= green %>;">Turn it off</a>
+      </td></tr>
+
+    </table>
+  </td></tr>
+</table>

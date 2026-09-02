@@ -1,14 +1,14 @@
-<% content_for :title, "Change Log: #{@book.title} — Inkwell" %>
+<% content_for :title, "Change Log: #{@book.title}" %>
 
 <%= render "admin/shared/canvas_head", crumbs: [["Books", admin_books_path], [@book.title, admin_book_path(@record)], ["Change Log", nil]] do %>
-  <%= link_to "Back to book", admin_book_path(@record), class: "menu__item", role: "menuitem" %>
+  <%= link_to "Back to book", admin_book_path(@record), class: "menu__item" %>
 <% end %>
 
 <header class="perma-header">
   <h1 class="perma-header__title">Change Log</h1>
 </header>
 
-<ol class="history">
+<ol class="history u-unlist">
   <% @versions.each_with_index do |version, i| %>
     <% previous = i.positive? ? @versions[i - 1] : nil %>
     <li class="history__entry">

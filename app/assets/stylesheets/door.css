@@ -1,0 +1,22 @@
+/*
+ * .door — a tappable card that leads somewhere: quiet bordered surface,
+ * accent invitation on hover/focus. Feature classes compose it for their own
+ * layout (.circles__card, .account-picker__card). In the style guide.
+ */
+@layer components {
+  .door {
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--u-pad) / 4);
+    padding: var(--u-pad);
+    border: var(--border-size-1) solid var(--line);
+    border-radius: var(--radius-ui);
+    color: inherit;
+    text-decoration: none;
+  }
+  .door:hover,
+  .door:focus-visible {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+  }
+}

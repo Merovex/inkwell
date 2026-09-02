@@ -22,7 +22,15 @@
   /* button_to's wrapping form shouldn't disturb the flex flow. */
   .boost__form { display: contents; }
 
-  .boost__avatar { --avatar-size: var(--size-4); }
+  /* The booster's mini avatar: canvas surface (with a hairline) so it stands
+     off the badge's tint, tucked to the pill's start so its circle runs
+     concentric with the badge's rounded end. */
+  .boost { padding-inline-start: calc(var(--u-pad) / 5); }
+  .boost__avatar {
+    --avatar-size: var(--size-4);
+    background: var(--canvas);
+    box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--ink) 12%, transparent);
+  }
 
   /* icon buttons compose u-unbutton in the markup */
   .boost__remove {
@@ -85,7 +93,7 @@
     flex-wrap: wrap;
     gap: calc(var(--u-pad) / 4);
     /* two tidy rows of six rather than one strip off the viewport edge */
-    max-inline-size: 15rem;
+    max-inline-size: var(--size-13);
   }
 
   .boosts__emoji {

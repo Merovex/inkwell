@@ -1,0 +1,199 @@
+/* filibuster stylesheet, split into parallel-loadable modules.
+   Loaded in filename order by layouts/baseof.html; that order IS the
+   cascade order, so keep the numeric prefixes. See 01-reset.css for the
+   axis vocabulary this sheet keys off. */
+
+/* ---------- Sections ---------- */
+.fk-section-title { font-size: clamp(1.5rem, 3vw, 2.2rem); }
+.fk-section-lede { color: var(--ink-muted); max-width: 44em; margin-top: 0; }
+.fk-books, .fk-posts-band, .fk-page, .fk-book-page { padding-block: 3.5rem; }
+
+/* ---------- Series list (data-cards axis; default "spread") ---------- */
+.fk-series-list { display: grid; gap: 3rem; margin-top: 2.5rem; }
+.fk-series {
+  display: grid; grid-template-columns: minmax(0, 320px) 1fr; gap: 2rem; align-items: start;
+}
+/* Row alternation is its own axis: the flip applies to the row layouts
+   (spread, shelf, fan, offset) only under data-alternate="yes". */
+html[data-alternate="yes"] .fk-series:nth-child(even) { grid-template-columns: 1fr minmax(0, 320px); }
+html[data-alternate="yes"] .fk-series:nth-child(even) .fk-series-cover { order: 2; }
+.fk-series-cover img { box-shadow: 0 12px 36px rgb(0 0 0 / 0.3); }
+/* Series cards carry EVERY installment's cover (superset markup); every
+   layout but fan shows only the first. */
+.fk-series-cover img:not(:first-child) { display: none; }
+.fk-series-title { font-size: clamp(1.4rem, 2.6vw, 2rem); margin-bottom: 0.25em; }
+.fk-series-title a { text-decoration: none; }
+.fk-series-title a:hover { text-decoration: underline; text-decoration-color: var(--accent); text-underline-offset: 6px; }
+.fk-series-actions { display: flex; flex-wrap: wrap; gap: 0.75rem; }
+
+/* shelf: single quiet column, small cover, ruled dividers */
+/* shelf = spread at library scale: smaller covers, shelf-rule dividers,
+   full prose width — alternation comes from the axis like every row layout. */
+html[data-cards="shelf"] .fk-series-list { gap: 0; }
+html[data-cards="shelf"] .fk-series,
+html[data-cards="shelf"] .fk-series:nth-child(even) {
+  grid-template-columns: minmax(0, 170px) 1fr;
+  border-top: 1px solid var(--line); padding-block: 2.5rem;
+}
+html[data-cards="shelf"] .fk-series:nth-child(even) .fk-series-cover { order: 0; }
+/* shelf honors the alternate axis at its own compact scale */
+html[data-alternate="yes"][data-cards="shelf"] .fk-series:nth-child(even) { grid-template-columns: 1fr minmax(0, 170px); }
+html[data-alternate="yes"][data-cards="shelf"] .fk-series:nth-child(even) .fk-series-cover { order: 2; }
+html[data-cards="shelf"] .fk-series-cover img { box-shadow: 0 6px 18px rgb(0 0 0 / 0.18); }
+
+/* grid: card grid */
+html[data-cards="grid"] .fk-series-list {
+  /* auto-FILL keeps empty tracks so a short catalog doesn't balloon into
+     wall-sized tiles; the cap holds covers at book size regardless. */
+  grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr)); gap: 1.5rem;
+}
+html[data-cards="grid"] .fk-series,
+html[data-cards="grid"] .fk-series:nth-child(even) {
+  grid-template-columns: 1fr; background: var(--surface);
+  border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 1.25rem; gap: 1rem;
+}
+html[data-cards="grid"] .fk-series-cover { max-width: 12rem; margin-inline: auto; }
+html[data-cards="grid"] .fk-series:nth-child(even) .fk-series-cover { order: 0; }
+html[data-cards="grid"] .fk-series-cover img { box-shadow: none; border: 1px solid var(--line); }
+html[data-cards="grid"] .fk-series-excerpt { display: none; }
+
+
+/* panel: framed ceremony panels */
+html[data-cards="panel"] .fk-series,
+html[data-cards="panel"] .fk-series:nth-child(even) {
+  background: var(--surface); border: 1px solid var(--line);
+  outline: 1px solid var(--line); outline-offset: 4px;
+  border-radius: var(--radius); padding: 2rem;
+}
+html[data-cards="panel"] .fk-series-cover img { box-shadow: 0 10px 30px rgb(0 0 0 / 0.5); }
+
+/* carousel: a horizontal scroll band one color-stop off the background.
+   CSS-only — scroll-snap does the work; readers ship no JS. */
+html[data-cards="carousel"] .fk-books { background: var(--bg-alt); }
+html[data-cards="carousel"] .fk-series-list {
+  display: flex; gap: 1.5rem; overflow-x: auto;
+  scroll-snap-type: x mandatory; scroll-padding-inline: 1rem;
+  scrollbar-width: none; /* drag/swipe/wheel are the affordances */
+  cursor: grab;
+  padding-block: 0.75rem;
+}
+html[data-cards="carousel"] .fk-series-list.is-dragging {
+  cursor: grabbing;
+  scroll-snap-type: none; /* free movement while held; snaps on release */
+  user-select: none;
+}
+html[data-cards="carousel"] .fk-series-list img { -webkit-user-drag: none; }
+/* Edge treatment: the band dissolves at its ends via a MASK on the scroll
+   container, and cards shrink slightly as they enter/leave (scroll-driven,
+   degrades to no-shrink where the timeline isn't supported). The fade must
+   NOT be per-card opacity: that fails WCAG contrast on the edge cards'
+   still-interactive title links (audited at 0.3 opacity = ~2:1). */
+html[data-cards="carousel"] .fk-series-list {
+  mask-image: linear-gradient(to right,
+    transparent, black 2.5rem, black calc(100% - 2.5rem), transparent);
+}
+@supports (animation-timeline: view()) {
+  html[data-cards="carousel"] .fk-series,
+  html[data-cards="carousel"] .fk-series:nth-child(even) {
+    animation: fk-carousel-edge linear both;
+    animation-timeline: view(inline);
+  }
+  @keyframes fk-carousel-edge {
+    0%, 100% { transform: scale(0.92); }
+    18%, 82% { transform: scale(1); }
+  }
+}
+html[data-cards="carousel"] .fk-series,
+html[data-cards="carousel"] .fk-series:nth-child(even) {
+  position: relative; /* anchors the stretched card link below */
+  flex: 0 0 15rem; grid-template-columns: 1fr; scroll-snap-align: start;
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--radius); padding: 1.25rem;
+}
+html[data-cards="carousel"] .fk-series:nth-child(even) .fk-series-cover { order: 0; }
+html[data-cards="carousel"] .fk-series-cover { max-width: 100%; }
+html[data-cards="carousel"] .fk-series-excerpt { display: none; }
+/* the whole card is the link (stretched from the title anchor), so the
+   action button is redundant noise in a carousel. Scoped to the card —
+   .fk-series-actions also carries the buy buttons on book pages and the
+   "Start with" button on series/collection pages, which must survive. */
+html[data-cards="carousel"] .fk-series .fk-series-actions { display: none; }
+html[data-cards="carousel"] .fk-series-title a::after { content: ""; position: absolute; inset: 0; }
+
+/* fan: every installment's cover fanned like a hand of cards (first four;
+   the rest stay hidden). Rotations pivot from the bottom center so the
+   spines converge, mirroring the hero's fan idiom. */
+html[data-cards="fan"] .fk-series-cover {
+  position: relative;
+  aspect-ratio: 1 / 1; /* headroom for rotated corners */
+  overflow: visible;
+}
+html[data-cards="fan"] .fk-series-cover img,
+html[data-cards="fan"] .fk-series-cover img:not(:first-child) {
+  display: block;
+  position: absolute;
+  inset-block-end: 0.5rem;
+  inset-inline-start: 50%;
+  width: 50%;
+  transform-origin: bottom center;
+  box-shadow: 0 10px 28px rgb(0 0 0 / 0.35);
+}
+/* Book one sits IN FRONT (its title reads); sequels fan behind it. The
+   offsets keep the whole hand inside the cover column. */
+html[data-cards="fan"] .fk-series-cover img:nth-child(1) { transform: translateX(-50%) rotate(-8deg) translateX(-12%); z-index: 4; }
+html[data-cards="fan"] .fk-series-cover img:nth-child(2) { transform: translateX(-50%) rotate(-2deg); z-index: 3; }
+html[data-cards="fan"] .fk-series-cover img:nth-child(3) { transform: translateX(-50%) rotate(4deg) translateX(12%); z-index: 2; }
+html[data-cards="fan"] .fk-series-cover img:nth-child(4) { transform: translateX(-50%) rotate(10deg) translateX(24%); z-index: 1; }
+html[data-cards="fan"] .fk-series-cover img:nth-child(n + 5) { display: none; }
+
+/* offset: detail rows with an offset drop-shadow behind each cover — a
+   soft edge so covers float rather than read as printed slabs; the
+   translucent ink mix adapts per palette and mode. */
+html[data-cards="offset"] .fk-series-cover img {
+  border-radius: 0;
+  box-shadow: 0.5rem 0.6rem 0.9rem color-mix(in oklab, var(--ink) 45%, transparent);
+}
+
+/* ---------- Library (/books/): cover grids grouped by series ---------- */
+.fk-library-group { margin-top: 3rem; }
+.fk-library-group:first-of-type { margin-top: 2rem; }
+.fk-library-group .fk-section-title a { text-decoration: none; }
+.fk-library-group .fk-section-title a:hover {
+  text-decoration: underline; text-decoration-color: var(--accent); text-underline-offset: 6px;
+}
+.fk-library-blurb { color: var(--ink-muted); max-width: 44rem; margin: 0.75rem 0 0; }
+.fk-cover-grid {
+  list-style: none; margin: 1.5rem 0 0; padding: 0;
+  /* auto-fit + capped width + centered: a short group (2-3 covers) stays a
+     reasonable size and centers, instead of clinging left with empty tracks
+     trailing off to the right. */
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 200px)); gap: 1.75rem;
+  justify-content: center;
+}
+.fk-cover-grid a { display: block; text-decoration: none; }
+.fk-cover-grid img {
+  width: 100%; aspect-ratio: 2 / 3; object-fit: cover; box-shadow: 0 10px 24px rgb(0 0 0 / 0.25);
+  transition: transform 120ms ease;
+}
+.fk-cover-grid a:hover img { transform: translateY(-4px); }
+.fk-cover-title { font-family: var(--font-display); display: block; margin-top: 0.6rem; line-height: 1.3; }
+.fk-cover-meta { color: var(--ink-muted); font-size: 0.85rem; display: block; margin-top: 0.15rem; }
+
+/* ---------- Hero variants (data-hero axis; default "split") ---------- */
+html[data-hero="centered"] .fk-hero-inner {
+  grid-template-columns: 1fr; text-align: center; justify-items: center;
+}
+html[data-hero="centered"] .fk-hero-lede { margin-inline: auto; }
+html[data-hero="centered"] .fk-hero-actions { justify-content: center; }
+html[data-hero="centered"] .fk-hero-art { max-width: 34rem; }
+
+/* ---------- Palette mood chrome ---------- */
+/* pulp: hard edges, heavy accent rules */
+html[data-palette="pulp"] .fk-hero-art img { box-shadow: none; border: 2px solid var(--line); }
+
+/* grimoire: ruled section titles */
+html[data-palette="grimoire"] .fk-section-title::after {
+  content: ""; display: block; width: 4rem; margin-top: 0.5rem;
+  border-bottom: 2px solid var(--accent);
+}

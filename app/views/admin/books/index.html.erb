@@ -1,40 +1,109 @@
-<% content_for :title, "Books — Inkwell" %>
+<% content_for :title, "Books" %>
 
-<%= render "admin/shared/canvas_head", crumbs: [["Books", nil]] %>
-
-<header class="perma-header">
-  <h1 class="perma-header__title">Books</h1>
-  <div class="perma-header__content">
-    <nav class="perma-header__toolbar" aria-label="Actions">
-      <%= link_to new_admin_book_path, class: "button button--primary button--small" do %>
-        <%= inline_svg_tag "lucide/plus.svg", class: "lucide", size: "16px" %> New book
-      <% end %>
-    </nav>
-  </div>
-</header>
-
-<% if @books.any? %>
-  <ul class="list">
-    <% @books.each do |book| %>
-      <%= render "admin/shared/list_item",
-            href: admin_book_path(book.record),
-            title: book.title,
-            author: book.record.creator.display_name,
-            chips: book.series.map(&:title),
-            avatar_src: (book.cover_thumb if book.cover?),
-            avatar_alt: book.title,
-            avatar_initials: book.title,
-            date: l((book.publication_date || book.published_at&.to_date || book.created_at.to_date), format: :short),
-            excerpt: book.content.to_plain_text.to_s.truncate(140),
-            scheduled_at: (book.published_at if book.scheduled?),
-            pinned: book.pinned_at.present? %>
-    <% end %>
-  </ul>
-<% else %>
-  <div class="empty">
-    <span class="empty__icon"><%= inline_svg_tag "lucide/inbox.svg", class: "lucide", size: "40px" %></span>
-    <p class="empty__title">No books yet</p>
-    <p class="empty__text">Add the first book to the catalog.</p>
-    <div class="empty__actions"><%= link_to "New book", new_admin_book_path, class: "button button--primary" %></div>
-  </div>
+<%= render "admin/shared/canvas_head", crumbs: [["Books", nil]], menu: false do %>
+  <%= link_to "New series", new_admin_series_path, class: "button", data: { turbo_frame: "modal" } %>
+  <%= link_to new_admin_book_path, class: "button button--primary" do %>
+    <%= inline_svg_tag "lucide/plus.svg", class: "lucide", size: "16px" %> New book
+  <% end %>
 <% end %>
+
+<div data-controller="filter" data-filter-unit-value="book">
+  <header class="perma-header">
+    <h1 class="perma-header__title">Books</h1>
+    <p class="perma-header__content u-text-muted">
+      <%= pluralize(@book_count, "title") %> · <%= pluralize(@series_count, "series") %><% if @standalone_count.positive? %> · <%= @standalone_count %> standalone<% end %>
+    </p>
+    <div class="perma-header__content">
+      <nav class="perma-header__toolbar" aria-label="Actions">
+        <div class="filter-by-text">
+          <input class="filter-by-text__input" type="search" placeholder=" " autocomplete="off"
+                 aria-label="Filter books by title"
+                 data-filter-target="input"
+                 data-action="input->filter#apply keydown.esc->filter#clear">
+          <label class="filter-by-text__hotkey">Filter titles… <kbd class="kbd">F</kbd></label>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <% if @archived_count.positive? %>
+    <p class="u-margin-block-end"><%= link_to "View #{pluralize(@archived_count, "archived book")}", archived_admin_books_path %></p>
+  <% end %>
+
+  <% if @sections.any? %>
+    <% @sections.each do |section| %>
+      <section class="book-shelf" data-filter-target="section">
+        <header class="book-shelf__head">
+          <div class="book-shelf__meta">
+            <h2 class="book-shelf__title"><%= section.title %></h2>
+            <span class="badge" data-filter-target="count"><%= pluralize(section.books.size, "book") %></span>
+            <% if section.series %>
+              <span class="badge<%= " badge--#{section.series.state_variant}" if section.series.state_variant %>"><%= section.series.state_label %></span>
+              <% years = section.books.filter_map { |b| b.publication_date&.year } %>
+              <% if years.any? %>
+                <span class="book-shelf__years u-text-muted"><%= years.min == years.max ? years.min : "#{years.min}–#{years.max}" %></span>
+              <% end %>
+            <% end %>
+          </div>
+          <% if section.series %>
+            <div class="book-shelf__actions">
+              <%= link_to "Edit series", edit_admin_series_path(section.series.record),
+                    class: "u-link", data: { turbo_frame: "modal" } %>
+            </div>
+          <% end %>
+        </header>
+        <% if section.series && (blurb = section.series.content.to_plain_text.presence) %>
+          <p class="book-shelf__blurb"><%= truncate(blurb, length: 220) %></p>
+        <% end %>
+
+        <%# Series bands are drag-sortable in place (PATCH reorders the %>
+        <%# Installment positions); the Standalone band has no order to set. %>
+        <ul class="book-cards u-unlist"<% if section.series %> data-controller="sortable"
+            data-sortable-url-value="<%= reorder_admin_series_path(section.series.record) %>"<% end %>>
+          <% section.books.each_with_index do |book, i| %>
+            <li class="book-card" data-filter-target="item" data-filter-text="<%= book.title.downcase %>"
+                <% if section.series %>draggable="true" data-sortable-target="item"
+                data-record-id="<%= book.record_id %>"
+                data-action="dragstart->sortable#start dragover->sortable#over dragend->sortable#end"<% end %>>
+              <%= link_to admin_book_path(book.record), class: "book-card__link",
+                    draggable: (section.series ? "false" : nil) do %>
+                <span class="book-card__cover">
+                  <% if book.cover? %>
+                    <%= image_tag book.cover, class: "cover", alt: "" %>
+                  <% else %>
+                    <span class="cover cover--blank u-center-content" aria-hidden="true"><%= book.title.first %></span>
+                  <% end %>
+                </span>
+                <h3 class="book-card__title"><%= book.title %></h3>
+                <p class="book-card__meta u-text-muted">
+                  <% if section.series %>Book <%= i + 1 %><% end %><%
+                    %><% if book.word_count %><%= " · " if section.series %><%= (book.word_count / 1000.0).round %>k<% if book.drafted? %> so far<% end %><% end %>
+                </p>
+                <p class="book-card__status">
+                  <% if book.published? %>
+                    <span class="badge badge--accent">Published</span>
+                  <% elsif book.scheduled? %>
+                    <span class="badge badge--accent">Scheduled</span>
+                  <% else %>
+                    <span class="badge">Draft</span>
+                  <% end %>
+                </p>
+              <% end %>
+            </li>
+          <% end %>
+        </ul>
+      </section>
+    <% end %>
+    <p class="book-shelf__blank" data-filter-target="blank" hidden>No books match.</p>
+  <% else %>
+    <div class="empty">
+      <span class="empty__icon"><%= inline_svg_tag "lucide/inbox.svg", class: "lucide", size: "40px" %></span>
+      <p class="empty__title">No books yet</p>
+      <p class="empty__text">Add the first book to the catalog.</p>
+      <div class="empty__actions"><%= link_to "New book", new_admin_book_path, class: "button button--primary" %></div>
+    </div>
+  <% end %>
+</div>
+
+<%# The band's "Edit series" link fetches admin/series/edit into here. %>
+<%= turbo_frame_tag "modal" %>

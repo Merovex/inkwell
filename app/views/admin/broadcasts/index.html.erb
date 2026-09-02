@@ -1,6 +1,8 @@
-<% content_for :title, "Broadcasts — Inkwell" %>
+<% content_for :title, "Broadcasts" %>
 
-<%= render "admin/shared/canvas_head", crumbs: [["Broadcasts", nil]] %>
+<%= render "admin/shared/canvas_head", crumbs: [["Broadcasts", nil]], menu: false do %>
+  <%= link_to "Export CSV", admin_broadcasts_path(format: :csv), class: "button" %>
+<% end %>
 
 <header class="perma-header">
   <h1 class="perma-header__title">Broadcasts</h1>
@@ -9,47 +11,70 @@
   </div>
 </header>
 
-<% pct = ->(rate) { rate ? number_to_percentage(rate * 100, precision: 0) : "—" } %>
+<%# Facts first: the 30-day totals. Clicks are the real engagement signal. %>
+<dl class="stats">
+  <div class="stat">
+    <dt class="stat__label">emails sent, last 30 days</dt>
+    <dd class="stat__value"><%= @sent_30d %></dd>
+  </div>
+  <div class="stat">
+    <dt class="stat__label">delivered</dt>
+    <dd class="stat__value"><%= @delivered_30d %></dd>
+  </div>
+  <div class="stat">
+    <dt class="stat__label"><%= "click".pluralize(@clicked_30d) %></dt>
+    <dd class="stat__value"><%= @clicked_30d %></dd>
+  </div>
+  <div class="stat<%= " stat--trouble" if @trouble_30d.positive? %>">
+    <dt class="stat__label">bounces, complaints, unsubscribes</dt>
+    <dd class="stat__value"><%= @trouble_30d %></dd>
+  </div>
+</dl>
+
+<p class="u-text-muted broadcast-note">
+  Opens aren't counted reliably — most mail apps block the tracking pixel, so treat clicks as
+  the real signal. A trend chart appears once you've sent to more than 50 addresses.
+</p>
 
 <% if @broadcasts.any? %>
   <div class="table-scroll">
-    <table class="table table--nowrap">
+    <table class="table">
       <thead>
         <tr>
           <th scope="col">Post</th>
           <th scope="col">Sent</th>
-          <th scope="col" data-align="end">Recipients</th>
           <th scope="col" data-align="end">Delivered</th>
-          <th scope="col" data-align="end">Opens</th>
-          <th scope="col" data-align="end">Clicks</th>
-          <th scope="col" data-align="end">Bounces</th>
-          <th scope="col" data-align="end">Unsubs</th>
+          <th scope="col" data-align="end">Clicked</th>
+          <th scope="col" data-align="end">Opened</th>
         </tr>
       </thead>
       <tbody>
         <% @broadcasts.each do |broadcast| %>
+          <% title = broadcast.post&.title.presence || "Untitled" %>
+          <% bounced = @bounced_addresses[broadcast.id] %>
           <tr>
             <td>
-              <%= link_to broadcast.post&.title.presence || "Untitled", admin_post_path(broadcast.record), class: "u-text-strong" %>
+              <%= link_to title, admin_broadcast_path(broadcast), class: "u-text-strong" %>
+              <% if broadcast.record.trashed_at? %><span class="badge">Trashed</span><% end %>
+              <% if bounced&.any? %>
+                <p class="broadcast-row__trouble"><%= pluralize(bounced.size, "hard bounce") %> — <%= bounced.first %></p>
+              <% end %>
             </td>
-            <td>
+            <td class="u-text-muted">
               <% case broadcast.state %>
               <% when :sent %>
-                <%= l broadcast.sent_at.to_date, format: :long %>
+                <time datetime="<%= broadcast.sent_at.iso8601 %>"><%= broadcast.sent_at.strftime("%b %-d, %-l:%M %p") %></time>
               <% when :scheduled %>
-                <span class="badge badge--accent">Scheduled ·
+                <span class="badge badge--warning">Scheduled ·
                   <time datetime="<%= broadcast.scheduled_at.iso8601 %>" data-controller="local-time"
-                        data-local-time-datetime-value="<%= broadcast.scheduled_at.iso8601 %>"><%= broadcast.scheduled_at.strftime("%b %-d at %H:%M") %></time></span>
+                        data-local-time-datetime-value="<%= broadcast.scheduled_at.iso8601 %>"><%= broadcast.scheduled_at.strftime("%b %-d at %-l:%M %p") %></time></span>
               <% else %>
                 <span class="badge">Sending…</span>
               <% end %>
             </td>
-            <td data-align="end"><%= broadcast.recipients_count %></td>
-            <td data-align="end"><%= broadcast.delivered_count %> <span class="u-text-muted u-text-small"><%= pct.(broadcast.delivery_rate) %></span></td>
-            <td data-align="end"><%= broadcast.opened_count %> <span class="u-text-muted u-text-small"><%= pct.(broadcast.open_rate) %></span></td>
-            <td data-align="end"><%= broadcast.clicked_count %> <span class="u-text-muted u-text-small"><%= pct.(broadcast.click_rate) %></span></td>
-            <td data-align="end"><%= broadcast.bounced_count %></td>
-            <td data-align="end"><%= broadcast.unsubscribed_count %></td>
+            <td data-align="end"><span class="u-text-strong"><%= broadcast.delivered_count %></span> of <%= broadcast.recipients_count %></td>
+            <td data-align="end" class="u-text-strong"><%= broadcast.clicked_count %></td>
+            <td data-align="end" class="u-text-muted">—</td>
           </tr>
         <% end %>
       </tbody>

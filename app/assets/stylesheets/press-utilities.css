@@ -16,26 +16,26 @@
 /* Centered page column — the shell every public page sits in.
    Default is a prose measure; --wide is the catalog/hero width. */
 .press-shell {
-  max-width: var(--shell-max, 44rem);
+  max-width: var(--shell-max, var(--shell-narrow));
   margin-inline: auto;
-  padding: 4rem 1.5rem 5rem;
+  padding: var(--size-9) var(--size-5) var(--size-10);
 }
-.press-shell--wide { --shell-max: 1100px; }
+.press-shell--wide { --shell-max: var(--shell-wide); }
 
 /* Display type scale. */
-.press-display-xl { font-size: clamp(2rem, 5vw, 3.25rem); line-height: 1.1; }
-.press-display-lg { font-size: clamp(1.8rem, 4vw, 2.6rem); line-height: 1.15; }
-.press-display-md { font-size: 1.6rem; }
+.press-display-xl { font-size: var(--press-display-xl); line-height: 1.1; }
+.press-display-lg { font-size: var(--press-display-lg); line-height: 1.15; }
+.press-display-md { font-size: var(--press-display-md); }
 
 /* Text roles. */
-.press-lede   { font-size: 1.1rem; line-height: 1.7; color: var(--text-2); }
+.press-lede   { font-size: var(--press-size-lede); line-height: 1.7; color: var(--text-2); }
 .press-muted  { color: var(--text-2); }
 .press-faint  { color: var(--text-3); }
-.press-meta   { font-size: 0.875rem; color: var(--text-3); }
+.press-meta   { font-size: var(--press-size-meta); color: var(--text-3); }
 .press-kicker {
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.1em;
+  font-size: var(--press-size-micro);
+  font-weight: var(--press-weight-strong);
+  letter-spacing: var(--press-tracking-kicker);
   text-transform: uppercase;
   color: var(--accent);
 }
@@ -44,23 +44,23 @@
 .press-measure { max-width: 60ch; margin-inline: auto; }
 
 /* Header block (kicker/date + title + byline) at the top of a shell. */
-.press-header { margin-block: 2rem 2.5rem; }
+.press-header { margin-block: var(--size-7) calc(var(--u-pad) * 2.5); }
 
 /* The site name set in the brand face (Federo, single-weight; the 800 is
    synthesized). Used in the public nav brand and the footer. */
 .wordmark {
   font-family: "Federo", var(--press-serif, serif);
   text-transform: uppercase;
-  letter-spacing: 0.12em;
-  font-weight: 800;
-  font-size: 0.9rem;
+  letter-spacing: var(--press-tracking-wordmark);
+  font-weight: var(--press-weight-display);
+  font-size: var(--press-size-meta);
 }
 
 /* Card surface — components add their own padding, hover, and layout. */
 .press-card {
   background: var(--surface-1);
   border: 1px solid var(--border-1);
-  border-radius: 0.75rem;
+  border-radius: var(--press-radius);
 }
 
 /* Rich-text body — compose with .prose (spacing) on authored content. */
@@ -69,4 +69,4 @@
   text-decoration: underline;
   text-underline-offset: 0.15em;
 }
-.press-body img { max-width: 100%; height: auto; border-radius: 0.5rem; }
+.press-body img { max-width: 100%; height: auto; border-radius: var(--press-radius-sm); }

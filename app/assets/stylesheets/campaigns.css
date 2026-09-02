@@ -1,0 +1,111 @@
+/*
+ * Campaigns — the re-skinned Drips admin (index 13a · one campaign 13b · one
+ * step 13c). Presentation only: the models stay Drip/Drop/Stream. Composes the
+ * shared .stats big-numbers, .facts label·value rows, u-surface, and u-stack;
+ * this file holds the campaign-card, step-timeline, and step-editor shapes.
+ */
+@layer components {
+  /* ── Index (13a): a stack of campaign summary cards ──────────────────────
+     The list composes u-stack in the markup; each card composes u-surface
+     u-pad. Title · status over a one-line description, then the live stats
+     (a .stats--flush row) when anyone's enrolled. */
+  .campaign-card__head { display: flex; align-items: center; flex-wrap: wrap; gap: calc(var(--u-pad) / 2); }
+  .campaign-card__title { font-size: var(--font-size-3); font-weight: var(--font-weight-8); }
+  /* Open link + ⋯ menu, pinned right. */
+  .campaign-card__actions { margin-inline-start: auto; display: flex; align-items: center; gap: var(--u-pad); }
+  .campaign-card__open { color: var(--accent); font-weight: var(--font-weight-6); text-decoration: none; }
+  .campaign-card__open:hover { text-decoration: underline; }
+  .campaign-card__desc { margin-block-start: calc(var(--u-pad) / 2); color: var(--ink-muted); }
+  .campaign-card__stats { margin-block-start: var(--u-pad); }
+
+  /* ── One campaign (13b): the step timeline ───────────────────────────────
+     rail (STEP n · Day · relative) │ node (dot + connector) │ step card.
+     The <ol> composes u-unlist in the markup. */
+  .campaign-timeline { display: flex; flex-direction: column; gap: var(--u-pad); }
+  .campaign-step {
+    display: grid;
+    grid-template-columns: var(--size-11) auto minmax(0, 1fr);
+    gap: var(--u-pad);
+  }
+
+  /* Rail: right-aligned so it reads into the timeline. */
+  .campaign-step__rail { text-align: end; padding-block-start: var(--u-pad); }
+  .campaign-step__label { color: var(--ink-muted); }
+  .campaign-step__day { font-weight: var(--font-weight-8); }
+  .campaign-step__delta { color: var(--ink-muted); font-size: var(--font-size-0); }
+
+  /* Node column: a filled dot on the card's top line, with a connector running
+     from this dot's centre to the next dot's centre. The dot centre sits
+     1.5·pad below the row top (pad top-margin + half the dot); consecutive dots
+     are one row + one gap (pad) apart, so the line ends 2.5·pad past this
+     node's box — a distance that cancels the card height, so it always meets
+     the next dot regardless of how tall the card is. Trimmed on the last step. */
+  .campaign-step__node { position: relative; display: flex; justify-content: center; }
+  .campaign-step__node::before {
+    content: "";
+    position: absolute;
+    inset-block: calc(var(--u-pad) * 1.5) calc(var(--u-pad) * -2.5);
+    inset-inline-start: 50%;
+    transform: translateX(-50%);
+    inline-size: var(--border-size-2);
+    background: var(--line);
+  }
+  .campaign-step:last-child .campaign-step__node::before { display: none; }
+  .campaign-step__dot {
+    position: relative;
+    inline-size: var(--size-3);
+    block-size: var(--size-3);
+    margin-block-start: var(--u-pad);
+    border-radius: var(--radius-round);
+    background: var(--accent);
+  }
+
+  /* The card: drag handle (.sortable__handle) · body · ⋯ menu.
+     Composes u-surface u-pad in the markup. */
+  .campaign-step__card { display: flex; align-items: flex-start; gap: var(--u-pad); }
+  .campaign-step__body { min-inline-size: 0; display: flex; flex-direction: column; gap: calc(var(--u-pad) / 4); flex: 1; }
+  .campaign-step__title { font-size: var(--font-size-2); font-weight: var(--font-weight-8); }
+  .campaign-step__title a { color: var(--ink); text-decoration: none; }
+  .campaign-step__title a:hover { text-decoration: underline; }
+  .campaign-step__meta { color: var(--ink-muted); font-size: var(--font-size-0); }
+  .campaign-step__menu { flex-shrink: 0; }
+
+  @media (max-width: 48em) { /* --breakpoint-md */
+    /* Drop the rail into the card on narrow screens: node + card only. */
+    .campaign-step { grid-template-columns: auto minmax(0, 1fr); }
+    .campaign-step__rail { grid-column: 2; text-align: start; padding-block-start: 0; }
+  }
+
+  /* ── One step (13c): the split-pane editor ───────────────────────────────
+     main (name/subject/body/notes) │ rail (when it sends · how it's doing). */
+  .step-editor {
+    display: grid;
+    /* The rail flexes between the menu-wide floor and the rail ceiling so
+       "days after they confirm" keeps to ~two lines beside the field. */
+    grid-template-columns: minmax(0, 1fr) clamp(var(--measure-menu-wide), 28%, var(--measure-rail));
+    gap: calc(var(--u-pad) * 2);
+    align-items: start;
+  }
+  .step-editor__main { min-inline-size: 0; display: flex; flex-direction: column; gap: var(--u-pad); }
+  .step-editor__kicker { color: var(--ink-muted); font-size: var(--font-size-0); }
+  .step-editor__rail { min-inline-size: 0; display: flex; flex-direction: column; gap: calc(var(--u-pad) * 1.5); }
+  .step-editor__section-title { margin-block-end: calc(var(--u-pad) / 2); }
+
+  @media (max-width: 64em) { /* --breakpoint-lg */
+    .step-editor { grid-template-columns: 1fr; }
+  }
+
+  /* "When it sends": a compact number field beside its unit, over a quiet note.
+     The field width needs the extra class to beat .field__control's 100%
+     (field.css loads after this sheet). */
+  .step-when { display: flex; align-items: flex-start; gap: calc(var(--u-pad) / 2); }
+  .step-when .step-when__field { inline-size: var(--size-9); }
+  .step-when__note {
+    margin-block-start: var(--u-pad);
+    padding: var(--u-pad);
+    border-radius: var(--radius-2);
+    background: var(--canvas-sunken);
+    color: var(--ink-muted);
+    font-size: var(--font-size-0);
+  }
+}

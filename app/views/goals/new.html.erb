@@ -1,0 +1,19 @@
+<%# Fetched into the index's "modal" turbo frame — a self-opening dialog, not %>
+<%# a page of its own. The form targets _top so a successful create navigates %>
+<%# to the new goal; a validation miss redirects back with an alert (create). %>
+<%= turbo_frame_tag "modal" do %>
+  <span data-controller="dialog" data-dialog-open-value="true">
+    <dialog class="modal" data-dialog-target="modal" data-action="click->dialog#backdrop"
+            aria-labelledby="new-goal-title">
+      <div class="modal__header">
+        <span class="modal__title" id="new-goal-title">New goal</span>
+        <button type="button" class="button button--icon button--ghost" data-action="dialog#close" aria-label="Close">
+          <%= inline_svg_tag "lucide/x.svg", class: "lucide", size: "20px" %>
+        </button>
+      </div>
+      <div class="modal__body">
+        <%= render "form", goal: @goal, url: goals_path, submit: "Set goal", modal: true %>
+      </div>
+    </dialog>
+  </span>
+<% end %>

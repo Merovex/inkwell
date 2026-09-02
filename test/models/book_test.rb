@@ -32,8 +32,8 @@ class BookTest < ActiveSupport::TestCase
     series = create_series
     b1 = create_book(title: "One")
     b2 = create_book(title: "Two")
-    Installment.create!(series_record_id: series.record_id, book_record_id: b2.record_id, position: 2)
-    Installment.create!(series_record_id: series.record_id, book_record_id: b1.record_id, position: 1)
+    Installment.create!(container_record_id: series.record_id, book_record_id: b2.record_id, position: 2)
+    Installment.create!(container_record_id: series.record_id, book_record_id: b1.record_id, position: 1)
 
     assert_equal %w[One Two], series.books.map(&:title)
     assert_equal [ series.record_id ], b1.series.map(&:record_id)
@@ -43,8 +43,8 @@ class BookTest < ActiveSupport::TestCase
     s1 = create_series(title: "S1")
     s2 = create_series(title: "S2")
     book = create_book
-    Installment.create!(series_record_id: s1.record_id, book_record_id: book.record_id, position: 1)
-    Installment.create!(series_record_id: s2.record_id, book_record_id: book.record_id, position: 1)
+    Installment.create!(container_record_id: s1.record_id, book_record_id: book.record_id, position: 1)
+    Installment.create!(container_record_id: s2.record_id, book_record_id: book.record_id, position: 1)
 
     assert_equal 2, book.series.count
   end
@@ -80,7 +80,7 @@ class BookTest < ActiveSupport::TestCase
   test "destroying a book record clears its installments" do
     series = create_series
     book = create_book
-    Installment.create!(series_record_id: series.record_id, book_record_id: book.record_id, position: 1)
+    Installment.create!(container_record_id: series.record_id, book_record_id: book.record_id, position: 1)
 
     assert_difference -> { Installment.count }, -1 do
       book.record.destroy

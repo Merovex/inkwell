@@ -3,7 +3,7 @@
   color: var(--link-color);
   text-decoration: underline;
   text-underline-offset: 0.15em;
-  transition: color 200ms ease;
+  transition: color var(--press-speed) var(--ease-3, ease);
 }
 .press-link:hover { color: var(--link-hover); }
 
@@ -12,8 +12,8 @@
 .press-back {
   display: inline-flex;
   align-items: center;
-  gap: 0.25rem;
-  font-size: 0.875rem;
+  gap: var(--size-1, 0.25rem);
+  font-size: var(--press-size-meta);
   color: var(--text-2);
   text-decoration: none;
 }
@@ -27,15 +27,15 @@
   padding: 0.6em 1.4em;
   font: inherit;
   font-family: var(--font-sans); /* system sans — not the serif body font */
-  font-size: 0.875rem;
-  font-weight: 600;
+  font-size: var(--press-size-meta);
+  font-weight: var(--press-weight-strong);
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: var(--press-tracking-kicker);
   text-decoration: none;
   border: 1px solid transparent;
-  border-radius: 0.25rem;
+  border-radius: var(--press-radius-xs);
   cursor: pointer;
-  transition: background-color 200ms ease, color 200ms ease, border-color 200ms ease;
+  transition: background-color var(--press-speed) var(--ease-3, ease), color var(--press-speed) var(--ease-3, ease), border-color var(--press-speed) var(--ease-3, ease);
   text-shadow: none !important;
 }
 /* Square icon button, exactly a standard .press-btn's height: 1.65em line box

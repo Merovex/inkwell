@@ -1,0 +1,29 @@
+<% content_for :title, "#{@pulse.question} — #{@circle.name}" %>
+<% can_manage = allowed_to?(:manage, @circle) %>
+
+<%# Edit/pause/resume live on the check card itself now (see _pulse_detail);
+    the head keeps the membership + trash menu. %>
+<%= render "admin/shared/canvas_head",
+      crumbs: [["Circles", circles_path], [@circle.name, circle_path(@circle)],
+               ["Pulse checks", circle_checks_path(@circle)], [@pulse.question, nil]] do %>
+  <% if @pulse.subscribed?(Current.user) %>
+    <%= button_to "Leave this Pulse check", circle_pulse_subscription_path(@circle, @record), method: :delete, class: "menu__item" %>
+  <% else %>
+    <%= button_to "Join this Pulse check", circle_pulse_subscription_path(@circle, @record), method: :post, class: "menu__item" %>
+  <% end %>
+  <% if can_manage %>
+    <hr class="menu__separator">
+    <%= button_to "Move to trash", circle_pulse_path(@circle, @record), method: :delete, class: "menu__item",
+          form: { data: { turbo_confirm: "Remove this Pulse check?" } } %>
+  <% end %>
+<% end %>
+
+<div class="u-center u-center-prose">
+  <%= render "circles/pulse_detail", circle: @circle, record: @record, pulse: @pulse,
+        week_start: @week_start, is_current_week: @is_current_week, my_beat: @my_beat,
+        beats: @beats, answered_this_week: @answered_this_week, non_answerers: @non_answerers,
+        earlier_weeks: @earlier_weeks, comment_counts: @comment_counts, title_tag: "h1" %>
+</div>
+
+<%# A card's comment link opens the thread here (circles/walls/threads). %>
+<%= turbo_frame_tag "modal" %>

@@ -1,0 +1,24 @@
+<%# locals: (slot:, heading:, upload_label:, hint:) %>
+<%# One Site image slot: dropzone with thumb + upload/remove + drag hint.
+    The designer's generic image handlers key on data-designer-slot;
+    persists immediately (images can't ride the localStorage lab). %>
+<% attachment = Current.account.site.public_send(slot) %>
+<section class="designer__block" aria-label="<%= heading %>">
+  <h3 class="designer__block-title"><%= heading %></h3>
+  <div class="designer__dropzone" data-designer-slot="<%= slot %>"
+       data-action="dragover->designer#imageDragOver dragleave->designer#imageDragLeave drop->designer#imageDrop">
+    <img class="designer__logo-thumb" data-image-role="thumb" alt="Current <%= heading.downcase %>"
+         <% if attachment.attached? %>src="<%= url_for(attachment) %>"<% else %>hidden<% end %>>
+    <div class="designer__logo-actions u-cluster">
+      <label class="button">
+        <%= upload_label %>
+        <input type="file" class="designer__file" accept="<%= Site::LOGO_CONTENT_TYPES.join(",") %>"
+               data-action="designer#imagePicked">
+      </label>
+      <button type="button" class="button button--ghost" data-image-role="remove"
+              data-action="designer#removeImage" <%= "hidden" unless attachment.attached? %>>Remove</button>
+      <span class="designer__hint u-text-muted">&hellip;or drag an image here</span>
+    </div>
+  </div>
+  <p class="designer__hint u-text-muted"><%= hint %> JPG, PNG, AVIF, WebP, or SVG up to <%= Site::LOGO_MAX_SIZE / 1.megabyte %> MB; saves to the account right away.</p>
+</section>

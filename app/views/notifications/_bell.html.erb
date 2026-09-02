@@ -1,0 +1,32 @@
+<%# The header's bell: dot when anything's unread; click opens the flyout —
+    the switcher's sibling (native popover, right-anchored, phone sheet).
+    Opening marks everything read (notifications_controller.js). %>
+<div class="notifications" data-controller="notifications"
+     data-notifications-read-url-value="<%= notifications_reading_path %>">
+  <%= turbo_stream_from Current.user, :notifications %>
+  <% recent = Current.user.notifications.recent.includes(actor: { avatar_attachment: :blob }) %>
+
+  <button type="button" class="button button--icon button--ghost notifications__bell"
+          popovertarget="notifications-menu" aria-haspopup="dialog" aria-label="Notifications">
+    <%= inline_svg_tag "lucide/bell.svg", class: "lucide", size: "20px" %>
+    <%= render "notifications/indicator", unread: Current.user.notifications.unread.exists? %>
+  </button>
+
+  <div class="notifications__panel" popover id="notifications-menu" role="dialog"
+       aria-label="Notifications" data-action="toggle->notifications#toggled">
+    <header class="notifications__head">
+      <span class="notifications__title">Notifications</span>
+      <button type="button" class="button button--icon button--ghost" popovertarget="notifications-menu"
+              popovertargetaction="hide" aria-label="Close">
+        <%= inline_svg_tag "lucide/x.svg", class: "lucide", size: "20px" %>
+      </button>
+    </header>
+    <div id="notifications-list" class="notifications__list">
+      <% recent.each do |notification| %>
+        <%= render "notifications/notification", notification: notification %>
+      <% end %>
+    </div>
+    <p class="notifications__empty<%= " notifications__empty--hidden" if recent.any? %>">You're all caught up.</p>
+    <%= link_to "See all notifications", notifications_path, class: "notifications__all" %>
+  </div>
+</div>

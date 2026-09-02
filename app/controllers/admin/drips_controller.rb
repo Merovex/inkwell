@@ -8,7 +8,12 @@ class Admin::DripsController < Admin::BaseController
   before_action -> { authorize! @record, to: :manage }, only: %i[edit update destroy activate reorder]
 
   def index
-    @drips = Drip.current.joins(:record).includes(:creator).order("records.created_at DESC")
+    @drips = Current.account.drips.joins(:record).includes(:creator).order("records.created_at DESC")
+    # Per-campaign summary for the cards: enrollment counts + steps/span.
+    @stats = @drips.to_h do |drip|
+      drops = drip.drops.to_a
+      [ drip.record_id, campaign_stats(drip.record_id).merge(steps: drops.size, span: drops.map(&:delay_days).max || 0) ]
+    end
   end
 
   # Overview: send/skip totals, a delivered-per-day history, and the next
@@ -17,7 +22,7 @@ class Admin::DripsController < Admin::BaseController
     @subscribers_count = Stream.select(:subscriber_id).distinct.count
     @delivered_count = DropDelivery.status_sent.count
     @skipped_count = DropDelivery.status_skipped.count
-    @active_count = Drip.live.count
+    @active_count = Current.account.drips.live.count
     @opened_count = DropDelivery.where.not(opened_at: nil).count
     @clicked_count = DropDelivery.where.not(clicked_at: nil).count
     @history = delivered_by_day
@@ -25,7 +30,10 @@ class Admin::DripsController < Admin::BaseController
   end
 
   def show
-    @drops = @drip.drops
+    @drops = @drip.drops.to_a
+    @campaign_stats = campaign_stats(@record.id)
+    @span = @drops.map(&:delay_days).max || 0
+    @step_stats = @drops.to_h { |drop| [ drop.record_id, step_stats(drop.record_id) ] }
   end
 
   def new
@@ -37,7 +45,7 @@ class Admin::DripsController < Admin::BaseController
 
     if @drip.valid?
       Record.originate(@drip)
-      redirect_to admin_drip_path(@drip.record), notice: "Drip created — add its drops below."
+      redirect_to admin_drip_path(@drip.record), notice: "Campaign created — add its steps below."
     else
       render :new, status: :unprocessable_entity
     end
@@ -50,7 +58,7 @@ class Admin::DripsController < Admin::BaseController
     @drip = @record.revise(event: :updated, **drip_params.to_h.symbolize_keys)
 
     if @drip.errors.none?
-      redirect_to admin_drip_path(@record), notice: "Drip saved."
+      redirect_to admin_drip_path(@record), notice: "Campaign saved."
     else
       render :edit, status: :unprocessable_entity
     end
@@ -62,12 +70,12 @@ class Admin::DripsController < Admin::BaseController
   def activate
     on = params[:active] != "false"
     @record.revise(event: (on ? :published : :unpublished), active: on)
-    redirect_to admin_drip_path(@record), notice: (on ? "Drip activated." : "Drip deactivated.")
+    redirect_to admin_drip_path(@record), notice: (on ? "Campaign activated." : "Campaign paused.")
   end
 
   def destroy
     @record.trash
-    redirect_to admin_drips_path, notice: "Drip moved to trash."
+    redirect_to admin_drips_path, notice: "Campaign moved to trash."
   end
 
   # Drag-reorder the drip's drops: PATCH drop_record_ids[] in the new order;

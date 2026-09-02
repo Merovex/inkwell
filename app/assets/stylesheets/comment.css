@@ -29,7 +29,7 @@
      the composer row. */
   .comment__prompt {
     display: inline-block;
-    inline-size: 200px;
+    inline-size: var(--size-13); /* wide enough that the label never wraps */
     color: var(--ink-muted);
     font-size: var(--font-size-1);
     text-align: start;
@@ -48,11 +48,8 @@
     min-inline-size: 0; /* let long rich text wrap instead of overflowing */
   }
 
-  /* Editor rows (composer + inline edit): editor above compact actions. */
-  .comment__form {
-    display: grid;
-    gap: calc(var(--u-pad) / 2);
-  }
+  /* Editor rows (composer + inline edit) compose u-stack u-stack-half in the
+     markup: editor above compact actions. */
 
   /* Reserve the action zone even when it holds nothing (composer, edit
      mode) so the content column is the same width on every row. */

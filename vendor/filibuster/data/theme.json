@@ -1,0 +1,1603 @@
+{
+  "name": "filibuster",
+  "version": "0.1.0",
+  "contract_version": 2,
+  "axes": [
+    {
+      "key": "nav",
+      "attr": "data-nav",
+      "noun": "Header",
+      "default": "split",
+      "section": "styles",
+      "options": [
+        {
+          "id": "split",
+          "label": "Split",
+          "wireframe": "assets/wireframes/nav/split.svg"
+        },
+        {
+          "id": "centered",
+          "label": "Centered",
+          "wireframe": "assets/wireframes/nav/centered.svg"
+        },
+        {
+          "id": "grand",
+          "label": "Grand",
+          "wireframe": "assets/wireframes/nav/grand.svg"
+        },
+        {
+          "id": "bare",
+          "label": "Bare",
+          "wireframe": "assets/wireframes/nav/bare.svg"
+        }
+      ]
+    },
+    {
+      "key": "palette",
+      "attr": "data-palette",
+      "noun": "Palette",
+      "default": "nebula",
+      "options": [
+        {
+          "id": "manuscript",
+          "label": "Manuscript",
+          "swatches": [
+            "#f7f1e6",
+            "#7c2f2a",
+            "#2b241c"
+          ],
+          "group": "Epic & Historical"
+        },
+        {
+          "id": "grimoire",
+          "label": "Grimoire",
+          "swatches": [
+            "#101711",
+            "#d9c27a",
+            "#eef0e4"
+          ],
+          "group": "Epic & Historical"
+        },
+        {
+          "id": "sandstone",
+          "label": "Sandstone",
+          "swatches": [
+            "#f2e9da",
+            "#a9603d",
+            "#382b20"
+          ],
+          "group": "Epic & Historical"
+        },
+        {
+          "id": "pulp",
+          "label": "Pulp",
+          "swatches": [
+            "#111113",
+            "#ff8b6e",
+            "#f4f2ec"
+          ],
+          "group": "Crime & Mystery"
+        },
+        {
+          "id": "meadow",
+          "label": "Meadow",
+          "swatches": [
+            "#f4f6ee",
+            "#3f7d44",
+            "#26301f"
+          ],
+          "group": "Crime & Mystery"
+        },
+        {
+          "id": "bone",
+          "label": "Bone",
+          "swatches": [
+            "#efece4",
+            "#141210",
+            "#1c1a17"
+          ],
+          "group": "Horror & Gothic"
+        },
+        {
+          "id": "blush",
+          "label": "Blush",
+          "swatches": [
+            "#f7edeb",
+            "#b23a63",
+            "#33211f"
+          ],
+          "group": "Romance & Commercial"
+        },
+        {
+          "id": "boudoir",
+          "label": "Boudoir",
+          "swatches": [
+            "#2a1420",
+            "#d98a7a",
+            "#f5ece9"
+          ],
+          "group": "Romance & Commercial"
+        },
+        {
+          "id": "tide",
+          "label": "Tide",
+          "swatches": [
+            "#fbfaf7",
+            "#2f8f83",
+            "#22384a"
+          ],
+          "group": "Romance & Commercial"
+        },
+        {
+          "id": "nebula",
+          "label": "Nebula",
+          "swatches": [
+            "#0b0f1d",
+            "#d9a94a",
+            "#ece9df"
+          ],
+          "group": "Science Fiction"
+        },
+        {
+          "id": "lumen",
+          "label": "Lumen",
+          "swatches": [
+            "#f8fafb",
+            "#0e7490",
+            "#16232a"
+          ],
+          "group": "Science Fiction"
+        },
+        {
+          "id": "rust",
+          "label": "Rust",
+          "swatches": [
+            "#17130f",
+            "#b3552a",
+            "#ece5dc"
+          ],
+          "group": "Science Fiction"
+        },
+        {
+          "id": "neon",
+          "label": "Neon",
+          "swatches": [
+            "#12101f",
+            "#9d7af0",
+            "#f0eefa"
+          ],
+          "group": "Young Readers"
+        },
+        {
+          "id": "pine",
+          "label": "Pine",
+          "swatches": [
+            "#f4f3ef",
+            "#3d6e65",
+            "#26251f"
+          ],
+          "group": "Literary & Nonfiction"
+        },
+        {
+          "id": "mission",
+          "label": "Mission",
+          "swatches": [
+            "#f3f5f8",
+            "#16459c",
+            "#121a26"
+          ],
+          "group": "Literary & Nonfiction"
+        },
+        {
+          "id": "ink",
+          "label": "Ink",
+          "swatches": [
+            "#111110",
+            "#a2aca9",
+            "#c4c4c1"
+          ],
+          "group": "Literary & Nonfiction"
+        }
+      ],
+      "section": "styles"
+    },
+    {
+      "key": "mode_toggle",
+      "attr": "data-mode-toggle",
+      "noun": "Reader light/dark toggle",
+      "default": "no",
+      "section": "palette",
+      "options": [
+        {
+          "id": "yes",
+          "label": "Shown"
+        },
+        {
+          "id": "no",
+          "label": "Hidden"
+        }
+      ]
+    },
+    {
+      "key": "mode",
+      "attr": "data-mode",
+      "noun": "Mode",
+      "default": "auto",
+      "section": "palette",
+      "options": [
+        {
+          "id": "light",
+          "label": "Light"
+        },
+        {
+          "id": "dark",
+          "label": "Dark"
+        },
+        {
+          "id": "auto",
+          "label": "Auto"
+        }
+      ]
+    },
+    {
+      "key": "books",
+      "attr": "data-books",
+      "noun": "Books on home",
+      "default": "yes",
+      "section": "books",
+      "options": [
+        {
+          "id": "yes",
+          "label": "Shown"
+        },
+        {
+          "id": "no",
+          "label": "Hidden"
+        }
+      ]
+    },
+    {
+      "key": "books_title",
+      "attr": "data-books-title",
+      "noun": "Section heading",
+      "default": "yes",
+      "section": "books",
+      "options": [
+        {
+          "id": "yes",
+          "label": "Shown"
+        },
+        {
+          "id": "no",
+          "label": "Hidden"
+        }
+      ]
+    },
+    {
+      "key": "corners",
+      "attr": "data-corners",
+      "noun": "Cover corners",
+      "default": "soft",
+      "section": "books",
+      "options": [
+        {
+          "id": "square",
+          "label": "Square",
+          "depiction": "cover-square"
+        },
+        {
+          "id": "crisp",
+          "label": "Crisp",
+          "depiction": "cover-crisp"
+        },
+        {
+          "id": "soft",
+          "label": "Soft",
+          "depiction": "cover-soft"
+        },
+        {
+          "id": "round",
+          "label": "Round",
+          "depiction": "cover-round"
+        }
+      ]
+    },
+    {
+      "key": "cards",
+      "attr": "data-cards",
+      "noun": "Book cards",
+      "default": "spread",
+      "options": [
+        {
+          "id": "spread",
+          "label": "Spread",
+          "wireframe": "assets/wireframes/cards/spread.svg"
+        },
+        {
+          "id": "shelf",
+          "label": "Shelf",
+          "wireframe": "assets/wireframes/cards/shelf.svg"
+        },
+        {
+          "id": "grid",
+          "label": "Grid",
+          "wireframe": "assets/wireframes/cards/grid.svg"
+        },
+        {
+          "id": "panel",
+          "label": "Panel",
+          "wireframe": "assets/wireframes/cards/panel.svg"
+        },
+        {
+          "id": "carousel",
+          "label": "Carousel",
+          "wireframe": "assets/wireframes/cards/carousel.svg"
+        },
+        {
+          "id": "offset",
+          "label": "Offset shadow",
+          "wireframe": "assets/wireframes/cards/offset.svg"
+        },
+        {
+          "id": "fan",
+          "label": "Cover fan",
+          "wireframe": "assets/wireframes/cards/fan.svg"
+        }
+      ],
+      "section": "books"
+    },
+    {
+      "key": "catalog",
+      "attr": "data-catalog",
+      "noun": "Show",
+      "default": "series",
+      "section": "books",
+      "options": [
+        {
+          "id": "series",
+          "label": "First of series"
+        },
+        {
+          "id": "books",
+          "label": "Every book"
+        }
+      ]
+    },
+    {
+      "key": "alternate",
+      "attr": "data-alternate",
+      "noun": "Alternate sides",
+      "default": "yes",
+      "section": "books",
+      "options": [
+        {
+          "id": "yes",
+          "label": "Alternating"
+        },
+        {
+          "id": "no",
+          "label": "Uniform"
+        }
+      ]
+    },
+    {
+      "key": "hero_home",
+      "attr": "data-hero-home",
+      "noun": "Hero on home",
+      "default": "yes",
+      "options": [
+        {
+          "id": "yes",
+          "label": "Shown"
+        },
+        {
+          "id": "no",
+          "label": "Hidden"
+        }
+      ],
+      "section": "hero"
+    },
+    {
+      "key": "hero",
+      "attr": "data-hero",
+      "noun": "Hero",
+      "default": "right",
+      "options": [
+        {
+          "id": "none",
+          "label": "No book",
+          "wireframe": "assets/wireframes/hero/none.svg"
+        },
+        {
+          "id": "centered",
+          "label": "One book, centered",
+          "wireframe": "assets/wireframes/hero/centered.svg"
+        },
+        {
+          "id": "right",
+          "label": "One book, right",
+          "wireframe": "assets/wireframes/hero/right.svg"
+        },
+        {
+          "id": "many",
+          "label": "Many books",
+          "wireframe": "assets/wireframes/hero/many.svg"
+        }
+      ],
+      "section": "hero"
+    },
+    {
+      "key": "hero_book",
+      "attr": "data-hero-book",
+      "noun": "Book display",
+      "default": "straight",
+      "section": "hero",
+      "options": [
+        {
+          "id": "straight",
+          "label": "Straight on"
+        },
+        {
+          "id": "3d",
+          "label": "3D book"
+        }
+      ]
+    },
+    {
+      "key": "hero_art",
+      "attr": "data-hero-art",
+      "noun": "Hero image",
+      "default": "cover",
+      "section": "hero",
+      "options": [
+        {
+          "id": "cover",
+          "label": "Book cover"
+        },
+        {
+          "id": "portrait",
+          "label": "Author portrait"
+        },
+        {
+          "id": "image",
+          "label": "Custom image"
+        }
+      ]
+    },
+    {
+      "key": "hero_shadow",
+      "attr": "data-hero-shadow",
+      "noun": "Hero image shadow",
+      "default": "yes",
+      "section": "hero",
+      "options": [
+        {
+          "id": "yes",
+          "label": "Shadow"
+        },
+        {
+          "id": "no",
+          "label": "No shadow"
+        }
+      ]
+    },
+    {
+      "key": "hero_many",
+      "attr": "data-hero-many",
+      "noun": "Many-book display",
+      "default": "fan",
+      "section": "hero",
+      "options": [
+        {
+          "id": "fan",
+          "label": "Fanned"
+        },
+        {
+          "id": "staggered",
+          "label": "Staggered"
+        }
+      ]
+    },
+    {
+      "key": "hero_bg",
+      "attr": "data-hero-bg",
+      "noun": "Hero background",
+      "default": "page",
+      "section": "hero",
+      "options": [
+        {
+          "id": "page",
+          "label": "Page background",
+          "wireframe": "assets/wireframes/hero/bg-page.svg"
+        },
+        {
+          "id": "gradient",
+          "label": "Gradient",
+          "wireframe": "assets/wireframes/hero/bg-gradient.svg"
+        },
+        {
+          "id": "scrim",
+          "label": "Color scrim",
+          "wireframe": "assets/wireframes/hero/bg-scrim.svg"
+        },
+        {
+          "id": "cover",
+          "label": "Cover art",
+          "wireframe": "assets/wireframes/hero/bg-cover.svg"
+        },
+        {
+          "id": "banner",
+          "label": "Banner image",
+          "wireframe": "assets/wireframes/hero/bg-banner.svg"
+        }
+      ]
+    },
+    {
+      "key": "hero_scrim",
+      "attr": "data-hero-scrim",
+      "noun": "Backdrop scrim",
+      "default": "50",
+      "section": "hero",
+      "control": "slider",
+      "options": [
+        {
+          "id": "0",
+          "label": "0%"
+        },
+        {
+          "id": "10",
+          "label": "10%"
+        },
+        {
+          "id": "20",
+          "label": "20%"
+        },
+        {
+          "id": "30",
+          "label": "30%"
+        },
+        {
+          "id": "40",
+          "label": "40%"
+        },
+        {
+          "id": "50",
+          "label": "50%"
+        },
+        {
+          "id": "60",
+          "label": "60%"
+        },
+        {
+          "id": "70",
+          "label": "70%"
+        },
+        {
+          "id": "80",
+          "label": "80%"
+        },
+        {
+          "id": "90",
+          "label": "90%"
+        },
+        {
+          "id": "100",
+          "label": "100%"
+        }
+      ]
+    },
+    {
+      "key": "font",
+      "attr": "data-font",
+      "noun": "Fonts",
+      "default": "epic",
+      "options": [
+        {
+          "id": "epic",
+          "label": "Epic",
+          "display": "Cinzel",
+          "body": "EB Garamond",
+          "tagline": "Mythic scope for epic fantasy sagas",
+          "group": "Epic & Historical"
+        },
+        {
+          "id": "classical",
+          "label": "Classical",
+          "display": "Marcellus",
+          "body": "Vollkorn",
+          "tagline": "Quiet classicism for literary and historical work",
+          "group": "Epic & Historical"
+        },
+        {
+          "id": "inscribed",
+          "label": "Inscribed",
+          "display": "Spectral SC",
+          "body": "Cardo",
+          "tagline": "Carved gravitas for ancient worlds",
+          "group": "Epic & Historical"
+        },
+        {
+          "id": "frontier",
+          "label": "Frontier",
+          "display": "Rye",
+          "body": "Bitter",
+          "tagline": "Dust and grit for westerns",
+          "group": "Epic & Historical"
+        },
+        {
+          "id": "thriller",
+          "label": "Thriller",
+          "display": "Barlow Condensed",
+          "body": "Source Serif 4",
+          "tagline": "Tight, urgent pacing for thrillers",
+          "group": "Crime & Mystery"
+        },
+        {
+          "id": "noir",
+          "label": "Noir",
+          "display": "Oswald",
+          "body": "Spectral",
+          "tagline": "Hard shadows for crime and noir",
+          "group": "Crime & Mystery"
+        },
+        {
+          "id": "procedural",
+          "label": "Procedural",
+          "display": "Archivo",
+          "body": "Faustina",
+          "tagline": "Crisp case-file clarity for procedurals",
+          "group": "Crime & Mystery"
+        },
+        {
+          "id": "hearth",
+          "label": "Hearth",
+          "display": "Berkshire Swash",
+          "body": "Gelasio",
+          "tagline": "Warm firelight for cozy mysteries",
+          "group": "Crime & Mystery"
+        },
+        {
+          "id": "gothic",
+          "label": "Gothic",
+          "display": "IM Fell English SC",
+          "body": "Frank Ruhl Libre",
+          "tagline": "Weathered ink for gothic and horror",
+          "group": "Horror & Gothic"
+        },
+        {
+          "id": "dread",
+          "label": "Dread",
+          "display": "Anton",
+          "body": "Lora",
+          "tagline": "Stark modern dread, no ornament",
+          "group": "Horror & Gothic"
+        },
+        {
+          "id": "romance",
+          "label": "Romance",
+          "display": "Cormorant Garamond",
+          "body": "Crimson Pro",
+          "tagline": "Soft warmth for romance and longing",
+          "group": "Romance & Commercial"
+        },
+        {
+          "id": "commercial",
+          "label": "Commercial",
+          "display": "Playfair Display",
+          "body": "Alegreya",
+          "tagline": "Polished bestseller look for book-club fiction",
+          "group": "Romance & Commercial"
+        },
+        {
+          "id": "starfall",
+          "label": "Starfall",
+          "display": "Exo 2",
+          "body": "IBM Plex Serif",
+          "tagline": "Chrome and starlight for space opera",
+          "group": "Science Fiction"
+        },
+        {
+          "id": "clinical",
+          "label": "Clinical",
+          "display": "Bodoni Moda",
+          "body": "Manuale",
+          "tagline": "Sharp precision for clinical futures",
+          "group": "Science Fiction"
+        },
+        {
+          "id": "storybook",
+          "label": "Storybook",
+          "display": "Baloo 2",
+          "body": "Andika",
+          "tagline": "Big friendly letters for young readers",
+          "group": "Young Readers"
+        },
+        {
+          "id": "ya-soft",
+          "label": "YA Soft",
+          "display": "Fraunces",
+          "body": "Literata",
+          "tagline": "Friendly warmth for heartfelt young adult",
+          "group": "Young Readers"
+        },
+        {
+          "id": "ya-modern",
+          "label": "YA Modern",
+          "display": "Outfit",
+          "body": "Newsreader",
+          "tagline": "Clean contemporary energy for modern YA",
+          "group": "Young Readers"
+        },
+        {
+          "id": "ya-grotesque",
+          "label": "YA Grotesque",
+          "display": "Bricolage Grotesque",
+          "body": "Andada Pro",
+          "tagline": "Bold offbeat edge for daring stories",
+          "group": "Young Readers"
+        },
+        {
+          "id": "verse",
+          "label": "Verse",
+          "display": "Italiana",
+          "body": "Petrona",
+          "tagline": "Delicate lines for poetry and prose",
+          "group": "Literary & Nonfiction"
+        },
+        {
+          "id": "testament",
+          "label": "Testament",
+          "display": "DM Serif Text",
+          "body": "Mulish",
+          "tagline": "Gentle candor for memoir and faith",
+          "group": "Literary & Nonfiction"
+        },
+        {
+          "id": "ledger",
+          "label": "Ledger",
+          "display": "Space Grotesk",
+          "body": "Inter",
+          "tagline": "Confident clarity for big-idea nonfiction",
+          "group": "Literary & Nonfiction"
+        },
+        {
+          "id": "gazette",
+          "label": "Gazette",
+          "display": "Archivo Narrow",
+          "body": "Merriweather",
+          "tagline": "Condensed newsroom headlines over a steady reading serif",
+          "group": "Literary & Nonfiction"
+        }
+      ],
+      "section": "styles"
+    },
+    {
+      "key": "buttons",
+      "attr": "data-buttons",
+      "noun": "Buttons",
+      "default": "soft",
+      "section": "styles",
+      "options": [
+        {
+          "id": "square",
+          "label": "Square",
+          "depiction": "btn-square"
+        },
+        {
+          "id": "crisp",
+          "label": "Soft",
+          "depiction": "btn-crisp"
+        },
+        {
+          "id": "soft",
+          "label": "Round",
+          "depiction": "btn-soft"
+        },
+        {
+          "id": "round",
+          "label": "Pill",
+          "depiction": "btn-round"
+        }
+      ]
+    },
+    {
+      "key": "button_second",
+      "attr": "data-button-second",
+      "noun": "Second button",
+      "default": "outlined",
+      "section": "buttons",
+      "options": [
+        {
+          "id": "outlined",
+          "label": "Outlined",
+          "depiction": "second-outlined"
+        },
+        {
+          "id": "tinted",
+          "label": "Tinted",
+          "depiction": "second-tinted"
+        },
+        {
+          "id": "plain",
+          "label": "Plain link",
+          "depiction": "second-plain"
+        }
+      ]
+    },
+    {
+      "key": "button_size",
+      "attr": "data-button-size",
+      "noun": "Button size",
+      "default": "regular",
+      "section": "buttons",
+      "options": [
+        {
+          "id": "compact",
+          "label": "Compact"
+        },
+        {
+          "id": "regular",
+          "label": "Regular"
+        },
+        {
+          "id": "large",
+          "label": "Large"
+        }
+      ]
+    },
+    {
+      "key": "nav_show",
+      "attr": "data-nav-show",
+      "noun": "Header shown",
+      "default": "yes",
+      "section": "nav",
+      "options": [
+        {
+          "id": "yes",
+          "label": "Shown"
+        },
+        {
+          "id": "no",
+          "label": "Hidden"
+        }
+      ]
+    },
+    {
+      "key": "logo_size",
+      "attr": "data-logo-size",
+      "noun": "Logo size",
+      "default": "regular",
+      "section": "nav",
+      "variant": "segmented",
+      "options": [
+        {
+          "id": "regular",
+          "label": "Regular"
+        },
+        {
+          "id": "large",
+          "label": "1.5×"
+        },
+        {
+          "id": "huge",
+          "label": "2×"
+        }
+      ]
+    },
+    {
+      "key": "footer",
+      "attr": "data-footer",
+      "noun": "Footer",
+      "default": "stacked",
+      "section": "footer",
+      "options": [
+        {
+          "id": "stacked",
+          "label": "Stacked",
+          "hint": "Brand, links, fine print",
+          "wireframe": "assets/wireframes/footer/stacked.svg"
+        },
+        {
+          "id": "columns",
+          "label": "Columns",
+          "hint": "Grouped links in columns",
+          "wireframe": "assets/wireframes/footer/columns.svg"
+        },
+        {
+          "id": "split",
+          "label": "Split",
+          "hint": "Brand left, links right",
+          "wireframe": "assets/wireframes/footer/split.svg"
+        },
+        {
+          "id": "minimal",
+          "label": "Minimal",
+          "hint": "Fine print only",
+          "wireframe": "assets/wireframes/footer/minimal.svg"
+        }
+      ]
+    },
+    {
+      "key": "footer_show",
+      "attr": "data-footer-show",
+      "noun": "Footer shown",
+      "default": "yes",
+      "section": "footer",
+      "options": [
+        {
+          "id": "yes",
+          "label": "Shown"
+        },
+        {
+          "id": "no",
+          "label": "Hidden"
+        }
+      ]
+    },
+    {
+      "key": "footer_signup",
+      "attr": "data-footer-signup",
+      "noun": "Footer signup",
+      "default": "yes",
+      "section": "footer",
+      "options": [
+        {
+          "id": "yes",
+          "label": "Signup"
+        },
+        {
+          "id": "no",
+          "label": "No signup"
+        }
+      ]
+    },
+    {
+      "key": "footer_credit",
+      "attr": "data-footer-credit",
+      "noun": "Made-with credit",
+      "default": "yes",
+      "section": "footer",
+      "options": [
+        {
+          "id": "yes",
+          "label": "Credit"
+        },
+        {
+          "id": "no",
+          "label": "No credit"
+        }
+      ]
+    },
+    {
+      "key": "footer_bg",
+      "attr": "data-footer-bg",
+      "noun": "Footer background",
+      "default": "paper",
+      "section": "footer",
+      "options": [
+        {
+          "id": "paper",
+          "label": "Paper",
+          "depiction": "footer-paper"
+        },
+        {
+          "id": "ink",
+          "label": "Ink",
+          "depiction": "footer-ink"
+        }
+      ]
+    },
+    {
+      "key": "bio_home",
+      "attr": "data-bio-home",
+      "noun": "Biography on home",
+      "default": "yes",
+      "options": [
+        {
+          "id": "yes",
+          "label": "Shown"
+        },
+        {
+          "id": "no",
+          "label": "Hidden"
+        }
+      ],
+      "section": "biography"
+    },
+    {
+      "key": "avatar",
+      "attr": "data-avatar",
+      "noun": "Photo",
+      "default": "frame",
+      "options": [
+        {
+          "id": "none",
+          "label": "No photo",
+          "wireframe": "assets/wireframes/bio/photo-none.svg"
+        },
+        {
+          "id": "frame",
+          "label": "Frame",
+          "wireframe": "assets/wireframes/bio/photo-frame.svg"
+        },
+        {
+          "id": "round",
+          "label": "Round",
+          "wireframe": "assets/wireframes/bio/photo-round.svg"
+        },
+        {
+          "id": "square",
+          "label": "Square",
+          "wireframe": "assets/wireframes/bio/photo-square.svg"
+        },
+        {
+          "id": "organic",
+          "label": "Organic",
+          "wireframe": "assets/wireframes/bio/photo-organic.svg"
+        }
+      ],
+      "section": "biography"
+    },
+    {
+      "key": "avatar_side",
+      "attr": "data-avatar-side",
+      "noun": "Photo side",
+      "default": "left",
+      "options": [
+        {
+          "id": "left",
+          "label": "Left",
+          "wireframe": "assets/wireframes/bio/side-left.svg"
+        },
+        {
+          "id": "right",
+          "label": "Right",
+          "wireframe": "assets/wireframes/bio/side-right.svg"
+        }
+      ],
+      "section": "biography"
+    },
+    {
+      "key": "bio_band",
+      "attr": "data-bio-band",
+      "noun": "Band",
+      "default": "stripe",
+      "section": "biography",
+      "options": [
+        {
+          "id": "none",
+          "label": "Plain page",
+          "wireframe": "assets/wireframes/bio/band-none.svg"
+        },
+        {
+          "id": "stripe",
+          "label": "Color band",
+          "wireframe": "assets/wireframes/bio/band-stripe.svg"
+        },
+        {
+          "id": "angled",
+          "label": "Angled band",
+          "wireframe": "assets/wireframes/bio/band-angled.svg"
+        }
+      ]
+    },
+    {
+      "key": "bio_align",
+      "attr": "data-bio-align",
+      "noun": "Text alignment",
+      "default": "left",
+      "section": "biography",
+      "variant": "segmented",
+      "options": [
+        {
+          "id": "left",
+          "label": "Left"
+        },
+        {
+          "id": "centered",
+          "label": "Centered"
+        }
+      ]
+    },
+    {
+      "key": "bio_more",
+      "attr": "data-bio-more",
+      "noun": "About button",
+      "default": "yes",
+      "section": "biography",
+      "options": [
+        {
+          "id": "yes",
+          "label": "Shown"
+        },
+        {
+          "id": "no",
+          "label": "Hidden"
+        }
+      ]
+    },
+    {
+      "key": "authors",
+      "attr": "data-authors",
+      "noun": "Author grid",
+      "default": "no",
+      "section": "authors",
+      "options": [
+        {
+          "id": "yes",
+          "label": "Shown"
+        },
+        {
+          "id": "no",
+          "label": "Hidden"
+        }
+      ]
+    },
+    {
+      "key": "authors_title",
+      "attr": "data-authors-title",
+      "noun": "Section heading",
+      "default": "yes",
+      "section": "authors",
+      "options": [
+        {
+          "id": "yes",
+          "label": "Shown"
+        },
+        {
+          "id": "no",
+          "label": "Hidden"
+        }
+      ]
+    },
+    {
+      "key": "blog",
+      "attr": "data-blog",
+      "noun": "Post cards",
+      "default": "grid",
+      "section": "blog",
+      "options": [
+        {
+          "id": "grid",
+          "label": "Card grid",
+          "wireframe": "assets/wireframes/blog/grid.svg"
+        },
+        {
+          "id": "list",
+          "label": "Vertical list",
+          "wireframe": "assets/wireframes/blog/list.svg"
+        },
+        {
+          "id": "cards",
+          "label": "Card list",
+          "wireframe": "assets/wireframes/blog/cards.svg"
+        }
+      ]
+    },
+    {
+      "key": "blog_title",
+      "attr": "data-blog-title",
+      "noun": "Section heading",
+      "default": "yes",
+      "section": "blog",
+      "options": [
+        {
+          "id": "yes",
+          "label": "Shown"
+        },
+        {
+          "id": "no",
+          "label": "Hidden"
+        }
+      ]
+    },
+    {
+      "key": "newsletter",
+      "attr": "data-newsletter",
+      "noun": "Signup band",
+      "default": "photo",
+      "options": [
+        {
+          "id": "photo",
+          "label": "Photo",
+          "wireframe": "assets/wireframes/newsletter/photo.svg"
+        },
+        {
+          "id": "quiet",
+          "label": "Quiet",
+          "wireframe": "assets/wireframes/newsletter/quiet.svg"
+        },
+        {
+          "id": "envelope",
+          "label": "Envelope",
+          "wireframe": "assets/wireframes/newsletter/envelope.svg"
+        },
+        {
+          "id": "plane",
+          "label": "Paper plane",
+          "wireframe": "assets/wireframes/newsletter/plane.svg"
+        },
+        {
+          "id": "megaphone",
+          "label": "Megaphone",
+          "wireframe": "assets/wireframes/newsletter/megaphone.svg"
+        },
+        {
+          "id": "mailbox",
+          "label": "Mailbox",
+          "wireframe": "assets/wireframes/newsletter/mailbox.svg"
+        }
+      ],
+      "section": "newsletter"
+    }
+  ],
+  "presets": [
+    {
+      "id": "saga",
+      "label": "Saga",
+      "group": "Epic & Historical",
+      "tagline": "Mythic scope in warm stone and gold",
+      "axes": {
+        "palette": "sandstone",
+        "font": "epic",
+        "nav": "split",
+        "hero": "right",
+        "hero_book": "3d",
+        "hero_bg": "gradient",
+        "cards": "spread",
+        "alternate": "yes",
+        "corners": "soft",
+        "buttons": "soft",
+        "avatar": "frame",
+        "bio_band": "stripe",
+        "blog": "grid",
+        "newsletter": "photo"
+      }
+    },
+    {
+      "id": "bookshelf",
+      "label": "Bookshelf",
+      "group": "Epic & Historical",
+      "tagline": "A quiet study lined with your sagas",
+      "axes": {
+        "palette": "manuscript",
+        "font": "classical",
+        "nav": "split",
+        "hero": "right",
+        "hero_bg": "page",
+        "cards": "shelf",
+        "alternate": "no",
+        "corners": "crisp",
+        "buttons": "crisp",
+        "avatar": "frame",
+        "bio_band": "none",
+        "blog": "list",
+        "newsletter": "quiet"
+      }
+    },
+    {
+      "id": "noir",
+      "label": "Noir",
+      "group": "Crime & Mystery",
+      "tagline": "Hard shadows, square corners, no mercy",
+      "axes": {
+        "palette": "pulp",
+        "font": "noir",
+        "nav": "split",
+        "hero": "right",
+        "hero_bg": "cover",
+        "hero_scrim": "70",
+        "cards": "offset",
+        "corners": "square",
+        "buttons": "square",
+        "avatar": "square",
+        "bio_band": "none",
+        "blog": "list",
+        "newsletter": "quiet"
+      }
+    },
+    {
+      "id": "hearthside",
+      "label": "Hearthside",
+      "group": "Crime & Mystery",
+      "tagline": "A cozy corner with tea and clues",
+      "axes": {
+        "palette": "meadow",
+        "font": "hearth",
+        "nav": "centered",
+        "hero": "centered",
+        "hero_bg": "scrim",
+        "cards": "shelf",
+        "alternate": "no",
+        "corners": "round",
+        "buttons": "round",
+        "avatar": "round",
+        "bio_band": "stripe",
+        "blog": "list",
+        "newsletter": "mailbox"
+      }
+    },
+    {
+      "id": "grimoire",
+      "label": "Grimoire",
+      "group": "Horror & Gothic",
+      "tagline": "Candlelit gold on blackened green",
+      "axes": {
+        "palette": "grimoire",
+        "font": "gothic",
+        "nav": "centered",
+        "hero": "centered",
+        "hero_bg": "page",
+        "cards": "panel",
+        "corners": "crisp",
+        "buttons": "crisp",
+        "avatar": "organic",
+        "avatar_side": "right",
+        "bio_band": "angled",
+        "blog": "grid",
+        "newsletter": "quiet"
+      }
+    },
+    {
+      "id": "dread",
+      "label": "Dread",
+      "group": "Horror & Gothic",
+      "tagline": "Stark, stripped, nowhere to hide",
+      "axes": {
+        "palette": "bone",
+        "font": "dread",
+        "nav": "bare",
+        "hero": "none",
+        "hero_bg": "page",
+        "cards": "grid",
+        "alternate": "no",
+        "corners": "square",
+        "buttons": "square",
+        "avatar": "none",
+        "bio_band": "none",
+        "blog": "list",
+        "newsletter": "quiet"
+      }
+    },
+    {
+      "id": "blush",
+      "label": "Blush",
+      "group": "Romance & Commercial",
+      "tagline": "Soft warmth with a bestseller shine",
+      "axes": {
+        "palette": "blush",
+        "font": "romance",
+        "nav": "split",
+        "hero": "right",
+        "hero_bg": "gradient",
+        "cards": "carousel",
+        "corners": "round",
+        "buttons": "round",
+        "avatar": "round",
+        "bio_band": "stripe",
+        "blog": "grid",
+        "newsletter": "envelope"
+      }
+    },
+    {
+      "id": "boudoir",
+      "label": "Boudoir",
+      "group": "Romance & Commercial",
+      "tagline": "Rich dusk tones for late-night chapters",
+      "axes": {
+        "palette": "boudoir",
+        "font": "commercial",
+        "nav": "centered",
+        "hero": "centered",
+        "hero_book": "3d",
+        "hero_bg": "cover",
+        "hero_scrim": "60",
+        "cards": "fan",
+        "corners": "soft",
+        "buttons": "round",
+        "avatar": "round",
+        "bio_band": "stripe",
+        "blog": "grid",
+        "newsletter": "photo"
+      }
+    },
+    {
+      "id": "nebula",
+      "label": "Nebula",
+      "group": "Science Fiction",
+      "tagline": "Deep-space gold and a standing paperback",
+      "axes": {
+        "palette": "nebula",
+        "font": "starfall",
+        "nav": "split",
+        "hero": "right",
+        "hero_book": "3d",
+        "hero_bg": "cover",
+        "hero_scrim": "60",
+        "cards": "spread",
+        "alternate": "yes",
+        "corners": "crisp",
+        "buttons": "crisp",
+        "avatar": "frame",
+        "bio_band": "stripe",
+        "blog": "grid",
+        "newsletter": "photo"
+      }
+    },
+    {
+      "id": "lumen",
+      "label": "Lumen",
+      "group": "Science Fiction",
+      "tagline": "Clinical light for precise futures",
+      "axes": {
+        "palette": "lumen",
+        "font": "clinical",
+        "nav": "split",
+        "hero": "centered",
+        "hero_bg": "page",
+        "cards": "grid",
+        "corners": "square",
+        "buttons": "square",
+        "avatar": "square",
+        "bio_band": "none",
+        "blog": "grid",
+        "newsletter": "quiet"
+      }
+    },
+    {
+      "id": "rust",
+      "label": "Rust",
+      "group": "Science Fiction",
+      "tagline": "Scorched metal, hard vacuum",
+      "axes": {
+        "palette": "rust",
+        "font": "thriller",
+        "nav": "split",
+        "hero": "many",
+        "hero_many": "staggered",
+        "hero_bg": "scrim",
+        "cards": "offset",
+        "corners": "crisp",
+        "buttons": "square",
+        "avatar": "square",
+        "bio_band": "angled",
+        "blog": "list",
+        "newsletter": "plane"
+      }
+    },
+    {
+      "id": "storybook",
+      "label": "Storybook",
+      "group": "Young Readers",
+      "tagline": "Big friendly shapes and bright covers",
+      "axes": {
+        "palette": "neon",
+        "font": "storybook",
+        "nav": "centered",
+        "hero": "many",
+        "hero_many": "fan",
+        "hero_bg": "gradient",
+        "cards": "grid",
+        "corners": "round",
+        "buttons": "round",
+        "avatar": "organic",
+        "bio_band": "stripe",
+        "blog": "grid",
+        "newsletter": "megaphone"
+      }
+    },
+    {
+      "id": "voltage",
+      "label": "Voltage",
+      "group": "Young Readers",
+      "tagline": "Loud, modern, made to scroll",
+      "axes": {
+        "palette": "neon",
+        "font": "ya-grotesque",
+        "nav": "split",
+        "hero": "many",
+        "hero_many": "staggered",
+        "hero_bg": "cover",
+        "hero_scrim": "50",
+        "cards": "carousel",
+        "corners": "soft",
+        "buttons": "round",
+        "avatar": "round",
+        "bio_band": "none",
+        "blog": "grid",
+        "newsletter": "envelope"
+      }
+    },
+    {
+      "id": "pine",
+      "label": "Pine",
+      "group": "Literary & Nonfiction",
+      "tagline": "The quiet literary standard",
+      "axes": {
+        "palette": "pine",
+        "font": "verse",
+        "nav": "split",
+        "hero": "none",
+        "hero_bg": "page",
+        "cards": "shelf",
+        "alternate": "no",
+        "corners": "crisp",
+        "buttons": "crisp",
+        "avatar": "frame",
+        "bio_band": "none",
+        "blog": "list",
+        "newsletter": "quiet"
+      }
+    },
+    {
+      "id": "ledger",
+      "label": "Ledger",
+      "group": "Literary & Nonfiction",
+      "tagline": "Confident clarity for big ideas",
+      "axes": {
+        "palette": "mission",
+        "font": "ledger",
+        "nav": "split",
+        "hero": "centered",
+        "hero_bg": "gradient",
+        "cards": "grid",
+        "corners": "crisp",
+        "buttons": "crisp",
+        "avatar": "square",
+        "bio_band": "stripe",
+        "blog": "grid",
+        "newsletter": "quiet"
+      }
+    },
+    {
+      "id": "press",
+      "label": "Press",
+      "group": "Literary & Nonfiction",
+      "tagline": "A small press in charcoal and sage, with a wall of pen names",
+      "axes": {
+        "palette": "ink",
+        "font": "gazette",
+        "nav": "split",
+        "hero": "right",
+        "hero_art": "portrait",
+        "hero_bg": "cover",
+        "hero_scrim": "60",
+        "cards": "carousel",
+        "catalog": "books",
+        "corners": "soft",
+        "buttons": "crisp",
+        "avatar": "round",
+        "bio_home": "no",
+        "authors": "yes",
+        "blog": "grid",
+        "newsletter": "quiet"
+      }
+    },
+    {
+      "id": "world",
+      "label": "World",
+      "group": "Personal Blog",
+      "tagline": "Just you and the words, straight down the page",
+      "axes": {
+        "palette": "bone",
+        "font": "ledger",
+        "nav": "centered",
+        "mode": "auto",
+        "mode_toggle": "yes",
+        "hero_home": "no",
+        "books": "no",
+        "avatar": "none",
+        "bio_align": "centered",
+        "bio_more": "no",
+        "bio_band": "none",
+        "blog": "list",
+        "blog_title": "no",
+        "buttons": "round",
+        "footer": "minimal",
+        "newsletter": "quiet"
+      },
+      "sections": ["hero", "bio", "posts", "newsletter", "books", "authors"]
+    }
+  ],
+  "fonts_url": "https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Marcellus&family=Vollkorn:ital,wght@0,400;0,500;0,600;1,400&family=Spectral+SC:wght@400;600&family=Cardo:ital,wght@0,400;0,700;1,400&family=Barlow+Condensed:wght@500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=Oswald:wght@500;600;700&family=Spectral:ital,wght@0,400;0,600;1,400&family=Archivo:wght@500;600;700&family=Faustina:ital,wght@0,400;0,600;1,400&family=Cormorant+Garamond:wght@500;600;700&family=Crimson+Pro:ital,wght@0,400;0,600;1,400&family=Playfair+Display:wght@500;600;700&family=Alegreya:ital,wght@0,400;0,600;1,400&family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,600;1,7..72,400&family=Outfit:wght@500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&family=Bricolage+Grotesque:wght@500;600;700&family=Andada+Pro:ital,wght@0,400;0,600;1,400&family=IM+Fell+English+SC&family=Frank+Ruhl+Libre:wght@400;500;700&family=Bodoni+Moda:ital,wght@0,500;0,600;0,700;1,500&family=Manuale:ital,wght@0,400;0,600;1,400&family=Exo+2:wght@700;800&family=IBM+Plex+Serif:ital,wght@0,400;0,600;1,400&family=Anton&family=Lora:ital,wght@0,400;0,600;1,400&family=Rye&family=Bitter:ital,wght@0,400;0,600;1,400&family=Berkshire+Swash&family=Gelasio:ital,wght@0,400;0,600;1,400&family=Baloo+2:wght@600;700&family=Andika:ital,wght@0,400;0,700;1,400&family=DM+Serif+Text:ital@0;1&family=Mulish:ital,wght@0,400;0,600;0,700;1,400&family=Space+Grotesk:wght@500;700&family=Inter:wght@400;600&family=Italiana&family=Petrona:ital,wght@0,400;0,600;1,400&family=Archivo+Narrow:wght@500;600;700;800&family=Merriweather:ital,wght@0,400;0,700;1,400&display=swap"
+}

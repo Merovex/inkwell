@@ -1,0 +1,52 @@
+{{/* Email-collection band. data-newsletter axis:
+       photo (default) — full-bleed backdrop photo + scrim, translucent card
+       quiet           — plain band on --bg-alt with a solid card
+       envelope | plane | megaphone | mailbox — the quiet band with a big
+         accent line-illustration beside the copy (superset markup: all
+         four icons render; CSS reveals the match)
+     Copy comes from site.json's newsletter block (headline / blurb /
+     button_label) with fed defaults, so the band never renders empty.
+     When the contract carries a signup block (the account can send the
+     confirmation email — docs/newsletter-bot-protection-plan.md §3), the
+     CTA is a real form posting to the /newsletter island: email field,
+     hidden source, the pinned honeypot the server checks by the same name,
+     and the Turnstile widget when a sitekey rides the contract. Without a
+     signup block the CTA stays a mailto against site.json's contact_email. */}}
+{{ $site := hugo.Data.site }}
+{{ $author := hugo.Data.author }}
+{{ $nl := $site.newsletter | default dict }}
+{{ $signup := $nl.signup | default dict }}
+<section class="fk-newsletter-band" aria-labelledby="newsletter-heading">
+  {{/* Photo backdrop: the uploaded signup photo, else the author photo. */}}
+  <div class="fk-newsletter-bg" aria-hidden="true">
+    {{ with or $site.newsletter_photo $author.avatar }}{{ partial "img.html" (dict "src" . "alt" "") }}{{ end }}
+  </div>
+  <div class="fk-shell">
+    <div class="fk-newsletter-card">
+      <span class="fk-newsletter-icon fk-newsletter-icon-envelope" aria-hidden="true">
+        <svg viewBox="0 0 96 96" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><rect x="10" y="24" width="76" height="50" rx="6"/><path d="M12 28 48 56 84 28"/></svg>
+      </span>
+      <span class="fk-newsletter-icon fk-newsletter-icon-plane" aria-hidden="true">
+        <svg viewBox="0 0 96 96" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M86 12 10 46l26 10zM86 12 46 74l-10-18zM36 56v22l12-14"/></svg>
+      </span>
+      <span class="fk-newsletter-icon fk-newsletter-icon-megaphone" aria-hidden="true">
+        <svg viewBox="0 0 96 96" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M14 40v16l14 2 40 20V18L28 38zM28 38v22"/><path d="M34 62v16h12V66"/><path d="M78 40a12 12 0 0 1 0 16"/></svg>
+      </span>
+      <span class="fk-newsletter-icon fk-newsletter-icon-mailbox" aria-hidden="true">
+        <svg viewBox="0 0 96 96" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M22 58V34a16 16 0 0 1 32 0v24z"/><path d="M38 18h34a16 16 0 0 1 16 16v24H54"/><path d="M64 58v28M58 86h12"/><path d="M70 18V4h14v10H70"/></svg>
+      </span>
+      <div class="fk-newsletter-copy">
+        <h2 id="newsletter-heading">{{ or $nl.headline "Get new-release updates" }}</h2>
+        <p>{{ with $nl.blurb }}{{ . }}{{ else }}{{ $site.tagline }} &mdash; hear about the next one first.{{ end }}</p>
+        {{ if $signup.enabled }}
+        {{/* The form is provider-scoped: the contract's signup.provider picks
+             the partial (ses-newsletter today; a mailchimp-newsletter etc.
+             slots in beside it when other email providers integrate). */}}
+        {{ partial (printf "%s-newsletter.html" (or $signup.provider "ses")) (dict "signup" $signup "nl" $nl) }}
+        {{ else }}
+        <a class="fk-btn fk-btn-primary" href="mailto:{{ $site.contact_email }}?subject=Newsletter%20signup">{{ or $nl.button_label "Join the list" }}</a>
+        {{ end }}
+      </div>
+    </div>
+  </div>
+</section>

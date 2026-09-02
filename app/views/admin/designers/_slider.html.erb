@@ -1,0 +1,14 @@
+<%# locals: (axis:) %>
+<%# Ordered-scale axes (manifest control: "slider") render as a slider over
+    their options; option labels feed the summary. %>
+<div class="designer__slider">
+  <label class="designer__block-title" for="designer-<%= axis["key"] %>">
+    <%= axis["noun"] %>: <span data-summary-for="<%= axis["key"] %>">&hellip;</span>
+  </label>
+  <input type="range" class="designer__range" id="designer-<%= axis["key"] %>"
+         min="0" max="<%= axis["options"].size - 1 %>" step="1"
+         data-designer-target="axisSlider" data-axis="<%= axis["key"] %>"
+         data-options="<%= axis["options"].map { it["id"] }.join(",") %>"
+         data-labels="<%= axis["options"].map { it["label"] }.join(",") %>"
+         data-action="input->designer#axisSlid">
+</div>

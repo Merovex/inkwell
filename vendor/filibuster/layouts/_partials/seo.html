@@ -1,0 +1,37 @@
+{{/* Title, description, canonical, Open Graph, Twitter card, and WebSite
+     JSON-LD. Site identity comes from data/site.json (the contract), not
+     from Hugo config params. */}}
+{{- $site := hugo.Data.site -}}
+{{- $author := hugo.Data.author -}}
+{{- $isHome := .IsHome -}}
+{{/* A missing tagline must not printf a nil (renders "%!s(<nil>)"). */}}
+{{- $home_title := cond (not $site.tagline) $site.name (printf "%s | %s" $site.name $site.tagline) -}}
+{{- $title := cond $isHome $home_title (printf "%s | %s" .Title $site.name) -}}
+{{- $desc := cond $isHome $site.tagline (.Params.excerpt | default (plainify .Summary | truncate 160) | default $site.tagline) -}}
+{{- $image := .Params.cover | default $author.avatar -}}
+<title>{{ $title }}</title>
+<meta name="description" content="{{ $desc }}">
+<link rel="canonical" href="{{ .Permalink }}">
+<meta property="og:site_name" content="{{ $site.name }}">
+<meta property="og:title" content="{{ cond $isHome $site.name .Title }}">
+<meta property="og:description" content="{{ $desc }}">
+<meta property="og:url" content="{{ .Permalink }}">
+<meta property="og:type" content="{{ cond $isHome "website" "article" }}">
+<meta property="og:image" content="{{ absURL $image }}">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{{ cond $isHome $site.name .Title }}">
+<meta name="twitter:description" content="{{ $desc }}">
+<meta name="twitter:image" content="{{ absURL $image }}">
+{{ range .AlternativeOutputFormats -}}
+<link rel="{{ .Rel }}" type="{{ .MediaType.Type }}" href="{{ .Permalink }}" title="{{ $site.name }}">
+{{ end -}}
+{{- if $isHome }}
+{{- $website := dict
+    "@context" "https://schema.org"
+    "@type" "WebSite"
+    "name" $site.name
+    "description" $site.tagline
+    "url" site.BaseURL
+}}
+<script type="application/ld+json">{{ $website | jsonify | safeJS }}</script>
+{{- end }}

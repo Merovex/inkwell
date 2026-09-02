@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# Static-site build status from production without opening a console:
+# runs the site:status task inside the running app container via kamal.
+kamal app exec --reuse "bin/rails site:status"

@@ -1,0 +1,36 @@
+# Live from birth, empty until written — the seeding state (Account#seed_pages).
+about_page:
+  record: about_page
+  creator: alice
+  body: about_page_body
+  event: created
+  title: About
+  status: published
+  published_at: <%= 1.week.ago %>
+
+privacy_page:
+  record: privacy_page
+  creator: alice
+  body: privacy_page_body
+  event: created
+  title: Privacy Policy
+  status: published
+  published_at: <%= 1.week.ago %>
+
+terms_page:
+  record: terms_page
+  creator: alice
+  body: terms_page_body
+  event: created
+  title: Terms of Service
+  status: published
+  published_at: <%= 1.week.ago %>
+
+newsletter_page:
+  record: newsletter_page
+  creator: alice
+  body: newsletter_page_body
+  event: created
+  title: Newsletter
+  status: published
+  published_at: <%= 1.week.ago %>

@@ -9,6 +9,11 @@
 #     priority: 2
 #     schedule: at 5am every day
 
+# Wall-clock schedules carry an explicit America/New_York zone — Fugit parses
+# bare times as UTC regardless of Rails' config.time_zone, and the platform
+# runs on Eastern (see config.time_zone in application.rb). Interval schedules
+# (every N minutes/hours) are zone-agnostic and stay bare.
+
 production:
   clear_solid_queue_finished_jobs:
     command: "SolidQueue::Job.clear_finished_in_batches(sleep_between_batches: 0.3)"
@@ -18,28 +23,63 @@ production:
   # ever-published content — legal retention).
   purge_trash:
     class: Record::PurgeTrashJob
-    schedule: at 4am every day
+    schedule: at 4am every day America/New_York
 
   # Weekly newsletter list hygiene: nudge cold subscribers, then sunset the
   # unresponsive. Inert until Subscriber.sunset_enabled? (ADR 0014).
   sunset_subscribers:
     class: SubscriberSunsetJob
-    schedule: at 8am every Monday
+    schedule: at 8am every Monday America/New_York
+
+  # Daily prune of dead opt-ins: hard-delete subscribers still pending 30 days
+  # after signup (the confirm token expired at 7 days). See PendingSubscriberPurgeJob.
+  purge_pending_subscribers:
+    class: PendingSubscriberPurgeJob
+    schedule: at 4am every day America/New_York
 
   # Daily drip heartbeat: send each active stream's next due Drop. Day-0 Drops
   # fire immediately on confirmation; this catches every later Drop by its day.
   drip_tick:
     class: DripTickJob
-    schedule: at 7am every day
+    schedule: at 7am every day America/New_York
 
   # Daily contact-form digest to the domain admins ("X new messages"), counting
   # missives confirmed in the last 24h. Skips the send when there's nothing new.
   missive_digest:
     class: MissiveDigestJob
-    schedule: at 8am every day
+    schedule: at 8am every day America/New_York
 
   # Daily contact-form purge: drop confirmed missives past 60 days and
   # never-confirmed submissions past their 7-day TTL.
   missive_purge:
     class: MissivePurgeJob
-    schedule: at 4am every day
+    schedule: at 4am every day America/New_York
+
+  # The bell is a doorbell, not an archive: read notifications go after 30 days.
+  prune_notifications:
+    class: NotificationPruneJob
+    schedule: at 4am every day America/New_York
+
+  # Notification email in calm batches — nothing here is time-sensitive.
+  notification_digest:
+    class: NotificationDigestJob
+    schedule: every 4 hours
+
+  # The calm kinds (thread replies) roll up once a day instead.
+  notification_daily_digest:
+    class: NotificationDigestJob
+    args: [ [ "replied" ] ]
+    schedule: at 8am every day America/New_York
+
+  # Weekly site digest: snapshot every account's subscriber count, then mail each
+  # owner a per-site roundup of the week — but only the sites (and users) with
+  # something to report. Tuesday 8am, matching the email's own footer line.
+  weekly_digest:
+    class: WeeklyDigestJob
+    schedule: at 8am every Tuesday America/New_York
+
+  # Circle check-ins: every 30 minutes, fire any pulse whose cadence lands today
+  # and whose ask time has passed (30-min granularity matches the UI). Idempotent.
+  pulse_tick:
+    class: PulseTickJob
+    schedule: every 30 minutes

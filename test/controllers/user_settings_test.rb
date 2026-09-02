@@ -63,4 +63,26 @@ class UserSettingsTest < ActionDispatch::IntegrationTest
     get admin_posts_path
     assert_select "button.avatar img.avatar__img"
   end
+
+  test "an inviter sees their join code and can rotate it; the old code dies" do
+    get user_settings_path
+    assert_response :success
+    assert_select "[aria-label='Invite code'] code"
+
+    old_code = users(:alice).join_code.code
+    patch user_join_code_path
+    assert_redirected_to user_settings_path
+    assert_not_equal old_code, users(:alice).join_code.reload.code
+    assert_nil JoinCode.lookup(old_code)
+  end
+
+  test "a plain member sees no invite code and cannot rotate" do
+    sign_in_as users(:bob)
+
+    get user_settings_path
+    assert_select "[aria-label='Invite code']", count: 0
+
+    patch user_join_code_path
+    assert_response :not_found
+  end
 end

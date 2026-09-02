@@ -1,0 +1,26 @@
+<% content_for :title, "Link expired — #{site_settings.site_name}" %>
+
+<section class="press-shell">
+  <header class="press-header u-flow u-flow-half">
+    <h1 class="press-display-lg">That link isn't good anymore</h1>
+    <p class="press-muted">
+      Download links from <%= site_settings.site_name %> expire after a while.
+      Enter your email address and we'll send you a fresh one.
+    </p>
+  </header>
+
+  <%= form_with url: claim_renewal_path, method: :post, class: "press-form" do %>
+    <%# Pinned honeypot — the same fixed decoy field the newsletter form uses
+        (Subscriber::HONEYPOT_FIELD), out of AT and the tab order. %>
+    <div class="u-visually-hidden" aria-hidden="true">
+      <label for="<%= Subscriber::HONEYPOT_FIELD %>">Leave this field empty</label>
+      <%= text_field_tag Subscriber::HONEYPOT_FIELD, nil, tabindex: -1, autocomplete: "off" %>
+    </div>
+    <label class="press-form__label" for="email_address">Email address</label>
+    <div class="press-form__row">
+      <%= email_field_tag :email_address, nil, required: true,
+            placeholder: "you@example.com", class: "press-form__input", autocomplete: "email" %>
+      <%= submit_tag "Send me a new link", class: "press-btn press-btn--primary" %>
+    </div>
+  <% end %>
+</section>

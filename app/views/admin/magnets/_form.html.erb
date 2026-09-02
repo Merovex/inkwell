@@ -1,0 +1,42 @@
+<%# locals: (magnet:, url:) %>
+<%= render "admin/shared/error_summary", model: magnet %>
+
+<%= form_with model: magnet, url: url, multipart: true, class: "settings" do |f| %>
+  <div class="field">
+    <%= f.label :title, "Title", class: "field__label" %>
+    <%= f.text_field :title, class: "field__control", required: true, placeholder: "The book's title" %>
+    <span class="field__hint">Readers see this on the claim page and the email's "Get …" button.</span>
+  </div>
+
+  <div class="field">
+    <%= f.label :description, "Description", class: "field__label" %>
+    <%= f.text_area :description, class: "field__control", rows: 3,
+          placeholder: "A line or two shown on the download page…" %>
+  </div>
+
+  <div class="field">
+    <%= f.label :epub, "EPUB file", class: "field__label" %>
+    <%= f.file_field :epub, class: "field__control", accept: "application/epub+zip,.epub" %>
+    <% if magnet.epub.attached? %>
+      <span class="field__hint">Currently: <%= magnet.epub.filename %> (<%= number_to_human_size(magnet.epub.byte_size) %>)</span>
+    <% else %>
+      <span class="field__hint">EPUB works everywhere — Kindle (Send to Kindle), Apple Books, Play Books.</span>
+    <% end %>
+  </div>
+
+  <div class="field">
+    <%= f.label :pdf, "PDF file", class: "field__label" %>
+    <%= f.file_field :pdf, class: "field__control", accept: "application/pdf,.pdf" %>
+    <% if magnet.pdf.attached? %>
+      <span class="field__hint">Currently: <%= magnet.pdf.filename %> (<%= number_to_human_size(magnet.pdf.byte_size) %>)</span>
+    <% else %>
+      <span class="field__hint">Optional — for readers who prefer a computer screen.</span>
+    <% end %>
+  </div>
+
+  <div class="form__action">
+
+    <%= f.submit "Save", class: "button button--primary" %>
+
+  </div>
+<% end %>

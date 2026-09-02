@@ -9,7 +9,7 @@ module MessageScoped
 
   private
     def set_record
-      @record = Record.active.messages.find(params[:message_id] || params[:id])
+      @record = Current.account.records.active.messages.find(params[:message_id] || params[:id])
       @message = @record.recordable
     end
 end

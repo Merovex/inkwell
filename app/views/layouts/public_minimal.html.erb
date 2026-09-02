@@ -10,9 +10,12 @@
     <link rel="icon" href="/favicon.ico" sizes="any">
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 
-    <%# The notice page only needs the base tokens, a link, and the card. %>
+    <%# Tokens + the press look, the shell/type utilities the claim and notice
+        pages compose (press-shell's prose measure, u-flow rhythm), and
+        u-visually-hidden — the honeypot on the renewal form hides with it. %>
     <%= stylesheet_link_tag "01-tokens", "press-fonts", "press-base",
-          "press-controls", "press-notice", "data-turbo-track": "reload" %>
+          "press-controls", "press-notice", "press-utilities",
+          "u-flow", "u-visually-hidden", "data-turbo-track": "reload" %>
   </head>
 
   <%# A single centered card on the page background — no nav, no footer. %>

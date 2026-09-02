@@ -1,6 +1,9 @@
-<% content_for :title, "New drop — Inkwell" %>
+<% content_for :title, "New step" %>
 
 <%= render "admin/shared/canvas_head",
-      crumbs: [["Drips", admin_drips_path], [@drip.title, admin_drip_path(@record)], ["New drop", nil]] %>
+      crumbs: [["Campaigns", admin_drips_path], [@drip.title, admin_drip_path(@record)], ["New step", nil]],
+      menu: false do %>
+  <button type="submit" form="step-form" class="button button--primary">Add step</button>
+<% end %>
 
 <%= render "form", drop: @drop, url: admin_drip_drops_path(@record) %>

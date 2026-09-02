@@ -12,7 +12,7 @@ module CommentScoped
 
   private
     def set_record
-      @record = Record.active.comments.where(creator: Current.user).find(params[:id])
+      @record = Current.account.records.active.comments.where(creator: Current.user).find(params[:id])
       @comment = @record.recordable
       @parent = @record.parent
     end

@@ -1,0 +1,15 @@
+<%# locals: (record:) %>
+<%# The collapsed composer: a prompt row inside the new_comment frame —
+    clicking fetches comments#new into it. Extracted from _comments so the
+    comment-create stream can reset the composer back to this at rest. %>
+<%= turbo_frame_tag "new_comment" do %>
+  <div class="list__item comment">
+    <span class="avatar list__avatar" aria-hidden="true"><%= avatar_content(Current.user) %></span>
+
+    <div class="comment__content">
+      <%= link_to "Add your comment…", new_commentable_comment_path(record), class: "comment__prompt" %>
+    </div>
+
+    <div class="list__action comment__actions"></div>
+  </div>
+<% end %>

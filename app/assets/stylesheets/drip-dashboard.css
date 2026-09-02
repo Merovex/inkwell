@@ -3,7 +3,7 @@
 @layer components {
   .drip-stats {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(var(--size-11), 1fr));
     gap: var(--u-pad);
     margin-block-end: calc(var(--u-pad) * 2);
   }
@@ -16,8 +16,8 @@
     border-radius: var(--radius-ui);
     text-align: center;
   }
-  .drip-stat__num { font-size: 2rem; font-weight: 600; line-height: 1; }
-  .drip-stat__sub { font-size: 0.75rem; }
+  .drip-stat__num { font-size: var(--font-size-5); font-weight: var(--font-weight-6); line-height: 1; }
+  .drip-stat__sub { font-size: var(--font-size-0); }
 
   .drip-panel { margin-block-start: calc(var(--u-pad) * 2); }
   .drip-panel__chart { padding: var(--u-pad); border-radius: var(--radius-ui); }

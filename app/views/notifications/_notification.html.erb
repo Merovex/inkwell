@@ -1,0 +1,15 @@
+<%# locals: (notification:) %>
+<%# One bell row: actor avatar + the stamped sentence + relative time; the
+    whole row is a door. Everything renders from the notification's own copy —
+    no source needed (it may be long gone) and nothing leans on Current
+    (broadcasts render this too). %>
+<%= link_to notification.url, class: "notifications__row" do %>
+  <% if notification.actor %>
+    <span class="avatar notifications__avatar" aria-hidden="true"><%= avatar_content(notification.actor) %></span>
+  <% end %>
+  <%# The kind's glyph (Notification::ICONS) — beside the avatar, or standing
+      in for it when no human acted (pulse asks, platform announcements). %>
+  <span class="notifications__icon" aria-hidden="true"><%= inline_svg_tag notification.icon, class: "lucide", size: "16px" %></span>
+  <span class="notifications__text"><%= notification.title %></span>
+  <span class="notifications__time"><%= time_ago_tag(notification.created_at, suffix: "") %></span>
+<% end %>

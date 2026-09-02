@@ -5,7 +5,7 @@
 # stay in the Inkwell backend.
 class BlogController < PublicController
   def index
-    @posts = Post.current.published
+    @posts = Current.account.posts.published
       .includes(record: :creator, body: :rich_text_content)
       .feed_ordered
     fresh_when etag: [ @posts, site_settings ], public: true
@@ -13,7 +13,7 @@ class BlogController < PublicController
 
   # RSS 2.0 of the latest published posts (footer + feed readers).
   def feed
-    @posts = Post.current.published
+    @posts = Current.account.posts.published
       .includes(record: :creator, body: :rich_text_content)
       .feed_ordered.limit(20)
     fresh_when etag: [ @posts, site_settings ], public: true
@@ -33,9 +33,9 @@ class BlogController < PublicController
     @post = @record.recordable
 
     if @post.published?
-      return redirect_to blog_post_path(@record.to_slug), status: :moved_permanently unless canonical_slug?
+      return redirect_to post_path(@record.to_slug), status: :moved_permanently unless canonical_slug?
       # Anonymous + only changes on a new version → cache at the edge; the etag
-      # also folds in site identity so a Setting change busts it.
+      # also folds in site identity so a Site change busts it.
       fresh_when etag: [ @record, site_settings ], public: true
     elsif @post.scheduled? && canonical_slug?
       # Early-access preview: keep it out of search and out of any shared cache.

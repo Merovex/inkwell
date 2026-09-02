@@ -1,0 +1,118 @@
+<%# locals: (goal:, display:) %>
+<%# ONE progress view's content (a value from Goal::DISPLAYS or the auto
+    resolutions "bar"/"total" — see goal_resolved_displays). Each picked view
+    renders as its own card; render this inside a .goal-stat container. %>
+<% case display %>
+<% when "ring" %>
+  <span class="goal-stat__label u-microcaps"><%= goal.rate? ? goal_period_phrase(goal).capitalize : "Completion" %></span>
+  <div class="goal-stat__ringrow">
+    <%= goal_stat_ring(goal.completion_percent) %>
+    <span class="goal-stat__meta">
+      <% if goal.rate? %>
+        <%= number_with_delimiter(goal.period_total) %> of <%= number_with_delimiter(goal.target) %> <%= goal.unit %><br><%= goal_period_reset(goal) %>
+      <% else %>
+        <%= number_with_delimiter(goal.total) %> of <%= number_with_delimiter(goal.target) %> <%= goal.unit %>
+      <% end %>
+    </span>
+  </div>
+<% when "pace" %>
+  <%# With a deadline this is THE race line (target trajectory vs actual);
+      without one it stays the 30-day average it always was. %>
+  <% if goal.deadline? %>
+    <% today = Time.zone.today %>
+    <span class="goal-stat__label u-microcaps">Pace</span>
+    <% if today < goal.pace_start %>
+      <span class="goal-stat__value"><%= number_with_delimiter(goal.target) %><span class="goal-stat__per"><%= goal.unit %></span></span>
+      <%= goal_pace_chart(goal) %>
+      <span class="goal-stat__meta">starts <%= goal_date(goal.pace_start) %> · due <%= goal_date(goal.ends_on) %></span>
+    <% elsif today > goal.ends_on %>
+      <% shortfall = goal.target - goal.total %>
+      <% if shortfall.positive? %>
+        <span class="goal-stat__value"><%= number_with_delimiter(shortfall) %><span class="goal-stat__per">short</span></span>
+      <% else %>
+        <span class="goal-stat__value">Finished</span>
+      <% end %>
+      <%= goal_pace_chart(goal) %>
+      <span class="goal-stat__meta"><%= number_with_delimiter(goal.total) %> of <%= number_with_delimiter(goal.target) %> · ended <%= goal_date(goal.ends_on) %></span>
+    <% else %>
+      <% delta = goal.pace_delta(today) %>
+      <% if delta.zero? %>
+        <span class="goal-stat__value">On pace</span>
+      <% else %>
+        <span class="goal-stat__value"><%= number_with_delimiter(delta.abs) %><span class="goal-stat__per"><%= delta.positive? ? "ahead of pace" : "behind pace" %></span></span>
+      <% end %>
+      <%= goal_pace_chart(goal) %>
+      <% needed = goal.needed_per_day(today) %>
+      <span class="goal-stat__meta">
+        <% if needed.positive? %>
+          needs <%= number_with_delimiter(needed) %>/day to finish by <%= goal_date(goal.ends_on) %>
+        <% else %>
+          target reached · due <%= goal_date(goal.ends_on) %>
+        <% end %>
+      </span>
+    <% end %>
+  <% else %>
+    <% series = goal.daily_series((Time.zone.today - 29)..Time.zone.today) %>
+    <% running = 0; cumulative = series.map { |v| running += v } %>
+    <span class="goal-stat__label u-microcaps">Pace</span>
+    <span class="goal-stat__value"><%= number_with_delimiter (series.sum / 30.0).round %><span class="goal-stat__per">/day</span></span>
+    <%= goal_stat_line(cumulative) %>
+    <span class="goal-stat__meta"><%= number_with_delimiter series.sum %> <%= goal.unit %> in the last 30 days</span>
+  <% end %>
+<% when "rolling" %>
+  <% rolling = goal_rolling_series(goal) %>
+  <span class="goal-stat__label u-microcaps">90-day Rolling</span>
+  <span class="goal-stat__value"><%= number_with_delimiter rolling.last %><span class="goal-stat__per">/day</span></span>
+  <%= goal_stat_line(rolling) %>
+  <span class="goal-stat__meta">7-day average, trailing 90 days</span>
+<% when "last30" %>
+  <% range = (Time.zone.today - 29)..Time.zone.today %>
+  <% series = goal.daily_series(range) %>
+  <span class="goal-stat__label u-microcaps">Last 30 days</span>
+  <span class="goal-stat__value"><%= number_with_delimiter series.sum %></span>
+  <%= goal_stat_bars(series, labels: range.to_a.map(&:iso8601)) %>
+<% when "calendar" %>
+  <% month_range = Time.zone.today.beginning_of_month..Time.zone.today.end_of_month %>
+  <% logged_days = goal.daily_series(month_range).count(&:positive?) %>
+  <span class="goal-stat__label u-microcaps"><%= Time.zone.today.strftime("%B") %></span>
+  <div class="goal-history__month" role="img"
+       aria-label="<%= Time.zone.today.strftime("%B") %>: logged <%= logged_days %> of <%= month_range.count %> days">
+    <%= goal_month_cells(goal) %>
+  </div>
+  <span class="goal-stat__meta">logged on <%= logged_days %> of <%= month_range.count %> days</span>
+<% when "heatmap" %>
+  <% year_total = goal.daily_series((Time.zone.today - 364)..Time.zone.today).sum %>
+  <span class="goal-stat__label u-microcaps">Last 365 days</span>
+  <%= render "goals/heat_map", goal: goal,
+        range: (Time.zone.today - 364)..Time.zone.today,
+        label: "Contribution map, last 365 days" %>
+  <span class="goal-stat__meta goal-heat__legendrow">
+    <%= number_with_delimiter year_total %> <%= goal.unit %> in the last year
+    <%# GH's legend: the actual scale, zero to full. %>
+    <span class="goal-heat__legend" aria-label="Intensity scale, none to most">
+      Less
+      <% (0..3).each do |level| %>
+        <span class="goal-history__cell" data-level="<%= level %>"></span>
+      <% end %>
+      More
+    </span>
+  </span>
+  <%# Prior calendar years with tallies stack beneath, GH-style. %>
+  <% goal.earlier_tally_years.each do |year| %>
+    <span class="goal-stat__label u-microcaps"><%= year %></span>
+    <%= render "goals/heat_map", goal: goal,
+          range: Date.new(year, 1, 1)..Date.new(year, 12, 31),
+          label: "Contribution map, #{year}" %>
+  <% end %>
+<% when "bar" %>
+  <span class="goal-stat__label u-microcaps">Completion</span>
+  <span class="goal-stat__value"><%= goal.completion_percent %>%</span>
+  <div class="goal-stat__bar" role="img" aria-label="<%= number_with_delimiter(goal.total) %> of <%= number_with_delimiter(goal.target) %> <%= goal.unit %>">
+    <div class="goal-stat__bar-fill" style="inline-size: <%= goal.completion_percent %>%"></div>
+  </div>
+  <span class="goal-stat__meta"><%= number_with_delimiter(goal.total) %> of <%= number_with_delimiter(goal.target) %> <%= goal.unit %></span>
+<% else %>
+  <span class="goal-stat__label u-microcaps">Logged</span>
+  <span class="goal-stat__value"><%= number_with_delimiter(goal.total) %></span>
+  <span class="goal-stat__meta"><%= goal.unit %> so far · no target</span>
+<% end %>

@@ -1,0 +1,31 @@
+<%# locals: (tally:, goal:, goal_record:) %>
+<%# One logbook line, mirroring the form's columns — date · amount · note — %>
+<%# with a ⋯ context menu (edit / trash) far right. A turbo-frame row (the %>
+<%# sanctioned list_item exception — it's an inline-edit swap target): Edit %>
+<%# swaps this frame for the beats#edit-style form in the same column shape. %>
+<%= turbo_frame_tag "tally_#{tally.record_id}", class: "list__item tally-row" do %>
+  <div class="list__body tally-row__body">
+    <span class="tally-row__date"><%= l tally.logged_on, format: :short %></span>
+    <span class="tally-row__amount"><%= number_with_delimiter(tally.amount) %> <%= tally.amount == 1 ? goal.unit.singularize : goal.unit %></span>
+    <span class="tally-row__note"><%= tally.note %></span>
+  </div>
+
+  <div class="list__action">
+    <button type="button" class="button button--icon button--ghost" popovertarget="tally-menu-<%= tally.record_id %>"
+            aria-label="Tally actions">
+      <%= inline_svg_tag "lucide/ellipsis-vertical.svg", class: "lucide", size: "16px" %>
+    </button>
+    <div class="menu menu--context" popover id="tally-menu-<%= tally.record_id %>"
+         data-controller="anchored-popover" data-anchored-popover-placement-value="top">
+      <button type="button" class="button button--icon button--ghost menu__close" popovertarget="tally-menu-<%= tally.record_id %>"
+              popovertargetaction="hide" aria-label="Close menu">
+        <%= inline_svg_tag "lucide/x.svg", class: "lucide", size: "20px" %>
+      </button>
+      <%= link_to "Edit", edit_goal_tally_path(goal_record, tally.record_id), class: "menu__item" %>
+      <hr class="menu__separator">
+      <%= button_to "Move to trash", goal_tally_path(goal_record, tally.record_id), method: :delete,
+            class: "menu__item",
+            form: { data: { turbo_confirm: "Remove this tally?", turbo_frame: "_top" } } %>
+    </div>
+  </div>
+<% end %>

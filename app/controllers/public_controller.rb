@@ -13,13 +13,13 @@ class PublicController < ApplicationController
 
   private
     def render_not_found
-      render "errors/public_not_found", status: :not_found
+      render "errors/public_not_found", status: :not_found, formats: :html
     end
 
     # The active record behind an id-first public slug, of the expected
     # recordable type (else a 404). Shared by blog/books show.
     def find_public_record(type)
-      Record.active.find(params[:id]).tap do |record|
+      Current.account.records.active.find(params[:id]).tap do |record|
         raise ActiveRecord::RecordNotFound unless record.recordable.is_a?(type)
       end
     end

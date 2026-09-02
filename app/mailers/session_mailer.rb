@@ -1,13 +1,16 @@
 class SessionMailer < ApplicationMailer
   # Route through the transactional configuration set — bounce/complaint events
-  # only, no open/click tracking (SES leaves magic-link mail unmodified).
+  # only, no open/click tracking (SES leaves magic-link mail unmodified). The
+  # platform-auth tenant stamp keeps sign-in mail's reputation in its own
+  # container, guarded Strict (docs/ses-tenants.md).
   default delivery_method_options: {
-    configuration_set_name: Rails.application.credentials.dig(:ses, :transactional_config_set)
+    configuration_set_name: Rails.application.credentials.dig(:ses, :transactional_config_set),
+    tenant_name: "platform-auth"
   }
 
   SUBJECTS = {
-    sign_in: "Your Inkwell sign-in link",
-    sign_up: "Welcome to Inkwell — confirm your email"
+    sign_in: "Your Kindred Quill sign-in link",
+    sign_up: "Welcome to Kindred Quill — confirm your email"
   }.freeze
 
   # Emails a magic-link sign-in code. `plaintext` is the raw 8-letter code; it
@@ -17,7 +20,7 @@ class SessionMailer < ApplicationMailer
     @user = user
     @code = plaintext
     @formatted_code = SignInCode.format(plaintext)
-    @verify_url = verify_session_url(code: plaintext)
+    @verify_url = verify_session_url(code: plaintext, **app_url_options)
 
     mail to: user.email_address, subject: SUBJECTS.fetch(purpose, SUBJECTS[:sign_in])
   end

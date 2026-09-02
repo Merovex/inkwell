@@ -1,0 +1,112 @@
+<% content_for :title, "Users" %>
+
+<%= render "admin/shared/canvas_head", crumbs: [["Users", nil]] %>
+
+<header class="perma-header">
+  <h1 class="perma-header__title">Users</h1>
+  <div class="perma-header__content">
+    <p class="u-text-muted">Every member, the circles they're in, and the sites they own.</p>
+  </div>
+</header>
+
+<%# Scoreboard, sorted by what each number IS: measured counts (real) stay
+    large; the assumed inputs read as a settings list; the two derived figures
+    sit apart with their arithmetic and a health gauge. Assumptions are levers
+    in config.x.saas — no billing yet, so nothing here is observed. %>
+<dl class="stats">
+  <div class="stat">
+    <dt class="stat__label">customers</dt>
+    <dd class="stat__value"><%= number_with_delimiter @metrics.customers %></dd>
+  </div>
+  <div class="stat">
+    <dt class="stat__label">new in <%= @metrics.this_month %></dt>
+    <dd class="stat__value"><%= number_with_delimiter @metrics.new_this_month %></dd>
+  </div>
+  <div class="stat">
+    <dt class="stat__label"><%= "site".pluralize(@metrics.sites) %></dt>
+    <dd class="stat__value"><%= number_with_delimiter @metrics.sites %></dd>
+  </div>
+</dl>
+
+<div class="u-grid u-grid-2 u-margin-block-end">
+  <%# The inputs, read as a settings list — assumptions, not measurements. %>
+  <section class="card card--flat" aria-labelledby="sb-assumptions">
+    <div class="card__body u-stack">
+      <h2 id="sb-assumptions" class="u-microcaps u-text-muted">Assumptions</h2>
+      <dl class="facts">
+        <div class="facts__row"><dt>Price per user, per year</dt><dd><%= number_to_currency @metrics.arpu %></dd></div>
+        <div class="facts__row"><dt>Annual churn</dt><dd><%= number_to_percentage @metrics.churn_rate * 100, precision: 1 %></dd></div>
+        <div class="facts__row"><dt>Refunds within 30 days</dt><dd><%= number_to_percentage @metrics.refund_rate * 100, precision: 1 %></dd></div>
+        <div class="facts__row"><dt>Cost to acquire one user</dt><dd><%= number_to_currency @metrics.cac %></dd></div>
+      </dl>
+      <p class="u-text-muted">Set in <code>config.x.saas</code>. No billing yet, so nothing here is observed.</p>
+    </div>
+  </section>
+
+  <%# What those inputs imply — derived, with the arithmetic shown. %>
+  <section class="card card--flat" aria-labelledby="sb-implies">
+    <div class="card__body u-stack">
+      <h2 id="sb-implies" class="u-microcaps u-text-muted">What that implies</h2>
+      <dl class="stats stats--flush">
+        <div class="stat stat--compact">
+          <dt class="stat__label u-stack u-stack-half">
+            <span>Projected ARR</span>
+            <span><%= @metrics.customers %> customers × <%= number_to_currency @metrics.arpu, precision: 0 %></span>
+          </dt>
+          <dd class="stat__value"><%= number_to_currency @metrics.projected_arr %></dd>
+        </div>
+        <div class="stat stat--compact">
+          <dt class="stat__label u-stack u-stack-half">
+            <span>Lifetime value</span>
+            <span><%= number_to_currency @metrics.arpu, precision: 0 %> ÷ <%= number_to_percentage @metrics.churn_rate * 100, precision: 0 %> churn, less refunds</span>
+          </dt>
+          <dd class="stat__value"><%= @metrics.ltv ? number_to_currency(@metrics.ltv) : "—" %></dd>
+        </div>
+      </dl>
+
+      <% if @metrics.ltv_cac_ratio %>
+        <div class="u-stack u-stack-half">
+          <div class="stat stat--compact<%= " stat--trouble" unless @metrics.healthy? %>">
+            <dt class="stat__label">Lifetime value against cost to acquire</dt>
+            <dd class="stat__value"><%= number_with_precision(@metrics.ltv_cac_ratio, precision: 1) %> : 1</dd>
+          </div>
+          <%= render "shared/gauge", value: @metrics.ltv_cac_ratio, good: @metrics.healthy? %>
+          <p class="u-text-muted">
+            <% if @metrics.healthy? %>
+              Each customer returns about <%= number_with_precision(@metrics.ltv_cac_ratio, precision: 1) %>× their cost.
+            <% else %>
+              A customer costs more than they return — 3:1 needs a CAC of <%= number_to_currency @metrics.healthy_cac %> or lower.
+            <% end %>
+          </p>
+        </div>
+      <% end %>
+    </div>
+  </section>
+</div>
+
+<% if @users.any? %>
+  <div class="list">
+    <% @users.each do |user| %>
+      <% sites = @sites_by_owner[user.id] || [] %>
+      <% site_links = capture do %>
+        <% sites.each do |account| %>
+          <%= link_to account.name, account.admin_path, class: "button button--small button--ghost" %>
+        <% end %>
+      <% end if sites.any? %>
+      <%= render "shared/list_item",
+            href: profile_path(user),
+            title: user.display_name,
+            avatar_user: user,
+            badge: ("Staff" if user.root?),
+            badge_variant: "warning",
+            chips: user.circles.reject(&:commons?).map(&:name),
+            actions: site_links %>
+    <% end %>
+  </div>
+<% else %>
+  <div class="empty">
+    <span class="empty__icon"><%= inline_svg_tag "lucide/users.svg", class: "lucide", size: "40px" %></span>
+    <p class="empty__title">No users</p>
+    <p class="empty__text">Nobody has signed up yet.</p>
+  </div>
+<% end %>

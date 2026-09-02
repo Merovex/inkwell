@@ -1,23 +1,77 @@
-<%# locals: (drop:, url:) %>
-<%= render "admin/shared/error_summary", model: drop %>
+<%# locals: (drop:, url:, stats: nil, position: nil, count: nil) %>
+<%# The step editor (13c): main (subject · body · notes) beside a rail (when it
+    sends · how it's doing). One <form id="step-form">; the Save button lives in
+    the canvas head and targets it by id. %>
+<%= form_with model: drop, url: url, id: "step-form", class: "step-editor" do |f| %>
+  <div class="step-editor__main">
+    <%= render "admin/shared/error_summary", model: drop %>
 
-<%= form_with model: drop, url: url, class: "settings" do |f| %>
-  <div class="field">
-    <%= f.label :subject, "Subject", class: "field__label" %>
-    <%= f.text_field :subject, class: "field__control", required: true, autofocus: true,
-          placeholder: "Email subject line" %>
+    <% if position && count %>
+      <p class="step-editor__kicker">
+        Step <%= position %> of <%= count %> · <%= link_to "back to the campaign", admin_drip_path(@record) %>
+      </p>
+    <% end %>
+
+    <div class="field">
+      <%= f.label :subject, "Subject", class: "field__label" %>
+      <%= f.text_field :subject, class: "field__control", required: true, autofocus: true,
+            placeholder: "What lands in their inbox" %>
+      <span class="field__hint">Most phones show about 35 characters.</span>
+    </div>
+
+    <div class="field">
+      <%= f.label :body, "Body", class: "field__label" %>
+      <%= f.rich_textarea :body, placeholder: "Write the email…", "aria-label": "Body" %>
+    </div>
+
+    <div class="field">
+      <%= f.label :notes, "Notes", class: "field__label" %>
+      <%= f.text_area :notes, class: "field__control", rows: 3,
+            placeholder: "Why this email exists, what to try next…" %>
+      <span class="field__hint">Private to your team. Never sent to subscribers.</span>
+    </div>
   </div>
 
-  <div class="field">
-    <%= f.label :delay_days, "Send day", class: "field__label" %>
-    <%= f.number_field :delay_days, class: "field__control", min: 0, step: 1 %>
-    <p class="u-text-muted">Days after the subscriber confirms. 0 = right away.</p>
-  </div>
+  <aside class="step-editor__rail">
+    <section>
+      <h2 class="step-editor__section-title u-microcaps u-text-muted">When it sends</h2>
+      <div class="step-when">
+        <%= f.label :delay_days, "Days after they confirm", class: "u-visually-hidden" %>
+        <%= f.number_field :delay_days, class: "field__control step-when__field", min: 0, step: 1,
+              "aria-describedby": "when-note" %>
+        <span aria-hidden="true">days after they confirm</span>
+      </div>
+      <p class="step-when__note" id="when-note">
+        <% if drop.delay_days.to_i.zero? %>
+          Sends <strong>right away</strong>, the moment someone confirms.
+        <% else %>
+          Sends <strong><%= pluralize(drop.delay_days, "day") %></strong> after they confirm.
+        <% end %>
+      </p>
+    </section>
 
-  <div class="field">
-    <%= f.label :body, "Body", class: "field__label" %>
-    <%= f.rich_textarea :body, placeholder: "Write the email…", "aria-label": "Body" %>
-  </div>
+    <section>
+      <h2 class="step-editor__section-title u-microcaps u-text-muted">Reader magnet</h2>
+      <div class="field">
+        <%= f.label :magnet_id, "Free book this email gives away", class: "u-visually-hidden" %>
+        <%= f.collection_select :magnet_id, Current.account.magnets.ordered, :id, :title,
+              { include_blank: "None" }, class: "field__control" %>
+        <span class="field__hint">
+          Adds a "Get the book" button at the bottom of this email —
+          <%= link_to "manage magnets", admin_magnets_path %>.
+        </span>
+      </div>
+    </section>
 
-  <%= f.submit "Save", class: "button button--primary" %>
+    <% if stats %>
+      <section>
+        <h2 class="step-editor__section-title u-microcaps u-text-muted">How it is doing</h2>
+        <dl class="facts">
+          <div class="facts__row"><dt>Sent</dt><dd><%= stats[:sent] %></dd></div>
+          <div class="facts__row"><dt>Clicked</dt><dd><%= stats[:clicked] %></dd></div>
+          <div class="facts__row"><dt>Unsubscribed</dt><dd><%= stats[:unsub] %></dd></div>
+        </dl>
+      </section>
+    <% end %>
+  </aside>
 <% end %>

@@ -1,0 +1,27 @@
+<%# locals: (circle:, url:, submit:) %>
+<%= render "admin/shared/error_summary", model: circle %>
+
+<%= form_with model: circle, url: url, class: "u-stack" do |f| %>
+  <div class="field">
+    <%= f.label :name, class: "field__label" %>
+    <%= f.text_field :name, class: "field__control", required: true, autofocus: true %>
+  </div>
+
+  <div class="field">
+    <%= f.label :description, class: "field__label" %>
+    <%= f.text_area :description, class: "field__control", rows: 4,
+          placeholder: "What's this circle for?" %>
+  </div>
+
+  <div class="field">
+    <%= f.label :charter, "Decided here", class: "field__label" %>
+    <p class="field__hint">One agreement per line — the norms the circle has settled on. Shows in the board's sidebar.</p>
+    <%= f.text_area :charter, class: "field__control", rows: 4,
+          placeholder: "Useful comment before a kind one" %>
+  </div>
+
+  <div class="form__action">
+    <%= f.submit submit, class: "button button--primary" %>
+    <%= link_to "Cancel", (circle.persisted? ? circle_path(circle) : circles_path), class: "button" %>
+  </div>
+<% end %>

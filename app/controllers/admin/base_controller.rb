@@ -1,7 +1,8 @@
 # Base for the Inkwell admin backend. Every action requires an authenticated
 # session (inherited from ApplicationController's require_authentication) *and*
-# the domain-admin role (AdminOnly). The backend is the author's alone — a
-# signed-in non-admin gets the same 404 as a missing record.
+# administration of the current account (AdminOnly: its owner, or root). The
+# backend is the author's alone — a signed-in non-admin gets the same 404 as a
+# missing record.
 #
 # The pre-login entry points — sign-in (SessionsController), first-run setup
 # (SetupsController), and open self-registration (SignupsController) —

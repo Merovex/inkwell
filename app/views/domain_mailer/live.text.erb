@@ -1,0 +1,12 @@
+Your custom domain is live.
+
+<%= @account.name %> is now serving at:
+
+  https://<%= @domain.hostname %>/
+  https://<%= @apex %>/
+
+The certificate is deployed and traffic is flowing through Cloudflare. Leave the
+_acme-challenge TXT records in your DNS — they aren't one-time, and the
+certificate uses them again each time it renews.
+
+— Kindred Quill

@@ -1,0 +1,10 @@
+<% content_for :title, "Edit #{@circle.name} — Circle" %>
+
+<%= render "admin/shared/canvas_head",
+      crumbs: [["Circles", circles_path], [@circle.name, circle_path(@circle)], ["Edit", nil]] %>
+
+<header class="perma-header">
+  <h1 class="perma-header__title">Edit circle</h1>
+</header>
+
+<%= render "form", circle: @circle, url: circle_path(@circle), submit: "Save" %>

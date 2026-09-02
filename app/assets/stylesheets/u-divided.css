@@ -1,0 +1,14 @@
+/*
+ * u-divided — hairline rules between a list's rows (between, never around:
+ * the first row keeps a clean top edge). Defaults to the faint divider used
+ * inside lists and surfaces; set --u-divided-line for the full-strength line.
+ *
+ * Direct children only — a wrapper (even display: contents, which hides from
+ * layout but not from selectors) breaks the child chain; keep rows as real
+ * siblings or draw the border in the component.
+ */
+@layer utilities {
+  .u-divided > * + * {
+    border-block-start: var(--border-size-1) solid var(--u-divided-line, var(--line-faint));
+  }
+}

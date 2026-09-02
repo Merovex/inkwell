@@ -1,0 +1,7 @@
+<% content_for :title, @collection.title %>
+
+<%= render "admin/shared/canvas_head", crumbs: [["Collections", admin_collections_path], [@collection.title, nil]], menu: false do %>
+  <%= render "composer_actions", collection: @collection %>
+<% end %>
+
+<%= render "form", collection: @collection, url: admin_collection_path(@record) %>

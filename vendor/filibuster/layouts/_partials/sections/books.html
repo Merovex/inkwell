@@ -1,0 +1,23 @@
+{{ $site := hugo.Data.site }}
+{{/* The catalog axis picks the scope: one card per series (the default),
+     or every published book. Both wear the same card markup, so the cards
+     axis styles either scope. */}}
+{{ $design := $site.design | default dict }}
+{{ $catalog := $design.catalog | default "series" }}
+{{ $headings := $site.home.headings | default dict }}
+<section id="books" class="fk-books" aria-labelledby="books-title">
+  <div class="fk-shell">
+    <h2 id="books-title" class="fk-section-title">{{ $headings.books | default "The Books" }}</h2>
+    <div class="fk-series-list">
+      {{ if eq $catalog "books" }}
+        {{ range $i, $b := hugo.Data.books.books }}
+          {{ partial "book-card.html" (dict "book" $b "index" $i) }}
+        {{ end }}
+      {{ else }}
+        {{ range $i, $s := hugo.Data.series.series }}
+          {{ partial "series-card.html" (dict "series" $s "index" $i) }}
+        {{ end }}
+      {{ end }}
+    </div>
+  </div>
+</section>

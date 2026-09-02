@@ -6,7 +6,7 @@
 module Recordable
   extend ActiveSupport::Concern
 
-  EVENTS = %w[ created updated scheduled unscheduled published unpublished pinned unpinned trashed restored link_added link_removed ]
+  EVENTS = %w[ created updated scheduled unscheduled published unpublished pinned unpinned archived unarchived trashed restored link_added link_removed ]
 
   included do
     # Optional at the AR layer only so a first version can validate before its
@@ -16,6 +16,20 @@ module Recordable
     belongs_to :creator, class_name: "User", default: -> { Current.user }
 
     enum :event, EVENTS.index_by(&:itself), default: :created, prefix: true
+  end
+
+  class_methods do
+    # The current versions pointed at by `record_scope` (a Record relation —
+    # Record.active, circle.records.listed, …), optionally under a parent
+    # record. The one idiom for "this scope's live content of my type":
+    #
+    #   Beat.current_in(Record.active, parent: record_id)
+    #   Message.current_in(circle.records.listed)
+    def current_in(record_scope, parent: nil)
+      records = record_scope.where(recordable_type: name)
+      records = records.where(parent_id: parent) if parent
+      where(id: records.select(:recordable_id))
+    end
   end
 
   # Versions are mutable only while drafted ("draft churn is nobody's

@@ -13,7 +13,7 @@
     <%= f.text_field :name, class: "field__control", placeholder: "Announcement", required: true %>
   </div>
 
-  <div class="u-cluster">
+  <div class="form__action">
     <%= f.submit category.persisted? ? "Save changes" : "Add this category", class: "button button--primary" %>
     <%= link_to "Never mind", admin_categories_path, class: "button" %>
   </div>

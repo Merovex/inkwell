@@ -5,6 +5,10 @@
   .badge {
     display: inline-flex;
     align-items: center;
+    /* Center on the text line when sitting inline among byline text — an
+       inline-flex chip otherwise exports its first child's baseline and rides
+       high (worse with an icon). Ignored in flex rows like the titlerow. */
+    vertical-align: middle;
     gap: calc(var(--u-pad) / 4);
     padding-block: calc(var(--u-pad) / 5);
     padding-inline: calc(var(--u-pad) / 2);
@@ -20,4 +24,28 @@
   .badge--success { background: var(--success-surface); color: var(--success-ink); }
   .badge--warning { background: var(--warning-surface); color: var(--warning-ink); }
   .badge--danger  { background: var(--danger-surface);  color: var(--danger-ink); }
+
+  /* .check-badge — the "Waiting for DNS" badge as a real retry button
+     (shared/check_badge): rotate-ccw icon + status text, POSTs a fresh status
+     check. Hover/focus deepen the pill so it reads as pressable; while the
+     check is in flight (Turbo disables the submitter for the duration) the
+     icon spins counter-clockwise so the press visibly did something even
+     though the result arrives with the redirect. */
+  .check-badge {
+    border: 0;
+    font-family: inherit;
+    cursor: pointer;
+  }
+  .check-badge:hover,
+  .check-badge:focus-visible {
+    background: color-mix(in oklab, var(--warning-surface) 80%, var(--warning-ink));
+  }
+  .check-badge[disabled] { cursor: default; }
+  .check-badge[disabled] .lucide {
+    animation: check-badge-spin var(--speed-slow) linear infinite;
+  }
+  @keyframes check-badge-spin { to { rotate: -1turn; } }
+  @media (prefers-reduced-motion: reduce) {
+    .check-badge[disabled] .lucide { animation: none; }
+  }
 }

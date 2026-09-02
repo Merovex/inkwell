@@ -9,7 +9,7 @@ module PostScoped
 
   private
     def set_record
-      @record = Record.active.posts.find(params[:post_id] || params[:id])
+      @record = Current.account.records.active.posts.find(params[:post_id] || params[:id])
       @post = @record.recordable
     end
 end

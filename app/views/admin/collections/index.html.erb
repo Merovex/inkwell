@@ -1,0 +1,34 @@
+<% content_for :title, "Collections" %>
+
+<%= render "admin/shared/canvas_head", crumbs: [["Collections", nil]], menu: false do %>
+  <%= link_to new_admin_collection_path, class: "button button--primary" do %>
+    <%= inline_svg_tag "lucide/plus.svg", class: "lucide", size: "16px" %> New collection
+  <% end %>
+<% end %>
+
+<header class="perma-header">
+  <h1 class="perma-header__title">Collections</h1>
+</header>
+
+<% if @collections.any? %>
+  <div class="list">
+    <% @collections.each do |collection| %>
+      <%= render "shared/list_item",
+            href: admin_collection_path(collection.record),
+            title: collection.title,
+            author: collection.record.creator.display_name,
+            avatar_user: collection.record.creator,
+            date: l((collection.published_at || collection.created_at).to_date, format: :short),
+            excerpt: plain_excerpt(collection.content),
+            scheduled_at: (collection.published_at if collection.scheduled?),
+            pinned: collection.pinned_at.present? %>
+    <% end %>
+  </div>
+<% else %>
+  <div class="empty">
+    <span class="empty__icon"><%= inline_svg_tag "lucide/inbox.svg", class: "lucide", size: "40px" %></span>
+    <p class="empty__title">No collections yet</p>
+    <p class="empty__text">Create a collection and add books to it.</p>
+    <div class="empty__actions"><%= link_to "New collection", new_admin_collection_path, class: "button button--primary" %></div>
+  </div>
+<% end %>

@@ -1,0 +1,23 @@
+{{ $recent := first 3 (sort hugo.Data.posts.posts "published_at" "desc") }}
+{{/* The heading override rides home.headings (site.json); blank keeps the
+     theme default. Visibility is the blog_title axis (CSS). */}}
+{{ $headings := hugo.Data.site.home.headings | default dict }}
+{{ with $recent }}
+<section class="fk-posts-band" aria-labelledby="posts-title">
+  <div class="fk-shell">
+    <h2 id="posts-title" class="fk-section-title">{{ $headings.posts | default "From the Blog" }}</h2>
+    <ul class="fk-post-grid">
+      {{ range . }}
+      <li>
+        <article>
+          <h3 class="fk-post-title"><a href="{{ site.Home.RelPermalink }}posts/{{ .slug }}/">{{ .title }}</a></h3>
+          <p class="fk-post-meta">{{ dateFormat "January 2, 2006" (time .published_at) }}</p>
+          <p>{{ .excerpt }}</p>
+        </article>
+      </li>
+      {{ end }}
+    </ul>
+    <p><a class="fk-btn fk-btn-ghost" href="{{ site.Home.RelPermalink }}posts/">All posts</a></p>
+  </div>
+</section>
+{{ end }}

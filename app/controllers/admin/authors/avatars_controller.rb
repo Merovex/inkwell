@@ -18,7 +18,7 @@ class Admin::Authors::AvatarsController < Admin::BaseController
 
   private
     def set_author
-      @author = Record.active.authors.find(params[:author_id]).recordable
+      @author = Current.account.records.active.authors.find(params[:author_id]).recordable
     end
 
     def avatar_params

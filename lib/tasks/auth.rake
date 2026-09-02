@@ -21,7 +21,7 @@ namespace :auth do
     email = ENV["EMAIL"].to_s.strip
     abort "Pass the owner's email: EMAIL=you@example.com" if email.empty?
 
-    user = User.new(email_address: email, role: :domain_admin)
+    user = User.new(email_address: email, role: :root)
     abort "Invalid email: #{user.errors.full_messages.to_sentence}" unless user.save
 
     puts "Created domain admin. Sign in with the code below (no email required):"
@@ -30,7 +30,7 @@ namespace :auth do
 
   desc "Print a fresh sign-in code + verify URL for the root (first/domain admin) user"
   task rescue_code: :environment do
-    user = User.domain_admin.order(:id).first || User.order(:id).first
+    user = User.root.order(:id).first || User.order(:id).first
     abort "No users exist yet — run `setup_admin EMAIL=you@example.com` to create the owner." if user.nil?
 
     print_sign_in_code(user)

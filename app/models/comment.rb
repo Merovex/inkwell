@@ -11,6 +11,13 @@ class Comment < ApplicationRecord
 
   validates :content, presence: true
 
+  # Live wall: any thread change re-broadcasts the parent card's comment
+  # count — creates, edits, AND trash/restore all commit new version rows, so
+  # this one hook covers them (the recount reads live records, not versions).
+  # Circle walls only; the count element is absent elsewhere and the replace
+  # would no-op anyway.
+  after_create_commit :broadcast_count_to_wall
+
   # Never mutable: the world sees a comment from its first save, so every
   # edit lands as a new version (see CommentsController#update).
   def mutable? = false
@@ -23,4 +30,14 @@ class Comment < ApplicationRecord
       version.content = content.body unless changes.key?(:content)
     end
   end
+
+  private
+    def broadcast_count_to_wall
+      parent = record&.parent
+      return unless parent && parent.bucket_type == "Circle"
+      broadcast_replace_later_to [ parent.bucket, :wall ],
+        target: ActionView::RecordIdentifier.dom_id(parent, :wall_comments),
+        partial: "circles/walls/comment_count",
+        locals: { record: parent, count: parent.comments.size }
+    end
 end

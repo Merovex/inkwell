@@ -1,20 +1,15 @@
 /*
  * .list — a list of summary rows (avatar + linked title/meta + optional trailing
- * count). Render as <ul class="list"> / <ol class="list"> with .list__item rows
- * (partial: shared/_list_item). Adapted from Basecamp's article-list; colors use
+ * count/actions). Render as <div class="list"> holding <article class="list__item">
+ * rows — ALWAYS via the shared/_list_item partial; never hand-roll the row markup
+ * (see CLAUDE.md "List rows"). Adapted from Basecamp's article-list; colors use
  * Inkwell tokens. Structure (BEM):
- *   .list__item > .list__avatar (.avatar) + a.list__body(.list__titlerow > .list__title
- *   + badge · .list__meta > .list__byline) + .list__count
+ *   article.list__item > .list__avatar (.avatar) + a.list__body (div when the row
+ *   has no link) (.list__titlerow > h3.list__title + badge · .list__meta >
+ *   .list__byline) + .list__count + .list__action
  */
 @layer components {
-  .list {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    /* single hairline at the list's bottom; each row draws its own top border,
-       so dividers never double up */
-    border-block-end: var(--border-size-1) solid var(--line);
-  }
+  /* .list renders on a <div> (see shared/_list_item) — no list chrome to strip. */
 
   .list__item {
     position: relative;           /* containing block for the stretched link */
@@ -22,12 +17,17 @@
     align-items: flex-start;
     gap: var(--u-pad);
     padding-block: calc(var(--u-pad) * 1.5) var(--u-pad); /* 24px top / 16px bottom */
-    border-block-start: var(--border-size-1) solid var(--line);
   }
+  /* A divider only BETWEEN adjacent rows — no rule above the first or below the
+     last, so a list never butts a hairline against its heading. */
+  .list__item + .list__item { border-block-start: var(--border-size-1) solid var(--line); }
 
-  .list__avatar { --avatar-size: 2.8125rem; flex-shrink: 0; } /* 45px, on the .avatar */
+  .list__avatar { --avatar-size: var(--size-8); flex-shrink: 0; }
+  /* A row with no avatar keeps the same indent — reserves the avatar column. */
+  .list__avatar-spacer { inline-size: var(--size-8); flex-shrink: 0; }
 
-  /* stat/ranking rows (analytics): tighter rhythm, body-size type */
+  /* stat/ranking rows: tighter rhythm, body-size type. No caller since the
+     analytics dashboard came out — kept as list vocabulary, not orphan CSS. */
   .list--compact .list__item { padding-block: calc(var(--u-pad) / 2); align-items: center; }
   .list--compact .list__title { font-size: var(--font-size-1); font-weight: var(--font-weight-6); }
 
@@ -41,15 +41,15 @@
     text-decoration: none;
     overflow: hidden;
   }
-  .list__body:hover .list__title { text-decoration: underline; }
-  /* stretched link — the whole row clicks through to the item */
-  .list__body::after { content: ""; position: absolute; inset: 0; }
+  a.list__body:hover .list__title { text-decoration: underline; }
+  /* stretched link — the whole row clicks through to the item (linked rows only) */
+  a.list__body::after { content: ""; position: absolute; inset: 0; }
 
   /* far-right row action (e.g. delete draft) — lifted above the stretched
      link, and the link overlay stops short of the action zone entirely so
      the trashcan can never be covered */
-  .list__action { position: relative; z-index: 1; }
-  .list__item:has(.list__action) .list__body::after { inset-inline-end: 3.5rem; }
+  .list__action { position: relative; z-index: 1; display: flex; gap: var(--size-1); align-items: center; }
+  .list__item:has(.list__action) a.list__body::after { inset-inline-end: calc(var(--u-pad) * 3.5); }
 
   .list__titlerow {
     display: flex;
@@ -57,22 +57,24 @@
     gap: calc(var(--u-pad) / 2);
     min-inline-size: 0;
   }
+  /* icon: local — a small type glyph before the title (notifications' kinds). */
+  .list__icon { display: inline-grid; place-items: center; flex-shrink: 0; color: var(--ink-muted); }
+  /* An h3 by default (real heading for a11y); line-height/size pinned here so
+     the base h3 rules (incl. the mobile step-down) don't reshape the row. */
   .list__title {
     min-inline-size: 0;
-    font-size: var(--font-size-3);  /* ~20px */
+    font-size: var(--font-size-2);
     font-weight: var(--font-weight-8);
+    line-height: inherit;
     color: var(--ink);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
 
+  /* composes u-clamp in the markup (2 lines — the default) */
   .list__meta {
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    font-size: var(--font-size-2);  /* ~18px */
+    font-size: var(--font-size-2);
     line-height: var(--font-lineheight-3);
     color: var(--ink);
   }
@@ -92,7 +94,18 @@
     border-radius: var(--radius-round);
     font-size: var(--font-size-0);
     background: var(--brand-strong);
-    color: #fff;
+    color: var(--on-brand);
+  }
+
+  /* activity: the staleness line under the excerpt — "3 comments · 2 hours
+     ago" with the commenters' faces. Sage byline tint, body-adjacent size. */
+  .list__activity {
+    display: inline-flex;
+    align-items: center;
+    gap: calc(var(--u-pad) / 3);
+    margin-block-start: calc(var(--u-pad) / 4);
+    font-size: var(--font-size-1);
+    color: var(--brand-text);
   }
 
   /* unread-count bubble — a flex sibling AFTER the link, not inside it */
@@ -102,14 +115,17 @@
     pointer-events: none;          /* indicator only — clicks fall through to the row link */
     display: grid;
     place-items: center;
-    min-inline-size: 1.375rem;      /* 22px */
-    block-size: 1.375rem;
-    padding-inline: 0.25rem;
+    min-inline-size: var(--size-5);
+    block-size: var(--size-5);
+    padding-inline: var(--size-1);
     border-radius: var(--radius-round);
     background: var(--brand-strong); /* teal-800 — white text hits 7.6:1 (AAA) */
-    color: #fff;
+    color: var(--on-brand);
     font-size: var(--font-size-0);
     font-weight: var(--font-weight-8);
     line-height: 1;
   }
+  /* …but on a .list--count-top list the count rides the title's line, not the
+     row's vertical center. */
+  .list--count-top .list__count { align-self: start; }
 }

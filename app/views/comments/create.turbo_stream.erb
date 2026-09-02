@@ -1,0 +1,23 @@
+<%# A saved comment lands in place — no full re-render. Two surfaces share
+    this template; streams aimed at ids a surface doesn't have simply no-op:
+    - the parent page's thread: insert above the composer frame, reset the
+      composer to its prompt, refresh the count heading
+    - the wall's thread modal: append to its list, reveal/refresh its
+      heading, hand back a fresh pinned composer %>
+<%= turbo_stream.before "new_comment" do %>
+  <%= render "admin/comments/comment", comment: @comment %>
+<% end %>
+<%= turbo_stream.replace "new_comment" do %>
+  <%= render "admin/comments/prompt", record: @parent %>
+<% end %>
+<%= turbo_stream.update "comments-heading", pluralize(@parent.comments.size, "comment") %>
+
+<%= turbo_stream.append "modal-comments-list" do %>
+  <%= render "admin/comments/comment", comment: @comment %>
+<% end %>
+<%= turbo_stream.replace "modal-comments-heading" do %>
+  <h2 class="comments__heading" id="modal-comments-heading"><%= pluralize(@parent.comments.size, "comment") %></h2>
+<% end %>
+<%= turbo_stream.replace "wall-thread-composer" do %>
+  <%= render "circles/walls/threads/composer", record: @parent %>
+<% end %>

@@ -1,0 +1,64 @@
+<% content_for :title, "Your circles" %>
+
+<%= render "admin/shared/canvas_head", crumbs: [["Circles", nil]], menu: false do %>
+  <% if can_create_circle? %>
+    <%= link_to new_circle_path, class: "button button--primary button--small" do %>
+      <%= inline_svg_tag "lucide/plus.svg", class: "lucide", size: "16px" %> New circle
+    <% end %>
+  <% end %>
+<% end %>
+
+<header class="perma-header">
+  <h1 class="perma-header__title">Your circles</h1>
+  <div class="perma-header__content">
+    <p class="u-text-muted">Accountability groups you're a part of.</p>
+  </div>
+</header>
+
+<%# Like the drafts/archived links on posts: the wider world, one click away. %>
+<% if @all_count > @circles.size %>
+  <p class="u-margin-block-end"><%= link_to "View all #{pluralize(@all_count, "circle")} on Kindred Quill", all_circles_path %></p>
+<% end %>
+
+<% if @circles.any? || @invitations.any? %>
+  <%# Persisted list ⇄ cards choice (cookie); default to list. %>
+  <% view = %w[list cards].include?(cookies[:circles_view]) ? cookies[:circles_view] : "list" %>
+  <div data-controller="view-toggle" data-view-toggle-name-value="circles_view">
+    <div class="u-cluster u-cluster-end u-margin-block-end">
+      <div class="segmented u-margin-inline-0" role="group" aria-label="Layout">
+        <button type="button" class="segmented__seg" data-view="list"
+                data-action="view-toggle#set" data-view-toggle-target="button"
+                aria-selected="<%= view == "list" %>">List</button>
+        <button type="button" class="segmented__seg" data-view="cards"
+                data-action="view-toggle#set" data-view-toggle-target="button"
+                aria-selected="<%= view == "cards" %>">Cards</button>
+      </div>
+    </div>
+
+    <ul class="circles u-unlist u-grid" data-view="<%= view %>" data-view-toggle-target="collection">
+      <%# Seats on offer lead the deck as golden cards (Fizzy-style) — circles
+          are invite-only, so this is the only way in. %>
+      <% @invitations.each do |invitation| %>
+        <li><%= render "circles/invitation_card", invitation: invitation %></li>
+      <% end %>
+      <% @circles.each do |circle| %>
+        <li>
+          <%= link_to circle_path(circle), class: "circles__card door" do %>
+            <span class="circles__name"><%= circle.name %></span>
+            <%= render "shared/avatar_group", users: circle.roster, limit: 10, size: "small" %>
+            <span class="circles__meta"><%= pluralize(circle.members.size, "member") %></span>
+          <% end %>
+        </li>
+      <% end %>
+    </ul>
+  </div>
+<% else %>
+  <div class="empty">
+    <span class="empty__icon"><%= inline_svg_tag "lucide/inbox.svg", class: "lucide", size: "40px" %></span>
+    <p class="empty__title">No circles yet</p>
+    <p class="empty__text">Start your own accountability group, or wait to be invited to one.</p>
+    <% if can_create_circle? %>
+      <div class="empty__actions"><%= link_to "New circle", new_circle_path, class: "button button--primary" %></div>
+    <% end %>
+  </div>
+<% end %>

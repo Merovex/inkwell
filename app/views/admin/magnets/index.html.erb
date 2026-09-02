@@ -1,0 +1,35 @@
+<% content_for :title, "Magnets" %>
+
+<%= render "admin/shared/canvas_head", crumbs: [["Magnets", nil]], menu: false do %>
+  <%= link_to new_admin_magnet_path, class: "button button--primary" do %>
+    <%= inline_svg_tag "lucide/plus.svg", class: "lucide", size: "16px" %> New magnet
+  <% end %>
+<% end %>
+
+<header class="perma-header">
+  <h1 class="perma-header__title">Magnets</h1>
+</header>
+
+<% if @magnets.any? %>
+  <div class="list">
+    <% @magnets.each do |magnet| %>
+      <%= render "shared/list_item",
+            href: edit_admin_magnet_path(magnet),
+            title: magnet.title,
+            avatar: false,
+            trailing_chips: magnet.formats.map { |format| [ format.upcase, "accent" ] },
+            excerpt: magnet.description,
+            discard_path: admin_magnet_path(magnet),
+            discard_title: "Remove",
+            discard_aria: "Remove #{magnet.title}",
+            discard_confirm: "Remove #{magnet.title}? Every download link already sent for it will stop working." %>
+    <% end %>
+  </div>
+<% else %>
+  <div class="empty">
+    <span class="empty__icon"><%= inline_svg_tag "lucide/book.svg", class: "lucide", size: "40px" %></span>
+    <p class="empty__title">No magnets yet</p>
+    <p class="empty__text">A magnet is a free ebook your welcome campaign gives new subscribers — upload the files once, then attach it to a campaign step.</p>
+    <div class="empty__actions"><%= link_to "New magnet", new_admin_magnet_path, class: "button button--primary" %></div>
+  </div>
+<% end %>

@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 110" role="img" aria-label="No-book hero wireframe">
+  <rect width="200" height="110" fill="#f4f4f2"/>
+  <rect x="85" y="18" width="30" height="4" rx="2" fill="#c2c2be"/>
+  <rect x="46" y="30" width="108" height="10" rx="2" fill="#8b8b87"/>
+  <rect x="42" y="50" width="116" height="4" rx="2" fill="#c2c2be"/>
+  <rect x="56" y="58" width="88" height="4" rx="2" fill="#c2c2be"/>
+  <rect x="66" y="74" width="28" height="11" rx="3" fill="#8b8b87"/>
+  <rect x="102" y="74" width="28" height="11" rx="3" fill="#c2c2be"/>
+</svg>

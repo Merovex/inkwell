@@ -1,0 +1,12 @@
+/*
+ * u-truncate — clip a single line with an ellipsis. For URLs, excerpts, and
+ * table cells that must hold one row. Pair with min-inline-size: 0 (or a grid
+ * minmax(0, …) column) on the flex/grid item so the box is allowed to shrink.
+ */
+@layer utilities {
+  .u-truncate {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}

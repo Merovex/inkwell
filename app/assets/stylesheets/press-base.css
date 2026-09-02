@@ -19,8 +19,8 @@
      color-scheme, which the html[data-theme] rules below set from the theme
      cookie (light / dark / auto→OS). One definition per token, no dark block. */
   --surface-0: light-dark(var(--color-mountain-mist-50),  var(--color-mountain-mist-950));
-  --surface-1: light-dark(var(--color-mountain-mist-100), var(--color-syo-ro-950));
-  --surface-2: light-dark(var(--color-mountain-mist-200), var(--color-syo-ro-900));
+  --surface-1: light-dark(var(--color-mountain-mist-100), var(--color-pine-950));
+  --surface-2: light-dark(var(--color-mountain-mist-200), var(--color-pine-900));
   --border-1:  light-dark(var(--color-mountain-mist-300), var(--color-mountain-mist-700));
   --border-2:  light-dark(var(--color-mountain-mist-400), var(--color-mountain-mist-600));
   --text-1:    light-dark(var(--color-mountain-mist-900), var(--color-mountain-mist-100));
@@ -29,11 +29,45 @@
   --text-body: light-dark(var(--color-mountain-mist-900), var(--color-mountain-mist-200));
   --text-2:    light-dark(var(--color-mountain-mist-700), var(--color-mountain-mist-200));
   --text-3:    light-dark(var(--color-mountain-mist-500), var(--color-mountain-mist-400));
-  --accent:      light-dark(var(--color-syo-ro-600), var(--color-syo-ro-300));
-  --link-color:  light-dark(var(--color-syo-ro-600), var(--color-syo-ro-300));
-  --link-hover:  light-dark(var(--color-syo-ro-700), var(--color-syo-ro-200));
-  --button-bg:   light-dark(var(--color-syo-ro-500), var(--color-syo-ro-300));
+  --accent:      light-dark(var(--color-pine-600), var(--color-pine-300));
+  --link-color:  light-dark(var(--color-pine-600), var(--color-pine-300));
+  --link-hover:  light-dark(var(--color-pine-700), var(--color-pine-200));
+  --button-bg:   light-dark(var(--color-pine-500), var(--color-pine-300));
   --button-text: light-dark(var(--color-mountain-mist-50), var(--color-mountain-mist-800));
+
+  /* --- site-scoped scalar tokens. Self-contained literals on purpose:
+         public_minimal loads this file without open-props.css, so nothing
+         here may depend on an Open Props var. Brand type sizes keep their
+         exact values (unified where they had drifted: 0.85/0.875/0.9 → one
+         meta size; 0.72/0.75 → one micro size). --- */
+  --press-speed: 200ms;        /* hover/theme micro-transitions */
+  --press-speed-page: 300ms;   /* the page-entry fade */
+  --press-radius: 0.75rem;     /* cards, the notice panel */
+  --press-radius-sm: 0.5rem;   /* inputs, images, chips */
+  --press-radius-xs: 0.25rem;  /* tiny chips (theme toggle) */
+  --press-shadow: 0 8px 24px oklch(0% 0 0 / 0.18); /* raised cards */
+  --press-overlay-ink: oklch(100% 0 0 / 0.65);     /* text over the hero image */
+  --press-letterspacing: 0.015em;
+  --press-tracking-kicker: 0.08em;  /* uppercase kickers/labels (was 0.08/0.1 drift) */
+  --press-tracking-wordmark: 0.12em;
+  --press-weight-body: 500;
+  --press-weight-display: 800;
+  --press-weight-strong: 600;   /* buttons, tags, nav CTAs */
+  --press-size-micro: 0.75rem;   /* kickers, nav links */
+  --press-size-meta: 0.875rem;   /* metas, legal, hints */
+  --press-size-lede: 1.1rem;
+  --press-size-title: 1.3rem;    /* book titles, hero lede */
+  --press-size-title-lg: 1.8rem; /* the notice title */
+  --press-display-md: 1.6rem;
+  --press-display-lg: clamp(1.8rem, 4vw, 2.6rem);
+  --press-display-xl: clamp(2rem, 5vw, 3.25rem);
+  --press-display-xxl: clamp(3.5rem, 12vw, 6rem); /* the error-page numeral */
+  --shell-narrow: 44rem;   /* the default page column */
+  --shell-wide: 1100px;    /* catalog/hero/nav shell */
+  --measure-book-card: 220px;      /* catalog card column */
+  --measure-book-card-wide: 260px; /* the roomier single-column card */
+  --press-ring: 280px;     /* hero portrait ring */
+  --press-ring-lg: 340px;
 
   min-height: 100dvh;
   margin: 0;
@@ -44,9 +78,9 @@
   font-family: var(--press-sans);
   /* Literal values (not Open Props vars): public_minimal loads this file
      without open-props.css. The variable fonts cover 200–900. */
-  font-weight: 500;
+  font-weight: var(--press-weight-body);
   line-height: 1.65;
-  letter-spacing: 0.015em;
+  letter-spacing: var(--press-letterspacing);
   -webkit-font-smoothing: antialiased;
 }
 
@@ -61,7 +95,7 @@
 .press :where(h1, h2, h3) {
   margin: 0;
   font-family: var(--press-serif);
-  font-weight: 800;
+  font-weight: var(--press-weight-display);
   line-height: 1.2;
   color: var(--text-1);
 }
@@ -83,7 +117,7 @@ html { background: light-dark(var(--color-mountain-mist-50), var(--color-mountai
    The public site uses Turbo Drive; on each render the incoming content fades up
    from the background. Nav/footer stay steady; only <main> fades. */
 main#main-content {
-  animation: press-page-in 300ms var(--ease-3, ease) both;
+  animation: press-page-in var(--press-speed-page) var(--ease-3, ease) both;
 }
 
 @keyframes press-page-in {

@@ -1,0 +1,165 @@
+# Something happened that concerns you — the bell's rows. Mostly a person's
+# act (invitations, mentions, boosts); the one scheduled exception is the
+# pulse ask, which rings the bell alongside its own mailer. Operational mail
+# (drips, digests) stays out, and your own actions never notify you (the
+# caller's responsibility via `to:`).
+#
+# Each row carries its OWN copy — actor, sentence, door — stamped at delivery,
+# so it outlives its source (accepting an invitation destroys the invitation;
+# the announcement stays). Sources nullify on destruction; removing
+# notifications is an explicit act on the revoke/decline path only.
+class Notification < ApplicationRecord
+  KINDS = %w[ invited invitation_accepted mentioned boosted pulse_asked nudged replied ticket_opened ticket_updated bulletin_published ].freeze
+  # Email-worthy kinds. Nothing notification-shaped is time-sensitive: these
+  # roll up into digest emails (NotificationDigestJob) — and reading in-app
+  # first cancels the email (the bell beat us to it). The rest (acceptances,
+  # boosts) are bell-only. pulse_asked is bell-only HERE because its email is
+  # PulseMailer's immediate ask — the question shouldn't arrive twice.
+  EMAILED = %w[ invited mentioned replied ].freeze
+  # Replies ride the once-a-day digest, not the 4-hour one — thread chatter
+  # shouldn't bug anyone. (Bell rings live regardless.)
+  EMAILED_DAILY = %w[ replied ].freeze
+
+  # The bell's visual grammar: one lucide glyph per kind, rendered beside the
+  # stamped sentence in the flyout and the index (and standing alone when no
+  # human acted). Unknown/legacy kinds fall back to the bell itself.
+  ICONS = {
+    "invited" => "user-plus",
+    "invitation_accepted" => "check",
+    "mentioned" => "at-sign",
+    "boosted" => "rocket",
+    "pulse_asked" => "activity",
+    "nudged" => "bell-ring",
+    "replied" => "message-square",
+    "ticket_opened" => "life-buoy",
+    "ticket_updated" => "life-buoy",
+    "bulletin_published" => "megaphone"
+  }.freeze
+
+  belongs_to :user   # the recipient
+  belongs_to :actor, class_name: "User", optional: true
+  belongs_to :source, polymorphic: true, optional: true
+
+  enum :kind, KINDS.index_by(&:itself)
+
+  validates :title, presence: true
+
+  scope :unread, -> { where(read_at: nil) }
+  scope :recent, -> { order(created_at: :desc).limit(15) }
+
+  def icon = "lucide/#{ICONS.fetch(kind, "bell")}.svg"
+
+  # THE way a notification is born — never bare create!. Fan-out and channel
+  # decisions live here: the row (bell) always, live via Turbo Stream; email
+  # waits for the 4-hour digest (EMAILED kinds only).
+  def self.deliver(source, to:, kind:)
+    return if to.nil?
+
+    create!(source: source, user: to, kind: kind, **copy_for(source, kind))
+  end
+
+  # Live bell: prepend the row and light the dot in the recipient's header.
+  after_create_commit do
+    broadcast_prepend_later_to [ user, :notifications ], target: "notifications-list",
+      partial: "notifications/notification", locals: { notification: self }
+    broadcast_replace_later_to [ user, :notifications ], target: "notification-indicator",
+      partial: "notifications/indicator", locals: { unread: true }
+  end
+
+  # The row's stamped copy, per kind — computed once, at delivery.
+  def self.copy_for(source, kind)
+    case kind
+    when "invited"
+      { actor: source.inviter, url: routes.circles_path,
+        title: "#{source.inviter.display_name} invited you to #{source.circle.name}" }
+    when "invitation_accepted"
+      { actor: source.user, url: routes.circle_members_path(source.circle),
+        title: "#{source.user.display_name} accepted your invitation to #{source.circle.name}" }
+    when "mentioned" # source: the Record the mention appears in
+      { actor: source.creator, url: record_path_for(source),
+        title: "#{source.creator.display_name} mentioned you in #{context_for(source)}" }
+    when "boosted"   # source: the Boost
+      { actor: source.creator, url: record_path_for(source.record),
+        title: "#{source.creator.display_name} boosted your #{noun_for(source.record)}: #{source.content}" }
+    when "pulse_asked" # source: the Pulse's Record — the schedule fired, no human actor
+      { actor: nil, url: record_path_for(source),
+        title: "Pulse check in #{source.bucket.name}: #{source.recordable.question}" }
+    when "nudged" # source: the Pulse's Record — a peer poke; the nudger is the actor
+      { actor: Current.user, url: record_path_for(source),
+        title: "#{Current.user.display_name} nudged you to answer “#{source.recordable.question}” in #{source.bucket.name}" }
+    when "replied" # source: the new comment's Record — rings the thread (Replies)
+      { actor: source.creator, url: record_path_for(source),
+        title: "#{source.creator.display_name} commented on #{thread_for(source.parent)}" }
+    when "ticket_opened" # source: the Ticket's Record — rings root staff, bell-only
+      { actor: source.creator, url: record_path_for(source),
+        title: "#{source.creator.display_name} opened a support ticket: “#{source.recordable.title}”" }
+    when "ticket_updated" # source: the Ticket's Record — staff moved the status, rings the requester, bell-only
+      { actor: nil, url: record_path_for(source),
+        title: "Your support ticket “#{source.recordable.title}” is now #{source.recordable.status}." }
+    when "bulletin_published" # source: the Bulletin's Record — platform announcement, bell-only
+      { actor: source.creator, url: routes.bulletin_path(source.to_slug),
+        title: "Announcement: #{source.recordable.title}" }
+    end
+  end
+  private_class_method :copy_for
+
+  # Record page paths, stamped as strings — but generated by the router, not
+  # hand-built. Circle content for most kinds; replied also arises from
+  # site-side comments (posts, forum), whose admin lives at a script_name
+  # mount on the app host (hence the script_name: — see Account#admin_path).
+  def self.record_path_for(record)
+    if record.bucket_type == "Account"
+      script_name = "/#{record.bucket.slug}"
+      case record.recordable_type
+      when "Post"    then routes.admin_post_path(record, script_name: script_name)
+      when "Message" then routes.admin_message_path(record, script_name: script_name)
+      when "Comment" then "#{record_path_for(record.parent)}#comment_#{record.id}"
+      else record.bucket.admin_path
+      end
+    elsif record.bucket_type == "User"
+      # The help desk: tickets live on the requester's own bucket. One URL
+      # serves requester and staff (Support::TicketsController lets root in).
+      case record.recordable_type
+      when "Ticket"  then routes.ticket_path(record)
+      when "Comment" then "#{record_path_for(record.parent)}#comment_#{record.id}"
+      else routes.tickets_path
+      end
+    else
+      circle = record.bucket
+      case record.recordable_type
+      when "Message" then routes.circle_message_path(circle, record)
+      when "Comment" then "#{record_path_for(record.parent)}#comment_#{record.id}"
+      when "Beat"    then routes.circle_pulse_path(circle, record.parent_id)
+      when "Pulse"   then routes.circle_pulse_path(circle, record)
+      else routes.circle_path(circle)
+      end
+    end
+  end
+  private_class_method :record_path_for
+
+  def self.routes = Rails.application.routes.url_helpers
+  private_class_method :routes
+
+  # What a comment thread hangs from, for replied copy: the parent's title
+  # (message, post) or question (pulse), else a noun.
+  def self.thread_for(parent)
+    title = parent.recordable.try(:title) || parent.recordable.try(:question)
+    title ? "“#{title}”" : (parent.recordable_type == "Beat" ? "a Pulse answer" : "a post")
+  end
+  private_class_method :thread_for
+
+  def self.context_for(record)
+    case record.recordable_type
+    when "Message" then "“#{record.recordable.title}”"
+    when "Comment" then "a comment on “#{record.parent.recordable.try(:title) || record.parent.recordable.try(:question)}”"
+    when "Beat"    then "a Pulse answer"
+    else record.bucket.name
+    end
+  end
+  private_class_method :context_for
+
+  def self.noun_for(record)
+    { "Message" => "message", "Comment" => "comment", "Beat" => "answer" }.fetch(record.recordable_type, "post")
+  end
+  private_class_method :noun_for
+end

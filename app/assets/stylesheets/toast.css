@@ -1,6 +1,6 @@
 /*
  * .toasts — a fixed live region for transient messages. Bottom-right on desktop,
- * a top banner on mobile (< 48rem). Populated from flash (and future JS).
+ * a top banner on mobile (below --breakpoint-md). Populated from flash (and future JS).
  * Dismissed by the toast Stimulus controller (auto + manual).
  */
 @layer components {
@@ -12,7 +12,7 @@
     gap: calc(var(--u-pad) / 2);
     inset-block-end: max(var(--u-pad), env(safe-area-inset-bottom));
     inset-inline-end: var(--u-pad);
-    inline-size: min(22rem, calc(100% - 2 * var(--u-pad)));
+    inline-size: min(var(--measure-toast), calc(100% - 2 * var(--u-pad)));
     pointer-events: none; /* let clicks through the empty region */
   }
 
@@ -28,7 +28,7 @@
     border-inline-start: var(--border-size-3) solid var(--accent);
     border-radius: var(--radius-ui);
     box-shadow: var(--shadow-3);
-    animation: toast-in 0.18s var(--ease-3);
+    animation: toast-in var(--speed-gentle) var(--ease-3);
   }
   .toast--alert, .toast--error   { border-inline-start-color: var(--danger-ink); }
   .toast--notice, .toast--success { border-inline-start-color: var(--success-ink); }
@@ -42,13 +42,13 @@
   }
   .toast__close:hover { color: var(--ink); }
 
-  .toast.is-leaving { animation: toast-out 0.18s var(--ease-3) forwards; }
+  .toast.is-leaving { animation: toast-out var(--speed-gentle) var(--ease-3) forwards; }
 
-  @keyframes toast-in  { from { opacity: 0; translate: 0 0.5rem; } }
-  @keyframes toast-out { to   { opacity: 0; translate: 0 0.5rem; } }
+  @keyframes toast-in  { from { opacity: 0; translate: 0 var(--size-2); } }
+  @keyframes toast-out { to   { opacity: 0; translate: 0 var(--size-2); } }
 
   /* mobile: top banner, full width */
-  @media (max-width: 48rem) {
+  @media (max-width: 48em) { /* --breakpoint-md */
     .toasts {
       inset-block-start: max(var(--u-pad), env(safe-area-inset-top));
       inset-block-end: auto;
@@ -57,8 +57,8 @@
     }
     .toast { animation-name: toast-in-top; }
     .toast.is-leaving { animation-name: toast-out-top; }
-    @keyframes toast-in-top  { from { opacity: 0; translate: 0 -0.5rem; } }
-    @keyframes toast-out-top { to   { opacity: 0; translate: 0 -0.5rem; } }
+    @keyframes toast-in-top  { from { opacity: 0; translate: 0 calc(-1 * var(--size-2)); } }
+    @keyframes toast-out-top { to   { opacity: 0; translate: 0 calc(-1 * var(--size-2)); } }
   }
 
   @media (prefers-reduced-motion: reduce) {

@@ -1,0 +1,11 @@
+<%# The custom-logo slot: replaces the site title in the header (same
+    attachment System settings edits); title-as-alt choice below it. %>
+<% site = Current.account.site %>
+<%= render "image_slot", slot: :logo, heading: "Custom logo",
+      upload_label: "Upload logo image",
+      hint: "Replaces the site title in the header." %>
+<label class="designer__check" data-designer-target="logoTitleWrap" <%= "hidden" unless site.logo.attached? %>
+       title="Unchecked, the site title appears beside the logo instead">
+  <input type="checkbox" checked data-designer-target="logoTitleAsAlt" data-action="designer#logoTitleEdited">
+  <span>Site title as alt only</span>
+</label>

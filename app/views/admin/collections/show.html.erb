@@ -1,0 +1,47 @@
+<% content_for :title, @collection.title %>
+<% can_manage = allowed_to?(:manage, @record) %>
+
+<%= render "admin/shared/canvas_head", crumbs: [["Collections", admin_collections_path], [@collection.title, nil]],
+      edit_href: (edit_admin_collection_path(@record) if can_manage) do %>
+  <% if can_manage %>
+    <% if @collection.published? %>
+      <%= button_to "Revert to draft", admin_collection_publish_path(@record), method: :delete, class: "menu__item" %>
+    <% else %>
+      <%= button_to "Publish", admin_collection_publish_path(@record), class: "menu__item" %>
+    <% end %>
+    <hr class="menu__separator">
+    <%= button_to "Move to trash", admin_collection_path(@record), method: :delete, class: "menu__item" %>
+  <% end %>
+<% end %>
+
+<header class="perma-header">
+  <h1 class="perma-header__title"><%= @collection.title %></h1>
+  <p class="perma-header__content u-text-muted">
+    <% if @collection.published? %>
+      <span class="badge badge--accent">Published</span>
+    <% elsif @collection.scheduled? %>
+      <span class="badge badge--accent">Scheduled · <%= @collection.published_at.strftime("%b %-d") %></span>
+    <% else %>
+      <span class="badge">Draft</span>
+    <% end %>
+  </p>
+</header>
+
+<article class="u-flow"><%= @collection.content %></article>
+
+<% if can_manage %>
+  <%= render "books", collection: @collection, record: @record %>
+  <%= render "admin/distributors/section", record: @record %>
+<% else %>
+  <% if @collection.books.any? %>
+    <section class="series-books">
+      <h2 class="subhead">Books in this collection</h2>
+      <ul class="mrows">
+        <% @collection.books.each do |book| %>
+          <li class="mrow u-surface"><span class="mrow__label"><%= link_to book.title, admin_book_path(book.record) %></span></li>
+        <% end %>
+      </ul>
+    </section>
+  <% end %>
+  <%= render "admin/distributors/list", record: @record %>
+<% end %>

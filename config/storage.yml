@@ -6,6 +6,32 @@ local:
   service: Disk
   root: <%= Rails.root.join("storage") %>
 
+# Reader-magnet ebook files (Magnet#epub/#pdf) — a PRIVATE R2 bucket,
+# deliberately NOT kindredquill-sites, which the edge Worker serves publicly
+# by path. R2 speaks S3 through the account endpoint (the Publisher pattern);
+# credentials are the same bucket-scoped r2.* token pair. Files leave this
+# bucket only as short-lived presigned URLs (Claims::DownloadsController).
+r2_magnets:
+<% if Rails.env.production? %>
+  service: S3
+  endpoint: https://<%= Rails.configuration.x.cloudflare.account_id %>.r2.cloudflarestorage.com
+  region: auto
+  bucket: kindredquill-magnets
+  # Either spelling: R2's console says "Access Key ID"; the first credentials
+  # entry landed as secret_key_id (see Publisher#client).
+  access_key_id: <%= Rails.application.credentials.dig(:r2, :access_key_id) || Rails.application.credentials.dig(:r2, :secret_key_id) %>
+  secret_access_key: <%= Rails.application.credentials.dig(:r2, :secret_access_key) %>
+  # R2 rejects an upload carrying two checksums ("You can only specify one
+  # non-default checksum at a time"): aws-sdk-s3 ≥ 1.178 adds CRC32 by
+  # default, and Active Storage already sends its MD5. Cloudflare's documented
+  # compat setting — only checksum when an API requires it.
+  request_checksum_calculation: when_required
+  response_checksum_validation: when_required
+<% else %>
+  service: Disk
+  root: <%= Rails.root.join(Rails.env.test? ? "tmp/storage" : "storage") %>
+<% end %>
+
 # Use bin/rails credentials:edit to set the AWS secrets (as aws:access_key_id|secret_access_key)
 # amazon:
 #   service: S3

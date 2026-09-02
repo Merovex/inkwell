@@ -4,13 +4,13 @@
 # untrashed books are exposed here.
 class BooksController < PublicController
   def index
-    @series = Series.current.published.includes(:record).feed_ordered.filter_map do |series|
+    @series = Current.account.series.published.includes(:record).feed_ordered.filter_map do |series|
       books = series.books.published
       [ series, books ] if books.any?
     end
 
     linked = Installment.select(:book_record_id)
-    @standalone = Book.current.published.where.not(record_id: linked)
+    @standalone = Current.account.books.published.where.not(record_id: linked)
       .includes(:record, :depiction).order(:publication_date)
     fresh_when etag: [ @series, @standalone, site_settings ], public: true
   end

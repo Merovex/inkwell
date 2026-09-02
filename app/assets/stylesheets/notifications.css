@@ -1,0 +1,111 @@
+/*
+ * The bell and its flyout — the switcher's sibling (native popover, no scrim),
+ * anchored under the header's right edge; a full-screen sheet on phones.
+ * Rows are doors: actor avatar + one sentence + time. The dot is the only
+ * attention mechanic in the app.
+ */
+@layer components {
+  .notifications { display: contents; }
+
+  .notifications__bell { position: relative; }
+  .notifications__dot {
+    position: absolute;
+    inset-block-start: var(--size-1);
+    inset-inline-end: var(--size-1);
+    inline-size: var(--size-2);
+    block-size: var(--size-2);
+    border-radius: var(--radius-round);
+    background: transparent;
+  }
+  /* Attention reads as urgent: the dot is the danger red, not the accent.
+     It PINGS on arrival — the Turbo Stream replaces the indicator, so the
+     animation replays each time something new lands. */
+  .notifications__dot--on {
+    background: var(--danger-solid);
+    animation: notification-ping var(--speed-slow) var(--ease-3);
+  }
+  @keyframes notification-ping {
+    0%   { box-shadow: 0 0 0 0 color-mix(in oklab, var(--danger-solid) 60%, transparent); transform: scale(0.6); }
+    40%  { transform: scale(1.25); }
+    100% { box-shadow: 0 0 0 calc(var(--u-pad) * 0.7) transparent; transform: scale(1); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .notifications__dot--on { animation: none; }
+  }
+
+  .notifications__panel {
+    position: fixed;
+    inset: auto;
+    top: calc(var(--u-pad) * 3.5); /* clears the app header, like .switcher */
+    inset-inline-end: var(--u-pad);
+    width: min(var(--measure-flyout), 94vw);
+    max-height: calc(100vh - var(--size-10));
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: var(--surface-raised); /* elevated in dark mode without a border */
+    color: var(--ink);
+    border-radius: var(--radius-card);
+    box-shadow: var(--elevation-flyout);
+    overflow: hidden auto;
+  }
+  .notifications__panel::backdrop { background: transparent; }
+
+  .notifications__head {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: calc(var(--u-pad) / 2) var(--u-pad);
+    background: var(--surface-raised);
+  }
+  .notifications__title { font-weight: var(--font-weight-8); }
+
+  .notifications__row {
+    display: flex;
+    align-items: center;
+    gap: calc(var(--u-pad) / 2);
+    padding: calc(var(--u-pad) / 2) var(--u-pad);
+    color: var(--ink);
+    text-decoration: none;
+  }
+  .notifications__row:hover { background: color-mix(in oklab, var(--ink) 4%, transparent); }
+  .notifications__avatar { --avatar-size: var(--size-7); flex-shrink: 0; }
+  /* The kind's glyph (Notification::ICONS) — quiet, never squashed. */
+  .notifications__icon { display: inline-grid; place-items: center; flex-shrink: 0; color: var(--ink-muted); }
+  .notifications__text { flex: 1; min-inline-size: 0; font-size: var(--font-size-0); }
+  .notifications__time { flex-shrink: 0; font-size: var(--font-size-0); color: var(--ink-muted); }
+
+  .notifications__empty { padding: var(--u-pad); color: var(--ink-muted); text-align: center; }
+  /* Footer door to the full 30-day page. */
+  .notifications__all {
+    display: block;
+    padding: calc(var(--u-pad) / 2) var(--u-pad);
+    background: color-mix(in oklab, var(--ink) 4%, var(--surface-raised));
+    color: var(--ink);
+    font-weight: var(--font-weight-6);
+    font-size: var(--font-size-0);
+    text-align: center;
+    text-decoration: none;
+  }
+  .notifications__all:hover { background: color-mix(in oklab, var(--ink) 6%, transparent); }
+  /* Hidden once rows exist; live-prepended rows land above it either way. */
+  .notifications__empty--hidden { display: none; }
+  /* If a live row arrives while the empty state shows, the list gaining a
+     child hides it. */
+  .notifications__list:has(.notifications__row) + .notifications__empty { display: none; }
+
+  /* Phone: the flyout becomes a full sheet, like the switcher. */
+  @media (max-width: 48em) { /* --breakpoint-md */
+    .notifications__panel {
+      inset: 0;
+      top: 0;
+      width: 100vw;
+      height: 100dvh;
+      max-height: 100dvh;
+      border-radius: 0;
+    }
+  }
+}

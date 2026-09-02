@@ -1,0 +1,32 @@
+<%# locals: (installment:, collection:, book: nil) %>
+<%# A collection card: title over its book count + (ordered) this book's place
+    or the unordered flag. book is nil when appended fresh via the typeahead. %>
+<% books = collection.books.to_a %>
+<% rank = book && (books.index { |b| b.record_id == book.record_id }&.+(1)) %>
+<li class="collection-card u-surface u-pad" id="<%= dom_id(installment) %>">
+  <div class="collection-card__head">
+    <%= link_to collection.title, admin_collection_path(collection.record), class: "collection-card__title u-text-strong" %>
+    <%= button_to admin_installment_path(installment), method: :delete, class: "collection-card__remove u-unbutton",
+          aria: { label: "Remove from #{collection.title}" } do %>
+      <%= inline_svg_tag "lucide/x.svg", class: "lucide", size: "16px" %>
+    <% end %>
+  </div>
+  <div class="collection-card__detail">
+    <% if books.any? %>
+      <span class="collection-card__covers" aria-hidden="true">
+        <% books.first(3).each do |b| %>
+          <% if b.cover? %>
+            <%= image_tag b.cover_thumb, class: "cover collection-card__cover", alt: "" %>
+          <% else %>
+            <span class="cover cover--blank collection-card__cover"></span>
+          <% end %>
+        <% end %>
+      </span>
+    <% end %>
+    <span class="collection-card__meta u-text-small u-text-muted">
+      <%= pluralize(books.size, "book") %><%
+        %><% if collection.unordered %> · unordered<% elsif rank %> · this one is <%= rank.ordinalize %><% end %><%
+        %><% unless collection.published? %> · draft<% end %>
+    </span>
+  </div>
+</li>

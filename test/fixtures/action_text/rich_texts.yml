@@ -22,3 +22,8 @@ welcome_comment_content:
   record: welcome_comment (Comment)
   name: content
   body: <p>Hello from the first reply.</p>
+
+circle_welcome_content:
+  record: circle_welcome_body (Body)
+  name: content
+  body: <p>Welcome — introduce yourself and your current project.</p>

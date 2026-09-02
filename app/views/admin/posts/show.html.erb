@@ -1,4 +1,4 @@
-<% content_for :title, "#{@post.title} — Inkwell" %>
+<% content_for :title, @post.title %>
 <% can_manage = allowed_to?(:manage, @record) %>
 
 <%# The title is editable in place (creator/admin only): click it. Saving %>
@@ -10,27 +10,31 @@
     <% if can_manage %>
       <% if @post.published? %>
         <% if @post.pinned_at %>
-          <%= button_to "Unpin", admin_post_pin_path(@record), method: :delete, class: "menu__item", role: "menuitem" %>
+          <%= button_to "Unpin", admin_post_pin_path(@record), method: :delete, class: "menu__item" %>
         <% else %>
-          <%= button_to "Pin", admin_post_pin_path(@record), class: "menu__item", role: "menuitem" %>
+          <%= button_to "Pin", admin_post_pin_path(@record), class: "menu__item" %>
         <% end %>
-        <%= button_to "Revert to draft", admin_post_publish_path(@record), method: :delete, class: "menu__item", role: "menuitem" %>
+        <%= button_to "Revert to draft", admin_post_publish_path(@record), method: :delete, class: "menu__item" %>
       <% else %>
-        <%= button_to "Publish", admin_post_publish_path(@record), class: "menu__item", role: "menuitem" %>
+        <%= button_to "Publish", admin_post_publish_path(@record), class: "menu__item" %>
       <% end %>
       <hr class="menu__separator">
     <% end %>
-    <%= link_to "View History", admin_post_events_path(@record), class: "menu__item", role: "menuitem" %>
+    <%= link_to "View History", admin_post_events_path(@record), class: "menu__item" %>
     <% if can_manage %>
       <hr class="menu__separator">
-      <%= button_to "Move to trash", admin_post_path(@record), method: :delete, class: "menu__item", role: "menuitem" %>
+      <%= render "admin/shared/archive_menu_item", record: @record %>
+      <%= button_to "Move to trash", admin_post_path(@record), method: :delete, class: "menu__item" %>
     <% end %>
   <% end %>
 
   <header class="perma-header">
     <% if can_manage %>
-      <h1 class="perma-header__title editable__display" data-editable-target="display"
-          data-action="click->editable#edit" title="Click to rename" tabindex="0"><%= @post.title %></h1>
+      <%# A real button inside the h1: heading semantics for AT, native
+          keyboard operability (Enter/Space) for the rename affordance. %>
+      <h1 class="perma-header__title" data-editable-target="display"><button type="button"
+          class="u-unbutton editable__display" data-action="editable#edit"
+          title="Click to rename"><%= @post.title %></button></h1>
       <%= form_with model: @post, url: admin_post_path(@record) do |f| %>
         <%= f.text_field :title, hidden: true, class: "perma-header__title editable__input",
               aria: { label: "Title" },
@@ -40,29 +44,46 @@
     <% else %>
       <h1 class="perma-header__title"><%= @post.title %></h1>
     <% end %>
+    <%# Status line, state by state: Draft shows drafting facts; Scheduled leads
+        with the publish moment; Published carries the date, length, and whether
+        it has gone to subscribers. %>
     <p class="perma-header__content u-text-muted">
-      <span class="u-text-strong"><%= @record.creator.display_name %></span>
       <% if @post.published? %>
-        · <%= l @post.published_at.to_date, format: :long %>
+        <span class="badge badge--success">Published</span>
+        · <time datetime="<%= @post.published_at.to_date.iso8601 %>"><%= l @post.published_at.to_date, format: :long %></time>
+        · <%= post_length(@post.content) %>
+        <% broadcast = @record.broadcast %>
+        <% if broadcast&.sent? %>
+          · Emailed to <%= pluralize(broadcast.recipients_count, "subscriber") %> on <%= l broadcast.sent_at.to_date, format: :long %>
+        <% else %>
+          · Not emailed
+        <% end %>
       <% elsif @post.scheduled? %>
-        · <span class="badge badge--accent">Scheduled ·
+        <span class="badge badge--warning">Scheduled</span>
+        · <span class="u-text-strong">Publishes
           <time datetime="<%= @post.published_at.iso8601 %>" data-controller="local-time"
-                data-local-time-datetime-value="<%= @post.published_at.iso8601 %>"><%= @post.published_at.strftime("%b %-d at %H:%M") %></time></span>
+                data-local-time-datetime-value="<%= @post.published_at.iso8601 %>"><%= @post.published_at.strftime("%A, %B %-d at %-l:%M %p") %></time></span>
+        · <%= post_length(@post.content) %>
       <% else %>
-        · <span class="badge">Draft</span>
+        <span class="badge">Draft</span>
+        · Started <time datetime="<%= @post.created_at.to_date.iso8601 %>"><%= l @post.created_at.to_date, format: :long %></time>
+        · Last edited <%= time_ago_tag @post.updated_at %>
+        · <%= post_length(@post.content) %>
       <% end %>
     </p>
   </header>
 </div>
 
 <% if can_manage %>
-  <%= render "admin/posts/broadcast_banner" %>
+  <%= render "admin/posts/status_banner" %>
 <% end %>
 
-<article class="u-flow post-body">
+<article class="prose">
   <%= @post.content %>
 </article>
 
 <%= render "admin/boosts/boosts", record: @record %>
+
+<%= render "pager", previous_post: @previous_post, next_post: @next_post %>
 
 <%= render "admin/comments/comments", record: @record %>

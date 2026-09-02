@@ -1,0 +1,31 @@
+/*
+ * .progress — the circle's Progress leaderboard: the roll-up stat tiles (the
+ * shared .goal-stat tiles from goal-stats.css), a member table, and per-member
+ * run sparklines. Reuses .table, .avatar, .badge, and .goal-stat; adds .run.
+ */
+@layer components {
+  /* the page shell composes u-stack in the markup */
+
+  /* The member cell is a row-header <th>; .table only clears the last row's
+     <td> borders, so clear the <th> too or the final divider half-renders. */
+  .progress__table tbody tr:last-child th { border-block-end: none; }
+
+  /* The member row-header cell stays a table-cell (never display:flex on a
+     <th>/<td> — it drops out of the table grid and its border misaligns);
+     the avatar · name · you-badge row flexes inside it instead. */
+  .progress__member { font-weight: var(--font-weight-4); }
+  .progress__member-name { display: flex; align-items: center; gap: calc(var(--u-pad) / 2); }
+  .progress__words { font-variant-numeric: tabular-nums; }
+
+  /* Run sparkline: thin bars (filled = answered that occurrence) + a label. */
+  .run { display: inline-flex; align-items: center; gap: calc(var(--u-pad) / 2); }
+  .run__bars { display: inline-flex; align-items: flex-end; gap: var(--border-size-2); block-size: var(--size-4); }
+  .run__bar {
+    inline-size: var(--size-1);
+    block-size: 40%;
+    border-radius: var(--radius-1);
+    background: var(--fill-track);
+  }
+  .run__bar--on { block-size: 100%; background: var(--accent); }
+  .run__label { font-size: var(--font-size-0); color: var(--ink-muted); white-space: nowrap; }
+}

@@ -1,0 +1,13 @@
+# Mirrors the migration backfill: every existing user is a member of the
+# first account. Non-member cases create their own user in the test.
+merovex_alice:
+  account: merovex
+  user: alice
+
+merovex_bob:
+  account: merovex
+  user: bob
+
+merovex_admin:
+  account: merovex
+  user: admin

@@ -27,11 +27,12 @@ class SesDropWebhookTest < ActionDispatch::IntegrationTest
     assert @sub.reload.last_engaged_at
   end
 
-  test "a complaint on a drop unsubscribes the subscriber" do
+  test "a complaint on a drop suppresses the subscriber and ends the stream" do
     post_drop_event("Complaint")
 
     assert @delivery.reload.complained_at
-    assert @sub.reload.unsubscribed?
+    assert @sub.reload.complained?
+    assert_equal "complained", @delivery.stream.reload.ended_reason
   end
 
   private

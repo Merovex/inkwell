@@ -1,0 +1,45 @@
+<%# The feed's compose modal: the circle composer's two fields in a dialog. The
+    form submits _top to the ordinary messages#create (back=wall returns the
+    post to the feed, where the new card renders). %>
+<%= turbo_frame_tag "modal" do %>
+  <span data-controller="dialog" data-dialog-open-value="true">
+    <dialog class="modal wall-thread" data-dialog-target="modal" data-action="click->dialog#backdrop"
+            aria-labelledby="wall-compose-title">
+      <div class="modal__header">
+        <span class="modal__title" id="wall-compose-title">New post</span>
+        <button type="button" class="button button--icon button--ghost" data-action="dialog#close" aria-label="Close">
+          <%= inline_svg_tag "lucide/x.svg", class: "lucide", size: "20px" %>
+        </button>
+      </div>
+
+      <div class="modal__body">
+        <%# Fields only — the actions live in the modal footer, submitting this
+            form by id (the composer-actions pattern). %>
+        <%= form_with model: @message, url: circle_messages_path(@circle), method: :post,
+              id: "wall-compose", class: "u-stack lexxy-compact",
+              data: { turbo_frame: "_top",
+                      controller: "autosave",
+                      autosave_key_value: "circles/#{@circle.id}/messages/new" } do |f| %>
+          <%= hidden_field_tag :back, "wall" %>
+          <div class="field">
+            <%= f.text_field :title, class: "field__control", placeholder: "Type a title…",
+                  "aria-label": "Title", required: true, autofocus: true %>
+          </div>
+          <%= f.rich_textarea :content, placeholder: "Write away…", "aria-label": "Body" do %><%= mention_prompt(@circle) %><% end %>
+        <% end %>
+      </div>
+
+      <footer class="modal__footer">
+        <%# Same ladder as the full composer: schedule · Save draft · Post. All
+            three submit the compose form by id (back=wall lands them on the
+            feed — a post as a card, a draft/appointment in the strip). %>
+        <%= render "admin/shared/scheduler", form: "wall-compose", noun: "message",
+              drafts_href: circle_messages_path(@circle), drafts_label: "Discussions",
+              note: "Scheduled messages post to the circle at the chosen time." %>
+        <button type="button" class="button" data-action="dialog#close">Never mind</button>
+        <%= button_tag "Save draft", form: "wall-compose", class: "button" %>
+        <%= button_tag "Post", form: "wall-compose", name: "publish", value: "1", class: "button button--primary" %>
+      </footer>
+    </dialog>
+  </span>
+<% end %>

@@ -1,0 +1,77 @@
+/*
+ * .book-shelf / .book-card — the admin books index: one section per series
+ * (plus Standalone) with a count badge, and cards with the 600×900 cover
+ * variant on the left. The filter Stimulus controller only toggles [hidden];
+ * everything visual lives here.
+ * Structure: .book-shelf > .book-shelf__head + ul.book-cards > li.book-card
+ */
+@layer components {
+  .book-shelf { margin-block-end: calc(var(--u-pad) * 4); }
+
+  .book-shelf__head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--u-pad);
+    padding-block-end: calc(var(--u-pad) / 2);
+    margin-block-end: var(--u-pad);
+    border-block-end: var(--border-size-1) solid var(--line);
+  }
+
+  .book-shelf__title {
+    margin: 0;
+    font-size: var(--font-size-4);
+  }
+  /* Title · Series-count chip · completion+years, on one baseline. */
+  .book-shelf__meta { display: flex; align-items: baseline; flex-wrap: wrap; gap: var(--u-pad); }
+  .book-shelf__status { font-size: var(--font-size-0); }
+
+  .book-shelf__blank {
+    color: var(--ink-muted);
+    text-align: center;
+    padding-block: calc(var(--u-pad) * 2);
+  }
+
+  /* A shelf of cover cards: fixed cover-width columns, wrapping to new rows. */
+  .book-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, var(--measure-cover));
+    gap: calc(var(--u-pad) * 1.5);
+  }
+
+  /* Each card is the cover over a title · meta · status stack — no surrounding
+     card chrome; the cover carries its own lift. */
+  .book-card { min-inline-size: 0; }
+  .book-card__link {
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--u-pad) / 2);
+    color: inherit;
+    text-decoration: none;
+  }
+  .book-card__cover .cover { --cover-size: 100%; box-shadow: var(--shadow-1); }
+  .book-card__cover .cover--blank { font-size: var(--font-size-6); }
+  .book-card__title { margin: 0; font-size: var(--font-size-2); }
+  .book-card__link:hover .book-card__title { text-decoration: underline; }
+  .book-card__meta { margin: 0; font-size: var(--font-size-0); }
+  .book-card__status { margin: 0; }
+
+  /* Series-band actions (Edit series · Reorder) and the year range. */
+  .book-shelf__actions { display: flex; gap: var(--u-pad); flex-shrink: 0; }
+  .book-shelf__years { font-size: var(--font-size-0); }
+
+  /* The series blurb rides under the title row. When present it takes the
+     divider, so the head above it goes borderless. */
+  .book-shelf__head:has(+ .book-shelf__blurb) {
+    border-block-end: none;
+    margin-block-end: calc(var(--u-pad) / 2);
+    padding-block-end: 0;
+  }
+  .book-shelf__blurb {
+    margin: 0 0 var(--u-pad);
+    padding-block-end: calc(var(--u-pad) / 2);
+    border-block-end: var(--border-size-1) solid var(--line);
+    color: var(--ink-muted);
+    max-inline-size: var(--measure-prose);
+  }
+}

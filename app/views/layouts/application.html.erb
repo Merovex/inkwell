@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="<%= current_theme %>" data-tint="<%= current_tint %>">
   <head>
-    <title><%= content_for(:title) || "Inkwell" %></title>
+    <title><%= document_title %></title>
     <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="application-name" content="Inkwell">
+    <meta name="application-name" content="Kindred Quill">
     <meta name="mobile-web-app-capable" content="yes">
+    <%# The app host is admin + auth — keep it out of search indexes. %>
+    <meta name="robots" content="noindex">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
 
@@ -27,8 +29,11 @@
   </head>
 
   <body class="<%= "hotwire-native" if hotwire_native? %>">
+    <a href="#main-content" class="u-skip-link">Skip to content</a>
     <%= render "layouts/header" %>
-    <main class="canvas"><%= yield %></main>
+    <%# CANDIDATE: the Site's workspace sub-header (Basecamp page-sheet nav). %>
+    <%= render "layouts/site_subnav" unless hotwire_native? %>
+    <main id="main-content" class="canvas <%= yield(:canvas_class) %>"><%= yield %></main>
     <%= render "layouts/toasts" %>
   </body>
 </html>

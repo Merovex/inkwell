@@ -1,0 +1,164 @@
+/* filibuster stylesheet, split into parallel-loadable modules.
+   Loaded in filename order by layouts/baseof.html; that order IS the
+   cascade order, so keep the numeric prefixes. See 01-reset.css for the
+   axis vocabulary this sheet keys off. */
+
+/* ---------- Blog ---------- */
+.fk-posts-band { background: var(--bg-alt); border-top: 1px solid var(--line); }
+.fk-post-grid {
+  list-style: none; margin: 2rem auto; display: grid; gap: 1.5rem;
+  /* One column of cards, centered — a single readable stack rather than a
+     three-across grid. */
+  grid-template-columns: 1fr; max-width: 46rem;
+}
+.fk-post-grid article {
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--radius); padding: 1.5rem; height: 100%;
+}
+/* The posts-index page heading shares the post grid's centered column, so the
+   title lines up with the cards below rather than sitting full-width left.
+   (The library/generic headers live inside .fk-page-body, so this misses them.) */
+.fk-page > .fk-shell > .fk-page-header { max-width: 46rem; margin-inline: auto; }
+.fk-post-list { list-style: none; margin: 2rem 0 0; display: grid; gap: 2.5rem; max-width: 50rem; }
+.fk-post-title { font-size: 1.6rem; margin-bottom: 0.25em; }
+.fk-post-title a { text-decoration: none; }
+.fk-post-title a:hover { text-decoration: underline; text-decoration-color: var(--accent); text-underline-offset: 6px; }
+.fk-post-meta { color: var(--ink-muted); font-size: 0.9rem; margin-top: 0; }
+/* Blog presentation (data-blog): the home band's post cards as the card
+   grid (default) or a vertical list. (The old data-cards="shelf" coupling
+   graduated into this axis — the author says list, not the book layout.) */
+html[data-blog="list"] .fk-post-grid { grid-template-columns: 1fr; max-width: 44rem; margin-inline: auto; }
+/* the All-posts button rides the same centered column, so it left-aligns
+   with the list entries */
+html[data-blog="list"] .fk-posts-band .fk-shell > p { max-width: 44rem; margin-inline: auto; }
+html[data-blog="list"] .fk-post-grid article { background: transparent; border: 0; border-left: 3px solid var(--accent); border-radius: 0; padding-block: 0.25rem; }
+/* Card list: the vertical list's measure and rhythm, but each post keeps
+   its card chrome — a stacked feed of compact cards. */
+html[data-blog="cards"] .fk-post-grid { grid-template-columns: 1fr; max-width: 44rem; margin-inline: auto; gap: 1rem; }
+html[data-blog="cards"] .fk-posts-band .fk-shell > p { max-width: 44rem; margin-inline: auto; }
+html[data-blog="cards"] .fk-post-grid article { padding: 1.25rem 1.5rem; }
+/* Section headings are superset markup (the data-nav pattern): each home
+   band's title hides by axis. aria-labelledby still resolves a hidden
+   target, so the landmark keeps its accessible name. */
+html[data-blog-title="no"] .fk-posts-band .fk-section-title,
+html[data-books-title="no"] .fk-books .fk-section-title,
+html[data-authors-title="no"] .fk-authors-band .fk-section-title { display: none; }
+
+/* ---------- Author grid (data-authors) ---------- */
+.fk-authors-band { padding-block: 3.5rem; border-top: 1px solid var(--line); }
+.fk-author-grid {
+  list-style: none; margin: 2rem 0 0; display: grid; gap: 1.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+}
+.fk-author-card {
+  display: flex; flex-direction: column; align-items: center; text-align: center;
+  gap: 0.75rem; background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--radius); padding: 2rem 1.5rem; height: 100%;
+}
+.fk-author-portrait {
+  width: 7rem; height: 7rem; object-fit: cover; border-radius: 50%;
+  border: 1px solid var(--line); box-shadow: 0 12px 36px rgb(0 0 0 / 0.3);
+}
+.fk-author-name { font-family: var(--font-display); font-size: 1.25rem; margin: 0; }
+.fk-author-tagline { color: var(--ink-muted); margin: 0; }
+
+/* ---------- Author portrait ---------- */
+.fk-portrait {
+  border-radius: var(--radius); border: 1px solid var(--line);
+  box-shadow: 0 12px 36px rgb(0 0 0 / 0.3);
+}
+.fk-author-band { padding-block: 3.5rem; background: var(--bg-alt); }
+.fk-author-inner {
+  display: grid; grid-template-columns: minmax(0, 16rem) 1fr;
+  gap: 2.5rem; align-items: center;
+}
+html[data-palette="grimoire"] .fk-portrait {
+  outline: 1px solid var(--line); outline-offset: 4px;
+}
+
+/* ---------- Biography axes (data-avatar shape × data-avatar-side ×
+   data-bio-band) — the owner's competitor collapse: the single variable is
+   photo treatment (shaped-and-placed / absent / on a band). ---------- */
+/* no photo: pure text, single column */
+html[data-avatar="none"] .fk-portrait-band { display: none; }
+html[data-avatar="none"] .fk-author-inner { grid-template-columns: 1fr; }
+/* the band behind the section: plain page, the color band (default), or
+   the same band with slanted edges */
+html[data-bio-band="none"] .fk-author-band { background: transparent; }
+html[data-bio-band="angled"] .fk-author-band {
+  clip-path: polygon(0 2.5rem, 100% 0, 100% calc(100% - 2.5rem), 0 100%);
+  padding-block: 6rem;
+}
+
+/* default "frame": theme radius + border + shadow, as declared above */
+html[data-avatar="round"] .fk-portrait,
+html[data-avatar="square"] .fk-portrait,
+html[data-avatar="organic"] .fk-portrait {
+  aspect-ratio: 1; object-fit: cover;
+}
+html[data-avatar="round"] .fk-portrait { border-radius: 50%; }
+html[data-avatar="square"] .fk-portrait { border-radius: 0; }
+html[data-avatar="organic"] .fk-portrait {
+  border-radius: 58% 42% 55% 45% / 48% 55% 45% 52%;
+}
+html[data-avatar-side="right"] .fk-author-inner {
+  grid-template-columns: 1fr minmax(0, 16rem);
+}
+html[data-avatar-side="right"] .fk-portrait-band { order: 2; }
+/* centered text (usually paired with no photo): heading, lede, and the
+   About button center in a constrained reading column — the same 44rem
+   measure as the list variants, so lines don't rag across the full shell */
+html[data-bio-align="centered"] .fk-author-inner > div {
+  text-align: center; max-width: 44rem; margin-inline: auto;
+}
+/* the About button is superset markup (the data-nav pattern): hidden by axis */
+html[data-bio-more="no"] .fk-author-band .fk-btn { display: none; }
+
+@media (max-width: 48rem) {
+  .fk-author-inner,
+  html[data-avatar-side="right"] .fk-author-inner { grid-template-columns: 1fr; }
+  html[data-avatar-side="right"] .fk-portrait-band { order: 0; }
+}
+
+/* ---------- Book & series pages ---------- */
+.fk-breadcrumb ol { list-style: none; display: flex; flex-wrap: wrap; gap: 0.5rem; font-size: 0.9rem; color: var(--ink-muted); margin: 0 0 2rem; }
+.fk-breadcrumb li + li::before { content: "/"; margin-right: 0.5rem; }
+.fk-book-header {
+  display: grid; grid-template-columns: minmax(0, 300px) 1fr; gap: 2.5rem; align-items: start;
+  /* Same centered 44rem column as .fk-prose, so the cover+title header lines
+     up with the description below instead of floating full-width. */
+  max-width: 44rem; margin: 0 auto 2.5rem;
+}
+.fk-book-header h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); }
+.fk-book-cover { box-shadow: 0 16px 40px rgb(0 0 0 / 0.3); }
+.fk-prose { max-width: 44rem; margin-inline: auto; }
+/* Inline body images (rich-text attachments): never wider than the column,
+   and the figure keeps its own breathing room. Captions only appear when the
+   author wrote one — the exporter drops ActionText's filename/size default. */
+.fk-prose img, .fk-page img { max-inline-size: 100%; height: auto; }
+.fk-prose figure { margin: 2rem 0; }
+/* The newsletter invitation is a conversion surface, not an essay: an image
+   here sits beside the ask rather than dominating it, so it's capped well
+   short of the column and centered. */
+.fk-newsletter-intro img { max-inline-size: 20rem; }
+.fk-newsletter-intro figure { inline-size: fit-content; margin-inline: auto; }
+.fk-prose figcaption { color: var(--ink-muted); font-size: 0.9rem; margin-top: 0.5rem; text-align: center; }
+/* Centered content column for the index/section pages (posts list, library),
+   so their heading and content sit centered like the show pages' prose. */
+.fk-page-body { max-width: 52rem; margin-inline: auto; }
+.fk-titles { margin-top: 3rem; }
+.fk-title-list { list-style: none; margin: 1.5rem 0 0; display: grid; gap: 1rem; }
+.fk-title-item {
+  display: grid; grid-template-columns: auto 1fr; gap: 1.5rem; align-items: start;
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--radius); padding: 1.25rem 1.5rem;
+}
+.fk-title-item img { width: 96px; }
+.fk-title-item > div:only-child { grid-column: 1 / -1; }
+.fk-title-name { font-family: var(--font-display); font-size: 1.15rem; display: block; text-decoration: none; }
+a.fk-title-name:hover { text-decoration: underline; text-decoration-color: var(--accent); text-underline-offset: 4px; }
+.fk-title-meta { color: var(--ink-muted); font-size: 0.9rem; display: block; margin-top: 0.15rem; }
+.fk-title-desc { color: var(--ink-muted); margin: 0.6rem 0 0; line-height: 1.55; }
+.fk-series-pager { display: flex; justify-content: space-between; gap: 1rem; margin-top: 3rem; font-family: var(--font-display); }
+.fk-series-pager a { text-decoration: none; }
+.fk-series-pager a:hover { text-decoration: underline; text-decoration-color: var(--accent); }

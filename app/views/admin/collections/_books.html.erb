@@ -1,0 +1,22 @@
+<%# locals: (collection:, record:) %>
+<%# The collection's books: a typeahead to add one, then a drag-sortable list. %>
+<section class="series-books">
+  <div class="u-cluster u-cluster-between u-margin-block-end">
+    <h2 class="subhead">Books in this collection</h2>
+    <%= link_to "New book", new_admin_book_path, class: "button button--small" %>
+  </div>
+
+  <%= render "admin/installments/combobox",
+        context: "collection", url: search_admin_books_path,
+        anchor_param: "container_record_id", selected_param: "book_record_id",
+        anchor_id: record.id, placeholder: "Search books to add…" %>
+
+  <ol class="sortable" id="collection_books" data-controller="sortable"
+      data-sortable-url-value="<%= reorder_admin_collection_path(record) %>">
+    <% collection.installments.order(:position).each do |installment| %>
+      <% book = Current.account.books.find_by(record_id: installment.book_record_id) %>
+      <% next unless book %>
+      <%= render "admin/collections/book_row", installment: installment, book: book %>
+    <% end %>
+  </ol>
+</section>

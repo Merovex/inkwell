@@ -1,0 +1,38 @@
+<%# locals: (circle:, pulse:) %>
+<%# One Pulse check on the index: the question (a door to its page), its
+    description, a schedule/next-ask/current-progress line, and — when live —
+    the viewer's recent-answers sparkline; a paused check shows since-when and
+    (for the owner) a Resume. %>
+<article class="check-card u-surface u-pad<%= " check-card--paused" unless pulse.active? %>">
+  <div class="check-card__main">
+    <h3 class="check-card__title">
+      <%= link_to pulse.question, circle_pulse_path(circle, pulse.record) %>
+    </h3>
+    <% if pulse.description.present? %>
+      <p class="check-card__desc"><%= pulse.description %></p>
+    <% end %>
+    <p class="check-card__meta u-text-small u-text-muted">
+      <% if pulse.active? %>
+        <%= pulse.schedule_summary %> at <%= pulse.ask_at %><%
+          %><% if (nxt = pulse.next_ask_on) %> · next asks <%= nxt == Time.zone.today ? "today" : "in #{pluralize((nxt - Time.zone.today).to_i, "day")}" %><% end %><%
+          %><% if pulse.current_occurrence %> · <span class="u-text-strong">week <%= pulse.current_occurrence.cweek %> open, <%= pulse.answered_count %> of <%= pulse.subscriber_count %> in</span><% end %>
+      <% else %>
+        Paused<% if pulse.paused_since_week %> since week <%= pulse.paused_since_week %><% end %> · asked <%= pulse.cadence %>
+      <% end %>
+    </p>
+  </div>
+
+  <div class="check-card__aside">
+    <% if pulse.active? %>
+      <% bars = pulse.recent_answers(Current.user) %>
+      <% if bars.any? %>
+        <span class="run__bars" aria-hidden="true">
+          <% bars.each do |answered| %><span class="run__bar<%= " run__bar--on" if answered %>"></span><% end %>
+        </span>
+        <span class="check-card__run u-text-small u-text-muted">answered <%= bars.count(true) %> of last <%= bars.size %></span>
+      <% end %>
+    <% elsif allowed_to?(:manage, circle) %>
+      <%= button_to "Resume", circle_pulse_activation_path(circle, pulse.record), class: "button button--small" %>
+    <% end %>
+  </div>
+</article>

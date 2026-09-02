@@ -1,0 +1,12 @@
+{{ define "main" }}
+{{/* The About content (site.description_html) supplies its own heading, so we
+     don't add a page-title <h1> here — that double-headed the page. .fk-prose
+     centers the column. */}}
+<article class="fk-page">
+  <div class="fk-shell">
+    <div class="fk-prose">
+      {{ partial "prose.html" .Content }}
+    </div>
+  </div>
+</article>
+{{ end }}

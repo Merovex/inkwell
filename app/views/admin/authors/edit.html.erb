@@ -1,4 +1,4 @@
-<% content_for :title, "Edit #{@author.name} — Inkwell" %>
+<% content_for :title, "Edit #{@author.name}" %>
 
 <%= render "admin/shared/canvas_head", crumbs: [["Authors", admin_authors_path], [@author.name, nil]] %>
 
@@ -6,7 +6,7 @@
   <h1 class="perma-header__title">Edit author</h1>
 </header>
 
-<div class="settings u-center u-center-narrow">
+<div class="settings u-stack u-stack-double u-margin-block-start u-center u-center-narrow">
   <section class="settings__section settings__section--picture" aria-label="Picture">
     <%= form_with url: admin_author_avatar_path(@author), method: :patch, multipart: true, class: "settings__avatar-well",
           data: { controller: "avatar-upload",
@@ -23,6 +23,31 @@
 
     <% if @author.avatar.attached? %>
       <%= button_to "Remove picture and use initials", admin_author_avatar_path(@author), method: :delete, class: "button" %>
+    <% end %>
+  </section>
+
+  <section class="settings__section settings__section--picture" aria-label="Hero image">
+    <h2 class="settings__section-title">Hero image</h2>
+    <p class="u-text-muted">A dedicated portrait for the hero. Optional — the bio picture stands in when it's empty.</p>
+    <%= form_with url: admin_author_hero_image_path(@author), method: :patch, multipart: true, class: "settings__avatar-well",
+          data: { controller: "avatar-upload",
+                  "avatar-upload-dragover-class": "settings__avatar-well--dragover",
+                  action: "dragover->avatar-upload#dragover dragleave->avatar-upload#dragleave drop->avatar-upload#drop" } do %>
+      <label class="avatar avatar--large settings__avatar" title="Change hero image">
+        <% if @author.hero_image.attached? %>
+          <%= image_tag @author.hero_image, alt: "Hero image for #{@author.name}" %>
+        <% else %>
+          <span class="u-text-muted">None</span>
+        <% end %>
+        <%= file_field_tag "author[hero_image]", accept: Author::AVATAR_CONTENT_TYPES.join(","), hidden: true,
+              "aria-label": "Upload hero image",
+              data: { avatar_upload_target: "input", action: "change->avatar-upload#submit" } %>
+      </label>
+      <p class="u-text-muted">Click or drop an image on it.<br>JPG, PNG, AVIF, or WebP, up to <%= Author::AVATAR_MAX_SIZE / 1.megabyte %> MB.</p>
+    <% end %>
+
+    <% if @author.hero_image.attached? %>
+      <%= button_to "Remove hero image and use the bio picture", admin_author_hero_image_path(@author), method: :delete, class: "button" %>
     <% end %>
   </section>
 

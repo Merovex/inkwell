@@ -1,33 +1,30 @@
-<% content_for :title, "Post Drafts — Inkwell" %>
+<% content_for :title, "Post Drafts" %>
 
-<%= render "admin/shared/canvas_head", crumbs: [["Posts", admin_posts_path], ["Post Drafts", nil]] %>
+<%= render "admin/shared/canvas_head", crumbs: [["Posts", admin_posts_path], ["Post Drafts", nil]], menu: false do %>
+  <%= link_to new_admin_post_path, class: "button button--primary" do %>
+    <%= inline_svg_tag "lucide/plus.svg", class: "lucide", size: "16px" %> New post
+  <% end %>
+<% end %>
 
 <header class="perma-header">
   <h1 class="perma-header__title">Post Drafts</h1>
-  <div class="perma-header__content">
-    <nav class="perma-header__toolbar" aria-label="Actions">
-      <%= link_to new_admin_post_path, class: "button button--primary button--small" do %>
-        <%= inline_svg_tag "lucide/plus.svg", class: "lucide", size: "16px" %> New post
-      <% end %>
-    </nav>
-  </div>
 </header>
 
 <% if @posts.any? %>
-  <ul class="list">
+  <div class="list">
     <% @posts.each do |post| %>
-      <%= render "admin/shared/list_item",
+      <%= render "shared/list_item",
             href: edit_admin_post_path(post.record),
             title: post.title,
+            avatar: false,
             author: post.record.creator.display_name,
-            avatar_user: post.record.creator,
-            date: post.scheduled? ? "Scheduled" : "Draft",
-            excerpt: post.content.to_plain_text.to_s.truncate(140),
-            scheduled_at: (post.published_at if post.scheduled?),
+            date: l(post.updated_at.to_date, format: :short),
+            trailing_chips: post_status_chips(post),
+            excerpt: plain_excerpt(post.content),
             discard_path: admin_draft_path(post.record),
             discard_confirm: post.ever_published? ? "Move this once-published post to the trash?" : "Delete this draft forever? There's no undo." %>
     <% end %>
-  </ul>
+  </div>
 <% else %>
   <div class="empty">
     <span class="empty__icon"><%= inline_svg_tag "lucide/inbox.svg", class: "lucide", size: "40px" %></span>

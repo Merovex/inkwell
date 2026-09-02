@@ -1,0 +1,13 @@
+<% content_for :title, "Edit Pulse check — #{@circle.name}" %>
+
+<%= render "admin/shared/canvas_head",
+      crumbs: [["Circles", circles_path], [@circle.name, circle_path(@circle)],
+               ["Pulse check", circle_pulse_path(@circle, @record)], ["Edit", nil]] %>
+
+<header class="perma-header pulse-setup">
+  <h1 class="perma-header__title">Edit Pulse check</h1>
+</header>
+
+<div class="pulse-setup">
+  <%= render "form", pulse: @pulse, url: circle_pulse_path(@circle, @record) %>
+</div>

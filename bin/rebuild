@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# Queue a production static-site rebuild from the local command line:
+#   bin/rebuild W8YRHR   — one account
+#   bin/rebuild          — every account
+kamal app exec --reuse "bin/rails site:rebuild[$1]"

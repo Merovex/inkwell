@@ -1,0 +1,5 @@
+writers:
+  name: Writers Circle
+  slug: WRTRS1
+  owner: alice
+  member_limit: 8

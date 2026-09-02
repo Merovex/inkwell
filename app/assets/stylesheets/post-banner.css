@@ -1,0 +1,43 @@
+/*
+ * .post-banner — the one contextual banner under an admin post's header, state
+ * by state (draft: not-on-the-web + Publish; scheduled: goes-live + Reschedule/
+ * Unschedule; published: live-at + Copy link, and an email nudge). Neutral
+ * surface so accent links and brand buttons read against it. Lead text left,
+ * actions right; wraps on narrow screens.
+ */
+@layer components {
+  .post-banner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--u-pad);
+    /* Sits in the reading column, aligned with the prose below it. */
+    max-inline-size: var(--measure-prose);
+    margin-block-start: var(--u-pad);
+    margin-inline: auto;
+    padding: calc(var(--u-pad) * 1.25);
+    border: var(--border-size-1) solid var(--line);
+    border-radius: var(--radius-2);
+    background: var(--canvas-sunken);
+  }
+  /* The banner block breathes before the article body picks up. */
+  .post-banner + .prose { margin-block-start: calc(var(--u-pad) * 2); }
+  .post-banner--scheduled { background: var(--warning-surface); }
+  /* The "Live at …" banner never wraps: the URL line ellipsizes so Copy link
+     stays on the same row (rather than the wrap dropping the button below). */
+  .post-banner:has(.post-banner__permalink) { flex-wrap: nowrap; }
+  .post-banner:has(.post-banner__permalink) .post-banner__actions { flex: none; }
+
+  .post-banner__body { display: flex; flex-direction: column; gap: calc(var(--u-pad) / 2); min-inline-size: 0; }
+  .post-banner__lead { margin: 0; min-inline-size: 0; flex: 1 1 auto; }
+  /* The "Live at …/url" line stays on one row — the URL ellipsizes rather than
+     wrapping. (Scoped to the permalink lead so the sentence banners still wrap.) */
+  .post-banner__lead:has(.post-banner__permalink) { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .post-banner__sub { margin: 0; font-size: var(--font-size-0); }
+  .post-banner__permalink { color: var(--accent); font-weight: var(--font-weight-6); }
+
+  /* Actions cluster right; the scheduler form is inline so its popover anchors. */
+  .post-banner__actions { display: flex; align-items: center; gap: var(--u-pad); flex-wrap: wrap; }
+  .post-banner__form { display: inline-flex; align-items: center; gap: calc(var(--u-pad) / 2); margin: 0; }
+}

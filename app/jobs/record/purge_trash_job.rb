@@ -4,6 +4,7 @@
 # rich text/attachments.
 class Record::PurgeTrashJob < ApplicationJob
   def perform
-    Record.purgeable.find_each(&:destroy)
+    # A deliberate cross-account sweep: the purge deadline decides, not tenancy.
+    Current.allowing_unscoped_tenancy { Record.purgeable.find_each(&:destroy) }
   end
 end

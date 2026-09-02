@@ -1,0 +1,30 @@
+/*
+ * .gauge — a horizontal scale bar with fixed reference ticks and a value fill,
+ * drawn as an inline SVG so the ticks stay crisp at any width (non-scaling
+ * stroke) while the track stretches to fill. The scale is fixed 0–4 with ticks
+ * at the 1:1 break-even and 3:1 healthy marks; the label positions below are
+ * pinned to those marks (26.5% / 73.5% — must match shared/_gauge's geometry).
+ * Health reads via --good / --trouble. Documented in the style guide.
+ */
+@layer components {
+  .gauge { display: flex; flex-direction: column; gap: calc(var(--u-pad) / 4); }
+
+  .gauge__bar { inline-size: 100%; block-size: var(--size-3); overflow: visible; }
+  .gauge__rail { stroke: var(--fill-track); stroke-width: 6; }
+  .gauge__fill { stroke: var(--accent); stroke-width: 6; }
+  .gauge--good .gauge__fill { stroke: var(--success-ink); }
+  .gauge--trouble .gauge__fill { stroke: var(--warning-ink); }
+  .gauge__tick { stroke: var(--line); stroke-width: 1; }
+
+  /* Labels pinned under their ticks (fixed 0–4 scale: 1 at 26.5%, 3 at 73.5%). */
+  .gauge__labels { position: relative; block-size: var(--font-size-1); }
+  .gauge__label {
+    position: absolute;
+    transform: translateX(-50%);
+    white-space: nowrap;
+    color: var(--ink-muted);
+    font-size: var(--font-size-0);
+  }
+  .gauge__label--breakeven { inset-inline-start: 26.5%; }
+  .gauge__label--healthy { inset-inline-start: 73.5%; }
+}

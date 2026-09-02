@@ -1,0 +1,82 @@
+{{ define "main" }}
+{{/* Identical to series/page.html apart from wording: a collection is the same
+     "ordered shelf of books" shape, so the books render with the home index's
+     fk-series-list + book-card (the cards axis styles them the same). */}}
+{{ $author := hugo.Data.author }}
+{{ $installments := slice }}
+{{ range .Params.books }}
+  {{ with partial "book-by-slug.html" . }}{{ $installments = $installments | append . }}{{ end }}
+{{ end }}
+{{ $first := index $installments 0 }}
+{{ $parts := slice }}
+{{ range $installments }}
+  {{ $parts = $parts | append (dict
+      "@type" "Book"
+      "name" .title
+      "position" .position
+      "datePublished" .publication_date
+      "image" (absURL .cover)
+      "author" (dict "@type" "Person" "name" $author.name)) }}
+{{ end }}
+{{ $ld := dict
+    "@context" "https://schema.org"
+    "@type" "Collection"
+    "name" .Title
+    "url" .Permalink
+    "description" (plainify .Content | replaceRE `\s+` " " | strings.TrimSpace)
+    "author" (dict "@type" "Person" "name" $author.name)
+    "hasPart" $parts
+}}
+<script type="application/ld+json">{{ $ld | jsonify | safeJS }}</script>
+<article class="fk-book-page">
+  <div class="fk-shell">
+    <nav class="fk-breadcrumb" aria-label="Breadcrumb">
+      <ol>
+        <li><a href="{{ site.Home.RelPermalink }}">Home</a></li>
+        <li><a href="{{ site.Home.RelPermalink }}books/">Books</a></li>
+        <li aria-current="page">{{ .Title }}</li>
+      </ol>
+    </nav>
+
+    <header class="fk-book-header">
+      {{ with $first }}{{ partial "img.html" (dict "class" "fk-book-cover" "src" .cover "alt" (printf "Cover of %s" .title) "loading" "eager") }}{{ end }}
+      <div>
+        <p class="fk-kicker">A collection &middot; {{ len $installments }} {{ if eq (len $installments) 1 }}book{{ else }}books{{ end }}</p>
+        <h1>{{ .Title }}</h1>
+        {{ with $first }}
+        <p class="fk-series-actions">
+          <a class="fk-btn fk-btn-primary" href="{{ site.Home.RelPermalink }}books/{{ .slug }}/">Start with {{ .title }}</a>
+        </p>
+        {{ end }}
+      </div>
+    </header>
+
+    <div class="fk-prose">
+      {{ partial "prose.html" .Content }}
+    </div>
+
+    {{/* Same markup as the home index's books section (fk-series-list +
+         book-card), so the cards axis styles them identically. */}}
+    <section aria-labelledby="titles-heading" class="fk-titles">
+      <h2 id="titles-heading" class="fk-section-title">Books in this collection</h2>
+      <div class="fk-series-list">
+        {{ range $i, $b := $installments }}
+          {{ partial "book-card.html" (dict "book" $b "index" $i) }}
+        {{ end }}
+      </div>
+    </section>
+
+    {{/* Prev/next collection, in collections.json order. */}}
+    {{ $all := hugo.Data.collections.collections }}
+    {{ $pos := int .Params.order }}
+    <nav class="fk-series-pager" aria-label="More collections">
+      {{ if gt $pos 0 }}{{ $prev := index $all (sub $pos 1) }}
+        <a href="{{ site.Home.RelPermalink }}collections/{{ $prev.slug }}/" rel="prev">&larr; {{ $prev.title }}</a>
+      {{ end }}
+      {{ if lt (add $pos 1) (len $all) }}{{ $next := index $all (add $pos 1) }}
+        <a href="{{ site.Home.RelPermalink }}collections/{{ $next.slug }}/" rel="next">{{ $next.title }} &rarr;</a>
+      {{ end }}
+    </nav>
+  </div>
+</article>
+{{ end }}

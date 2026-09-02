@@ -1,0 +1,66 @@
+<%# locals: (current:, action_href: nil, action_label: nil, action_data: {}) %>
+<%# The shared board shell for the three sibling views (feed / Pulse Checks /
+    Progress): the canvas head, the two-column grid (header + segmented control
+    + the view's body on the left, the detail rail on the right), and the modal
+    frame. The view's body arrives via content_for(:board_body). Chrome reads
+    the @circle / @pulse / @members / @talkers / @member_count set by
+    load_board_chrome. %>
+<%= render "admin/shared/canvas_head", crumbs: [["Circles", circles_path], [@circle.name, nil]],
+      action_href: action_href, action_label: action_label, action_data: action_data,
+      edit_href: (edit_circle_path(@circle) if allowed_to?(:manage, @circle)) do %>
+  <%# The membership page: roster + invitations (any member may invite). %>
+  <%= link_to "Membership", circle_members_path(@circle), class: "menu__item" %>
+  <%# No exit from the Commons — it's the town square. %>
+  <% unless allowed_to?(:manage, @circle) || @circle.commons? %>
+    <hr class="menu__separator">
+    <%# A member's own exit (Basecamp's "Leave this project"). Owners never see
+        it — they delete or hand off, they don't abandon. %>
+    <%= button_to "Leave this circle", circle_membership_path(@circle), method: :delete,
+          class: "menu__item",
+          form: { data: { turbo_confirm: "Leave #{@circle.name}? You'll need a new invitation to return." } } %>
+  <% end %>
+<% end %>
+
+<%# Live updates: boost broadcasts land on the cards' chip strips. %>
+<%= turbo_stream_from @circle, :wall %>
+
+<div class="circle-board">
+  <div class="circle-board__main">
+    <header class="perma-header">
+      <h1 class="perma-header__title"><%= @circle.name %></h1>
+      <p class="perma-header__content u-text-muted">
+        <%= pluralize(@circle.circle_memberships.count, "member") %><% if @pulse %> · week <%= Date.current.cweek %> closes <%= Date.current.end_of_week.strftime("%A") %><% end %>
+        <%= render "shared/avatar_group", users: @members, limit: 10, size: "small" %>
+      </p>
+      <% if @circle.description.present? %>
+        <p class="perma-header__content"><%= @circle.description %></p>
+      <% end %>
+    </header>
+
+    <%# Board views. Links, not tabs — each is a real navigation to its own
+        route; the current one is aria-current, which the .segmented skin styles
+        as the raised segment. %>
+    <nav class="segmented segmented--start" aria-label="Board views">
+      <%= link_to "Everything", circle_path(@circle), class: "segmented__seg",
+            aria: { current: (current == :everything ? "page" : nil) } %>
+      <%= link_to "Pulse Checks", circle_checks_path(@circle), class: "segmented__seg",
+            aria: { current: (current == :checks ? "page" : nil) } %>
+      <%= link_to "Progress", circle_progress_path(@circle), class: "segmented__seg",
+            aria: { current: (current == :progress ? "page" : nil) } %>
+    </nav>
+
+    <%= yield :board_body %>
+  </div>
+
+  <%# A view can supply its own rail (content_for :board_rail); otherwise the
+      default circle rail (Pulse checks + who's talking). %>
+  <% if content_for?(:board_rail) %>
+    <%= yield :board_rail %>
+  <% else %>
+    <%= render "circles/rail", circle: @circle, pulse: @pulse, decisions: @circle.decisions,
+          talkers: @talkers, member_count: @member_count %>
+  <% end %>
+</div>
+
+<%# The thread/compose/edit modals land here. %>
+<%= turbo_frame_tag "modal" %>

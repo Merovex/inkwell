@@ -51,3 +51,36 @@
   --lexxy-font-base: var(--font-body);
   --lexxy-radius: var(--radius-ui);
 }
+
+/*
+ * Composer: the editor wears the gem's default frame — the same border every
+ * other rich_textarea gets (the settings About field is the reference; a
+ * borderless rich-text surface reads as broken — decided 2026-08-06,
+ * reversing the earlier frameless look). The gem frames :where(lexxy-editor)
+ * UNLAYERED, so restoring it means NOT overriding it: no frame rules here.
+ */
+
+/*
+ * Write/read typography parity: the composer body types at the rhythm .prose
+ * renders — the reading line-height and paragraph spacing — so what you write
+ * is exactly what readers see. MUST be unlayered and load after the gem sheet
+ * (CLAUDE.md cascade hazards): the gem's unlayered frame rules beat any
+ * @layer rule — these once sat in composer.css's @layer components, where
+ * they silently lost. Compact editors (comments, chat) keep Lexxy's rhythm.
+ */
+.composer lexxy-editor {
+  line-height: var(--font-lineheight-4);
+}
+.composer lexxy-editor [contenteditable] > * + * {
+  margin-block-start: var(--size-4);
+}
+
+/*
+ * Compact toolbar — a shorter editor chrome for inline composers (comments,
+ * chat). The toolbar height derives from the button size, so shrinking that
+ * one variable on an ancestor cascades down to the toolbar inside.
+ */
+.lexxy-compact {
+  --lexxy-toolbar-button-size: 1.5lh;
+  --lexxy-toolbar-padding: 1px;
+}

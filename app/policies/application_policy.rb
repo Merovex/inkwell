@@ -57,7 +57,7 @@ class ApplicationPolicy
 
     private
       def admin?
-        user.domain_admin?
+        user.administers?(Current.account)
       end
   end
 
@@ -73,7 +73,7 @@ class ApplicationPolicy
     end
 
     def admin?
-      user.domain_admin?
+      user.administers?(Current.account)
     end
 
     def creator?

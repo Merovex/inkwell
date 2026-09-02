@@ -9,14 +9,19 @@ class SubscriberSunsetJob < ApplicationJob
     return unless Subscriber.sunset_enabled?
 
     # Cheap prefilter: skip the freshly-engaged. The per-row thresholds
-    # (later-of days/emails) are then evaluated in sunset_action.
-    Subscriber.confirmed
-      .where("last_engaged_at IS NULL OR last_engaged_at < ?", Subscriber::RE_ENGAGE_DAYS.days.ago)
-      .find_each do |subscriber|
-        case subscriber.sunset_action
-        when :re_engage then subscriber.send_re_engagement
-        when :drop      then subscriber.unsubscribe!(source: "sunset")
+    # (later-of days/emails) are then evaluated in sunset_action. A deliberate
+    # cross-account sweep; each nudge renders under its subscriber's press.
+    Current.allowing_unscoped_tenancy do
+      Subscriber.sendable
+        .where("last_engaged_at IS NULL OR last_engaged_at < ?", Subscriber::RE_ENGAGE_DAYS.days.ago)
+        .find_each do |subscriber|
+          Current.with_account(subscriber.account) do
+            case subscriber.sunset_action
+            when :re_engage then subscriber.send_re_engagement
+            when :drop      then subscriber.unsubscribe!(source: "sunset")
+            end
+          end
         end
-      end
+    end
   end
 end

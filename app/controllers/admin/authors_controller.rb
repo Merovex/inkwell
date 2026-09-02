@@ -5,7 +5,7 @@ class Admin::AuthorsController < Admin::BaseController
   before_action :set_author, only: %i[edit update destroy]
 
   def index
-    @authors = Author.current.ordered.includes(:record)
+    @authors = Current.account.authors.ordered.includes(:record)
   end
 
   def new
@@ -45,11 +45,11 @@ class Admin::AuthorsController < Admin::BaseController
 
   private
     def set_author
-      @record = Record.active.authors.find(params[:id])
+      @record = Current.account.records.active.authors.find(params[:id])
       @author = @record.recordable
     end
 
     def author_params
-      params.expect(author: [ :name, :bio, :default ])
+      params.expect(author: [ :name, :tagline, :bio, :default ])
     end
 end

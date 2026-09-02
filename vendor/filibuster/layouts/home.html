@@ -1,0 +1,57 @@
+{{ define "main" }}
+{{ $site := hugo.Data.site }}
+{{ $author := hugo.Data.author }}
+{{/* JSON-LD is built as dicts and emitted once via jsonify|safeJS — inside a
+     script element Go's contextual escaping would otherwise re-encode every
+     interpolated value. */}}
+{{ $person := dict
+    "@context" "https://schema.org"
+    "@type" "Person"
+    "name" $author.name
+    "url" site.BaseURL
+    "image" (absURL $author.avatar)
+    "description" (plainify $author.bio_html | replaceRE `\s+` " " | strings.TrimSpace)
+}}
+<script type="application/ld+json">{{ $person | jsonify | safeJS }}</script>
+{{/* The books axis toggles the whole section off the home page (the books/
+     series pages themselves still build and stay in the nav). The series
+     ItemList JSON-LD describes the on-page list, so it goes with it. */}}
+{{ $design := $site.design | default dict }}
+{{ $booksAxis := index (where hugo.Data.theme.axes "key" "books") 0 }}
+{{ $showBooks := ne ((index $design "books") | default $booksAxis.default) "no" }}
+{{ if $showBooks }}
+{{ $items := slice }}
+{{ range $i, $s := hugo.Data.series.series }}
+  {{ $first := partial "book-by-slug.html" (index $s.books 0) }}
+  {{ $item := dict
+      "@type" "BookSeries"
+      "name" $s.title
+      "url" (absURL (printf "series/%s/" $s.slug))
+      "author" (dict "@type" "Person" "name" $author.name) }}
+  {{ with $first }}{{ $item = merge $item (dict "image" (absURL .cover)) }}{{ end }}
+  {{ $items = $items | append (dict "@type" "ListItem" "position" (add $i 1) "item" $item) }}
+{{ end }}
+{{ $list := dict
+    "@context" "https://schema.org"
+    "@type" "ItemList"
+    "name" (printf "Series by %s" $author.name)
+    "itemListElement" $items
+}}
+<script type="application/ld+json">{{ $list | jsonify | safeJS }}</script>
+{{ end }}
+{{/* Slot engine: render sections in the order given by the tenant's
+     site.json (home.sections), defaulting to the standard author-site flow.
+     Each name maps to layouts/_partials/sections/<name>.html. Sections with
+     a home-visibility axis are skipped when it says no. */}}
+{{ $visibility := dict "hero" "hero_home" "books" "books" "bio" "bio_home" "authors" "authors" }}
+{{ $sections := $site.home.sections | default (slice "hero" "books" "posts" "bio" "authors" "newsletter") }}
+{{ range $sections }}
+  {{ $shown := true }}
+  {{ with index $visibility . }}
+    {{ $axis := index (where hugo.Data.theme.axes "key" .) 0 }}
+    {{ $shown = ne ((index $design .) | default $axis.default) "no" }}
+  {{ end }}
+  {{ if not $shown }}{{ continue }}{{ end }}
+  {{ partial (printf "sections/%s.html" .) $ }}
+{{ end }}
+{{ end }}

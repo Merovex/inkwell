@@ -1,0 +1,27 @@
+/* App header: home (left), the brand trigger that opens the workspace
+   switcher (center — see layouts/_app_menu_switcher + switcher.css), and
+   notifications/user menu (right). */
+@layer components {
+  /* Center the brand/trigger in the top bar (Home left, actions right). */
+  .bar.app-header { position: relative; }
+  .app-header__home { display: inline-flex; align-items: center; color: var(--ink); }
+  .app-header__home:hover { color: var(--accent-ink, var(--ink)); }
+  .app-menu-trigger {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    display: inline-flex;
+    align-items: center;
+    gap: var(--size-1);
+    padding: 0;
+    border: 0;
+    background: transparent;
+    font: inherit;
+    font-weight: var(--font-weight-8);
+    color: inherit;
+    cursor: pointer;
+  }
+  .app-menu-trigger__logo { display: block; border-radius: var(--radius-2); }
+  .app-menu-trigger__chevron { color: var(--ink-muted); }
+}

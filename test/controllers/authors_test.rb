@@ -32,7 +32,7 @@ class AuthorsTest < ActionDispatch::IntegrationTest
     author = originate_author("Ben Wilson")
     posts(:kickoff).update_column(:author_record_id, author.record_id)
 
-    get "/blog/#{records(:kickoff).to_slug}"
+    get "/posts/#{records(:kickoff).to_slug}"
     assert_response :success
     assert_select ".press-muted a[href=?]", author_page_path(author.public_slug), text: "Ben Wilson"
     assert_match '"@type":"Article"', response.body   # JSON-LD

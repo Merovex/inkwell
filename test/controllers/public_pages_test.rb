@@ -4,7 +4,7 @@ require "test_helper"
 # sitemap, legal pages, and the buy-link click-through.
 class PublicPagesTest < ActionDispatch::IntegrationTest
   test "the blog RSS feed lists published posts" do
-    get "/blog/feed.rss"
+    get "/posts/feed.rss"
     assert_response :success
     assert_equal "application/rss+xml", response.media_type
     assert_includes response.body, "<rss"
@@ -35,11 +35,12 @@ class PublicPagesTest < ActionDispatch::IntegrationTest
     get "/sitemap.xml"
     assert_response :success
     assert_includes response.body, "<urlset"
-    assert_includes response.body, blog_post_url(records(:kickoff).to_slug)
+    assert_includes response.body, post_url(records(:kickoff).to_slug)
   end
 
-  test "legal pages render the admin-authored rich text" do
-    Setting.current.update!(privacy_policy: "<p>We respect your cookies.</p>", terms: "<p>Be excellent.</p>")
+  test "legal pages render their Page content" do
+    write_page "privacy", "<p>We respect your cookies.</p>"
+    write_page "terms", "<p>Be excellent.</p>"
 
     get privacy_path
     assert_response :success
@@ -58,11 +59,19 @@ class PublicPagesTest < ActionDispatch::IntegrationTest
   end
 
   test "the footer links to a legal page only when it has content" do
-    Setting.current.update!(privacy_policy: "<p>present</p>", terms: "")
+    write_page "privacy", "<p>present</p>"
 
     get root_path
     assert_select "a[href=?]", privacy_path
     assert_select "a[href=?]", terms_path, count: 0
+  end
+
+  test "the footer drops a legal link when its page is unpublished" do
+    write_page "privacy", "<p>present</p>"
+    accounts(:merovex).page("privacy").unpublish
+
+    get root_path
+    assert_select "a[href=?]", privacy_path, count: 0
   end
 
   test "a buy link counts the click and redirects to the store" do
@@ -74,4 +83,45 @@ class PublicPagesTest < ActionDispatch::IntegrationTest
     end
     assert_redirected_to "https://www.amazon.com/dp/B000"
   end
+
+  test "another press's buy link does not resolve here" do
+    other = Account.create!(name: "Other Press", owner: users(:alice))
+    foreign = Current.with_account(other) do
+      record = Record.create!(recordable_type: "Book", creator: users(:alice))
+      Distributor.create!(record: record, url: "https://www.amazon.com/dp/B999")
+    end
+
+    assert_no_difference -> { foreign.reload.clicks } do
+      get buy_path(foreign)
+    end
+    assert_response :not_found
+  end
+
+  test "with island auth provisioned, a buy link without the Worker's header is refused" do
+    record = Record.create!(recordable_type: "Book", creator: users(:alice))
+    distributor = Distributor.create!(record: record, url: "https://www.amazon.com/dp/B000")
+
+    with_island_auth_secrets [ "edge-secret" ] do
+      assert_no_difference -> { distributor.reload.clicks } do
+        get buy_path(distributor)
+      end
+      assert_response :forbidden
+
+      get buy_path(distributor), headers: { "X-Island-Auth" => "edge-secret" }
+      assert_redirected_to "https://www.amazon.com/dp/B000"
+    end
+  end
+
+  private
+    def with_island_auth_secrets(secrets)
+      original = Rails.configuration.x.island_auth_secrets
+      Rails.configuration.x.island_auth_secrets = secrets
+      yield
+    ensure
+      Rails.configuration.x.island_auth_secrets = original
+    end
+
+    def write_page(slug, html)
+      accounts(:merovex).page(slug).record.save_edit(content: html, creator: users(:alice))
+    end
 end

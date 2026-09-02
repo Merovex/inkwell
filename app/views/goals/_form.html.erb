@@ -1,0 +1,135 @@
+<%# locals: (goal:, url:, submit:, modal: false) %>
+<%# The unit and target share a line — one concept ("50,000 words") split %>
+<%# across two controls. In the modal, Cancel closes the dialog; on the edit %>
+<%# page it links back to the goal. %>
+<%= render "admin/shared/error_summary", model: goal %>
+
+<%= form_with model: goal, url: url, class: "u-stack",
+      data: ({ turbo_frame: "_top" } if modal) do |f| %>
+  <div class="field">
+    <%= f.label :title, class: "field__label" %>
+    <%= f.text_field :title, class: "field__control", required: true, autofocus: true,
+          placeholder: "Draft the novel" %>
+  </div>
+
+  <%# One sentence across three controls: "50000 · words · in total" (a
+      project), "2000 · words · per day" (a rate). Blank target = a logbook;
+      picking a per makes the target required (validated server-side). %>
+  <div class="field-row">
+    <div class="field">
+      <%= f.label :target, "Target (optional)", class: "field__label" %>
+      <%= f.number_field :target, class: "field__control", min: 1, placeholder: "50000" %>
+    </div>
+
+    <div class="field">
+      <%= f.label :unit, "Measured in", class: "field__label" %>
+      <span class="field__select">
+        <%= f.select :unit, Goal::UNITS.map { |u| [u.capitalize, u] }, {}, class: "field__control" %>
+        <%= inline_svg_tag "lucide/chevron-down.svg", class: "lucide", size: "16px" %>
+      </span>
+    </div>
+
+    <div class="field">
+      <%= f.label :per, class: "field__label" %>
+      <span class="field__select">
+        <%= f.select :per, [["in total", ""]] + Goal::PERIODS.map { |p| ["per #{p}", p] }, {}, class: "field__control" %>
+        <%= inline_svg_tag "lucide/chevron-down.svg", class: "lucide", size: "16px" %>
+      </span>
+    </div>
+  </div>
+
+  <%# The finish line — in-total goals only ("50,000 by Nov 30"), NaNo-style.
+      A deadline turns the Pace card into the race line. Start optional:
+      blank anchors the line at your first tally. %>
+  <div class="field-row">
+    <div class="field">
+      <%= f.label :ends_on, "Deadline (optional)", class: "field__label" %>
+      <%= f.date_field :ends_on, class: "field__control" %>
+    </div>
+
+    <div class="field">
+      <%= f.label :starts_on, "Starts (optional)", class: "field__label" %>
+      <%= f.date_field :starts_on, class: "field__control" %>
+    </div>
+  </div>
+
+  <%# Progress views — a SET of sample cards (checkbox-backed): pick several
+      and the goal's card stacks them in canonical order; pick none for auto
+      (by shape). Each picked card wears the accent ring. Samples are demo
+      numbers, not the goal's data. %>
+  <fieldset class="field">
+    <legend class="field__label">Progress views <span class="u-text-muted">— pick any; none = auto (by shape)</span></legend>
+    <%= hidden_field_tag "goal[displays][]", "" %>
+    <div class="display-cards">
+      <label class="goal-stat display-card">
+        <%= f.check_box :displays, { multiple: true, class: "display-card__input",
+              checked: goal.displays.include?("ring") }, "ring", nil %>
+        <span class="goal-stat__label u-microcaps">Ring</span>
+        <%= goal_stat_ring(58, radius: 20) %>
+        <span class="goal-stat__meta">current period</span>
+      </label>
+
+      <label class="goal-stat display-card">
+        <%= f.check_box :displays, { multiple: true, class: "display-card__input",
+              checked: goal.displays.include?("pace") }, "pace", nil %>
+        <span class="goal-stat__label u-microcaps">Pace</span>
+        <span class="goal-stat__value">1,840<span class="goal-stat__per">behind pace</span></span>
+        <%= goal_pace_chart_svg([0, 900, 2100, 3400, 5200, 6600, 8600, 9900, 12200], target: 50_000, days: 30) %>
+        <span class="goal-stat__meta">vs your deadline · 30-day average without one</span>
+      </label>
+
+      <label class="goal-stat display-card">
+        <%= f.check_box :displays, { multiple: true, class: "display-card__input",
+              checked: goal.displays.include?("rolling") }, "rolling", nil %>
+        <span class="goal-stat__label u-microcaps">Rolling</span>
+        <span class="goal-stat__value">1,160<span class="goal-stat__per">/day</span></span>
+        <%= goal_stat_line([420, 480, 460, 540, 610, 590, 680, 720, 760, 810, 900, 940, 1010, 1080, 1160]) %>
+        <span class="goal-stat__meta">90-day trend, smoothed</span>
+      </label>
+
+      <label class="goal-stat display-card">
+        <%= f.check_box :displays, { multiple: true, class: "display-card__input",
+              checked: goal.displays.include?("last30") }, "last30", nil %>
+        <span class="goal-stat__label u-microcaps">Last 30 days</span>
+        <span class="goal-stat__value">19,200</span>
+        <%= goal_stat_bars([820, 0, 1150, 640, 990, 300, 1210, 400, 760, 0, 880, 1020, 150, 690],
+              labels: (1..14).map { |d| "Day #{d}" }) %>
+        <span class="goal-stat__meta">daily bars</span>
+      </label>
+
+      <label class="goal-stat display-card">
+        <%= f.check_box :displays, { multiple: true, class: "display-card__input",
+              checked: goal.displays.include?("calendar") }, "calendar", nil %>
+        <span class="goal-stat__label u-microcaps">Calendar</span>
+        <div class="goal-history__month" aria-hidden="true">
+          <% 35.times do |i| %>
+            <span class="goal-history__day<%= " goal-history__day--logged" if (i * 13 % 4) != 0 %>"></span>
+          <% end %>
+        </div>
+        <span class="goal-stat__meta">days you logged</span>
+      </label>
+
+      <label class="goal-stat display-card">
+        <%= f.check_box :displays, { multiple: true, class: "display-card__input",
+              checked: goal.displays.include?("heatmap") }, "heatmap", nil %>
+        <span class="goal-stat__label u-microcaps">Heatmap</span>
+        <div class="goal-history__heat" aria-hidden="true">
+          <% (12 * 7).times do |i| %>
+            <span class="goal-history__cell" data-level="<%= (i * 37 % 7) < 2 ? 0 : (i * 13 % 4) %>"></span>
+          <% end %>
+        </div>
+        <span class="goal-stat__meta">the long arc · full-width card</span>
+      </label>
+    </div>
+  </fieldset>
+
+  <div class="form__action">
+    <%= f.submit submit, class: "button button--primary" %>
+    <% if modal %>
+      <button type="button" class="button" data-action="dialog#close">Cancel</button>
+    <% else %>
+      <%= link_to "Cancel", (goal.persisted? ? goal_path(goal.record) : goals_path), class: "button" %>
+    <% end %>
+  </div>
+
+<% end %>

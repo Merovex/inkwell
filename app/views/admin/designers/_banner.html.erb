@@ -1,0 +1,18 @@
+<%# The hero banner slot ("Banner image" hero background), with the photo
+    credit that rides the design's hero block (hero.banner_credit). %>
+<%= render "image_slot", slot: :banner, heading: "Banner image",
+      upload_label: "Upload banner image",
+      hint: "Shows when the hero background is Banner image. Wide images work best." %>
+<div class="field">
+  <label class="field__label" for="designer-banner-credit">Photo credit</label>
+  <input type="text" id="designer-banner-credit" class="field__control" maxlength="120"
+         placeholder="Photo by Jane Doe on Unsplash"
+         data-designer-target="heroBannerCredit" data-action="input->designer#heroEdited">
+</div>
+<div class="field">
+  <label class="field__label" for="designer-banner-credit-url">Credit link</label>
+  <input type="url" id="designer-banner-credit-url" class="field__control"
+         placeholder="https://&hellip;"
+         data-designer-target="heroBannerCreditUrl" data-action="input->designer#heroEdited">
+</div>
+<p class="designer__hint u-text-muted">Shown small over the banner image; leave blank to show nothing. The link is optional.</p>

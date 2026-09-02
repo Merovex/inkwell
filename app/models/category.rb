@@ -8,7 +8,10 @@ class Category < ApplicationRecord
   NAME_MAX_LENGTH = 64
   ICON_MAX_LENGTH = 16
 
-  validates :name, presence: true, uniqueness: true, length: { maximum: NAME_MAX_LENGTH }
+  # Each press names its own categories.
+  belongs_to :account, default: -> { Current.account }
+
+  validates :name, presence: true, uniqueness: { scope: :account_id }, length: { maximum: NAME_MAX_LENGTH }
   validates :icon, presence: true, length: { maximum: ICON_MAX_LENGTH }
 
   scope :ordered, -> { order(:name) }

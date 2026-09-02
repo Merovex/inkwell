@@ -6,11 +6,37 @@
 class Record < ApplicationRecord
   include Boostable
 
+  # Mention notifications sourced to this record (see Mentions); stamped
+  # copies survive the record via nullify.
+  has_many :notifications, as: :source, dependent: :nullify
+
   # Content types that may live in the envelope; grows as recordables are added.
-  RECORDABLE_TYPES = %w[ Post Comment ChatLine Message Book Series Author Drip Drop ]
+  RECORDABLE_TYPES = %w[ Post Comment ChatLine Message Book Series Collection Author Drip Drop Site Pulse Beat Goal Tally Bulletin Page ]
+  # Platform content belongs to the App itself, not any bucket — a NIL bucket
+  # is its tenancy (originate with an explicit bucket: nil).
+  PLATFORM_TYPES = %w[ Bulletin ].freeze
 
   delegated_type :recordable, types: RECORDABLE_TYPES, optional: true
   belongs_to :creator, class_name: "User", default: -> { Current.user }
+  # Tenancy is stamped at birth and never changes: the bucket that owns this
+  # record — an Account (the site) or a Circle. The active bucket is whichever
+  # namespace set Current.bucket; account space leaves it unset, so we fall back
+  # to Current.account (the site is always the default owner). Platform types
+  # are the one exception — no bucket at all, and the default must decide that
+  # HERE: `default:` fires whenever the association is nil, so an explicit
+  # `bucket: nil` at create can never beat it.
+  belongs_to :bucket, polymorphic: true, optional: true,
+    default: -> { Current.bucket || Current.account unless PLATFORM_TYPES.include?(recordable_type) }
+  validates :bucket, presence: true, unless: -> { PLATFORM_TYPES.include?(recordable_type) }
+
+  # The public path of the types whose URL is their identity (Pages today).
+  # Sparse: everything else leaves it NULL and keeps the id-first #to_slug.
+  # One /about/ per bucket, enforced by a partial unique index — this
+  # validation only exists to turn the collision into a message. Permanent
+  # once set: renaming a page breaks every link that ever pointed at it, so
+  # the answer is a new page, not a moved one.
+  validates :slug, uniqueness: { scope: %i[ bucket_type bucket_id ] }, allow_nil: true
+  validate :slug_is_permanent, on: :update
 
   # Self-referential threading: a comment's record will parent to the record it
   # comments on; same mechanism for any future child content.
@@ -29,28 +55,37 @@ class Record < ApplicationRecord
   scope :active,  -> { where(trashed_at: nil) }
   scope :trashed, -> { where.not(trashed_at: nil) }
   scope :purgeable, -> { trashed.where(purge_after: ..Time.current) }
+  # Archive is a separate axis from trash: a permanent, reversible set-aside
+  # (no purge). `listed` is what the default lists show — neither trashed nor
+  # archived; `archived` is the set-aside, still active so it can be reopened.
+  scope :listed,   -> { active.where(archived_at: nil) }
+  scope :archived, -> { active.where.not(archived_at: nil) }
   scope :posts, -> { where(recordable_type: "Post") }
   scope :comments, -> { where(recordable_type: "Comment") }
   scope :chat_lines, -> { where(recordable_type: "ChatLine") }
   scope :messages, -> { where(recordable_type: "Message") }
   scope :books, -> { where(recordable_type: "Book") }
   scope :series, -> { where(recordable_type: "Series") }
+  scope :collections, -> { where(recordable_type: "Collection") }
   scope :authors, -> { where(recordable_type: "Author") }
   scope :drips, -> { where(recordable_type: "Drip") }
   scope :drops, -> { where(recordable_type: "Drop") }
-  # Most-recently-touched live records, recordable preloaded — the app menu's
-  # "Recent" list composes this with a type filter (see AppMenuHelper).
-  scope :recently_active, -> { active.includes(:recordable).order(updated_at: :desc) }
+  scope :goals, -> { where(recordable_type: "Goal") }
+  scope :tickets, -> { where(recordable_type: "Ticket") }
+  scope :tallies, -> { where(recordable_type: "Tally") }
+  scope :bulletins, -> { where(recordable_type: "Bulletin") }
+  scope :pages, -> { where(recordable_type: "Page") }
 
   before_destroy :destroy_versions
 
   # Birth of a record: the row must exist before its first version can carry
   # record_id, then the cursor points at that version — one transaction. The
   # record's creator is the first version's author, always. Child content
-  # (comments) passes the record it hangs from as parent.
-  def self.originate(version, parent: nil)
+  # (comments) passes the record it hangs from as parent. Platform types get
+  # their nil bucket from the bucket default above — by type, not by caller.
+  def self.originate(version, parent: nil, slug: nil)
     transaction do
-      create!(recordable_type: version.class.name, creator: version.creator, parent: parent).tap do |record|
+      create!(recordable_type: version.class.name, creator: version.creator, parent: parent, slug: slug).tap do |record|
         version.update!(record: record)
         record.update!(recordable: version)
       end
@@ -62,6 +97,23 @@ class Record < ApplicationRecord
   def versions
     recordable_class.where(record_id: id).order(:id)
   end
+
+  # The static-site rebuild trigger (docs/phase-2-static-serving.md §2.3):
+  # a revision or trash/restore on a Site's public content re-publishes the
+  # static build. Only record-row UPDATES fire — draft churn amends the
+  # version row in place and never moves the cursor, so drafts don't build.
+  # Mutable types (Site, Author) hook their own models for the same reason.
+  #
+  # Born-published content (create + publish in one transaction — e.g. the
+  # posts controller's publish-at-create) commits as a CREATE, so the update
+  # callback never fires; the create hook catches exactly that case. Types
+  # without published? (Site at account birth) stay quiet.
+  # Distinct method names — a second after_*_commit registering the same
+  # method would silently replace the first. originate's create+update in one
+  # transaction commits as a CREATE, so only the create hook sees new records.
+  STATIC_SITE_TYPES = %w[ Site Post Book Series Collection Author Page ].freeze
+  after_update_commit :schedule_site_build
+  after_create_commit :schedule_site_build_if_born_published
 
   # Insert the next immutable version and repoint the cursor. Returns the
   # version (unsaved, with errors, when invalid — the cursor then stays put).
@@ -111,6 +163,8 @@ class Record < ApplicationRecord
   # a timing gate, not security (see BlogController#show). Once published the key
   # drops and the clean slug takes over.
   def to_slug
+    return slug if slug.present?
+
     base = [ id, recordable&.try(:title).presence&.parameterize ].compact.join("-")
     recordable.try(:published?) == false ? "#{base}-#{preview_key}" : base
   end
@@ -127,6 +181,31 @@ class Record < ApplicationRecord
   end
 
   def trashed? = trashed_at.present?
+  def archived? = archived_at.present?
+
+  # Who may change vs. moderate this record, bucket-agnostically. Editing (the
+  # words) is the author's alone; moderating (archive, trash) is the author OR
+  # the bucket's owner — the circle owner, or an account admin. So a bucket
+  # owner always has a moderation override, whatever the content type.
+  def editable_by?(user) = user.present? && creator_id == user.id
+  def moderatable_by?(user) = editable_by?(user) || bucket&.moderated_by?(user)
+
+  # Set aside without deleting: a tracked event, kept indefinitely (no purge
+  # deadline), reversible via #unarchive. Orthogonal to trash — the default
+  # lists (Record.listed) hide archived content; the archived view surfaces it.
+  def archive
+    transaction do
+      revise(event: :archived)
+      update! archived_at: Time.current
+    end
+  end
+
+  def unarchive
+    transaction do
+      revise(event: :unarchived)
+      update! archived_at: nil
+    end
+  end
 
   # Staged deletion, always on the history regardless of draft/published.
   # Recoverable until the purge deadline: the recordable's retention_period
@@ -146,7 +225,23 @@ class Record < ApplicationRecord
   end
 
   private
+    def slug_is_permanent
+      errors.add(:slug, "can't be changed once a page is live") if slug_changed? && slug_was.present?
+    end
+
     def destroy_versions
       versions.find_each(&:destroy)
+    end
+
+    def schedule_site_build
+      return unless bucket_type == "Account" && STATIC_SITE_TYPES.include?(recordable_type)
+      SiteBuildJob.schedule(bucket)
+    end
+
+    # Born-published content (create + publish in one transaction, e.g. the
+    # posts controller's publish-at-create) builds; drafts stay quiet, as do
+    # types without published? (Site at account birth).
+    def schedule_site_build_if_born_published
+      schedule_site_build if recordable.try(:published?)
     end
 end

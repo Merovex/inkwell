@@ -28,6 +28,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # bin/importmap audit boots the app, and Bundler.require loads
+      # ruby-vips — which needs the system libvips the test job also installs.
+      - name: Install packages
+        run: sudo apt-get update && sudo apt-get install --no-install-recommends -y libvips
+
       - name: Checkout code
         uses: actions/checkout@v6
 

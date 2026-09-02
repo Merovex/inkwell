@@ -4,8 +4,8 @@ title: SES/SNS migration runbook — Phase 0 (AWS + DNS)
 status: active
 tags: [rails, email, ses, sns, aws, dns, runbook, migration]
 created: 2026-07-10
-updated: 2026-07-10
-sources: [decisions/0015-email-relay-mailgun-to-ses.md]
+updated: 2026-08-05
+sources: [decisions/0015-email-relay-mailgun-to-ses.md, decisions/0025-canonical-delivery-events.md]
 ---
 
 # SES/SNS migration runbook — Phase 0 (AWS + DNS)
@@ -40,6 +40,44 @@ next. Check boxes as you go; this is a living doc.
 | DMARC report inbox | `dmarc@merovex.com` | cross-domain → needs the `_report._dmarc` authz record on merovex.com (Step 4) |
 
 Where you edit DNS: **______** (registrar / Cloudflare / Route 53 — note it here).
+
+## Round 2 — platform identities (kindredquill.com), 2026-08-05
+
+The multitenant cut: sending identities become **platform-owned** (every
+tenant's mail authenticates as kindredquill.com, tenant name as display label,
+tenant contact as Reply-To — the Substack model). Split per the settled
+provider policy ([[0025-canonical-delivery-events]] + log note 2026-08-05):
+**SES gets only the bulk identity; the must-deliver identity is verified in
+Postmark, not SES.**
+
+| Key | Value | Notes |
+|-----|-------|-------|
+| Root domain | `kindredquill.com` | DMARC published here; **never sends** |
+| AWS region | `us-east-1` | unchanged |
+| **Bulk** identity (SES) | `news.kindredquill.com` | broadcasts + drips + welcome; future `ses.marketing_from` |
+| Bulk MAIL FROM | `bounce.news.kindredquill.com` | SPF alignment |
+| **Must-deliver** identity (Postmark) | `auth.kindredquill.com` | sign-in codes, magic links, opt-in confirmations |
+| Standby (Postmark, optional) | `news.kindredquill.com` | dual-verify → ESP flip keeps one From identity |
+| Tracking | default SES domain | Step 5 decision stands |
+| SNS webhook URL | `https://app.kindredquill.com/webhooks/ses` | webhook routes are host-unconstrained |
+| DMARC report inbox | `dmarc@merovex.com` | needs `kindredquill.com._report._dmarc.merovex.com` TXT (Step 4 pattern) |
+
+Steps that apply, against the checklist below: **2** (one identity in SES:
+`news.` only — auth goes in the Postmark console instead), **3** (MAIL FROM on
+`news.`), **4** (DMARC on the kindredquill.com root + the cross-domain report
+authz on merovex.com), **6** (reuse the existing `inkwell-marketing` /
+`inkwell-transactional` config sets — nothing new to create), **7** (same SNS
+topic; add/confirm the app-host subscription), **8 as revised** (suppression
+stays OFF). Sandbox exit (9) is already done — the account is shared.
+
+Identity cleanup once cutover lands: drop `auth.merovex.press` (SES carries no
+auth mail), drop the cohwall identities (owner, 2026-08-05); keep
+`news.merovex.press` until `ses.marketing_from` points at the new identity.
+`verkilo.com` is another product — untouched. Code follow-ups at cutover:
+`ses.marketing_from` credential → the new address; `marketing_from`'s
+hardcoded "Ben Wilson" display name → the tenant's site name; transactional
+default From moves off the root (`support@kindredquill.com` → an
+`auth.kindredquill.com` sender, keeping support@ as the human mailbox).
 
 > **Reputation split in one line:** transactional signs `d=auth.merovex.press`,
 > marketing signs `d=news.merovex.press`; receivers score them separately, so the
@@ -183,6 +221,15 @@ message** (Phase 1). The mapping we'll wire:
 3. **Event destination** → publish to **SNS** (topic from Step 7). Subscribe to:
    **Send, Delivery, Bounce, Complaint, Open, Click, Reject, Rendering Failure**.
 
+> **Where these land (Phase 2, built):** `Webhooks::SesController` translates
+> every event into a canonical `DeliveryEvent` ([[0025-canonical-delivery-events]]):
+> Permanent bounce → `hard_bounce` (suppresses), `Suppressed`/
+> `OnAccountSuppressionList` subtypes → `suppressed` (record-only, see Step 8),
+> Transient → `soft_bounce` (suppresses after 3 straight), Complaint →
+> `complaint` (suppresses as `complained`), Reject/Rendering Failure →
+> `rejected` (record-only — our reputation, not their mailbox). Raw payloads
+> are stored for replay; SNS redeliveries dedupe on the SES message id.
+
 **6b. `inkwell-transactional`**
 1. Create configuration set `inkwell-transactional`.
 2. **No** custom redirect domain.
@@ -208,15 +255,27 @@ message** (Phase 1). The mapping we'll wire:
 
 **Verify:** subscription state is **Confirmed** (revisit after Phase 2 if needed).
 
-## Step 8 — Account-level suppression (the net)  ☐
-**Goal:** SES auto-suppresses hard bounces/complaints so we never re-send, even if
-an app-side write is missed. App-side `Subscriber` stays source of truth (ADR 0011);
-this is redundancy.
+## Step 8 — Account-level suppression: leave it OFF  ☐
+> **Revised 2026-08-05 by [[0025-canonical-delivery-events]]** — this step
+> originally said to enable suppression as redundancy. Reversed: the app-side
+> `Subscriber` table (ADR 0011) is the **only** suppression list. With the AWS
+> net enabled, SES silently drops sends to listed addresses and
+> `Subscriber.status` drifts from reality — we believe we sent, nothing went out,
+> and no bounce ever comes back to tell us.
 
-1. SES → **Configuration → Suppression list** → enable account-level suppression
-   for **Bounces and Complaints**.
+1. SES → **Configuration → Suppression list** → account-level suppression
+   **disabled** for both reasons (Bounces and Complaints).
+2. The app-side net that replaces it (already wired, Phase 2):
+   `Webhooks::SesController` maps a `Permanent` bounce with subtype
+   `Suppressed`/`OnAccountSuppressionList` to canonical **`suppressed`** —
+   record-only, never a hard bounce (the mail was never sent, so it says
+   nothing about the mailbox). If one of these ever arrives for a subscriber we
+   think is `confirmed`, that's the drift alarm: AWS has a list entry we don't.
+   Clear it under **Suppression list → the address → Remove**.
 
-**Verify:** suppression reasons show Bounce + Complaint enabled.
+**Verify:** suppression list shows account-level suppression disabled; a re-sent
+address that previously bounced in the sandbox gets a real send attempt (and a
+real bounce event), not a silent drop.
 
 ## Step 9 — Request production access (sandbox exit)  ☐  ⏳ long-lead
 **Goal:** leave the sandbox (sandbox = 200/day + only verified recipients).
@@ -239,11 +298,11 @@ this is redundancy.
 - [ ] Tracking domain active on `inkwell-marketing` (Step 5)
 - [ ] Both configuration sets present with the right event sets (Step 6)
 - [ ] SNS topic created; subscription **Confirmed** after Phase 2 (Step 7)
-- [ ] Account suppression on (Step 8)
+- [ ] Account suppression **off** — app DB is the suppression list (Step 8, per [[0025-canonical-delivery-events]])
 - [ ] **Production access enabled** (Step 9)
 
 Then Phase 1 (sending) can flip. Gems for Phase 1 (reference): `aws-sdk-rails ~> 5`
 + `aws-actionmailer-ses ~> 1`; `delivery_method = :ses_v2`, `ses_v2_settings = { region: ... }`.
 
 ## Links
-Decision: [[0015-email-relay-mailgun-to-ses]] · Consent trail: [[0011-subscribers-and-consent-log]]
+Decision: [[0015-email-relay-mailgun-to-ses]] · Consent trail: [[0011-subscribers-and-consent-log]] · Event canon: [[0025-canonical-delivery-events]]

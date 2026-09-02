@@ -1,6 +1,10 @@
-<% content_for :title, "Edit drop — Inkwell" %>
+<% content_for :title, @drop.subject %>
 
 <%= render "admin/shared/canvas_head",
-      crumbs: [["Drips", admin_drips_path], [@drip.title, admin_drip_path(@record)], [@drop.subject, nil]] %>
+      crumbs: [["Campaigns", admin_drips_path], [@drip.title, admin_drip_path(@record)], [@drop.subject, nil]],
+      menu: false do %>
+  <button type="submit" form="step-form" class="button button--primary">Save</button>
+<% end %>
 
-<%= render "form", drop: @drop, url: admin_drip_drop_path(@record, @drop_record) %>
+<%= render "form", drop: @drop, url: admin_drip_drop_path(@record, @drop_record),
+      stats: @step_stats, position: @position, count: @count %>

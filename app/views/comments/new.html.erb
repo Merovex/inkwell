@@ -1,0 +1,7 @@
+<%# Swapped into the parent page's prompt frame: the prompt row becomes the
+<%# composer row. Shared by every comment surface (posts, forum, circles,
+<%# support tickets) — the form resolves its routes through the bucket-aware
+<%# CommentsHelper. %>
+<%= turbo_frame_tag "new_comment" do %>
+  <%= render "admin/comments/form", record: @parent %>
+<% end %>

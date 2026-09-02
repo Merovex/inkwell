@@ -1,0 +1,12 @@
+{{/* The featured book: the hero content block's pick (site.json hero.book,
+     a slug) when present and published, else the newest publication_date
+     across data/books.json.
+     Usage: $featured := partial "featured-book.html" . */}}
+{{- $pick := "" -}}
+{{- with hugo.Data.site.hero -}}
+  {{- with .book -}}
+    {{- $pick = index (where hugo.Data.books.books "slug" .) 0 -}}
+  {{- end -}}
+{{- end -}}
+{{- $sorted := sort hugo.Data.books.books "publication_date" "desc" -}}
+{{- return $pick | default (index $sorted 0) -}}

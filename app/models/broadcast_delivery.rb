@@ -7,13 +7,14 @@
 class BroadcastDelivery < ApplicationRecord
   belongs_to :broadcast
   belongs_to :subscriber
+  has_many :delivery_events, as: :delivery, dependent: :nullify
 
   # Opens and clicks count as engagement — they reset the subscriber's sunset clock.
   ENGAGEMENT = %w[ opened clicked ].freeze
 
   # Internal event name → [ this delivery's milestone column, broadcast counter ].
-  # Webhooks::SesController translates SES event types into these names; the
-  # app-side unsubscribe path records "unsubscribed" directly.
+  # DeliveryEvent#apply! translates canonical provider events into these names;
+  # the app-side unsubscribe path records "unsubscribed" directly.
   EVENTS = {
     "delivered"    => [ :delivered_at,    :delivered_count ],
     "opened"       => [ :opened_at,       :opened_count ],

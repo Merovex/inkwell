@@ -1,0 +1,10 @@
+{{- /* The one way to render a contract image. Dimension attributes come from
+     data/image_sizes.json (exporter-measured), so the browser reserves the
+     box before the file arrives — layout never shifts when images land (CLS).
+     Unmeasured images (SVG) simply omit the attributes; the reset's
+     `height: auto` keeps the attrs acting as an aspect-ratio hint only.
+
+     Args: src (contract path "images/…"), alt, class, loading ("lazy"
+     default), fetchpriority. */ -}}
+{{- $dims := index (hugo.Data.image_sizes | default dict) .src -}}
+<img{{ with .class }} class="{{ . }}"{{ end }} src="{{ site.Home.RelPermalink }}{{ .src }}"{{ with $dims }} width="{{ index . 0 }}" height="{{ index . 1 }}"{{ end }} alt="{{ .alt }}" loading="{{ .loading | default `lazy` }}"{{ with .fetchpriority }} fetchpriority="{{ . }}"{{ end }}>

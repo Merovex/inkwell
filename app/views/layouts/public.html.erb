@@ -23,12 +23,14 @@
   </head>
 
   <body class="press">
+    <a href="#main-content" class="u-skip-link">Skip to content</a>
     <nav class="press-nav" aria-label="Main navigation">
       <div class="press-nav__inner">
         <%= link_to root_path, class: "press-brand", aria: { label: "#{site_settings.site_name} home" } do %>
           <span class="press-brand__mark">
             <% if site_settings.logo.attached? %>
-              <%= image_tag site_settings.logo, alt: site_settings.site_name %>
+              <%# label: nil — the brand link's aria-label already names the site. %>
+              <%= render "shared/logo", site: site_settings, label: nil %>
             <% else %>
               <%= inline_svg_tag "merovex-mark.svg" %>
             <% end %>
@@ -37,10 +39,7 @@
         <% end %>
 
         <div class="press-nav__links">
-          <%= link_to "Home", root_path, class: "press-nav__link#{' is-active' if current_page?(root_path)}" %>
-          <%= link_to "Books", books_path, class: "press-nav__link#{' is-active' if controller_name == 'books'}" %>
-          <%= link_to "Blog", blog_path, class: "press-nav__link#{' is-active' if controller_name == 'blog'}" %>
-          <%= link_to "About", about_path, class: "press-nav__link#{' is-active' if current_page?(about_path)}" %>
+          <%= render "layouts/public_nav_links", link_class: "press-nav__link" %>
         </div>
 
         <div class="u-cluster">
@@ -56,10 +55,7 @@
       </div>
 
       <div id="press-nav-menu" class="press-nav__menu" hidden>
-        <%= link_to "Home", root_path, class: "press-nav__menu-link#{' is-active' if current_page?(root_path)}" %>
-        <%= link_to "Books", books_path, class: "press-nav__menu-link#{' is-active' if controller_name == 'books'}" %>
-        <%= link_to "Blog", blog_path, class: "press-nav__menu-link#{' is-active' if controller_name == 'blog'}" %>
-        <%= link_to "About", about_path, class: "press-nav__menu-link#{' is-active' if current_page?(about_path)}" %>
+        <%= render "layouts/public_nav_links", link_class: "press-nav__menu-link" %>
         <%= render "layouts/press_theme_toggle" %>
         <%= link_to "Join the Newsletter", newsletter_path(source: "nav"), class: "press-btn press-btn--primary press-nav__menu-cta" %>
       </div>
@@ -74,13 +70,13 @@
         <p class="press-footer__legal">
           &copy; <%= Date.current.year %> <%= site_settings.site_name %>.
           <%= link_to "Contact", contact_path, class: "press-link" %>
-          <% if site_settings.privacy_policy.present? %>
+          <% if site_page("privacy")&.content.present? %>
             <%= link_to "Privacy", privacy_path, class: "press-link" %>
           <% end %>
-          <% if site_settings.terms.present? %>
+          <% if site_page("terms")&.content.present? %>
             <%= link_to "Terms", terms_path, class: "press-link" %>
           <% end %>
-          <%= link_to "RSS", blog_feed_path(format: :rss), class: "press-link" %>
+          <%= link_to "RSS", posts_feed_path(format: :rss), class: "press-link" %>
         </p>
       </div>
     </footer>

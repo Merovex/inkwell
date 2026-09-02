@@ -1,0 +1,41 @@
+<%# locals: (circle:, pulse:, decisions:, talkers:, member_count:) %>
+<%# The board's detail rail (the right 1/3 column): the circle's "decided here"
+    agreements — its check-in cadence first, then the owner's charter lines —
+    and who's posted to the board lately. %>
+<aside id="circle-rail" class="circle-rail" aria-label="Board details">
+  <section class="circle-rail__section" aria-labelledby="rail-decided">
+    <h2 id="rail-decided" class="circle-rail__heading u-microcaps u-text-muted">Pulse Checks</h2>
+    <% if pulse || decisions.any? %>
+      <ul class="circle-rail__list">
+        <% if pulse %>
+          <%# The one derived line: the check-in target the circle keeps to. %>
+          <li class="circle-rail__item"><%= pulse.schedule_summary %> at <%= pulse.ask_at %></li>
+        <% end %>
+        <% decisions.each do |line| %>
+          <li class="circle-rail__item"><%= line %></li>
+        <% end %>
+      </ul>
+    <% else %>
+      <p class="circle-rail__item u-text-muted">Nothing decided yet.</p>
+    <% end %>
+  </section>
+
+  <section class="circle-rail__section" aria-labelledby="rail-talking">
+    <h2 id="rail-talking" class="circle-rail__heading u-microcaps u-text-muted">Who's talking</h2>
+    <% if talkers.any? %>
+      <ul class="circle-rail__chips">
+        <% talkers.each do |member| %>
+          <li>
+            <span class="avatar" aria-hidden="true"><%= avatar_content(member) %></span>
+            <span class="u-visually-hidden"><%= member.display_name %></span>
+          </li>
+        <% end %>
+      </ul>
+      <p class="circle-rail__caption u-text-muted">
+        <%= pluralize(talkers.size, "member") %> of <%= member_count %> posted to the board in the last 30 days.
+      </p>
+    <% else %>
+      <p class="circle-rail__caption u-text-muted">No one's posted to the board in the last 30 days.</p>
+    <% end %>
+  </section>
+</aside>

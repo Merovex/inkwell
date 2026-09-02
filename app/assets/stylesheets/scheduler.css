@@ -9,8 +9,8 @@
 @layer components {
   .scheduler {
     /* no-JS fallback placement (anchored-popover repositions under the clock) */
-    inset: 4rem 1.5rem auto auto;
-    inline-size: 20rem;
+    inset: var(--size-9) var(--size-5) auto auto;
+    inline-size: var(--size-14);
     padding: var(--u-pad);
   }
 
@@ -36,13 +36,9 @@
   }
 
   /* an inline, link-styled submit (the "unschedule and save" footnote action) */
+  /* composes u-unbutton in the markup */
   .scheduler__link {
-    background: none;
-    border: none;
-    padding: 0;
-    font: inherit;
     color: var(--link);
     text-decoration: underline;
-    cursor: pointer;
   }
 }

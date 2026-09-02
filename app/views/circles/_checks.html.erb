@@ -1,0 +1,18 @@
+<%# locals: (circle:, pulses:) %>
+<%# The circle's Pulse checks — each recurring question a door to its own page.
+    Reachable even before anyone's answered (unlike a filtered feed of beats). %>
+<section class="u-stack" aria-label="Pulse checks">
+  <p class="u-text-muted">Recurring questions this circle answers. Answers appear in the feed and on the Progress page.</p>
+
+  <% if pulses.any? %>
+    <div class="u-stack">
+      <% pulses.each do |pulse| %>
+        <%= render "circles/check_card", circle: circle, pulse: pulse %>
+      <% end %>
+    </div>
+  <% else %>
+    <p class="u-text-muted">
+      No Pulse checks yet<% if allowed_to?(:manage, circle) %> — set one up to give the circle a weekly rhythm<% end %>.
+    </p>
+  <% end %>
+</section>

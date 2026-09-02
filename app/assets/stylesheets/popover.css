@@ -1,0 +1,43 @@
+/*
+ * .popover — THE standard content popover: a small card in the top layer for
+ * notes, hints, and disclosures (native Popover API; no JS). Sibling of .menu,
+ * which is the popover specialized for a list of actions — reach for .menu when
+ * the content is .menu__item buttons, .popover for prose/content.
+ *
+ *   <button type="button" popovertarget="why-ltv">LTV</button>
+ *   <div class="popover" popover id="why-ltv">Lifetime value — …</div>
+ *
+ * Positioning: the UA centers an open popover in the viewport (inset:0 +
+ * margin:auto). Our base reset zeroes margins (02-base.css `* { margin: 0 }`),
+ * which strips that auto-centering and pins the card to the top-left — so we
+ * restore margin:auto here. Corner/anchored placement is .menu's job
+ * (position:fixed + inset); .popover stays centered, no CSS anchor positioning
+ * (house rule — see menu.css).
+ */
+@layer components {
+  .popover {
+    margin: auto;                    /* restore UA centering the reset zeroed */
+    max-inline-size: min(36ch, calc(100vw - var(--u-pad) * 2));
+    padding: var(--u-pad);
+    background: var(--canvas);
+    color: var(--ink);
+    font-size: var(--font-size-1);
+    line-height: 1.4;
+    border: var(--border-size-1) solid var(--line);
+    border-radius: var(--radius-ui);
+    box-shadow: var(--shadow-2);
+
+    /* fade in/out; allow-discrete keeps it in the top layer while closing */
+    opacity: 0;
+    transition:
+      opacity var(--speed-quick) var(--ease-3),
+      overlay var(--speed-quick) allow-discrete,
+      display var(--speed-quick) allow-discrete;
+  }
+  .popover:popover-open { opacity: 1; }
+  @starting-style { .popover:popover-open { opacity: 0; } }
+
+  @media (prefers-reduced-motion: reduce) {
+    .popover { transition: none; }
+  }
+}

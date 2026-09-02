@@ -1,0 +1,41 @@
+<%# The one-click today modal, fetched into the index's "modal" frame: edit %>
+<%# today's record when it exists, start one otherwise. The date is fixed to %>
+<%# today (backdating lives on the goal page's logbook form); `back: goals` %>
+<%# returns the save to the index, where the tiles update. %>
+<%= turbo_frame_tag "modal" do %>
+  <span data-controller="dialog" data-dialog-open-value="true">
+    <dialog class="modal" data-dialog-target="modal" data-action="click->dialog#backdrop"
+            aria-labelledby="today-tally-title">
+      <div class="modal__header">
+        <span class="modal__title" id="today-tally-title">Today — <%= @goal.title %></span>
+        <button type="button" class="button button--icon button--ghost" data-action="dialog#close" aria-label="Close">
+          <%= inline_svg_tag "lucide/x.svg", class: "lucide", size: "20px" %>
+        </button>
+      </div>
+      <div class="modal__body">
+        <%= form_with model: @tally,
+              url: (@tally.persisted? ? goal_tally_path(@goal_record, @tally.record_id) : goal_tallies_path(@goal_record)),
+              method: (@tally.persisted? ? :patch : :post),
+              class: "u-stack", data: { turbo_frame: "_top" } do |f| %>
+          <%= f.hidden_field :logged_on, value: Time.zone.today %>
+          <%= hidden_field_tag :back, "goals" %>
+          <div class="field-row">
+            <div class="field">
+              <%= f.label :amount, "#{@goal.unit.capitalize} today", class: "field__label" %>
+              <%= f.number_field :amount, class: "field__control", min: 1, required: true, autofocus: true %>
+            </div>
+            <div class="field">
+              <%= f.label :note, "Note (optional)", class: "field__label" %>
+              <%= f.text_field :note, class: "field__control", maxlength: Tally::NOTE_MAX_LENGTH,
+                    placeholder: "A short note" %>
+            </div>
+          </div>
+          <div class="form__action">
+            <%= f.submit "Save", class: "button button--primary" %>
+            <button type="button" class="button" data-action="dialog#close">Cancel</button>
+          </div>
+        <% end %>
+      </div>
+    </dialog>
+  </span>
+<% end %>

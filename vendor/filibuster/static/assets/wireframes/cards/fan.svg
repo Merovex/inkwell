@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 110" role="img" aria-label="fan layout wireframe">
+  <rect width="200" height="110" fill="#f4f4f2"/>
+  <g transform="translate(66 96) rotate(-14)"><rect x="-17" y="-64" width="34" height="64" rx="2" fill="#c2c2be" stroke="#f4f4f2" stroke-width="2"/></g>
+  <g transform="translate(88 96) rotate(-5)"><rect x="-17" y="-64" width="34" height="64" rx="2" fill="#a4a4a0" stroke="#f4f4f2" stroke-width="2"/></g>
+  <g transform="translate(110 96) rotate(4)"><rect x="-17" y="-64" width="34" height="64" rx="2" fill="#a4a4a0" stroke="#f4f4f2" stroke-width="2"/></g>
+  <g transform="translate(132 96) rotate(13)"><rect x="-17" y="-64" width="34" height="64" rx="2" fill="#8b8b87" stroke="#f4f4f2" stroke-width="2"/></g>
+  <rect x="60" y="100" width="80" height="5" rx="2" fill="#c2c2be"/>
+</svg>

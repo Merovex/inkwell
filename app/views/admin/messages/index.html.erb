@@ -1,39 +1,43 @@
-<% content_for :title, "Forum — Inkwell" %>
+<% content_for :title, "Forum" %>
 
-<%= render "admin/shared/canvas_head", crumbs: [["Forum", nil]] %>
+<%= render "admin/shared/canvas_head", crumbs: [["Forum", nil]], menu: false do %>
+  <%= link_to new_admin_message_path, class: "button button--primary" do %>
+    <%= inline_svg_tag "lucide/plus.svg", class: "lucide", size: "16px" %> New message
+  <% end %>
+<% end %>
 
 <header class="perma-header">
   <h1 class="perma-header__title">Forum</h1>
-  <div class="perma-header__content">
-    <nav class="perma-header__toolbar" aria-label="Actions">
-      <% if allowed_to?(:manage, Category) %>
+  <% if allowed_to?(:manage, Category) %>
+    <div class="perma-header__content">
+      <nav class="perma-header__toolbar" aria-label="Actions">
         <%= link_to "Edit categories", admin_categories_path, class: "button button--small" %>
-      <% end %>
-      <%= link_to new_admin_message_path, class: "button button--primary button--small" do %>
-        <%= inline_svg_tag "lucide/plus.svg", class: "lucide", size: "16px" %> New message
-      <% end %>
-    </nav>
-  </div>
+      </nav>
+    </div>
+  <% end %>
 </header>
 
 <% if (@drafts_count + @scheduled_count).positive? %>
   <p class="u-margin-block-end"><%= link_to unpublished_work_label(@drafts_count, @scheduled_count, noun: "message"), admin_message_drafts_path %></p>
 <% end %>
+<% if @archived_count.positive? %>
+  <p class="u-margin-block-end"><%= link_to "View #{pluralize(@archived_count, "archived message")}", archived_admin_messages_path %></p>
+<% end %>
 
 <% if @messages.any? %>
-  <ul class="list">
+  <div class="list">
     <% @messages.each do |message| %>
-      <%= render "admin/shared/list_item",
+      <%= render "shared/list_item",
             href: admin_message_path(message.record),
             title: message.title,
             author: message_author_line(message),
             avatar_user: message.record.creator,
             date: l(message.published_at.to_date, format: :short),
-            excerpt: message.content.to_plain_text.to_s.truncate(140),
+            excerpt: plain_excerpt(message.content),
             comment_count: @comment_counts[message.record_id].to_i,
             pinned: message.pinned_at.present? %>
     <% end %>
-  </ul>
+  </div>
 <% else %>
   <div class="empty">
     <span class="empty__icon"><%= inline_svg_tag "lucide/inbox.svg", class: "lucide", size: "40px" %></span>

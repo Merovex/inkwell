@@ -1,4 +1,4 @@
-<% content_for :title, "Missives — Inkwell" %>
+<% content_for :title, "Missives" %>
 
 <%= render "admin/shared/canvas_head", crumbs: [["Missives", nil]] %>
 
@@ -12,7 +12,7 @@
               class: "button button--small#{' button--primary' if state == @state}",
               aria: { current: ("page" if state == @state) } do %>
           <%= state == "trashed" ? "Trash" : "Recent" %>
-          <span class="u-text-muted">(<%= @counts[state].to_i %>)</span>
+          <span class="button__count">(<%= @counts[state].to_i %>)</span>
         <% end %>
       <% end %>
     </nav>
@@ -20,38 +20,32 @@
 </header>
 
 <% if @missives.any? %>
-  <ul class="list">
+  <div class="list">
     <% @missives.each do |missive| %>
-      <li class="list__item">
-        <span class="list__body">
-          <span class="list__titlerow">
-            <span class="list__title"><%= missive.subject %></span>
-          </span>
-          <span class="list__meta">
-            <span class="list__byline">
-              <%= missive.name %> &lt;<%= missive.email_address %>&gt; ·
-              <%= missive.created_at.strftime("%b %-d, %Y") %>
-            </span>
-          </span>
-          <span class="list__meta"><%= truncate(missive.body, length: 240) %></span>
-        </span>
-        <span class="list__action" style="display: flex; gap: 0.25rem; align-items: center;">
-          <%# Reply opens the admin's own mail client, pre-composed as a reply. %>
-          <%= link_to missive_reply_mailto(missive), class: "button button--small" do %>
-            <%= inline_svg_tag "lucide/message-square.svg", class: "lucide", size: "16px" %> Reply
+      <% actions = capture do %>
+        <%# Reply opens the admin's own mail client, pre-composed as a reply. %>
+        <%= link_to missive_reply_mailto(missive), class: "button button--small" do %>
+          <%= inline_svg_tag "lucide/message-square.svg", class: "lucide", size: "16px" %> Reply
+        <% end %>
+        <% if @state == "active" %>
+          <%= button_to admin_missive_path(missive, state: @state), method: :delete,
+                class: "button button--icon button--ghost", title: "Move to Trash",
+                "aria-label": "Move message from #{missive.name} to Trash",
+                form: { data: { turbo_confirm: "Move this message to Trash?" } } do %>
+            <%= inline_svg_tag "lucide/trash-2.svg", class: "lucide", size: "16px" %>
           <% end %>
-          <% if @state == "active" %>
-            <%= button_to admin_missive_path(missive, state: @state), method: :delete, form_class: "list__action",
-                  class: "button button--icon button--ghost", title: "Move to Trash",
-                  "aria-label": "Move message from #{missive.name} to Trash",
-                  form: { data: { turbo_confirm: "Move this message to Trash?" } } do %>
-              <%= inline_svg_tag "lucide/trash-2.svg", class: "lucide", size: "16px" %>
-            <% end %>
-          <% end %>
-        </span>
-      </li>
+        <% end %>
+      <% end %>
+      <%= render "shared/list_item",
+            href: admin_missive_path(missive),
+            title: missive.subject,
+            avatar: false,
+            author: "#{missive.name} <#{missive.email_address}>",
+            date: missive.created_at.strftime("%b %-d, %Y"),
+            excerpt: truncate(missive.body, length: 240, separator: " "),
+            actions: actions %>
     <% end %>
-  </ul>
+  </div>
 <% else %>
   <div class="empty">
     <span class="empty__icon"><%= inline_svg_tag "lucide/inbox.svg", class: "lucide", size: "40px" %></span>

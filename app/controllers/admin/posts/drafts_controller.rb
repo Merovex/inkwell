@@ -7,7 +7,7 @@ class Admin::Posts::DraftsController < Admin::BaseController
   before_action -> { authorize! @record, to: :manage }, only: :destroy
 
   def index
-    @posts = RecordPolicy.scope_for(Current.user, Post.current.where.not(status: :published))
+    @posts = RecordPolicy.scope_for(Current.user, Current.account.posts.where.not(status: :published))
       .includes(:record, :creator, body: :rich_text_content).order(updated_at: :desc)
   end
 

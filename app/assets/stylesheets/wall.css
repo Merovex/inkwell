@@ -1,0 +1,141 @@
+/*
+ * .wall — a circle's feed, and its home page (circles#show): messages and
+ * pulse answers merged newest-first, filterable by kind (the .segmented
+ * control), full-bodied cards, a lazy turbo-frame tail loading the next page
+ * on scroll. Single-sourced markup: circles/show + circles/walls/_card +
+ * _beat_card.
+ */
+@layer components {
+  .wall {
+    display: flex;
+    flex-direction: column;
+    gap: 0;                       /* cards divide with hairlines, not gaps */
+    max-inline-size: var(--measure-prose);
+    margin-inline: auto;
+  }
+  /* Frames are plumbing, not layout — cards read as direct children. */
+  .wall turbo-frame { display: contents; }
+  /* Affixed strips (announcements, pulse ask, your drafts/appointments) sit in
+     a prelude above the card stream — u-stack u-margin-block-end in the
+     markup. The cards below carry the flow's rhythm with their own dividers. */
+
+  /* Indented rows: the avatar rides the byline, vertically centered with the
+     name; the title/body/footer indent to align under the byline TEXT — one
+     trustworthy left edge for the post content, avatar in the gutter above it.
+     A faint hairline divides adjacent rows (lighter than --line full-strength;
+     the density doesn't warrant a hard rule). */
+  .wall__card {
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--u-pad) / 2);
+    padding-block: calc(var(--u-pad) * 2);
+  }
+  .wall__card + .wall__card {
+    border-block-start: var(--border-size-1) solid var(--line-faint);
+  }
+  .wall__byline { display: flex; flex-wrap: wrap; align-items: center; gap: calc(var(--u-pad) / 2); }
+  .wall__avatar { --avatar-size: var(--size-7); flex-shrink: 0; }
+  /* The author's ⋯ menu, far right of the byline. */
+  .wall__actions { margin-inline-start: auto; flex-shrink: 0; }
+  /* Post content aligns under the byline text — indented past the avatar (its
+     size) plus the byline gap. */
+  .wall__content {
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--u-pad) / 2);
+    min-inline-size: 0;
+    padding-inline-start: calc(var(--size-7) + var(--u-pad) / 2);
+  }
+  .wall__meta { color: var(--ink-muted); font-size: var(--font-size-0); }
+  .wall__when { color: var(--ink-muted); }
+
+  /* The title is the row's headline: its own line, bold, a step up in size.
+     The icon must re-inline: the base reset blocks every svg, which would
+     break the flow (icons elsewhere live in flex rows and never notice). */
+  .wall__title {
+    margin: 0;
+    font-size: var(--font-size-3);
+    font-weight: var(--font-weight-8);
+    line-height: var(--font-lineheight-1);
+  }
+  .wall__title a { color: inherit; text-decoration: none; }
+  .wall__title a:hover { text-decoration: underline; }
+  .wall__title .lucide { display: inline-block; vertical-align: text-bottom; }
+
+  /* Card bodies clamp at five lines — the thread modal and the message page
+     carry the full text. */
+  .wall__body { --u-clamp-lines: 5; }
+
+  /* The card/modal owns the measure and padding here — the prose fills the
+     full content width instead of re-centering its own narrower column
+     (short bodies were floating mid-card). */
+  .wall .prose,
+  .wall-thread .prose {
+    max-width: none;
+    margin-inline: 0;
+    padding-inline: 0;
+  }
+
+
+  .wall__footer { display: flex; flex-wrap: wrap; align-items: center; gap: calc(var(--u-pad) / 2); font-size: var(--font-size-0); }
+  /* Only the count link and the boost strip take the icon+text treatment —
+     scoped to direct children so it never reaches the commenter .avatar-group
+     or its nested .avatar spans (which own their own centering). */
+  .wall__footer > a,
+  .wall__footer > .wall__chips { display: inline-flex; align-items: center; gap: calc(var(--u-pad) / 4); color: var(--ink-muted); }
+
+  /* Affixed strips above the stream (announcements, pulse ask, appointments). */
+  .wall__affixed {
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--u-pad) / 4);
+  }
+  /* One pinned-row shape, tone by modifier. Only genuinely actionable rows
+     earn a filled pin (--announce, --pulse); your own housekeeping is quiet. */
+  .wall__pin {
+    display: flex;
+    align-items: center;
+    gap: calc(var(--u-pad) / 2);
+    padding: calc(var(--u-pad) / 2) var(--u-pad);
+    border: var(--border-size-1) solid var(--line);
+    border-radius: var(--radius-ui);
+    color: var(--ink);
+    text-decoration: none;
+  }
+  .wall__pin .wall__meta { margin-inline-start: auto; }
+  .wall__pin--announce { background: var(--accent-soft); }
+  .wall__pin--announce:hover { background: color-mix(in oklab, var(--accent-soft), var(--ink) 6%); }
+
+  /* Your private housekeeping — scheduled posts and drafts — as quiet muted
+     lines, no banner. */
+  .wall__yours { display: flex; flex-direction: column; gap: calc(var(--u-pad) / 4); }
+  .wall__yours p { margin: 0; }
+
+  /* The pulse ask wears the account's own tint (the ramp's pill stop) —
+     native to the site's palette, distinct from platform announcements. */
+  .wall__pin--pulse { background: var(--tint-soft); }
+  .wall__pin--pulse:hover { background: color-mix(in oklab, var(--tint-soft), var(--ink) 6%); }
+
+  /* The thread modal (circles/walls/threads): message + comments scroll in
+     the body; the composer footer grows with its editor to at most HALF the
+     modal's height ceiling, then the editor scrolls internally. dvh math
+     because a percentage can't resolve against the dialog's content-driven
+     height. */
+  .wall-thread {
+    display: flex;
+    flex-direction: column;
+    inline-size: min(var(--measure-prose), calc(100% - var(--size-7)));
+  }
+  .wall-thread .modal__body { flex: 1; min-block-size: 0; overflow-y: auto; }
+  .wall-thread__composer {
+    flex: none;
+    display: flex;
+    flex-direction: column;
+    max-block-size: calc((100dvh - var(--size-7)) / 2);
+    padding: var(--u-pad);
+    border-block-start: var(--border-size-1) solid var(--line);
+    background: var(--canvas-sunken);
+  }
+  .wall-thread__composer form { display: flex; flex-direction: column; gap: calc(var(--u-pad) / 2); min-block-size: 0; }
+  .wall-thread__composer lexxy-editor { min-block-size: 0; overflow-y: auto; }
+}

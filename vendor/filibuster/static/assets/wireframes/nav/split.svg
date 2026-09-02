@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 56" role="img" aria-label="Split header wireframe">
+  <rect width="200" height="56" fill="#f4f4f2"/>
+  <line x1="10" y1="46" x2="190" y2="46" stroke="#d8d8d4" stroke-width="1"/>
+  <rect x="12" y="22" width="48" height="10" rx="2" fill="#8b8b87"/>
+  <g fill="#c2c2be">
+    <rect x="118" y="25" width="16" height="5" rx="2"/>
+    <rect x="140" y="25" width="16" height="5" rx="2"/>
+    <rect x="162" y="25" width="24" height="5" rx="2"/>
+  </g>
+</svg>

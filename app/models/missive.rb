@@ -19,6 +19,14 @@ class Missive < ApplicationRecord
   TRASH_DAYS     = 60   # then hidden in Trash until this age, then purged
   UNCONFIRMED_TTL = 7.days # never-confirmed submissions swept after this
 
+  # Whose site's contact form this arrived through — or nil for PLATFORM
+  # support mail (support@kindredquill.com via SupportMailbox), which belongs
+  # to the App and is read by root staff at /missives, not any Site's admin.
+  belongs_to :account, optional: true, default: -> { Current.account }
+
+  # The platform support inbox (root staff only; see Support::MissivesController).
+  scope :platform, -> { where(account_id: nil) }
+
   normalizes :email_address, with: -> { it.strip.downcase }
 
   validates :name, :subject, presence: true
@@ -31,7 +39,11 @@ class Missive < ApplicationRecord
   # 404. Keeping it resolvable lets the confirm action recognize an already-confirmed
   # missive and say so (confirm! is idempotent). (Unconfirmed rows outlive the
   # token by a few days before the purge sweep clears them.)
-  generates_token_for :confirmation, expires_in: 3.days
+  # The account_id in the payload signs tenant context into every link now, so
+  # the token format never has to migrate when tenant #2 arrives (ADR 0017).
+  generates_token_for :confirmation, expires_in: 3.days do
+    account_id
+  end
 
   scope :confirmed,   -> { where.not(confirmed_at: nil) }
   scope :unconfirmed, -> { where(confirmed_at: nil) }

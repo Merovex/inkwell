@@ -22,21 +22,28 @@
           </div>
           <span class="field__hint">Enter the eight letters from your email — pasting the code works too.</span>
         </div>
-        <%= f.submit "Sign in", class: "button button--primary u-full-width", style: "margin-block-start: var(--u-pad);" %>
+        <div class="form__action">
+          <%= f.submit "Sign in", class: "button button--primary u-full-width" %>
+        </div>
       <% end %>
 
       <%= link_to "Use a different email", new_session_path, class: "u-text-muted" %>
     </div>
   <% else %>
-    <header class="card__header"><span class="card__title">Sign in to Inkwell</span></header>
+    <header class="card__header"><span class="card__title">Sign in to Kindred Quill</span></header>
     <div class="card__body u-stack">
       <p class="u-text-muted">Enter your email and we'll send you a magic link — no password needed.</p>
 
       <%= form_with url: session_path, method: :post, class: "field" do |f| %>
+        <%= invisible_captcha %>
         <%= f.label :email_address, "Email", class: "field__label" %>
         <%= f.email_field :email_address, class: "field__control", placeholder: "you@example.com", required: true, autofocus: true, autocomplete: "email" %>
-        <%= f.submit "Send magic link", class: "button button--primary", style: "margin-block-start: var(--u-pad);" %>
+        <div class="form__action">
+          <%= f.submit "Send magic link", class: "button button--primary" %>
+        </div>
       <% end %>
+
+      <%= link_to "Have an invite code? Sign up", new_signup_path, class: "u-text-muted" %>
     </div>
   <% end %>
 </div>

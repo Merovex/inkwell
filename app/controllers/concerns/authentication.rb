@@ -8,6 +8,8 @@ module Authentication
   included do
     before_action :require_authentication
     helper_method :authenticated?
+    # The app header's house link needs it too (see layouts/_header).
+    helper_method :default_admin_url
   end
 
   class_methods do
@@ -47,7 +49,21 @@ module Authentication
   end
 
   def after_authentication_url
-    session.delete(:return_to_after_authenticating) || admin_root_url
+    session.delete(:return_to_after_authenticating) || default_admin_url
+  end
+
+  # Under APP_HOST enforcement the bare admin_root_url would 404 (no slug
+  # prefix). One membership lands straight in that account's admin; anything
+  # else (several, none) lands on the account picker at the app-host root.
+  def default_admin_url
+    return admin_root_url unless AccountHost.enforced?
+
+    accounts = Current.user.accounts
+    case accounts.count
+    when 0 then circles_url   # no site yet — the app shell (circles) is home
+    when 1 then accounts.first.admin_path
+    else app_host_root_url    # several — the picker
+    end
   end
 
   def start_new_session_for(user)

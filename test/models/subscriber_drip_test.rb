@@ -17,6 +17,15 @@ class SubscriberDripTest < ActiveSupport::TestCase
     assert_equal [ @drip.record_id ], sub.streams.pluck(:drip_record_id)
   end
 
+  test "confirming a seed enrolls nothing — the confirmation email is its whole job" do
+    seed = Subscriber.create!(email_address: "report@aboutmy.email")
+
+    assert_no_enqueued_jobs(only: DripAdvanceJob) { seed.confirm! }
+
+    assert seed.confirmed?
+    assert_empty seed.streams
+  end
+
   test "unsubscribing ends in-flight streams" do
     sub = Subscriber.create!(email_address: "reader@example.com")
     sub.confirm!

@@ -1,0 +1,75 @@
+/* Site sub-header: the Basecamp "page sheet" workspace nav that sits under the
+   global header. Centered identity + grouped section tabs (native <details>
+   disclosures), no left rail — the content area keeps full width. */
+@layer components {
+  .subnav__inner {
+    display: flex;
+    justify-content: center;
+    padding: var(--size-2) var(--u-pad);
+  }
+  .subnav__tabs {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--size-1);
+  }
+  .subnav__group { position: relative; }
+  /* The tab is the <summary>; kill the default disclosure triangle. */
+  .subnav__tab {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--size-1);
+    padding: var(--size-1) var(--size-3);
+    border-radius: var(--radius-round);
+    color: var(--ink);
+    font-weight: var(--font-weight-6);
+    cursor: pointer;
+    list-style: none;
+  }
+  .subnav__tab::-webkit-details-marker { display: none; }
+  .subnav__tab::after {
+    content: "▾";
+    display: inline-block;
+    color: var(--ink-muted);
+    font-size: var(--font-size-0);
+    transition: transform var(--speed-quick) var(--ease-3);
+  }
+  .subnav__group[open] .subnav__tab::after { transform: rotate(180deg); }
+
+  .subnav__menu {
+    position: absolute;
+    top: calc(100% + var(--size-1));
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 20;
+    display: flex;
+    flex-direction: column;
+    min-width: var(--measure-menu);
+    padding: var(--size-1);
+    background: var(--surface-raised); /* elevated in dark mode without a border */
+    border-radius: var(--radius-ui);
+    box-shadow: var(--elevation-flyout);
+  }
+  .subnav__menu a {
+    display: flex;
+    align-items: center;
+    gap: calc(var(--u-pad) / 3);
+    padding: var(--size-2);
+    border-radius: var(--radius-ui);
+    color: var(--ink);
+    text-decoration: none;
+  }
+  .subnav__menu a:hover { background: color-mix(in oklab, var(--ink) 4%, transparent); }
+
+  /* Hairline between a quick action (New post) and the section links. */
+  .subnav__menu hr {
+    align-self: stretch;
+    border: 0;
+    border-block-start: var(--border-size-1) solid var(--line);
+    margin-block: calc(var(--u-pad) / 4);
+  }
+
+  @media (max-width: 48em) { /* --breakpoint-md */
+    .subnav__inner { justify-content: flex-start; }
+  }
+}

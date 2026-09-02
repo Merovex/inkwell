@@ -1,0 +1,54 @@
+<% content_for :title, "Support inbox" %>
+
+<%= render "admin/shared/canvas_head", crumbs: [["Support inbox", nil]] %>
+
+<header class="perma-header">
+  <h1 class="perma-header__title">Support inbox</h1>
+  <div class="perma-header__content">
+    <p class="u-text-muted">Mail to support@kindredquill.com — the App's inbox, not any Site's.</p>
+    <nav class="perma-header__toolbar" aria-label="Message states">
+      <% Support::MissivesController::STATES.each do |state| %>
+        <%= link_to missives_path(state: state),
+              class: "button button--small#{' button--primary' if state == @state}",
+              aria: { current: ("page" if state == @state) } do %>
+          <%= state == "trashed" ? "Trash" : "Recent" %>
+          <span class="button__count">(<%= @counts[state].to_i %>)</span>
+        <% end %>
+      <% end %>
+    </nav>
+  </div>
+</header>
+
+<% if @missives.any? %>
+  <div class="list">
+    <% @missives.each do |missive| %>
+      <% actions = capture do %>
+        <%= link_to missive_reply_mailto(missive), class: "button button--small" do %>
+          <%= inline_svg_tag "lucide/message-square.svg", class: "lucide", size: "16px" %> Reply
+        <% end %>
+        <% if @state == "active" %>
+          <%= button_to missive_path(missive), method: :delete,
+                class: "button button--icon button--ghost", title: "Move to Trash",
+                "aria-label": "Move message from #{missive.name} to Trash",
+                form: { data: { turbo_confirm: "Move this message to Trash?" } } do %>
+            <%= inline_svg_tag "lucide/trash-2.svg", class: "lucide", size: "16px" %>
+          <% end %>
+        <% end %>
+      <% end %>
+      <%= render "shared/list_item",
+            href: missive_path(missive),
+            title: missive.subject,
+            avatar: false,
+            author: "#{missive.name} <#{missive.email_address}>",
+            date: missive.created_at.strftime("%b %-d, %Y"),
+            excerpt: truncate(missive.body, length: 240, separator: " "),
+            actions: actions %>
+    <% end %>
+  </div>
+<% else %>
+  <div class="empty">
+    <span class="empty__icon"><%= inline_svg_tag "lucide/inbox.svg", class: "lucide", size: "40px" %></span>
+    <p class="empty__title"><%= @state == "trashed" ? "Trash is empty" : "No messages" %></p>
+    <p class="empty__text">Mail sent to support@kindredquill.com lands here.</p>
+  </div>
+<% end %>

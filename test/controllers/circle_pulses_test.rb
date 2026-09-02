@@ -1,0 +1,292 @@
+require "test_helper"
+
+class CirclePulsesTest < ActionDispatch::IntegrationTest
+  include ActiveJob::TestHelper
+
+  setup { @circle = circles(:writers) }
+
+  def create_pulse(**attrs)
+    Current.with_bucket(@circle) do
+      Record.originate(Pulse.new({ question: "What did you work on?", creator: users(:alice),
+        cadence: "weekly", days_of_week: (1 << 1), ask_at_minutes: 540 }.merge(attrs)))
+    end.recordable
+  end
+
+  test "the owner sets up a check-in and every member is subscribed by default" do
+    sign_in_as users(:alice) # owner
+
+    assert_difference -> { @circle.pulses.count }, 1 do
+      post circle_pulses_path(@circle), params: {
+        pulse: { question: "Daily standup?", cadence: "daily", ask_at_minutes: 990,
+                 active: "1", weekdays: %w[1 3 5] } }
+    end
+
+    pulse = @circle.pulse
+    assert_equal "Daily standup?", pulse.question
+    # Mon/Wed/Fri bits set.
+    assert pulse.weekday_selected?(Date.new(2024, 1, 1)) # a Monday
+    assert_redirected_to circle_pulse_path(@circle, pulse.record)
+    # Owner + member both auto-subscribed.
+    assert pulse.subscribed?(users(:alice))
+    assert pulse.subscribed?(users(:bob))
+  end
+
+  test "the setup form renders with standard field classes and a text input for the question" do
+    sign_in_as users(:alice)
+
+    get new_circle_pulse_path(@circle)
+    assert_response :success
+    assert_select "input.field__control[name=?][type=text]", "pulse[question]"
+    assert_select "textarea[name=?]", "pulse[question]", count: 0
+    # Cadence is a dropdown; the schedule row groups cadence, day pills, and time.
+    assert_select ".pulse-schedule .field__select select[name=?]", "pulse[cadence]"
+    assert_select ".pulse-schedule .day-pills .day-pill__input[name=?]", "pulse[weekdays][]"
+    assert_select ".pulse-schedule .field__select select.field__control[name=?]", "pulse[ask_at_minutes]"
+  end
+
+  test "monthly clamps to a single weekday even if several are submitted" do
+    sign_in_as users(:alice)
+
+    post circle_pulses_path(@circle), params: {
+      pulse: { question: "Monthly?", cadence: "monthly", ask_at_minutes: 540,
+               active: "1", weekdays: %w[1 3 5] } } # Mon, Wed, Fri
+
+    pulse = @circle.pulse
+    assert_equal 1, pulse.selected_day_names.size
+    assert_equal %w[Monday], pulse.selected_day_names # the lowest-numbered day kept
+  end
+
+  test "a non-owner member cannot set up or edit a check-in" do
+    create_pulse
+    sign_in_as users(:bob) # member, not owner
+
+    get new_circle_pulse_path(@circle)
+    assert_response :not_found
+  end
+
+  test "a member can leave and rejoin a check-in" do
+    pulse = create_pulse
+    sign_in_as users(:bob)
+
+    delete circle_pulse_subscription_path(@circle, pulse.record)
+    assert_not pulse.subscribed?(users(:bob))
+
+    post circle_pulse_subscription_path(@circle, pulse.record)
+    assert pulse.subscribed?(users(:bob))
+  end
+
+  test "a member beats, and a second beat edits the first" do
+    pulse = create_pulse
+    pulse.update_column(:last_asked_on, Date.current)
+    sign_in_as users(:bob)
+
+    assert_difference -> { pulse.beats.count }, 1 do
+      post circle_pulse_beats_path(@circle, pulse.record), params: { beat: { content: "<p>Shipped it</p>" } }
+    end
+    assert_equal "Circle", pulse.beats.first.record.bucket_type
+
+    # A second submission edits, not duplicates.
+    assert_no_difference -> { pulse.beats.count } do
+      post circle_pulse_beats_path(@circle, pulse.record), params: { beat: { content: "<p>Actually two things</p>" } }
+    end
+    assert_match "two things", pulse.beats_on(Date.current).find_by(creator_id: users(:bob).id).content.to_plain_text
+  end
+
+  test "the check-in page shares everyone's answers" do
+    pulse = create_pulse
+    pulse.update_column(:last_asked_on, Date.current)
+    Current.with_bucket(@circle) do
+      Record.originate(Beat.new(content: "<p>Alice here</p>", asked_on: Date.current, creator: users(:alice)), parent: pulse.record)
+    end
+    sign_in_as users(:bob)
+
+    get circle_pulse_path(@circle, pulse.record)
+    assert_response :success
+    assert_select "#beats .comment__body", text: /Alice here/
+  end
+
+  test "after answering, the composer yields to the answer's own Edit" do
+    pulse = create_pulse
+    pulse.update_column(:last_asked_on, Date.current)
+    sign_in_as users(:bob)
+    post circle_pulse_beats_path(@circle, pulse.record), params: { beat: { content: "<p>Shipped it</p>" } }
+
+    get circle_pulse_path(@circle, pulse.record)
+    assert_select "[aria-label='Your answer']", count: 0        # composer gone
+    beat_record = pulse.beats_on(Date.current).find_by(creator_id: users(:bob).id).record
+    assert_select "#beat_#{beat_record.id} a", text: "Edit"
+  end
+
+  test "the author edits an answer inline; the edit lands as a tracked version" do
+    pulse = create_pulse
+    pulse.update_column(:last_asked_on, Date.current)
+    sign_in_as users(:bob)
+    post circle_pulse_beats_path(@circle, pulse.record), params: { beat: { content: "<p>Shipped it</p>" } }
+    beat_record = pulse.beats_on(Date.current).find_by(creator_id: users(:bob).id).record
+
+    get edit_circle_pulse_beat_path(@circle, pulse.record, beat_record)
+    assert_response :success
+    assert_select "form [aria-label='Your answer']"
+
+    patch circle_pulse_beat_path(@circle, pulse.record, beat_record),
+      params: { beat: { content: "<p>Actually two things</p>" } }
+    assert_redirected_to circle_pulse_path(@circle, pulse.record, anchor: "beat_#{beat_record.id}")
+    beat = pulse.beats_on(Date.current).find_by(creator_id: users(:bob).id)
+    assert_match "two things", beat.content.to_plain_text
+    assert beat.event_updated?
+  end
+
+  test "another member cannot edit someone else's answer" do
+    pulse = create_pulse
+    pulse.update_column(:last_asked_on, Date.current)
+    Current.with_bucket(@circle) do
+      Record.originate(Beat.new(content: "<p>Alice here</p>", asked_on: Date.current, creator: users(:alice)), parent: pulse.record)
+    end
+    beat_record = pulse.beats_on(Date.current).find_by(creator_id: users(:alice).id).record
+    sign_in_as users(:bob)
+
+    get edit_circle_pulse_beat_path(@circle, pulse.record, beat_record)
+    assert_response :not_found
+    patch circle_pulse_beat_path(@circle, pulse.record, beat_record),
+      params: { beat: { content: "<p>Hijacked</p>" } }
+    assert_response :not_found
+    assert_match "Alice here", pulse.beats_on(Date.current).find_by(creator_id: users(:alice).id).content.to_plain_text
+  end
+
+  test "the circle home shows a pulse answer as a feed card, a door to the pulse" do
+    pulse = create_pulse
+    pulse.update_column(:last_asked_on, Date.current)
+    Current.with_bucket(@circle) do
+      Record.originate(Beat.new(content: "<p>Wrote through the block today</p>", asked_on: Date.current, creator: users(:alice)), parent: pulse.record)
+    end
+    sign_in_as users(:bob)
+
+    get circle_path(@circle)
+    assert_response :success
+    # The beat rides the feed as a card: the question titles it (a door to the
+    # pulse day), the answer is its body.
+    assert_select ".wall__card .wall__title a[href*=?]", circle_pulse_path(@circle, pulse.record)
+    assert_select ".wall__card .wall__body", text: /Wrote through the block/
+  end
+
+  test "logging a beat records the reported word count" do
+    pulse = create_pulse
+    pulse.update_column(:last_asked_on, Date.current)
+    sign_in_as users(:bob)
+
+    post circle_pulse_beats_path(@circle, pulse.record),
+      params: { beat: { content: "<p>Chapter three</p>", word_count: "2100" } }
+
+    assert_equal 2100, pulse.beats.first.word_count
+  end
+
+  test "the Progress view rolls up words and runs from the pulse's beats" do
+    pulse = create_pulse
+    pulse.update_column(:last_asked_on, Date.current)
+    Current.with_bucket(@circle) do
+      Record.originate(Beat.new(content: "<p>Chapter 14</p>", word_count: 3900,
+        asked_on: Date.current, creator: users(:alice)), parent: pulse.record)
+    end
+    sign_in_as users(:alice)
+
+    get circle_progress_path(@circle)
+    assert_response :success
+    assert_select "nav.segmented a[aria-current=page]", text: "Progress"
+    assert_select ".progress__table tbody tr", minimum: 1
+    # Alice's row carries her words; the roll-up totals them; her run is 1 week.
+    assert_select ".progress__words", text: /3,900/
+    assert_select ".goal-stat__value", text: /3,900/
+    assert_select ".run__label", text: /1 wk/
+  end
+
+  test "the checks board view shows the primary check in full detail" do
+    pulse = create_pulse(active: true, description: "Two sentences is fine")
+    pulse.subscribe(@circle.members)
+    pulse.update_column(:last_asked_on, Date.current)
+    Current.with_bucket(@circle) do
+      Record.originate(Beat.new(content: "<p>hi</p>", asked_on: Date.current, creator: users(:alice)), parent: pulse.record)
+    end
+    sign_in_as users(:alice)
+
+    get circle_checks_path(@circle)
+    assert_response :success
+    # The detail card (question + description + answered count), not a card grid.
+    assert_select ".check-detail__title", text: /What did you work on\?/
+    assert_select ".check-detail__desc", text: /Two sentences is fine/
+    assert_select ".pulse-week", text: /1 of 2 answered/
+    # Alice already answered, so the head action falls to the owner's New question.
+    assert_select ".canvas__head a", text: "New question"
+  end
+
+  test "the owner pauses and resumes a check" do
+    pulse = create_pulse(active: true)
+    sign_in_as users(:alice)
+
+    delete circle_pulse_activation_path(@circle, pulse.record)
+    assert_redirected_to circle_checks_path(@circle)
+    assert_not @circle.pulses.first.active?
+
+    post circle_pulse_activation_path(@circle, pulse.record)
+    assert_redirected_to circle_checks_path(@circle)
+    assert @circle.pulses.first.active?
+  end
+
+  test "the pulse page carries the description, answered count, non-answerers, and earlier weeks" do
+    pulse = create_pulse(active: true, description: "Two sentences is fine")
+    pulse.subscribe(@circle.members) # alice + bob
+    pulse.update_column(:last_asked_on, Date.current)
+    Current.with_bucket(@circle) do
+      Record.originate(Beat.new(content: "<p>This week's answer</p>", asked_on: Date.current, creator: users(:alice)), parent: pulse.record)
+      Record.originate(Beat.new(content: "<p>Last week note</p>", asked_on: Date.current - 7, creator: users(:alice)), parent: pulse.record)
+    end
+    sign_in_as users(:alice)
+
+    get circle_pulse_path(@circle, pulse.record)
+    assert_response :success
+    assert_select ".check-detail__desc", text: /Two sentences is fine/
+    assert_select ".pulse-week", text: /1 of 2 answered/
+    # Bob is subscribed but hasn't answered this week.
+    assert_select ".pulse-waiting", text: /hasn't answered yet/
+    # Earlier weeks render as real answer rows (author + content), not a
+    # collapsed one-liner.
+    assert_select ".list__item .comment__body", text: /Last week note/
+  end
+
+  test "the check card offers the owner Edit, and editing persists the changes" do
+    pulse = create_pulse(active: true, description: "Old context")
+    sign_in_as users(:alice)
+
+    get circle_checks_path(@circle)
+    assert_select ".check-detail__manage a[href=?]", edit_circle_pulse_path(@circle, pulse.record), text: "Edit"
+
+    patch circle_pulse_path(@circle, pulse.record),
+      params: { pulse: { question: "Why not?", description: "New context",
+                         cadence: "weekly", ask_at_minutes: 540, weekdays: %w[1], active: "1" } }
+    assert_redirected_to circle_pulse_path(@circle, pulse.record)
+    updated = @circle.pulses.first
+    assert_equal "Why not?", updated.question
+    assert_equal "New context", updated.description
+  end
+
+  test "the checks rail shows week/run/members, and a member can nudge a non-answerer" do
+    pulse = create_pulse(active: true)
+    pulse.subscribe(@circle.members) # alice + bob
+    pulse.update_column(:last_asked_on, Date.current)
+    Current.with_bucket(@circle) do
+      Record.originate(Beat.new(content: "<p>done</p>", asked_on: Date.current, creator: users(:alice)), parent: pulse.record)
+    end
+    sign_in_as users(:alice)
+
+    get circle_checks_path(@circle)
+    assert_response :success
+    assert_select ".circle-rail .stat .stat__value", text: "1"
+    assert_select ".circle-rail .stat .stat__label", text: "of 2 answered"
+    assert_select ".pulse-members__in", text: "In"        # alice answered
+    assert_select ".pulse-members__nudge", text: "Nudge"  # bob still owes one
+
+    assert_difference -> { Notification.where(user: users(:bob), kind: "nudged").count }, 1 do
+      post circle_pulse_nudges_path(@circle, pulse.record, member_id: users(:bob).id)
+    end
+    assert_redirected_to circle_checks_path(@circle)
+  end
+end

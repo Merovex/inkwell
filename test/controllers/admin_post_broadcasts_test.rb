@@ -100,39 +100,45 @@ class AdminPostBroadcastsTest < ActionDispatch::IntegrationTest
     assert_match "no scheduled send", flash[:alert]
   end
 
-  test "the banner shows the keyed preview link while the post is scheduled" do
+  test "a scheduled post's banner leads with the go-live time and a keyed preview" do
     sign_in_as users(:admin)
     record = records(:typography)
     record.revise(event: :scheduled, status: :scheduled, creator: users(:alice), published_at: 1.week.from_now)
     record.reload
 
     get admin_post_path(record)
-    assert_select ".broadcast-banner a", text: "preview link"
-    assert_select ".broadcast-banner__url[value=?]", blog_post_url(record.to_slug)
-    assert_match(/-#{record.preview_key}\b/, record.to_slug)  # the URL carries the HMAC key
+    assert_select ".post-banner--scheduled", text: /Goes live/
+    # The preview link rides the site's own address (merovex fixture: domain
+    # merovex.press) and carries the HMAC key so it resolves before publish.
+    assert_select ".post-banner a[href=?]", "https://merovex.press/posts/#{record.to_slug}", text: "Preview"
+    assert_match(/-#{record.preview_key}\b/, record.to_slug)
+    # Reschedule (the picker) and Unschedule (revert to draft) both present.
+    assert_select "button", text: /Reschedule/
+    assert_select "input[type=submit][value=?]", "Unschedule"
   end
 
-  test "the banner shows a cancel control for a scheduled send" do
+  test "the email nudge shows a cancel control for a scheduled send" do
     sign_in_as users(:admin)
     records(:kickoff).create_broadcast!(scheduled_at: 1.week.from_now)
 
     get admin_post_path(records(:kickoff))
-    assert_select ".broadcast-banner__stamp", text: /Scheduled to email/
+    assert_select ".post-banner", text: /Scheduled to email/
     assert_select "button", text: "Cancel scheduled email"
   end
 
-  test "the banner offers the email button on a published post, then shows the sent stamp" do
+  test "a published post offers Copy link and Email it, then drops the nudge once sent" do
     sign_in_as users(:admin)
 
     get admin_post_path(records(:kickoff))
-    assert_select "form[action=?]", admin_post_broadcast_path(records(:kickoff))
-    assert_select ".broadcast-banner a", text: "live on the web"
+    assert_select "form[action=?]", admin_post_broadcast_path(records(:kickoff))   # Email it
+    assert_select ".post-banner__permalink", text: /merovex\.press/               # Live at …
 
     records(:kickoff).create_broadcast!.update!(sent_at: Time.current, recipients_count: 5)
     get admin_post_path(records(:kickoff))
-    # The email button is gone, but the share link stays and a sent stamp shows.
+    # The email nudge is gone; the live-at link stays; the sent fact moves to the
+    # status line ("Emailed to 5 subscribers on …").
     assert_select "form[action='#{admin_post_broadcast_path(records(:kickoff))}']", count: 0
-    assert_select ".broadcast-banner a", text: "live on the web"
-    assert_select ".broadcast-banner__stamp", text: /Sent to 5 subscribers/
+    assert_select ".post-banner__permalink", text: /merovex\.press/
+    assert_select ".perma-header__content", text: /Emailed to 5 subscribers/
   end
 end

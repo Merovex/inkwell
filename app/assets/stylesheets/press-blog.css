@@ -9,18 +9,18 @@
   display: flex;
   flex-direction: column;
   gap: 2rem;              /* tighter than a whitespace-only list — the card edge does the separating */
-  margin-block-start: 3rem;
+  margin-block-start: var(--size-8);
 }
-.press-articles__empty { margin-block-start: 3rem; color: var(--text-2); }
+.press-articles__empty { margin-block-start: var(--size-8); color: var(--text-2); }
 
 .press-article-card {
   position: relative;     /* anchor for the full-card click overlay */
-  padding: 1.5rem;
+  padding: var(--size-5);
   border: 1px solid var(--border-1);
-  border-radius: 1rem;
+  border-radius: var(--radius-3);
   background: transparent;
   box-shadow: 0 1px 2px rgb(0 0 0 / 0.04), 0 10px 24px -16px rgb(0 0 0 / 0.18);
-  transition: background-color 200ms ease, border-color 200ms ease;
+  transition: background-color var(--press-speed) var(--ease-3), border-color var(--press-speed) var(--ease-3);
 }
 /* Hover signals with the border, not a background jump — in dark mode the
    surface-1→2 shift is a ~10%-lightness flash. The CTA pill fill (below)
@@ -29,15 +29,15 @@
 
 .press-article-card__date {
   display: block;
-  margin-block-end: 0.5rem;
-  font-size: 0.875rem;
+  margin-block-end: var(--size-2);
+  font-size: var(--press-size-meta);
   color: var(--text-3);
   text-align: center;
 }
 .press-article-card__title {
   font-family: var(--press-sans); /* HEY-style: sans title, unlike the serif page headings */
   font-size: 1.6rem;              /* title dominates the body text (~1.6×) */
-  font-weight: 600;
+  font-weight: var(--press-weight-strong);
   line-height: 1.25;
   text-align: center;
 }
@@ -46,7 +46,7 @@
    the visible CTA below is decorative (aria-hidden). */
 .press-article-card__link::after { content: ""; position: absolute; inset: 0; }
 .press-article-card__desc {
-  margin: 0.75rem 0 0;
+  margin: calc(var(--u-pad) * 0.75) 0 0;
   font-size: 1rem;           /* base body size — the title reads clearly larger */
   line-height: 1.6;
   color: var(--text-2);
@@ -56,14 +56,14 @@
   width: fit-content;
   margin: 1.25rem auto 0;    /* centered pill button in the card */
   align-items: center;
-  gap: 0.25rem;
-  padding: 0.5rem 1.25rem;
-  font-size: 0.85rem;
-  font-weight: 600;
+  gap: var(--size-1);
+  padding: var(--size-2) var(--size-4);
+  font-size: var(--press-size-meta);
+  font-weight: var(--press-weight-strong);
   color: var(--link-color);
   border: 1px solid var(--link-color);
   border-radius: 999px;      /* full radius */
-  transition: background-color 200ms ease, color 200ms ease;
+  transition: background-color var(--press-speed) var(--ease-3), color var(--press-speed) var(--ease-3);
 }
 /* The whole card is the click target; the pill fills on card hover as feedback. */
 .press-article-card:hover .press-article-card__cta {

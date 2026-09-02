@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 110" role="img" aria-label="Post vertical-list wireframe">
+  <rect width="200" height="110" fill="#f4f4f2"/>
+  <rect x="14" y="12" width="30" height="7" rx="2" fill="#8b8b87"/>
+  <g>
+    <rect x="30" y="28" width="70" height="6" rx="2" fill="#8b8b87"/>
+    <rect x="30" y="39" width="140" height="4" rx="2" fill="#c2c2be"/>
+    <rect x="22" y="28" width="3" height="15" fill="#8b8b87"/>
+  </g>
+  <g>
+    <rect x="30" y="54" width="86" height="6" rx="2" fill="#8b8b87"/>
+    <rect x="30" y="65" width="140" height="4" rx="2" fill="#c2c2be"/>
+    <rect x="22" y="54" width="3" height="15" fill="#8b8b87"/>
+  </g>
+  <g>
+    <rect x="30" y="80" width="60" height="6" rx="2" fill="#8b8b87"/>
+    <rect x="30" y="91" width="128" height="4" rx="2" fill="#c2c2be"/>
+    <rect x="22" y="80" width="3" height="15" fill="#8b8b87"/>
+  </g>
+</svg>

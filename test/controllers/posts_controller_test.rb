@@ -12,11 +12,49 @@ class PostsControllerTest < ActionDispatch::IntegrationTest
     assert_select "a.list__body[href=?]", admin_post_path(records(:kickoff))
   end
 
+  test "index and show carry the same length fact as the composer's live counter" do
+    length = ApplicationController.helpers.post_length(posts(:kickoff).content)
+    assert_match(/\A\d+ words, about \d+ minutes?\z/, length)
+
+    get admin_posts_path
+    assert_select ".list__meta", text: /#{Regexp.escape(length)}/
+
+    get admin_post_path(records(:kickoff))
+    assert_select ".perma-header__content", text: /#{Regexp.escape(length)}/
+  end
+
   test "index hides trashed posts" do
     records(:kickoff).trash
 
     get admin_posts_path
     assert_select ".list__title", text: posts(:kickoff).title, count: 0
+  end
+
+  test "archiving sets a post aside: out of the main feed, into the archived view, reversible" do
+    post admin_record_archive_path(records(:kickoff))
+    assert records(:kickoff).reload.archived?
+
+    # Gone from the main feed…
+    get admin_posts_path
+    assert_select ".list__title", text: posts(:kickoff).title, count: 0
+    assert_select "a[href=?]", archived_admin_posts_path, text: /View 1 archived post/
+
+    # …but present (and still openable) in the archived view.
+    get archived_admin_posts_path
+    assert_select ".list__title", text: posts(:kickoff).title
+
+    # Unarchive restores it.
+    delete admin_record_archive_path(records(:kickoff))
+    assert_not records(:kickoff).reload.archived?
+    get admin_posts_path
+    assert_select ".list__title", text: posts(:kickoff).title
+  end
+
+  test "archiving is manage-only" do
+    sign_in_as users(:bob) # not the creator, not admin
+    post admin_record_archive_path(records(:kickoff))
+    assert_response :not_found
+    assert_not records(:kickoff).reload.archived?
   end
 
   test "show is keyed by the record id and renders the current version" do
@@ -55,7 +93,7 @@ class PostsControllerTest < ActionDispatch::IntegrationTest
 
   test "composer autosaves: new posts share one draft slot, edits key to the record" do
     get new_admin_post_path
-    assert_select "form#composer[data-controller=autosave][data-autosave-key-value=?]", "posts/new"
+    assert_select "form#composer[data-controller~=autosave][data-autosave-key-value=?]", "posts/new"
 
     get edit_admin_post_path(records(:kickoff))
     assert_select "form#composer[data-autosave-key-value=?]", "Record/#{records(:kickoff).id}/edit"
@@ -153,6 +191,23 @@ class PostsControllerTest < ActionDispatch::IntegrationTest
     assert_select ".list__item:first-child .list__title", text: posts(:kickoff).title
     assert_select ".list__item:first-child .list__flag", text: /Pinned/
     assert late.recordable.published?
+  end
+
+  test "publishing a draft from the status banner (title carried, publish flag)" do
+    record = records(:typography)   # a draft
+    assert record.recordable.drafted?
+
+    patch admin_post_path(record), params: { publish: "1", post: { title: record.recordable.title } }
+    assert record.reload.recordable.published?
+  end
+
+  test "unscheduling from the banner reverts a scheduled post to a draft" do
+    record = records(:typography)
+    record.revise(event: :scheduled, status: :scheduled, creator: users(:alice), published_at: 1.week.from_now)
+    assert record.reload.recordable.scheduled?
+
+    patch admin_post_path(record), params: { scheduled_posting: "false", post: { title: record.recordable.title } }
+    assert record.reload.recordable.drafted?
   end
 
   test "requires authentication" do

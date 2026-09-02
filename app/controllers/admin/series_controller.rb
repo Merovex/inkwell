@@ -5,7 +5,7 @@ class Admin::SeriesController < Admin::BaseController
   before_action -> { authorize! @record, to: :manage }, only: %i[edit update destroy reorder]
 
   def index
-    @series = Series.current.includes(:record, :creator, body: :rich_text_content).feed_ordered
+    @series = Current.account.series.includes(:record, :creator, body: :rich_text_content).feed_ordered
   end
 
   # The series page lists its books in order — drag-sortable to set position.
@@ -34,7 +34,8 @@ class Admin::SeriesController < Admin::BaseController
     if @series.errors.none?
       Record.originate(@series)
       @series.schedule(at: scheduled_at) if scheduling?
-      redirect_to admin_series_path(@series.record), notice: create_notice
+      # Created from the books-index modal — land back there to add its books.
+      redirect_to admin_books_path, notice: create_notice
     else
       render :new, status: :unprocessable_entity
     end
@@ -48,7 +49,8 @@ class Admin::SeriesController < Admin::BaseController
       publish: publishing?, schedule_at: (scheduled_at if scheduling?), unschedule: unscheduling?)
 
     if @series.errors.none?
-      redirect_to admin_series_path(@record)
+      # Management lives on the books index now, so the modal returns there.
+      redirect_to admin_books_path, notice: "Series saved."
     else
       @books = @series.books
       render :edit, status: :unprocessable_entity
@@ -57,7 +59,7 @@ class Admin::SeriesController < Admin::BaseController
 
   def destroy
     @record.trash
-    redirect_to admin_series_index_path, notice: "Series moved to trash."
+    redirect_to admin_books_path, notice: "Series moved to trash."
   end
 
   # Drag-reorder the series' books: PATCH with book_record_ids[] in the new
@@ -66,7 +68,7 @@ class Admin::SeriesController < Admin::BaseController
     ids = Array(params[:book_record_ids]).map(&:to_i)
     Installment.transaction do
       ids.each_with_index do |book_record_id, i|
-        Installment.where(series_record_id: @record.id, book_record_id: book_record_id)
+        Installment.where(container_record_id: @record.id, book_record_id: book_record_id)
           .update_all(position: i + 1)
       end
     end
@@ -79,15 +81,15 @@ class Admin::SeriesController < Admin::BaseController
       q = params[:q].to_s.strip
       return Series.none if q.blank?
 
-      scope = Series.current.where("title LIKE ?", "%#{Series.sanitize_sql_like(q)}%").order(:title).limit(10)
+      scope = Current.account.series.where("title LIKE ?", "%#{Series.sanitize_sql_like(q)}%").order(:title).limit(10)
       if params[:book_record_id].present?
-        scope = scope.where.not(record_id: Installment.where(book_record_id: params[:book_record_id]).select(:series_record_id))
+        scope = scope.where.not(record_id: Installment.where(book_record_id: params[:book_record_id]).select(:container_record_id))
       end
       scope
     end
 
     def series_params
-      params.expect(series: [ :title, :content, :author_record_id ])
+      params.expect(series: [ :title, :content, :author_record_id, :state ])
     end
 
     def create_notice

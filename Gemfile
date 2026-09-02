@@ -32,6 +32,10 @@ gem "solid_cache"
 gem "solid_queue"
 gem "solid_cable"
 
+# Solid Queue dashboard (queues, failed jobs, recurring schedule, workers) at
+# /jobs on the app host — root-only via Admin::JobsBaseController.
+gem "mission_control-jobs"
+
 # Reduces boot times through caching; required in config/boot.rb
 gem "bootsnap", require: false
 
@@ -64,6 +68,9 @@ group :development do
 
   # Open sent mail (e.g. magic links) in the browser instead of delivering it [https://github.com/ryanb/letter_opener]
   gem "letter_opener"
+
+  # Live reload on view/CSS/Stimulus changes [https://github.com/hotwired/spark]
+  gem "hotwire-spark"
 end
 
 group :test do
@@ -85,15 +92,18 @@ gem "csv"
 # [https://github.com/markets/invisible_captcha]
 gem "invisible_captcha"
 
+# Signup email hygiene: syntax + MX + disposable-domain rejection
+# [https://github.com/micke/valid_email2]
+gem "valid_email2"
+
 # First-party analytics (visits + events), DB-backed [https://github.com/ankane/ahoy]
 gem "ahoy_matey"
 
-# Visit geography: offline GeoLite2 lookups (no IPs leave the server) — the
-# .mmdb file lives in storage/geoip/, refreshed manually. See ahoy initializer.
-gem "geocoder"
-gem "maxminddb"
-
 gem "aws-sdk-rails", "~> 5.1"
+# Active Storage's S3 service — pointed at R2 (S3-compatible) for the private
+# reader-magnet bucket. Declared explicitly: Publisher and the r2_magnets
+# service both need it even if the SES gems ever stop pulling it in.
+gem "aws-sdk-s3", require: false
 gem "aws-actionmailer-ses", "~> 1.2"
 # SNS message signature verification for the SES event webhook (Webhooks::Ses).
 gem "aws-sdk-sns", "~> 1.90"
@@ -106,3 +116,9 @@ gem "chartkick", "~> 5.0"
 gem "honeybadger", "~> 6.9"
 
 gem "geocode", "~> 0.2.1"
+
+gem "postmark-rails", "~> 0.22.1"
+
+gem "aws-actionmailbox-ses", "~> 0.2.0"
+
+gem "schematist", "~> 1.1"

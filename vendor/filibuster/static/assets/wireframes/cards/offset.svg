@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 110" role="img" aria-label="offset layout wireframe">
+  <rect width="200" height="110" fill="#f4f4f2"/>
+  <rect x="20" y="18" width="30" height="40" rx="0" fill="#5f5f5b"/>
+  <rect x="14" y="12" width="30" height="40" rx="0" fill="#8b8b87"/>
+  <rect x="60" y="14" width="38" height="5" rx="2" fill="#c2c2be"/>
+  <rect x="60" y="23" width="86" height="5" rx="2" fill="#c2c2be"/>
+  <rect x="60" y="32" width="66" height="5" rx="2" fill="#c2c2be"/>
+  <rect x="20" y="68" width="30" height="40" rx="0" fill="#5f5f5b"/>
+  <rect x="14" y="62" width="30" height="40" rx="0" fill="#8b8b87"/>
+  <rect x="60" y="64" width="44" height="5" rx="2" fill="#c2c2be"/>
+  <rect x="60" y="73" width="86" height="5" rx="2" fill="#c2c2be"/>
+  <rect x="60" y="82" width="60" height="5" rx="2" fill="#c2c2be"/>
+</svg>

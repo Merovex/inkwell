@@ -1,6 +1,24 @@
 require "test_helper"
 
 class RecordTest < ActiveSupport::TestCase
+  test "a new record is stamped with the current account at birth" do
+    other = Account.create!(name: "Other Press", owner: users(:bob))
+
+    record = Current.with_account(other) do
+      Record.originate(Post.new(title: "Elsewhere", creator: users(:alice), body: Body.create!))
+    end
+
+    assert_equal other, record.bucket
+  end
+
+  test "a record cannot be born without an account in context" do
+    Current.without_account do
+      assert_raises ActiveRecord::RecordInvalid do
+        Record.originate(Post.new(title: "Orphan", creator: users(:alice), body: Body.create!))
+      end
+    end
+  end
+
   test "revise inserts an immutable version and repoints the cursor" do
     record = records(:kickoff)
     v1 = record.recordable
@@ -66,6 +84,24 @@ class RecordTest < ActiveSupport::TestCase
     draft.restore
     assert_not draft.trashed?
     assert draft.versions.last.event_restored?
+  end
+
+  test "archive sets a record aside — reversible, a tracked event, separate from trash" do
+    record = records(:kickoff)
+
+    record.archive
+    assert record.reload.archived?
+    assert record.versions.last.event_archived?
+    assert_not record.trashed?, "archive is its own axis, not a trash"
+    # Still findable/active (so it can be reopened), but out of the listed set.
+    assert_includes Record.active, record
+    assert_not_includes Record.listed, record
+    assert_includes Record.archived, record
+
+    record.unarchive
+    assert_not record.reload.archived?
+    assert record.versions.last.event_unarchived?
+    assert_includes Record.listed, record
   end
 
   test "destroying a record destroys all versions and orphaned bodies" do

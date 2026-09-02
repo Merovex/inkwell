@@ -1,0 +1,10 @@
+<% content_for :title, "New circle" %>
+
+<%= render "admin/shared/canvas_head", crumbs: [["Circles", circles_path], ["New circle", nil]] %>
+
+<header class="perma-header">
+  <h1 class="perma-header__title">New circle</h1>
+  <p class="perma-header__content u-text-muted">An accountability group you own — invite members and start a check-in.</p>
+</header>
+
+<%= render "form", circle: @circle, url: circles_path, submit: "Create circle" %>

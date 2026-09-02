@@ -7,9 +7,9 @@
     <%= inline_svg_tag "lucide/ellipsis-vertical.svg", class: "lucide", size: "16px" %>
   </span>
   <% if book.cover? %>
-    <%= image_tag book.cover_thumb, class: "sortable__cover", alt: "" %>
+    <%= image_tag book.cover_thumb, class: "cover sortable__cover", alt: "" %>
   <% else %>
-    <span class="sortable__cover sortable__cover--empty" aria-hidden="true"></span>
+    <span class="cover sortable__cover sortable__cover--empty" aria-hidden="true"></span>
   <% end %>
   <span class="sortable__label"><%= link_to book.title, admin_book_path(book.record) %></span>
   <% unless book.published? %><span class="badge">Draft</span><% end %>

@@ -9,7 +9,7 @@ module SeriesScoped
 
   private
     def set_record
-      @record = Record.active.series.find(params[:series_id] || params[:id])
+      @record = Current.account.records.active.series.find(params[:series_id] || params[:id])
       @series = @record.recordable
     end
 end

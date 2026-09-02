@@ -1,4 +1,4 @@
-<% content_for :title, "Settings — Inkwell" %>
+<% content_for :title, "Settings" %>
 
 <%= render "admin/shared/canvas_head", crumbs: [["Settings", nil]] %>
 
@@ -6,7 +6,7 @@
   <h1 class="perma-header__title">Settings</h1>
 </header>
 
-<div class="settings u-center u-center-narrow">
+<div class="settings u-stack u-stack-double u-margin-block-start u-center u-center-narrow">
   <section class="settings__section settings__section--picture" aria-label="Picture">
     <%# Click the avatar to pick a file, or drop one anywhere on the well; %>
     <%# either way the form auto-submits (avatar-upload controller). Explicit %>
@@ -39,7 +39,52 @@
               "aria-label": "Display name" %>
         <p class="field__hint u-text-muted">Shown on your posts and comments; leave blank to go by your email address.</p>
       </div>
-      <%= f.submit "Save", class: "button button--primary" %>
+      <div class="form__action">
+        <%= f.submit "Save", class: "button button--primary" %>
+      </div>
     <% end %>
   </section>
+
+  <% if Current.user.owned_accounts.any? || Current.user.root? %>
+    <section class="settings__section" aria-label="Weekly digest">
+      <% if Current.user.owned_accounts.any? %>
+        <%= form_with model: Current.user, url: user_settings_path, method: :patch do |f| %>
+          <div class="field u-full-width">
+            <%= f.label :digest_cadence, "Weekly digest", class: "field__label" %>
+            <%= f.select :digest_cadence,
+                  [ [ "Every week", "weekly" ], [ "Every other week", "fortnightly" ], [ "Off", "off" ] ],
+                  {}, class: "field__control" %>
+            <p class="field__hint u-text-muted">A Tuesday-morning roundup of each site you own — subscribers, sends, and posts. Sent only when something changed.</p>
+          </div>
+          <div class="form__action">
+            <%= f.submit "Save", class: "button button--primary" %>
+          </div>
+        <% end %>
+      <% end %>
+      <%# Platform staff only: fire the real email at yourself to eyeball it. %>
+      <% if Current.user.root? %>
+        <%= button_to "Send me a test now", user_digest_test_path, class: "button" %>
+      <% end %>
+    </section>
+  <% end %>
+
+  <% if Current.user.can_invite? %>
+    <section class="settings__section" aria-label="Invite code">
+      <% join_code = Current.user.join_code || Current.user.create_join_code! %>
+      <div class="field u-full-width">
+        <span class="field__label">Invite code</span>
+        <div class="invite-code" data-controller="clipboard"
+             data-clipboard-text-value="<%= new_signup_url(code: join_code.code) %>">
+          <code class="invite-code__code"><%= join_code.formatted %></code>
+          <div class="invite-code__actions">
+            <button type="button" class="button button--small" data-action="clipboard#copy">Copy signup link</button>
+            <%= button_to "Rotate", user_join_code_path, method: :patch, class: "button button--small",
+                  form: { data: { turbo_confirm: "Rotate the invite code? Anyone holding the current code won't be able to sign up with it." } } %>
+          </div>
+          <span class="u-copied-veil" data-clipboard-target="flash" role="status">Copied signup link</span>
+        </div>
+        <p class="field__hint u-text-muted">Share the code or the signup link to invite someone. Rotating invalidates the current code everywhere; signups already completed are unaffected.</p>
+      </div>
+    </section>
+  <% end %>
 </div>

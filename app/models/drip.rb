@@ -29,10 +29,9 @@ class Drip < ApplicationRecord
       .joins(:record).order("records.position")
   end
 
-  # Enroll a newly-confirmed subscriber into every active drip. Called from
-  # Subscriber#confirm!.
+  # Enroll a newly-confirmed subscriber into their press's active drips.
   def self.enroll(subscriber)
-    live.find_each { |drip| drip.enroll(subscriber) }
+    subscriber.account.drips.live.find_each { |drip| drip.enroll(subscriber) }
   end
 
   # Start (or find) this subscriber's Stream, anchored at their confirmation

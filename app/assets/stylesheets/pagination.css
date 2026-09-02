@@ -12,8 +12,8 @@
   .pagination__item {
     display: inline-grid;
     place-items: center;
-    min-inline-size: 2.25rem;
-    block-size: 2.25rem;
+    min-inline-size: calc(var(--u-pad) * 2.25);
+    block-size: calc(var(--u-pad) * 2.25);
     padding-inline: calc(var(--u-pad) / 2);
     background: var(--canvas);
     color: var(--ink);
@@ -27,7 +27,7 @@
   .pagination__item--current {
     background: var(--brand-strong);   /* teal-800 + white = AAA */
     border-color: var(--brand-strong);
-    color: #fff;
+    color: var(--on-brand);
     font-weight: var(--font-weight-8);
   }
   .pagination__item--gap { border: none; background: none; cursor: default; }

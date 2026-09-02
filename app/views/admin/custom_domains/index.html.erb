@@ -1,0 +1,153 @@
+<% content_for :title, "Domain — System settings" %>
+
+<%= render "admin/shared/canvas_head", crumbs: [["System settings", admin_settings_path], ["Domain", nil]] %>
+
+<header class="perma-header">
+  <h1 class="perma-header__title">System settings</h1>
+</header>
+
+<%# The Domain tab of System settings — a sibling page wearing the same
+    segmented control (its forms can't nest inside the settings form). The
+    other four segments link back, deep-linking their tab. %>
+<div class="settings u-stack u-stack-double u-margin-block-start settings--wide u-center">
+  <% domain_panel = capture do %>
+  <div class="u-stack u-stack-double u-full-width">
+  <% if @domains.any? %>
+    <% canonical = @domains.find(&:canonical?) || @domains.first %>
+    <% apex = canonical.hostname.delete_prefix("www.") %>
+    <% all_live = @domains.all?(&:live?) %>
+    <%# Only hostnames still short of live have anything left to ask of the
+        author — a finished one kept advertising its (by then meaningless) DV
+        token, which is how a working apex sent someone chasing a dead record. %>
+    <% pending = @domains.reject(&:live?) %>
+
+    <section class="card" aria-label="Connected domain">
+      <header class="card__header u-cluster u-cluster-between">
+        <h2 class="card__title"><%= apex %></h2>
+        <% if all_live %>
+          <span class="badge badge--success">Live</span>
+        <% else %>
+          <%# Once the poll has given up, "Waiting for DNS" is a lie — nothing
+              is waiting. Name the button for the action that resumes it. %>
+          <%= render "shared/check_badge", url: admin_custom_domain_check_path,
+                label: pending.any?(&:error?) ? "Check again" : "Waiting for DNS" %>
+        <% end %>
+      </header>
+
+      <div class="card__body u-stack">
+        <dl class="u-stack u-stack-half">
+          <% @domains.each do |domain| %>
+            <div class="u-cluster">
+              <dt><code><%= domain.hostname %></code></dt>
+              <dd class="u-cluster u-cluster-tight">
+                <span class="badge badge--<%= { "live" => "success", "error" => "danger" }.fetch(domain.status, "warning") %>"><%= domain.status %></span>
+                <% unless domain.live? %>
+                  <span class="u-text-muted">certificate <%= (domain.ssl_status || "pending").humanize.downcase %></span>
+                <% end %>
+              </dd>
+            </div>
+          <% end %>
+        </dl>
+
+        <% unless all_live %>
+          <% if pending.any?(&:error?) %>
+            <div class="alert alert--warning">
+              <div>
+                <span class="alert__title">Automatic checking has stopped.</span>
+                We watched for these records for a day without seeing all of them. Add what's below, then press
+                Check again at the top of this card — that restarts the checks right away.
+              </div>
+            </div>
+          <% end %>
+
+          <div class="u-stack">
+            <h3>Add these records where <%= apex %>'s DNS lives</h3>
+
+            <%= render "shared/copy_field",
+                  label: "CNAME — name: www",
+                  value: @cname_target,
+                  hint: "Points www.#{apex} at your site." %>
+
+            <%= render "shared/copy_field",
+                  label: "ALIAS or flattened CNAME — name: @ (the bare #{apex})",
+                  value: @cname_target,
+                  hint: "Most DNS hosts call this ALIAS, ANAME, or CNAME flattening. If yours has none of " \
+                        "those at the root, set up a redirect from #{apex} to www.#{apex} instead." %>
+
+            <%# Every outstanding record, for every hostname that isn't done.
+                Cloudflare lists one per in-flight validation attempt, so a
+                rotated order leaves two on the same name and the certificate
+                issues only when both are published. %>
+            <% pending.each do |domain| %>
+              <% domain.validation_records.each do |record| %>
+                <%= render "shared/copy_field",
+                      label: "TXT — name: #{record.txt_name}",
+                      value: record.txt_value,
+                      hint: "Proves you control #{domain.hostname} so the certificate can issue before any traffic moves." %>
+              <% end %>
+            <% end %>
+
+            <% if pending.any? { |d| d.validation_records.many? } %>
+              <p class="u-text-muted">Where a name is listed more than once, add every value — Cloudflare is
+                 waiting on all of them, and they sit alongside each other on the same record rather than
+                 replacing one another.</p>
+            <% end %>
+
+            <%# "Still being issued" was a guess dressed as a fact: an empty set
+                also means we simply haven't read Cloudflare since something
+                cleared it, and telling an author to wait for records that
+                already exist leaves them with nothing to do and no way to see
+                them. Say what we actually know, and name the button that
+                fetches them. %>
+            <% if pending.all? { |d| d.validation_records.none? } %>
+              <p class="u-text-muted">We don't have the TXT verification records for this domain right now.
+                 Cloudflare issues them within a few seconds of connecting a domain — press Check again at the
+                 top of this card to fetch them.</p>
+            <% end %>
+
+            <p class="u-text-muted">We'll email you when the certificate is live (usually within the hour).</p>
+          </div>
+        <% end %>
+      </div>
+
+      <footer class="card__footer">
+        <%= button_to "Disconnect this domain", admin_custom_domain_path(canonical), method: :delete, class: "button",
+              data: { turbo_confirm: "Disconnect #{apex}? Your site stops serving there until you reconnect." } %>
+      </footer>
+    </section>
+  <% end %>
+
+    <%# One domain per site (DomainConnection enforces it) — the connect card
+        only appears when nothing is connected. %>
+    <% if @domains.none? %>
+    <section class="card" aria-label="Connect a domain">
+      <header class="card__header">
+        <h2 class="card__title">Connect your domain</h2>
+      </header>
+      <div class="card__body u-stack">
+        <p class="u-text-muted">Enter the domain you own (e.g. <code>merovex.press</code>). We register it and its
+           <code>www</code>, and give you the DNS records to add.</p>
+
+        <%= form_with url: admin_custom_domains_path, method: :post, class: "u-stack" do |f| %>
+          <div class="field">
+            <%= f.label :hostname, "Domain", class: "field__label" %>
+            <%= f.text_field :hostname, class: "field__control", placeholder: "merovex.press",
+                  autocapitalize: "off", autocorrect: "off", spellcheck: "false" %>
+          </div>
+          <div class="form__action"><%= f.submit "Connect domain", class: "button button--primary" %></div>
+        <% end %>
+      </div>
+    </section>
+    <% end %>
+  </div>
+  <% end %>
+
+  <%= segmented_tabs [
+        { id: "identity", label: "Identity", href: admin_settings_path },
+        { id: "about", label: "About", href: admin_settings_path(tab: "about") },
+        { id: "privacy", label: "Privacy", href: admin_settings_path(tab: "privacy") },
+        { id: "terms", label: "Terms", href: admin_settings_path(tab: "terms") },
+        { id: "domain", label: "Domain", panel: domain_panel, narrow: true },
+        { id: "email", label: "Email", href: admin_sending_domains_path },
+      ], aria_label: "Settings sections" %>
+</div>

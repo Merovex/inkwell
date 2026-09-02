@@ -1,0 +1,7 @@
+<%# locals: (boost:) %>
+<%# A wall card's boost chip: the shared badge in a wall-scoped id wrapper,
+    so the live removal broadcast can pluck exactly this chip (the modal's
+    interactive strip renders its own copies — ids must not collide). %>
+<span id="<%= dom_id(boost, :wall) %>">
+  <%= render "admin/boosts/boost", boost: boost, removable: false %>
+</span>

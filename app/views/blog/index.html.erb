@@ -18,7 +18,7 @@
               <%= post.published_at.strftime("%B %-d, %Y") %>
             </time>
             <h2 class="press-article-card__title">
-              <%= link_to post.title, blog_post_path(post.record.to_slug), class: "press-article-card__link" %>
+              <%= link_to post.title, post_path(post.record.to_slug), class: "press-article-card__link" %>
             </h2>
             <p class="press-article-card__desc">
               <%= post.summary %>

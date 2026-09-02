@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 110" role="img" aria-label="Paper-plane signup wireframe">
+  <rect width="200" height="110" fill="#eceae6"/>
+  <rect x="30" y="24" width="140" height="62" rx="4" fill="#f4f4f2"/>
+  <g fill="none" stroke="#8b8b87" stroke-width="3" stroke-linejoin="round">
+    <path d="M76 38 40 54l12 5zM76 38 57 66l-5-7z"/>
+  </g>
+  <rect x="90" y="38" width="56" height="6" rx="2" fill="#8b8b87"/>
+  <rect x="90" y="51" width="66" height="4" rx="2" fill="#c2c2be"/>
+  <rect x="90" y="62" width="30" height="10" rx="3" fill="#8b8b87"/>
+</svg>

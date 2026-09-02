@@ -1,0 +1,483 @@
+<% content_for :title, "Site designer" %>
+
+<%# The full-screen editor (layout: book_designer): top bar, canvas showing a
+    real Hugo build, and a rail organized as a root menu of summary rows with
+    sub-panes (no routing — panes are shown/hidden by the designer
+    controller, teardown-style). Axis grouping comes from the theme
+    manifest's per-axis `section`; rows for parts the theme can't customize
+    yet render as disabled placeholders, so the full menu shape is always on
+    screen. The designer boots from the account's saved draft; localStorage
+    only carries unsaved work (docs/site-designer.md §2.2). %>
+<%
+  hero_axes = @theme.axes.select { |axis| axis["section"] == "hero" }
+  style_axes = @theme.axes.select { |axis| axis["section"] == "styles" }
+  # Nested axes live INSIDE another axis's pane, never as their own row:
+  # section "palette" (mode) in the Palette pane, "buttons" (second button,
+  # size) in the Buttons pane, "nav" (shown) in the Header pane.
+  mode_axis = @theme.axes.find { |axis| axis["key"] == "mode" }
+  buttons_axes = @theme.axes.select { |axis| axis["section"] == "buttons" }
+  footer_axes = @theme.axes.select { |axis| axis["section"] == "footer" }
+  page_sections = @theme.axes.reject { |axis| axis["section"].in?(%w[hero styles palette buttons nav footer]) }
+    .group_by { |axis| axis["section"] }
+%>
+<div class="designer"
+     data-controller="designer"
+     data-designer-build-url-value="<%= admin_designer_preview_path %>"
+     data-designer-frame-url-value="<%= admin_designer_preview_file_path(path: nil) %>/"
+     data-designer-storage-key-value="inkwell:design:<%= Current.account.slug %>"
+     data-designer-draft-value="<%= Current.account.draft_design.data.to_json %>"
+     data-designer-defaults-value="<%= @theme.defaults.to_json %>"
+     data-designer-version-url-value="<%= admin_designer_preview_version_path %>"
+     data-designer-images-url-value="<%= admin_designer_image_path(slot: "__SLOT__") %>"
+     data-designer-colors-url-value="<%= asset_path("tailwind_colors.json") %>"
+     data-designer-save-url-value="<%= admin_designer_path %>"
+     data-designer-preview-deploy-url-value="<%= admin_designer_preview_deployment_path %>"
+     data-designer-publish-url-value="<%= admin_designer_publication_path %>"
+     data-designer-preview-site-url-value="<%= Current.account.preview_url %>"
+     data-designer-watch-value="<%= Rails.env.development? ? 1500 : 0 %>">
+
+  <header class="designer__topbar">
+    <div class="designer__topbar-side u-cluster">
+      <%= link_to admin_root_path, class: "button button--ghost" do %>&larr; Admin<% end %>
+      <h1 class="designer__title">Site designer</h1>
+    </div>
+    <div class="designer__topbar-side u-cluster">
+      <p class="designer__status" data-designer-target="status" aria-live="polite">Loading preview&hellip;</p>
+      <%= turbo_stream_from Current.account, :build_status %>
+      <%= render "build_status", account: Current.account %>
+      <%= render "help" %>
+      <button type="button" class="button" data-action="designer#reset">Discard changes</button>
+      <button type="button" class="button" data-action="designer#save">Save</button>
+      <button type="button" class="button" data-action="designer#deployPreview">Deploy to preview</button>
+      <%= link_to "View preview", Current.account.preview_url, class: "button button--ghost",
+            target: "_blank", rel: "noopener" %>
+      <button type="button" class="button button--primary" data-action="designer#publish">Publish</button>
+    </div>
+  </header>
+
+  <div class="designer__body">
+    <section class="designer__canvas" aria-label="Site preview">
+      <div class="designer__canvas-bar">
+        <p class="designer__scale-note u-text-muted" data-designer-target="scaleNote">Preview shown at 70%.</p>
+        <div class="u-cluster">
+          <div class="button-group" role="group" aria-label="Preview width">
+            <button type="button" class="button-group__btn designer__viewport is-active" data-action="designer#viewport"
+                    data-designer-width-param="desktop" aria-pressed="true">Desktop</button>
+            <button type="button" class="button-group__btn designer__viewport" data-action="designer#viewport"
+                    data-designer-width-param="mobile" aria-pressed="false">Mobile</button>
+          </div>
+          <%# Preview-only mode peek: flips the iframe's data-mode without
+              touching the design's mode axis (that lives in the palette
+              pane). The controller re-applies it after every rebuild. %>
+          <div class="button-group" role="group" aria-label="Preview mode">
+            <button type="button" class="button-group__btn designer__preview-mode" data-action="designer#previewMode"
+                    data-designer-mode-param="light" aria-pressed="false">Light</button>
+            <button type="button" class="button-group__btn designer__preview-mode" data-action="designer#previewMode"
+                    data-designer-mode-param="dark" aria-pressed="false">Dark</button>
+          </div>
+        </div>
+      </div>
+      <div class="designer__stage" data-designer-target="stage" data-viewport="desktop">
+        <div class="designer__scaler">
+          <iframe class="designer__frame" data-designer-target="frame" title="Site preview" src="about:blank"
+                  data-action="load->designer#frameLoaded"></iframe>
+        </div>
+      </div>
+    </section>
+
+    <aside class="designer__rail" aria-label="Design options">
+      <%# --- root menu --- %>
+      <div class="designer__pane" data-designer-target="pane" data-pane="root">
+        <h2 class="designer__rail-title">Edit website</h2>
+
+        <section class="designer__group" aria-label="Hero">
+          <h3 class="designer__group-title u-microcaps u-text-muted">Hero</h3>
+          <div class="designer__featured">
+            <%# The current hero variant's wireframe, revealed by the same
+                chip mechanism as the Site styles rows. %>
+            <div class="designer__featured-thumb" data-chip-for="hero" aria-hidden="true">
+              <% @theme.axes.find { it["key"] == "hero" }["options"].each do |option| %>
+                <span class="designer__chip-option" data-option="<%= option["id"] %>" hidden><%= @theme.wireframe(option["wireframe"]) %></span>
+              <% end %>
+            </div>
+            <p class="designer__featured-name"><span data-summary-for="hero">&hellip;</span></p>
+            <button type="button" class="button button--primary" data-action="designer#showPane"
+                    data-designer-pane-param="hero">Customize hero</button>
+          </div>
+        </section>
+
+        <section class="designer__group" aria-label="Site styles">
+          <h3 class="designer__group-title u-microcaps u-text-muted">Site styles</h3>
+          <button type="button" class="designer__row" data-action="designer#showPane" data-designer-pane-param="preset">
+            <span class="designer__row-label">Preset</span>
+            <span class="designer__row-value" data-designer-target="preset">&hellip;</span>
+          </button>
+          <%# The header row lives with Page sections (top of the page, in
+              context); its pane still renders with the other style axes. %>
+          <% style_axes.reject { |axis| axis["key"] == "nav" }.each do |axis| %>
+            <button type="button" class="designer__row designer__row--card" data-action="designer#showPane" data-designer-pane-param="<%= axis["key"] %>">
+              <span class="designer__row-chip" data-chip-for="<%= axis["key"] %>" aria-hidden="true">
+                <% case axis["key"] %>
+                <% when "font" %>
+                  <span class="designer__chip-aa">Aa</span>
+                <% when "buttons" %>
+                  <%# The chip is a little button outline drawn at the current
+                      rounding — the row shows the corners themselves. %>
+                  <% axis["options"].each do |option| %>
+                    <span class="designer__chip-option designer__chip-corners" data-option="<%= option["id"] %>" hidden>
+                      <span class="designer__chip-corner designer__chip-corner--<%= option["id"] %>"></span>
+                    </span>
+                  <% end %>
+                <% else %>
+                  <%# One chip per option (wireframe or swatches); the controller
+                      reveals the one matching the working design. %>
+                  <% axis["options"].each do |option| %>
+                    <% if option["wireframe"] %>
+                      <span class="designer__chip-option" data-option="<%= option["id"] %>" hidden><%= @theme.wireframe(option["wireframe"]) %></span>
+                    <% elsif option["swatches"] %>
+                      <span class="designer__chip-option designer__chip-swatches" data-option="<%= option["id"] %>" hidden>
+                        <% option["swatches"].each do |color| %><span class="designer__swatch" style="background: <%= color %>"></span><% end %>
+                      </span>
+                    <% end %>
+                  <% end %>
+                <% end %>
+              </span>
+              <span class="designer__row-text">
+                <span class="designer__row-label"><%= axis["noun"] %></span>
+                <span class="designer__row-value">
+                  <span data-summary-for="<%= axis["key"] %>">&hellip;</span><% if axis["key"] == "palette" %> &middot; <span data-summary-for="mode">&hellip;</span><% end %><% if axis["key"] == "buttons" %> corners<% end %>
+                  <% if axis["key"] == "font" %>
+                    <%# The pairing's actual faces, revealed alongside the
+                        summary by the same chip mechanism (hidden wholesale
+                        when custom fonts take over). %>
+                    <span data-chip-for="font" data-font-names><% axis["options"].each do |option| %><span data-option="<%= option["id"] %>" hidden>&middot; <%= option["display"] %> and <%= option["body"] %></span><% end %></span>
+                  <% end %>
+                </span>
+              </span>
+              <%= inline_svg_tag "lucide/chevron-right.svg", class: "lucide designer__row-icon", size: "16px" %>
+            </button>
+          <% end %>
+        </section>
+
+        <section class="designer__group" aria-label="Page sections">
+          <div class="u-cluster u-cluster-between">
+            <h3 class="designer__group-title u-microcaps u-text-muted u-margin-0">Page sections</h3>
+            <p class="u-margin-0 u-text-small u-text-muted">Drag to reorder</p>
+          </div>
+          <%# The page, top to bottom: header pinned first, footer pinned
+              last, and the home sections sortable between them — the rows
+              ARE the order (controller: DOM is the state; hero stays the
+              page opener, so it leads the emitted order). %>
+          <button type="button" class="designer__row" data-action="designer#showPane" data-designer-pane-param="nav">
+            <span class="designer__row-label">Header</span>
+            <span class="designer__row-value"><span data-summary-for="nav">&hellip;</span></span>
+          </button>
+          <div class="designer__group-rows" data-designer-target="orderList"
+               data-action="dragover->designer#sectionDragOver">
+            <%# Axis sections → the theme's home.sections vocabulary. %>
+            <% home_ids = { "books" => "books", "biography" => "bio", "authors" => "authors",
+                            "blog" => "posts", "newsletter" => "newsletter" } %>
+            <% page_sections.each do |section, axes| %>
+              <div class="designer__row designer__row--sortable" data-section="<%= home_ids.fetch(section) %>">
+                <button type="button" class="designer__row-handle u-unbutton" draggable="true"
+                        aria-label="Reorder <%= section.humanize %>: drag, or press an arrow key"
+                        data-action="dragstart->designer#sectionDragStart dragend->designer#sectionDragEnd keydown->designer#sectionKeydown">
+                  <%= inline_svg_tag "lucide/grip-vertical.svg", class: "lucide", size: "16px" %>
+                </button>
+                <button type="button" class="designer__row-body u-unbutton" data-action="designer#showPane" data-designer-pane-param="<%= section %>">
+                  <span class="designer__row-label"><%= section.humanize %></span>
+                  <span class="designer__row-value">
+                    <% axes.each_with_index do |axis, i| %><%= " · " if i.positive? %><span data-summary-for="<%= axis["key"] %>">&hellip;</span><% end %>
+                  </span>
+                </button>
+              </div>
+            <% end %>
+          </div>
+          <button type="button" class="designer__row" data-action="designer#showPane" data-designer-pane-param="footer">
+            <span class="designer__row-label">Footer</span>
+            <span class="designer__row-value"><span data-summary-for="footer_show">&hellip;</span> &middot; <span data-summary-for="footer">&hellip;</span></span>
+          </button>
+        </section>
+
+        <section class="designer__group" aria-label="Design history">
+          <h3 class="designer__group-title u-microcaps u-text-muted">Design history</h3>
+          <% if @versions.any? %>
+            <% @versions.each do |version| %>
+              <div class="designer__row">
+                <span class="designer__row-label">
+                  <time datetime="<%= version.created_at.iso8601 %>"><%= version.created_at.strftime("%b %-d, %-l:%M %p") %></time>
+                </span>
+                <span class="designer__row-value">
+                  <%= version.was_live? ? "Was live" : "Saved" %><% if version.created_by %> &middot; <%= version.created_by.display_name %><% end %>
+                </span>
+                <%= button_to "Restore", admin_designer_version_restoration_path(version), class: "button" %>
+              </div>
+            <% end %>
+          <% else %>
+            <p class="designer__hint u-text-muted">No saved versions yet.</p>
+          <% end %>
+        </section>
+
+        <p class="designer__hint u-text-muted">Save keeps your work on the account and adds a version above &mdash; restore any of them at any time. Nothing reaches readers until you deploy or publish.</p>
+      </div>
+
+      <%# --- sub-panes: hero, preset, one per style axis, one per page section --- %>
+      <div class="designer__pane" data-designer-target="pane" data-pane="hero" hidden>
+        <button type="button" class="designer__pane-back u-unbutton" data-action="designer#back">&larr; Edit website</button>
+        <label class="switch">
+          <input class="switch__input" type="checkbox"
+                 data-designer-target="axisToggle" data-axis="hero_home"
+                 data-on="yes" data-off="no"
+                 data-on-label="Shown" data-off-label="Hidden"
+                 data-action="designer#axisToggled">
+          Show on home page
+        </label>
+        <%# Content first, presentation after (owner's flow): what the hero
+            says, then how it's arranged and dressed. %>
+        <%= render "hero_content" %>
+        <%= render "axis", axis: hero_axes.find { it["key"] == "hero" } %>
+        <%# hero_art and hero_book both dress the one-book layouts (right/
+            centered), so they share the wrap the controller toggles. hero_art
+            is the book-cover / author-portrait / custom-image choice; the
+            custom image is uploaded in the slot just below. %>
+        <div data-designer-target="heroBookWrap">
+          <%= render "axis", axis: hero_axes.find { it["key"] == "hero_art" } %>
+          <%= render "image_slot", slot: :hero_image, heading: "Custom hero image",
+                upload_label: "Upload hero image",
+                hint: "Shows when the hero image is set to Custom image." %>
+          <label class="switch">
+            <input class="switch__input" type="checkbox"
+                   data-designer-target="axisToggle" data-axis="hero_shadow"
+                   data-on="yes" data-off="no"
+                   data-on-label="Shadow" data-off-label="No shadow"
+                   data-action="designer#axisToggled">
+            Drop shadow behind the hero image
+          </label>
+          <label class="switch">
+            <input class="switch__input" type="checkbox"
+                   data-designer-target="axisToggle" data-axis="hero_book"
+                   data-on="3d" data-off="straight"
+                   data-on-label="3D book" data-off-label="Straight on"
+                   data-action="designer#axisToggled">
+            Show as a 3D book
+          </label>
+        </div>
+        <%# Many-books arrangement: shown only under the Many books layout. %>
+        <div data-designer-target="heroManyWrap">
+          <label class="switch">
+            <input class="switch__input" type="checkbox"
+                   data-designer-target="axisToggle" data-axis="hero_many"
+                   data-on="staggered" data-off="fan"
+                   data-on-label="Staggered" data-off-label="Fanned"
+                   data-action="designer#axisToggled">
+            Stagger the covers
+          </label>
+        </div>
+        <%= render "axis", axis: hero_axes.find { it["key"] == "hero_bg" } %>
+        <%# The veil over image backdrops (cover art, banner): the slider sets
+            its opacity, the color input its tint (black by default). %>
+        <div data-designer-target="heroScrimWrap">
+          <%= render "slider", axis: hero_axes.find { it["key"] == "hero_scrim" } %>
+          <div class="field">
+            <label class="field__label" for="designer-hero-scrim-color">Scrim color</label>
+            <input type="color" id="designer-hero-scrim-color" class="field__control field__control--color"
+                   value="#000000"
+                   data-designer-target="heroScrimColor" data-action="input->designer#heroEdited">
+          </div>
+        </div>
+        <%= render "banner" %>
+      </div>
+
+      <div class="designer__pane" data-designer-target="pane" data-pane="preset" hidden>
+        <button type="button" class="designer__pane-back u-unbutton" data-action="designer#back">&larr; Edit website</button>
+        <section class="designer__block" aria-label="Presets">
+          <h3 class="designer__block-title">Presets</h3>
+          <p class="designer__hint u-text-muted">A preset restyles the whole site at once &mdash; <strong>palette, fonts, layouts, and the trimmings</strong> (it replaces any custom fonts or colors). A starting point, not a cage: everything it sets can be changed after.</p>
+          <%# Preset cards wear their own look: palette swatches, name in the
+              preset's display face, tagline in its body face. %>
+          <% palettes = @theme.axes.find { it["key"] == "palette" }["options"].index_by { it["id"] } %>
+          <% pairings = @theme.axes.find { it["key"] == "font" }["options"].index_by { it["id"] } %>
+          <% @theme.presets.chunk { |preset| preset["group"] || false }.each do |group, presets| %>
+            <% if group %><h4 class="designer__option-group u-microcaps u-text-muted"><%= group %></h4><% end %>
+            <div class="designer__options">
+              <% presets.each do |preset| %>
+                <% palette = palettes[preset["axes"]["palette"]] %>
+                <% pairing = pairings[preset["axes"]["font"]] %>
+                <button type="button" class="designer__preset" data-action="designer#applyPreset"
+                        data-label="<%= preset["label"] %>"
+                        data-designer-axes-param="<%= preset["axes"].to_json %>"
+                        <%= tag.attributes("data-designer-sections-param": preset["sections"].to_json) if preset["sections"] %>>
+                  <span class="designer__preset-swatches" aria-hidden="true">
+                    <% (palette&.dig("swatches") || []).each do |color| %><span class="designer__swatch" style="background: <%= color %>"></span><% end %>
+                  </span>
+                  <span class="designer__preset-name" style="font-family: '<%= pairing["display"] %>', serif"><%= preset["label"] %></span>
+                  <span class="designer__preset-tagline" style="font-family: '<%= pairing["body"] %>', serif"><%= preset["tagline"] %></span>
+                </button>
+              <% end %>
+            </div>
+          <% end %>
+        </section>
+      </div>
+
+      <% style_axes.each do |axis| %>
+        <div class="designer__pane" data-designer-target="pane" data-pane="<%= axis["key"] %>" hidden>
+          <button type="button" class="designer__pane-back u-unbutton" data-action="designer#back">&larr; Edit website</button>
+          <% if axis["key"] == "nav" %>
+            <label class="switch">
+              <input class="switch__input" type="checkbox"
+                     data-designer-target="axisToggle" data-axis="nav_show"
+                     data-on="yes" data-off="no"
+                     data-on-label="Shown" data-off-label="Hidden"
+                     data-action="designer#axisToggled">
+              Show the header
+            </label>
+          <% end %>
+          <% if axis["key"] == "palette" %>
+            <%# Mode belongs to the palette: it leads the pane. %>
+            <%= render "axis", axis: mode_axis %>
+            <p class="designer__hint u-text-muted">Auto follows each reader's own system preference; every palette carries a designed light and dark rendition.</p>
+            <label class="switch">
+              <input class="switch__input" type="checkbox"
+                     data-designer-target="axisToggle" data-axis="mode_toggle"
+                     data-on="yes" data-off="no"
+                     data-on-label="Shown" data-off-label="Hidden"
+                     data-action="designer#axisToggled">
+              Let readers switch light and dark themselves
+            </label>
+          <% end %>
+          <% if axis["key"] == "buttons" %>
+            <%# Sample buttons at the working design's shape and palette —
+                the controller repaints them from the design on every change. %>
+            <div class="designer__button-demo" data-designer-target="buttonDemo" aria-hidden="true">
+              <span class="designer__demo-button designer__demo-button--primary">Get updates</span>
+              <span class="designer__demo-button designer__demo-button--second">Browse the books</span>
+            </div>
+          <% end %>
+          <% if axis["control"] == "slider" %>
+            <%= render "slider", axis: axis %>
+          <% elsif axis["key"] == "font" %>
+            <%= render "fonts", axis: axis %>
+          <% else %>
+            <%= render "axis", axis: axis, heading: (axis["key"] == "buttons" ? "Rounding" : nil) %>
+          <% end %>
+          <% if axis["key"] == "buttons" %>
+            <% buttons_axes.each do |nested| %>
+              <%= render "axis", axis: nested, variant: (nested["key"] == "button_size" ? "segmented" : nil) %>
+            <% end %>
+            <p class="designer__hint u-text-muted">Applies to every button on the site. Colors come from the palette.</p>
+          <% end %>
+          <% if axis["key"] == "nav" %>
+            <%= render "logo" %>
+            <%= render "axis", axis: @theme.axes.find { it["key"] == "logo_size" } %>
+            <%= render "header_links" %>
+          <% end %>
+          <%= render "custom_fonts" if axis["key"] == "font" %>
+          <%= render "custom_colors" if axis["key"] == "palette" %>
+        </div>
+      <% end %>
+
+      <% page_sections.each do |section, axes| %>
+        <div class="designer__pane" data-designer-target="pane" data-pane="<%= section %>" hidden>
+          <button type="button" class="designer__pane-back u-unbutton" data-action="designer#back">&larr; Edit website</button>
+          <%# Boolean-ish axes read better as switches than chips, and they
+              lead the pane. Checked = the axis's first option (its default);
+              option labels feed the row summary. %>
+          <% toggle_labels = {
+            "books" => "Show on home page",
+            "bio_home" => "Show on home page",
+            "authors" => "Show the author grid on the home page",
+            "catalog" => "Show only the first book of each series",
+            "alternate" => "Alternate sides row by row",
+            "books_title" => "Show the section heading",
+            "authors_title" => "Show the section heading",
+            "blog_title" => "Show the section heading",
+            "bio_more" => "Show the About button"
+          } %>
+          <% toggle_axes, rest = axes.partition { |axis| toggle_labels.key?(axis["key"]) } %>
+          <% slider_axes, chip_axes = rest.partition { |axis| axis["control"] == "slider" } %>
+          <% toggle_axes.each do |axis| %>
+            <% on_option, off_option = axis["options"] %>
+            <label class="switch">
+              <input class="switch__input" type="checkbox" checked
+                     data-designer-target="axisToggle" data-axis="<%= axis["key"] %>"
+                     data-on="<%= on_option["id"] %>" data-off="<%= off_option["id"] %>"
+                     data-on-label="<%= on_option["label"] %>" data-off-label="<%= off_option["label"] %>"
+                     data-action="designer#axisToggled">
+              <%= toggle_labels[axis["key"]] %>
+            </label>
+          <% end %>
+          <% slider_axes.each do |axis| %>
+            <%= render "slider", axis: axis %>
+          <% end %>
+          <% chip_axes.each do |axis| %>
+            <%= render "axis", axis: axis %>
+          <% end %>
+          <%# Heading wording rides the design's headings block; the pane's
+              switch above covers visibility. %>
+          <% heading_field = {
+            "blog" => ["posts", "From the Blog", "headingPosts"],
+            "books" => ["books", "The Books", "headingBooks"],
+            "authors" => ["authors", "Authors", "headingAuthors"]
+          }[section] %>
+          <% if heading_field %>
+            <%= render "heading_field", key: heading_field[0], default: heading_field[1], target: heading_field[2] %>
+          <% end %>
+          <% if section == "newsletter" %>
+            <%= render "newsletter_photo" %>
+            <%= render "newsletter_content" %>
+          <% end %>
+        </div>
+      <% end %>
+
+      <%# --- footer pane: the page's closing chrome (the pinned row below
+          the sortable sections). Layout/visibility ride design axes; fine
+          print and social profiles ride the design's footer block; links
+          mirror the header's, so the Links row jumps to that editor. %>
+      <div class="designer__pane" data-designer-target="pane" data-pane="footer" hidden>
+        <button type="button" class="designer__pane-back u-unbutton" data-action="designer#back">&larr; Edit website</button>
+        <label class="switch">
+          <input class="switch__input" type="checkbox"
+                 data-designer-target="axisToggle" data-axis="footer_show"
+                 data-on="yes" data-off="no"
+                 data-on-label="Shown" data-off-label="Hidden"
+                 data-action="designer#axisToggled">
+          Show the footer
+        </label>
+        <%= render "axis", axis: footer_axes.find { it["key"] == "footer" }, heading: "Layout" %>
+        <section class="designer__block" aria-label="What appears">
+          <h3 class="designer__block-title">What appears</h3>
+          <button type="button" class="designer__row" data-action="designer#showPane" data-designer-pane-param="nav">
+            <span class="designer__row-label">Links</span>
+            <span class="designer__row-value">Your header links</span>
+          </button>
+          <label class="switch">
+            <input class="switch__input" type="checkbox"
+                   data-designer-target="axisToggle" data-axis="footer_signup"
+                   data-on="yes" data-off="no"
+                   data-on-label="Signup" data-off-label="No signup"
+                   data-action="designer#axisToggled">
+            Newsletter signup &mdash; one field and a button
+          </label>
+          <label class="switch">
+            <input class="switch__input" type="checkbox"
+                   data-designer-target="axisToggle" data-axis="footer_credit"
+                   data-on="yes" data-off="no"
+                   data-on-label="Credit" data-off-label="No credit"
+                   data-action="designer#axisToggled">
+            Made-with credit &mdash; a small link back to Merovex
+          </label>
+        </section>
+        <p class="designer__hint u-text-muted">Social links will come from Site settings.</p>
+        <div class="field">
+          <label class="field__label" for="designer-footer-fine-print">Fine print</label>
+          <input type="text" class="field__control" id="designer-footer-fine-print"
+                 placeholder="&copy; <%= Date.current.year %> <%= Current.account.name %>. All rights reserved."
+                 data-designer-target="footerFinePrint" data-action="input->designer#footerEdited">
+        </div>
+        <p class="designer__hint u-text-muted">Blank keeps the standard line &mdash; the year updates itself.</p>
+        <%= render "axis", axis: footer_axes.find { it["key"] == "footer_bg" }, heading: "Background" %>
+        <p class="designer__hint u-text-muted">The footer appears on every page.</p>
+      </div>
+    </aside>
+  </div>
+</div>

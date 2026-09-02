@@ -1,0 +1,22 @@
+<% content_for :title, "Choose an account" %>
+
+<div class="card auth__card">
+  <header class="card__header"><span class="card__title">Choose an account</span></header>
+  <div class="card__body u-stack">
+    <% if @accounts.any? %>
+      <ul class="account-picker u-unlist u-grid u-grid-half">
+        <% @accounts.each do |account| %>
+          <li>
+            <%= link_to account.admin_path, class: "account-picker__card door" do %>
+              <span class="account-picker__name"><%= account.name %></span>
+              <span class="account-picker__meta"><%= account.public_address %></span>
+            <% end %>
+          </li>
+        <% end %>
+      </ul>
+    <% else %>
+      <p class="u-text-muted">You don't belong to any sites yet.</p>
+    <% end %>
+    <%= link_to "Create a site", new_account_path, class: (@accounts.any? ? "u-text-muted" : "button button--primary u-full-width") %>
+  </div>
+</div>

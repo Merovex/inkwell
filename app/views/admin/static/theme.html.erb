@@ -1,4 +1,4 @@
-<% content_for :title, "Theme — Inkwell Styleguide" %>
+<% content_for :title, "Styleguide" %>
 
 <%# Page-scoped scaffolding only — .sg-* helpers lay out the styleguide itself. %>
 <% content_for :head do %>
@@ -16,11 +16,11 @@
 
 <%# Tint + theme live on <html> (see layout); cycle them from the user menu (top-right). %>
 <%= render "admin/shared/canvas_head", crumbs: [["Styleguide", nil]] do %>
-  <button type="button" class="menu__item" role="menuitem">Rename</button>
-  <button type="button" class="menu__item" role="menuitem">Duplicate</button>
-  <button type="button" class="menu__item" role="menuitem">Move…</button>
+  <button type="button" class="menu__item">Rename</button>
+  <button type="button" class="menu__item">Duplicate</button>
+  <button type="button" class="menu__item">Move…</button>
   <hr class="menu__separator">
-  <button type="button" class="menu__item" role="menuitem">Archive</button>
+  <button type="button" class="menu__item">Archive</button>
 <% end %>
 
     <div class="u-flow">
@@ -103,6 +103,7 @@
           <button class="button button--primary">Primary</button>
           <button class="button button--ghost">Ghost</button>
           <button class="button button--danger">Danger</button>
+          <button class="button button--warning">Warning</button>
           <button class="button" disabled>Disabled</button>
         </div>
         <div class="u-cluster">
@@ -139,6 +140,15 @@
         <span class="badge badge--warning">Warning</span>
         <span class="badge badge--danger">Danger</span>
       </div>
+    </section>
+
+    <%# ---- Copy field (shared/_copy_field) ---- %>
+    <section class="sg-section">
+      <p class="sg-h">Copy field — <code>render "shared/copy_field", label:, value:, hint:</code></p>
+      <%= render "shared/copy_field",
+            label: "CNAME — name: www",
+            value: "sites.kindredquill.com",
+            hint: "A read-only value with a one-click Copy; the veil confirms." %>
     </section>
 
     <%# ---- Cards ---- %>
@@ -222,9 +232,11 @@
             <input class="field__control" id="sg-dis" type="text" value="Read-only" disabled>
           </div>
 
-          <div class="u-cluster u-cluster-between">
-            <button class="button button--ghost">Cancel</button>
+          <%# Every form ends its buttons in a .form__action block — it owns
+              the breathing room above the actions (never margins on buttons). %>
+          <div class="form__action">
             <button class="button button--primary">Save</button>
+            <button class="button button--ghost">Cancel</button>
           </div>
         </div>
       </div>
@@ -278,21 +290,83 @@
       </div>
     </section>
 
+    <%# ---- Stats ---- %>
+    <section class="sg-section">
+      <p class="sg-h">Stats — <code>.stats</code> / <code>.stat</code> (a label-first <code>&lt;dl&gt;</code>; <code>--trouble</code> reads amber, <code>--compact</code> steps rails down)</p>
+      <dl class="stats">
+        <div class="stat">
+          <dt class="stat__label">emails sent, last 30 days</dt>
+          <dd class="stat__value">1,204</dd>
+        </div>
+        <div class="stat">
+          <dt class="stat__label">delivered</dt>
+          <dd class="stat__value">982</dd>
+        </div>
+        <div class="stat stat--trouble">
+          <dt class="stat__label">bounces, complaints, unsubscribes</dt>
+          <dd class="stat__value">14</dd>
+        </div>
+        <div class="stat stat--compact">
+          <dt class="stat__label">compact, for rails</dt>
+          <dd class="stat__value">7</dd>
+        </div>
+      </dl>
+    </section>
+
+    <%# ---- Popover ---- %>
+    <section class="sg-section">
+      <p class="sg-h">Popover — <code>.popover</code> (native Popover API content card; sibling of <code>.menu</code>, which is for action lists). Restores centering the reset zeroes; no JS, no anchor positioning.</p>
+      <button type="button" class="button button--ghost button--small" popovertarget="sg-popover">Open a popover</button>
+      <div class="popover" popover id="sg-popover">A small card in the top layer — for a note, a hint, or a short disclosure. Light-dismiss and the top layer are the UA's job.</div>
+    </section>
+
+    <%# ---- Gauge ---- %>
+    <section class="sg-section">
+      <p class="sg-h">Gauge — <code>.gauge</code> (SVG scale bar with fixed reference ticks + a value fill; <code>--good</code>/<code>--trouble</code> color the fill). Ticks stay crisp at any width.</p>
+      <%= render "shared/gauge", value: 0.8, good: false %>
+    </section>
+
+    <%# ---- Facts ---- %>
+    <section class="sg-section">
+      <p class="sg-h">Facts — <code>.facts</code> (label · value rows; book rail, subscriber modal)</p>
+      <dl class="facts">
+        <div class="facts__row"><dt>Status</dt><dd><span class="badge badge--success">Confirmed</span></dd></div>
+        <div class="facts__row"><dt>Signed up</dt><dd>May 12, 2026</dd></div>
+        <div class="facts__row"><dt>Length</dt><dd>82,000 words</dd></div>
+      </dl>
+    </section>
+
+    <%# ---- Meter + run sparkline ---- %>
+    <section class="sg-section">
+      <p class="sg-h">Meter &amp; run — <code>.meter</code> (native <code>&lt;progress&gt;</code>) and <code>.run__bars</code> (occurrences answered)</p>
+      <div class="u-stack u-stack-half">
+        <progress class="meter" value="3" max="12">3 of 12</progress>
+        <span class="run">
+          <span class="run__bars" aria-hidden="true">
+            <span class="run__bar run__bar--on"></span><span class="run__bar"></span><span class="run__bar run__bar--on"></span><span class="run__bar run__bar--on"></span><span class="run__bar"></span>
+          </span>
+          <span class="run__label">3 of last 5</span>
+        </span>
+      </div>
+    </section>
+
     <%# ---- List ---- %>
     <section class="sg-section">
       <p class="sg-h">List (summary rows)</p>
-      <ul class="list">
-        <%= render "admin/shared/list_item", href: "#", title: "Kickoff notes for the winter issue",
+      <div class="list">
+        <%= render "shared/list_item", href: "#", title: "Kickoff notes for the winter issue",
               author: "Ada Lovelace", date: "Jun 27",
               excerpt: "Pulling together the themes we landed on last week — the long-form essay, two shorter pieces, and the interview. Draft outline attached.",
               client_visible: true, comment_count: 3 %>
-        <%= render "admin/shared/list_item", href: "#",
+        <%= render "shared/list_item", href: "#",
               title: "A very long subject line that should truncate cleanly with an ellipsis when it runs past the available row width",
               author: "Grace Hopper", date: "Jun 26",
               excerpt: "Second row with no badges and a two-line excerpt that clamps once it exceeds the height of two lines of text in this row." %>
-        <%= render "admin/shared/list_item", href: "#", title: "Reminder", author: "Alan Turing", date: "Jun 25",
+        <%= render "shared/list_item", href: "#", title: "Reminder", author: "Alan Turing", date: "Jun 25",
               excerpt: "Short one.", comment_count: 12 %>
-      </ul>
+        <%= render "shared/list_item", href: "#", title: "A sent post with trailing chips", title_tag: "span", avatar: false,
+              date: "Jun 24", trailing_chips: [ [ "Opened", "success" ], [ "Not clicked", nil ] ] %>
+      </div>
     </section>
 
     <%# ---- Alerts ---- %>
@@ -308,7 +382,7 @@
 
     <%# ---- Modal (dialog) ---- %>
     <section class="sg-section" data-controller="dialog">
-      <p class="sg-h">Modal</p>
+      <p class="sg-h">Modal — <code>.modal--wide</code> for management surfaces; <code>.modal__footer--split</code> pins a destructive action left of the confirm pair</p>
       <button class="button button--primary" data-action="dialog#open">Open modal</button>
       <dialog class="modal" data-dialog-target="modal" data-action="click->dialog#backdrop" aria-labelledby="sg-modal-title">
         <div class="modal__header">
@@ -339,6 +413,32 @@
       </nav>
     </section>
 
+    <%# ---- Segmented control ---- %>
+    <section class="sg-section">
+      <p class="sg-h">Segmented — link variant (<code>aria-current="page"</code>), radio variant (<code>:has(:checked)</code>), or JS tabs (<code>aria-selected</code>); <code>--start</code> left-aligns a section filter</p>
+      <div class="u-stack">
+        <nav class="segmented segmented--start" aria-label="Example filter">
+          <a class="segmented__seg" href="#" aria-current="page">Everything</a>
+          <a class="segmented__seg" href="#">Posts</a>
+          <a class="segmented__seg" href="#">Answers</a>
+        </nav>
+        <fieldset class="segmented segmented--start">
+          <legend class="u-visually-hidden">Example state picker</legend>
+          <label class="segmented__seg"><input class="u-visually-hidden" type="radio" name="sg-seg" checked> Draft</label>
+          <label class="segmented__seg"><input class="u-visually-hidden" type="radio" name="sg-seg"> Published</label>
+        </fieldset>
+      </div>
+    </section>
+
+    <%# ---- Filter by text ---- %>
+    <section class="sg-section">
+      <p class="sg-h">Filter by text — <code>.filter-by-text</code> (<code>--wide</code> for roomier labels), pairs with the <code>filter</code> controller</p>
+      <div class="filter-by-text filter-by-text--wide">
+        <input class="filter-by-text__input" type="search" placeholder=" " autocomplete="off" aria-label="Search by address">
+        <label class="filter-by-text__hotkey">Search by address…</label>
+      </div>
+    </section>
+
     <%# ---- Empty state ---- %>
     <section class="sg-section">
       <p class="sg-h">Empty state</p>
@@ -366,5 +466,69 @@
         <div class="tabs__panel" role="tabpanel" id="sg-panel-1" aria-labelledby="sg-tab-1" data-tabs-target="panel"><p>Overview panel — the default, visible tab.</p></div>
         <div class="tabs__panel" role="tabpanel" id="sg-panel-2" aria-labelledby="sg-tab-2" data-tabs-target="panel"><p>Activity panel content.</p></div>
         <div class="tabs__panel" role="tabpanel" id="sg-panel-3" aria-labelledby="sg-tab-3" data-tabs-target="panel"><p>Settings panel content.</p></div>
+      </div>
+    </section>
+
+    <%# ---- Circles components (mock data — the live ones render in circles/) ---- %>
+    <section class="sg-section">
+      <p class="sg-h">Circle cards — <code>.circles</code> composing <code>.door</code> (the tappable card; also used by the account picker)</p>
+      <div class="circles" data-view="cards">
+        <a href="#" class="circles__card door">
+          <span class="circles__name"><%= inline_svg_tag "lucide/lock.svg", class: "lucide", size: "16px" %> Night Writers</span>
+          <span class="circles__meta">4 members · last pulse yesterday</span>
+        </a>
+        <div class="circles__card circles__card--invited door">
+          <span class="circles__name"><%= inline_svg_tag "lucide/lock.svg", class: "lucide", size: "16px" %> Poetry Circle</span>
+          <span class="circles__meta">You're invited by Harper</span>
+          <span class="circles__invite-actions">
+            <button class="button button--primary button--small">Accept</button>
+            <button class="button button--ghost button--small">Decline</button>
+          </span>
+        </div>
+        <a href="#" class="circles__card door">
+          <span class="circles__name"><%= inline_svg_tag "lucide/lock.svg", class: "lucide", size: "16px" %> Serial Plotters</span>
+          <span class="circles__meta">7 members · quiet this week</span>
+        </a>
+      </div>
+    </section>
+
+    <%# ---- Pulse preview ---- %>
+    <section class="sg-section">
+      <p class="sg-h">Pulse preview — <code>.pulse-preview</code> (one answer + ghost slots)</p>
+      <a href="#" class="pulse-preview">
+        <span class="pulse-preview__question">What scene are you avoiding, and why?</span>
+        <span class="pulse-preview__schedule">Asked weekly on Fridays at 9:00</span>
+        <span class="pulse-preview__answers">
+          <span class="pulse-preview__card">
+            <span class="pulse-preview__byline"><span class="avatar">H</span> Harper · 2h ago</span>
+            <span class="pulse-preview__excerpt">The reunion in chapter 12 — I know what has to be said and I don't want either of them to say it yet.</span>
+          </span>
+          <span class="pulse-preview__ghost" aria-hidden="true"></span>
+          <span class="pulse-preview__ghost" aria-hidden="true"></span>
+        </span>
+      </a>
+    </section>
+
+    <%# ---- Covers ---- %>
+    <section class="sg-section">
+      <p class="sg-h">Book covers — <code>.cover</code> (2:3, sized by <code>--cover-size</code>; <code>--blank</code> is the monogram slab)</p>
+      <div class="u-cluster" style="--u-cluster-align: flex-end;">
+        <span class="cover cover--blank u-center-content" style="--cover-size: var(--measure-cover); font-size: var(--font-size-6);" aria-hidden="true">M</span>
+        <span class="cover cover--blank u-center-content" style="--cover-size: var(--size-11);" aria-hidden="true">M</span>
+        <span class="cover cover--blank u-center-content" style="--cover-size: var(--size-7); --cover-radius: var(--radius-1); font-size: var(--font-size-00);" aria-hidden="true">M</span>
+      </div>
+    </section>
+
+    <%# ---- Day pills ---- %>
+    <section class="sg-section">
+      <p class="sg-h">Day pills — <code>.day-pill</code> (native checkboxes styled as toggles)</p>
+      <div class="day-pills">
+        <% %w[Mon Tue Wed Thu Fri Sat Sun].each_with_index do |day, i| %>
+          <label class="day-pill">
+            <input type="checkbox" class="day-pill__input" <%= "checked" if [0, 2, 4].include?(i) %>>
+            <span class="day-pill__check"><%= inline_svg_tag "lucide/check.svg", class: "lucide", size: "14px" %></span>
+            <%= day %>
+          </label>
+        <% end %>
       </div>
     </section>

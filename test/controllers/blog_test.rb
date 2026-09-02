@@ -5,8 +5,8 @@ require "test_helper"
 # broadcast can go out before publish without a dead link), and 404s otherwise.
 class BlogTest < ActionDispatch::IntegrationTest
   test "a published post renders and canonicalizes a bare-id slug" do
-    get "/blog/#{records(:kickoff).id}"
-    assert_redirected_to "/blog/#{records(:kickoff).to_slug}"
+    get "/posts/#{records(:kickoff).id}"
+    assert_redirected_to "/posts/#{records(:kickoff).to_slug}"
     follow_redirect!
     assert_response :success
   end
@@ -14,40 +14,45 @@ class BlogTest < ActionDispatch::IntegrationTest
   test "a scheduled post is reachable only via its keyed slug, and noindexed" do
     record = schedule_a_post
 
-    get "/blog/#{record.to_slug}"
+    get "/posts/#{record.to_slug}"
     assert_response :success
     assert_equal "noindex", response.headers["X-Robots-Tag"]
 
-    get "/blog/#{record.id}"        # bare id, no key
+    get "/posts/#{record.id}"        # bare id, no key
     assert_response :not_found
 
     wrong = record.to_slug[0..-2] + (record.to_slug[-1] == "0" ? "1" : "0")
-    get "/blog/#{wrong}"            # wrong key
+    get "/posts/#{wrong}"            # wrong key
+    assert_response :not_found
+  end
+
+  test "a crawler probe with a format extension 404s instead of 500ing" do
+    get "/posts/robots.txt"
     assert_response :not_found
   end
 
   test "the blog list shows the author's excerpt when set" do
     posts(:kickoff).update!(excerpt: "A crisp, SEO-friendly summary.")
 
-    get blog_path
+    get posts_path
     assert_response :success
     assert_select ".press-article-card__desc", text: /crisp, SEO-friendly summary/
   end
 
   test "a published article sends a public etag and 304s on revalidation" do
-    get "/blog/#{records(:kickoff).to_slug}"
+    get "/posts/#{records(:kickoff).to_slug}"
     assert_response :success
     assert response.headers["ETag"].present?, "conditional-GET etag"
     assert_match "public", response.headers["Cache-Control"]
 
-    get "/blog/#{records(:kickoff).to_slug}", headers: { "If-None-Match" => response.headers["ETag"] }
+    get "/posts/#{records(:kickoff).to_slug}", headers: { "If-None-Match" => response.headers["ETag"] }
     assert_response :not_modified
   end
 
   test "a scheduled preview is never shared-cached and stays noindex" do
     record = schedule_a_post
 
-    get "/blog/#{record.to_slug}"
+    get "/posts/#{record.to_slug}"
     assert_response :success
     assert_equal "no-store", response.headers["Cache-Control"]
     assert_equal "noindex", response.headers["X-Robots-Tag"]
@@ -58,8 +63,8 @@ class BlogTest < ActionDispatch::IntegrationTest
     keyed = record.to_slug
     record.recordable.publish(creator: users(:alice))
 
-    get "/blog/#{keyed}"
-    assert_redirected_to "/blog/#{record.reload.to_slug}"
+    get "/posts/#{keyed}"
+    assert_redirected_to "/posts/#{record.reload.to_slug}"
   end
 
   private

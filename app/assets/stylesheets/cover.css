@@ -1,0 +1,20 @@
+/*
+ * .cover — a book cover: the 2:3 ratio, clipped corners, object-fit. Sized by
+ * --cover-size (width; height follows the ratio), cornered by --cover-radius.
+ * .cover--blank is the no-cover slab (compose u-center-content and put the
+ * title's initial inside for the monogram). Replaces three drifted stylings:
+ * the card cover, the detail cover, and the sortable-row thumb.
+ */
+@layer components {
+  .cover {
+    display: block;
+    inline-size: var(--cover-size, 100%);
+    aspect-ratio: 2 / 3;
+    object-fit: cover;
+    border-radius: var(--cover-radius, var(--radius-ui));
+  }
+  .cover--blank {
+    background: var(--accent-soft);
+    color: var(--ink-on-soft);
+  }
+}

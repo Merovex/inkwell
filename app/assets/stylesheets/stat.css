@@ -1,0 +1,37 @@
+/*
+ * .stat — THE big-number: a bare value over a muted one-line description, no
+ * box. Used by the broadcasts and drips dashboards and the pulse rail;
+ * documented in the style guide (/admin/theme).
+ *
+ * Markup is a <dl>: each stat is a dt (label) + dd (value) group — either the
+ * dl itself for a lone stat, or div groups inside a dl.stats row. The label is
+ * written first (AT reads "delivered: 982"); column-reverse puts the number on
+ * top visually.
+ *
+ *   <dl class="stats">
+ *     <div class="stat"><dt class="stat__label">delivered</dt>
+ *                       <dd class="stat__value">982</dd></div>
+ *   </dl>
+ */
+@layer components {
+  /* The row of stats, a hairline under the group. */
+  .stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: calc(var(--u-pad) * 3);
+    margin-block: var(--u-pad);
+    padding-block-end: var(--u-pad);
+    border-block-end: var(--border-size-1) solid var(--line);
+  }
+  .stat { display: flex; flex-direction: column-reverse; gap: calc(var(--u-pad) / 4); }
+  .stat__value { font-size: var(--stat-size, var(--font-size-6)); font-weight: var(--font-weight-8); line-height: 1; }
+  .stat__label { color: var(--ink-muted); font-size: var(--font-size-0); }
+  /* A step down for rails and sidebars. */
+  .stat--compact { --stat-size: var(--font-size-5); }
+  /* Trouble (bounces, complaints, unsubscribes) reads amber. */
+  .stat--trouble .stat__value { color: var(--warning-ink); }
+
+  /* Flush: no divider or block margin — for a stat row that sits inside a card
+     (the campaign summary) rather than heading a page. */
+  .stats--flush { margin-block: 0; padding-block-end: 0; border-block-end: none; }
+}

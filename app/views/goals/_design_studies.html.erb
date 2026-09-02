@@ -1,0 +1,85 @@
+<%# THEME TEST GALLERY — one card per chart idiom (NaNoWriMo pace, Strava ring, %>
+<%# Beeminder road, 750words month, GitHub heat), rendered with the REAL %>
+<%# goal-stat / goal-history components on deterministic mock data — nothing %>
+<%# here reads the database. Change the theme, check this page: every goal %>
+<%# presentation updates in one place. Every adaptation strips %>
+<%# punishment/streak mechanics by design. %>
+<section class="goal-studies" aria-label="Design studies">
+  <h2 class="u-margin-block-end">Design studies <span class="u-text-muted">(mock data)</span></h2>
+
+  <div class="goal-stats goal-stats--page">
+    <%# ── 1. NaNoWriMo: cumulative progress vs the par line ─────────────── %>
+    <% par_w, par_h = 280, 90 %>
+    <% cumulative = [0, 1800, 3400, 4400, 6600, 8800, 10200, 11000, 13400, 15800, 17000, 17600, 19800, 21400, 23400] %>
+    <% target = 50_000.0; days = 30 %>
+    <div class="goal-stat">
+      <span class="u-cluster u-cluster-between"><span class="u-text-strong">Pace to the finish</span> <span class="u-microcaps u-text-muted">NaNoWriMo</span></span>
+      <svg viewBox="0 0 <%= par_w %> <%= par_h %>" class="goal-stat__chart goal-stat__chart--line" aria-hidden="true">
+        <%# par: the straight line from 0 to target across the window %>
+        <line x1="0" y1="<%= par_h - 2 %>" x2="<%= par_w %>" y2="2" class="goal-stat__chart-target" />
+        <polyline fill="none"
+          points="<%= cumulative.each_with_index.map { |v, i| "#{(i * (par_w / days.to_f)).round(1)},#{(par_h - 2 - (v / target * (par_h - 4))).round(1)}" }.join(" ") %>" />
+      </svg>
+      <span class="goal-stat__meta">23,400 of 50,000 · day 14 of 30 · <strong>1,660/day finishes on time</strong> · a hair behind par</span>
+      <span class="u-text-small u-text-muted">Needs an optional "by [date]" on a goal. Par is information, not judgment — no red when behind, just the number that gets you home.</span>
+    </div>
+
+    <%# ── 2. Strava: this period's ring, resets quietly ──────────────────── %>
+    <% pct = 0.58; r = 34; circ = (2 * Math::PI * r) %>
+    <div class="goal-stat">
+      <span class="u-cluster u-cluster-between"><span class="u-text-strong">This week's ring</span> <span class="u-microcaps u-text-muted">Strava</span></span>
+      <div class="goal-stat__ringrow">
+        <svg viewBox="0 0 84 84" class="goal-stat__ring" aria-hidden="true">
+          <circle cx="42" cy="42" r="<%= r %>" fill="none" class="goal-stat__ring-track" />
+          <circle cx="42" cy="42" r="<%= r %>" fill="none" class="goal-stat__ring-fill"
+                  stroke-dasharray="<%= (circ * pct).round(1) %> <%= circ.round(1) %>"
+                  transform="rotate(-90 42 42)" />
+          <text x="42" y="47" text-anchor="middle" class="goal-stat__ring-text">58%</text>
+        </svg>
+        <span class="goal-stat__meta">8,400 of 14,000 words this week<br>2,000/day pace · resets Monday</span>
+      </div>
+      <span class="u-text-small u-text-muted">For per-day/week goals: only the current period is on screen. Last week's miss simply isn't here.</span>
+    </div>
+
+    <%# ── 3. Beeminder: the road (rate corridor), minus the stakes ───────── %>
+    <% road_w, road_h = 280, 90 %>
+    <% road_line = [4, 10, 14, 22, 26, 36, 40, 44, 54, 60, 62, 70, 78, 84, 92] %>
+    <div class="goal-stat">
+      <span class="u-cluster u-cluster-between"><span class="u-text-strong">The road</span> <span class="u-microcaps u-text-muted">Beeminder</span></span>
+      <svg viewBox="0 0 <%= road_w %> <%= road_h %>" class="goal-stat__chart goal-stat__chart--line" aria-hidden="true">
+        <%# the corridor: where a 2,000/day pace would put you, ± a day's slack %>
+        <polygon class="goal-study__road" points="0,<%= road_h %> <%= road_w %>,14 <%= road_w %>,40 0,<%= road_h %>" />
+        <polyline fill="none"
+          points="<%= road_line.each_with_index.map { |v, i| "#{(i * (road_w / (road_line.size - 1).to_f)).round(1)},#{(road_h - 2 - (v / 100.0 * (road_h - 6))).round(1)}" }.join(" ") %>" />
+      </svg>
+      <span class="goal-stat__meta">On the road · 2,000/day pace, a day's slack either side</span>
+      <span class="u-text-small u-text-muted">Beeminder's stock/rate insight without its teeth: no stakes, no "derailing" — the shaded road just shows where your pace lives.</span>
+    </div>
+
+    <%# ── 4. 750words: the month, days-you-wrote ─────────────────────────── %>
+    <div class="goal-stat">
+      <span class="u-cluster u-cluster-between"><span class="u-text-strong">The month</span> <span class="u-microcaps u-text-muted">750words</span></span>
+      <div class="goal-history__month" role="img" aria-label="August: 18 of 31 days written">
+        <% wrote = [1,1,0,1,1,1,0, 1,0,1,1,0,1,1, 0,1,1,1,0,0,1, 1,1,0,1,0,1,1, 0,1,1] %>
+        <% wrote.each_with_index do |w, i| %>
+          <span class="goal-history__day<%= " goal-history__day--logged" if w == 1 %>"><%= i + 1 %></span>
+        <% end %>
+      </div>
+      <span class="goal-stat__meta">August · wrote on 18 of 31 days</span>
+      <span class="u-text-small u-text-muted">History as a quiet fact, not a streak counter — no chains to break, blank days stay neutral.</span>
+    </div>
+
+    <%# ── 5. GitHub: the contribution heat map ───────────────────────────── %>
+    <div class="goal-stat">
+      <span class="u-cluster u-cluster-between"><span class="u-text-strong">The long arc</span> <span class="u-microcaps u-text-muted">GitHub</span></span>
+      <div class="goal-history__heat" role="img" aria-label="Sixteen weeks of writing, darker is more">
+        <% (16 * 7).times do |i| %>
+          <% level = (i * 37 % 7) < 2 ? 0 : (i * 13 % 4) %>
+          <span class="goal-history__cell" data-level="<%= level %>"></span>
+        <% end %>
+      </div>
+      <span class="goal-stat__meta">Last 16 weeks · darker = more words</span>
+      <span class="u-text-small u-text-muted">The year at a glance. Intensity celebrates volume; empty cells are just empty, never red.</span>
+    </div>
+  </div>
+</section>

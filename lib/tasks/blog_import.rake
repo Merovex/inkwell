@@ -19,8 +19,8 @@ namespace :blog do
     abort "Not a directory: #{posts_path}" unless File.directory?(posts_path)
 
     dry = ENV["DRY_RUN"].present?
-    creator = User.domain_admin.order(:id).first
-    abort "No domain_admin user to own the imported records." unless creator
+    creator = User.root.order(:id).first
+    abort "No root user to own the imported records." unless creator
     site_root = File.dirname(File.expand_path(posts_path))
 
     puts(dry ? "== DRY RUN — no writes ==" : "== IMPORTING ==")
@@ -87,8 +87,8 @@ namespace :blog do
     abort "Not a directory: #{books_path}" unless File.directory?(books_path)
 
     dry = ENV["DRY_RUN"].present?
-    creator = User.domain_admin.order(:id).first
-    abort "No domain_admin user to own the records." unless creator
+    creator = User.root.order(:id).first
+    abort "No root user to own the records." unless creator
     site_root = File.dirname(File.expand_path(books_path))
 
     puts(dry ? "== DRY RUN — no writes ==" : "== IMPORTING BOOKS ==")

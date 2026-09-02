@@ -1,11 +1,25 @@
 class Admin::BooksController < Admin::BaseController
   include BookScoped, Publishing
-  skip_before_action :set_record, only: %i[index new create search]
+  skip_before_action :set_record, only: %i[index archived new create search]
   before_action -> { authorize! @record, to: :view }, only: :show
   before_action -> { authorize! @record, to: :manage }, only: %i[edit update destroy]
 
+  # One index section: a Series (with its object, for the header) or Standalone.
+  BookSection = Struct.new(:series, :title, :books, keyword_init: true)
+
   def index
-    @books = Book.current.includes(:record, :creator, :depiction, body: :rich_text_content).feed_ordered
+    books = Current.account.books.listed.includes(:record, :creator, :depiction, body: :rich_text_content).feed_ordered
+    @sections = sections_for(books)
+    @book_count = books.size
+    @series_count = @sections.count(&:series)
+    @standalone_count = @sections.find { |s| s.series.nil? }&.books&.size.to_i
+    @archived_count = Current.account.books.archived.count
+  end
+
+  # Set-aside books — permanent but out of the catalog. Open one to restore it.
+  def archived
+    @books = Current.account.books.archived
+      .includes(:record, :creator, :depiction, body: :rich_text_content).feed_ordered
   end
 
   def show
@@ -59,18 +73,45 @@ class Admin::BooksController < Admin::BaseController
   end
 
   private
-    def book_params
-      params.expect(book: [ :title, :content, :publication_date, :author_record_id ])
+    # [["Series title", books in reading order], ..., ["Standalone", the rest]].
+    # A book in two series appears under both; sections follow series title order.
+    # Installments now also carry collection membership, so we group by container
+    # but only build sections for series — collection-only books fall to
+    # "Standalone" here (collections have their own index).
+    def sections_for(books)
+      by_record_id = books.index_by(&:record_id)
+      installments = Installment.where(book_record_id: by_record_id.keys).order(:position)
+      by_container = installments.group_by(&:container_record_id)
+
+      series = Current.account.series.where(record_id: by_container.keys).order(:title)
+      series_container_ids = series.map(&:record_id).to_set
+
+      sections = series.map do |s|
+        list = by_container[s.record_id].filter_map { |i| by_record_id[i.book_record_id] }
+        BookSection.new(series: s, title: s.title, books: list)
+      end
+
+      standalone = books.reject do |book|
+        installments.any? { |i| i.book_record_id == book.record_id && series_container_ids.include?(i.container_record_id) }
+      end
+      sections << BookSection.new(series: nil, title: "Standalone", books: standalone) if standalone.any?
+      sections.reject { |section| section.books.empty? }
     end
 
-    # Current books matching ?q=, minus any already linked to ?series_record_id.
+    def book_params
+      params.expect(book: [ :title, :content, :publication_date, :author_record_id,
+        :tagline, :word_count, :isbn ])
+    end
+
+    # Current books matching ?q=, minus any already linked to ?container_record_id
+    # (the series or collection the combobox is anchored to).
     def matching_books
       q = params[:q].to_s.strip
       return Book.none if q.blank?
 
-      scope = Book.current.where("title LIKE ?", "%#{Book.sanitize_sql_like(q)}%").order(:title).limit(10)
-      if params[:series_record_id].present?
-        scope = scope.where.not(record_id: Installment.where(series_record_id: params[:series_record_id]).select(:book_record_id))
+      scope = Current.account.books.where("title LIKE ?", "%#{Book.sanitize_sql_like(q)}%").order(:title).limit(10)
+      if params[:container_record_id].present?
+        scope = scope.where.not(record_id: Installment.where(container_record_id: params[:container_record_id]).select(:book_record_id))
       end
       scope
     end

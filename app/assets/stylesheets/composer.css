@@ -1,15 +1,27 @@
 /*
- * Composer — the borderless write/edit surface for a recordable (posts,
- * messages): big bare title input + frameless Lexxy editor whose toolbar
- * runs the full width under a hairline.
+ * Composer — the write/edit surface for a recordable (posts, messages): big
+ * bare title input above a framed Lexxy editor (the gem's default border,
+ * matching every other rich_textarea — see lexxy-theme.css).
  *
  * Structure (BEM): form.composer > .composer__title [+ .composer__category]
  * + lexxy-editor
  */
 @layer components {
   .composer {
-    display: grid;
+    display: flex;
+    flex-direction: column;
     gap: var(--u-pad);
+    /* The writing column IS the reading column: the prose measure plus the
+       editor/title inline padding, centered — write at the width you'll read.
+       (Capping the container, not lexxy internals, sidesteps the unlayered
+       gem-CSS hazard: the .lexxy-content class sits ON <lexxy-editor>, and
+       gem rules there beat our layered ones.) */
+    max-inline-size: calc(var(--measure-prose) + 2 * var(--u-pad));
+    margin-inline: auto;
+    /* On a .canvas--fill page, fill the canvas so the body can reach the
+       viewport bottom; grows past it as the prose overflows. */
+    flex: 1;
+    inline-size: 100%;
   }
 
   /* Title: H1-scale, no chrome; the caret is the focus indicator. */
@@ -45,20 +57,17 @@
 
   /* Category picker (messages): a quarter of the composer, not a full-width
      bar; the floor keeps the prompt readable on narrow screens. */
-  .composer__category { inline-size: clamp(13rem, 25%, 100%); }
+  .composer__category { inline-size: clamp(var(--size-13), 25%, 100%); }
 
-  /* Editor: no frame; toolbar spans edge to edge with just the hairline. */
-  .composer lexxy-editor {
-    background: transparent;
-    border: none;
-    border-radius: 0;
-    /* Keep the text off the edges now the border is gone; inline inset lines
-       the body up with the title above. */
-    --lexxy-editor-padding: var(--u-pad);
-  }
+  /* The editor's frame comes from the gem (see lexxy-theme.css). Only the
+     layout role lives here: grow to fill the composer's remaining height
+     (down to the viewport bottom on .canvas--fill pages); the flex item's
+     content min-height then pushes the page taller only once the prose
+     overflows — no fixed calc to tune. */
+  .composer lexxy-editor { flex-grow: 1; }
 
   /* Optically align the first toolbar icon with the title/body text. */
   .composer lexxy-toolbar {
-    padding-inline: calc(var(--u-pad) - 2px);
+    padding-inline: calc(var(--u-pad) - var(--size-1) / 2);
   }
 }

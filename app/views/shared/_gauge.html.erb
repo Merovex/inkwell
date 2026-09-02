@@ -1,0 +1,23 @@
+<%# locals: (value:, good: true) %>
+<%# A fixed 0–4 scale gauge with reference ticks at the 1:1 break-even and 3:1
+    healthy marks. value is the ratio (clamped to the scale); good picks the
+    fill color. The 3-unit pad keeps the round fill cap off the edges; the tick
+    x's here must match the label percentages in gauge.css. %>
+<% max = 4.0
+   pad = 3
+   span = 100 - pad * 2
+   pos = ->(v) { pad + [ [ v, 0 ].max, max ].min / max * span }
+   tick1 = pos.call(1)
+   tick3 = pos.call(3) %>
+<div class="gauge <%= good ? "gauge--good" : "gauge--trouble" %>">
+  <svg class="gauge__bar" viewBox="0 0 100 6" preserveAspectRatio="none" aria-hidden="true">
+    <line class="gauge__rail" x1="<%= pad %>" y1="3" x2="<%= 100 - pad %>" y2="3" vector-effect="non-scaling-stroke" stroke-linecap="round" />
+    <line class="gauge__fill" x1="<%= pad %>" y1="3" x2="<%= pos.call(value) %>" y2="3" vector-effect="non-scaling-stroke" stroke-linecap="round" />
+    <line class="gauge__tick" x1="<%= tick1 %>" y1="0" x2="<%= tick1 %>" y2="6" vector-effect="non-scaling-stroke" />
+    <line class="gauge__tick" x1="<%= tick3 %>" y1="0" x2="<%= tick3 %>" y2="6" vector-effect="non-scaling-stroke" />
+  </svg>
+  <div class="gauge__labels">
+    <span class="gauge__label gauge__label--breakeven">1:1 breaks even</span>
+    <span class="gauge__label gauge__label--healthy">3:1 healthy</span>
+  </div>
+</div>

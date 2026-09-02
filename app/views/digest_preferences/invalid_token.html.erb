@@ -1,0 +1,9 @@
+<% content_for :title, "Weekly digest" %>
+
+<div class="card auth__card">
+  <header class="card__header"><span class="card__title">Link expired</span></header>
+  <div class="card__body u-stack">
+    <p class="u-text-muted">This digest link is no longer valid. Change how often you hear from us in settings.</p>
+    <p><%= link_to "Open settings", user_settings_path, class: "button button--primary" %></p>
+  </div>
+</div>

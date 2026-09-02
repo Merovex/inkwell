@@ -1,0 +1,11 @@
+<% content_for :title, "New magnet" %>
+
+<%= render "admin/shared/canvas_head", crumbs: [["Magnets", admin_magnets_path], ["New", nil]] %>
+
+<header class="perma-header">
+  <h1 class="perma-header__title">New magnet</h1>
+</header>
+
+<div class="u-center u-center-narrow">
+  <%= render "form", magnet: @magnet, url: admin_magnets_path %>
+</div>

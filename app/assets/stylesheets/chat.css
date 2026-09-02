@@ -16,10 +16,7 @@
     margin-block-start: var(--size-7);
   }
 
-  .chat__transcript {
-    display: grid;
-    gap: var(--u-pad);
-  }
+  /* The transcript composes u-stack in the markup. */
 
   .chat__line {
     display: flex;
@@ -33,7 +30,7 @@
     display: grid;
     gap: calc(var(--u-pad) / 4);
     min-inline-size: 0;
-    max-inline-size: 65ch;
+    max-inline-size: var(--measure-prose);
   }
   .chat__line--own .chat__content { justify-items: end; }
 
@@ -71,11 +68,8 @@
      around them, not push them out of the row. */
   .chat__actions { flex: none; }
 
-  /* Inline edit: editor above compact actions (mirrors .comment__form). */
-  .chat__form {
-    display: grid;
-    gap: calc(var(--u-pad) / 2);
-  }
+  /* Inline edit composes u-stack u-stack-half in the markup (same as the
+     comment form rows): editor above compact actions. */
 
   .chat__composer {
     display: flex;
@@ -96,7 +90,7 @@
     font-size: var(--font-size-1);
     resize: none;
     field-sizing: content; /* grow with the message where supported */
-    max-block-size: 10rem;
+    max-block-size: var(--size-12);
   }
   .chat__input:focus { outline: none; border-color: var(--accent); }
 }

@@ -7,6 +7,6 @@
   .u-microcaps {
     font-size: var(--font-size-0);
     text-transform: uppercase;
-    letter-spacing: 0.04em;
+    letter-spacing: var(--font-letterspacing-2);
   }
 }

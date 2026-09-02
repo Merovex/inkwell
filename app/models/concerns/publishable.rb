@@ -27,6 +27,11 @@ module Publishable
     # lists; superseded versions and trashed records never surface here.
     scope :current, -> { where(id: Record.active.where(recordable_type: name).select(:recordable_id)) }
 
+    # `listed` is what a default index shows (neither trashed nor archived);
+    # `archived` is the set-aside view. Both filter through the spine's cursors.
+    scope :listed,   -> { where(id: Record.listed.where(recordable_type: name).select(:recordable_id)) }
+    scope :archived, -> { where(id: Record.archived.where(recordable_type: name).select(:recordable_id)) }
+
     # Pinned first (newest pin first), then newest by publish date — drafts
     # fall back to creation date so they sort among their peers.
     scope :feed_ordered, -> {

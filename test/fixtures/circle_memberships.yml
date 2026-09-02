@@ -1,0 +1,9 @@
+writers_alice:
+  circle: writers
+  user: alice
+  role: owner
+
+writers_bob:
+  circle: writers
+  user: bob
+  role: member

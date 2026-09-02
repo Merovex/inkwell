@@ -1,0 +1,239 @@
+/*
+ * .goal-stat* — the goals page's status tiles: a period total over a mini
+ * chart (bars for the week tiles, a line for the longer spans). Same tile
+ * language as the goals dashboard cards. Chart series are mocked in GoalsHelper until
+ * per-day tally aggregates are wired.
+ */
+@layer components {
+  .goal-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(var(--size-12), 1fr));
+    gap: var(--u-pad);
+    margin-block-end: calc(var(--u-pad) * 2);
+  }
+
+  .goal-stat {
+    display: grid;
+    gap: calc(var(--u-pad) / 4);
+    padding: var(--u-pad);
+    background: var(--site-bg); /* the page's own mountain-mist, not a tinted card */
+    border-radius: var(--radius-card);
+  }
+  .goal-stat__label { color: var(--ink-muted); } /* type via u-microcaps in the markup */
+  .goal-stat__value { font-size: var(--font-size-5); font-weight: var(--font-weight-8); color: var(--ink); }
+  .goal-stat__per { font-size: var(--font-size-1); font-weight: var(--font-weight-5); color: var(--ink-muted); }
+
+  .goal-stat__chart {
+    inline-size: 100%;
+    block-size: calc(var(--u-pad) * 2.5);
+    fill: var(--stat-accent);
+  }
+  .goal-stat__chart--line polyline { stroke: var(--stat-accent); stroke-width: 2; }
+  /* The pace card's target trajectory — quiet and dashed under the accent
+     actual line (dasharray in viewBox units, like the stroke widths). */
+  .goal-stat__chart-target { stroke: var(--ink-muted); stroke-width: 1; stroke-dasharray: 4 3; }
+  /* invisible full-height day column — the hover target for the <title> popup */
+  .goal-stat__hover { fill: transparent; pointer-events: all; }
+
+  /* The index: ALL goals' view cards share one responsive grid — a ring and
+     another goal's completion pack the same row; only heatmap cards span it. */
+  .goal-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(var(--size-14), 100%), 1fr));
+    gap: var(--u-pad);
+    align-items: stretch;
+  }
+
+  /* One card per chosen view: tile content, the goal's linked name at the
+     foot (margin auto pins it so feet align across a row); the goal's first
+     card carries the Today/⋯ cluster top-right. */
+  .goal-summary { display: grid; }
+  .goal-summary--wide { grid-column: 1 / -1; }
+  .goal-stat--card {
+    position: relative;
+    block-size: 100%;
+    padding-inline-end: calc(var(--u-pad) * 2.5);
+    transition: box-shadow var(--speed-gentle) var(--ease-3);
+  }
+  /* Hover: a soft drop-shadow tinted with the stat accent — the door glows
+     in the page's own hue. */
+  .goal-stat--card:hover {
+    box-shadow: var(--elevation-glow);
+  }
+  .goal-summary__actions {
+    position: absolute;
+    inset-block-start: calc(var(--u-pad) / 2);
+    inset-inline-end: calc(var(--u-pad) / 2);
+    display: flex;
+    align-items: center;
+    gap: calc(var(--u-pad) / 4);
+    z-index: 1; /* above the card's stretched link */
+  }
+  .goal-stat--card .goal-stat__label { margin-inline-end: var(--size-11); }
+  .goal-summary__title { font-size: var(--font-size-2); margin-block-start: auto; padding-block-start: calc(var(--u-pad) / 2); }
+  .goal-summary__title a { color: var(--ink); text-decoration: none; }
+  /* The whole card is a door to the goal: the foot title's link stretches
+     over the card (same trick as .list rows). Charts lift above the overlay
+     so their hover popups keep working; Today/⋯ are lifted likewise. */
+  .goal-summary__title a::after { content: ""; position: absolute; inset: 0; }
+  .goal-stat--card:hover .goal-summary__title a { text-decoration: underline; }
+  .goal-stat--card .goal-stat__chart,
+  .goal-stat--card .goal-history__heat,
+  .goal-stat--card .goal-history__month { position: relative; z-index: 1; }
+  /* Clear the card's overlaid Today/⋯ cluster by a half-gap before the graph. */
+  .goal-stat--card .goal-heat { margin-block-start: calc(var(--u-pad) / 2); }
+  /* The goal page's view cards: same responsive grid rhythm as the index. */
+  .goal-stats--page {
+    grid-template-columns: repeat(auto-fit, minmax(min(var(--size-14), 100%), 1fr));
+    margin-block-end: var(--u-pad);
+  }
+  /* Heatmap cards need the horizontal room — the full grid row, both places. */
+  .goal-stat--wide { grid-column: 1 / -1; }
+
+  /* The goal page's logbook: form and tally rows share one column rhythm —
+     date · amount · note (the note gets the remaining ~2/3) · actions. */
+  .logbook { display: flex; align-items: center; gap: calc(var(--u-pad) / 2); }
+  .logbook__date { inline-size: var(--size-12); flex-shrink: 0; }
+  .logbook__amount { inline-size: var(--size-11); flex-shrink: 0; }
+  .logbook__note { flex: 1; }
+
+  /* Compound selector: .list__body (list.css loads after this file) sets
+     flex-direction column; the extra class outranks it to lay the row out. */
+  .list__body.tally-row__body { flex-direction: row; align-items: baseline; gap: calc(var(--u-pad) / 2); }
+  .tally-row__date { inline-size: var(--size-10); flex-shrink: 0; color: var(--brand-text); }
+  .tally-row__amount { inline-size: var(--size-12); flex-shrink: 0; font-weight: var(--font-weight-8); }
+  .tally-row__note { flex: 1; min-inline-size: 0; }
+
+  /* The Progress-display picker: the four options AS sample cards, radios
+     hidden, the picked card wearing the accent ring (pure CSS via :has). */
+  .display-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(var(--size-11), 100%), 1fr));
+    gap: calc(var(--u-pad) / 2);
+  }
+  /* Sample cards, 3:2, with the type stepped down — they're pickers, not
+     data; the shapes matter, the numbers are set dressing. */
+  .display-card {
+    cursor: pointer;
+    outline: var(--border-size-2) solid transparent;
+    outline-offset: var(--border-size-2);
+    aspect-ratio: 3 / 2;
+    padding: calc(var(--u-pad) / 2);
+    gap: calc(var(--u-pad) / 6);
+    align-content: start;
+    overflow: hidden;
+  }
+  .display-card .goal-stat__label { font-size: var(--font-size-0); }
+  .display-card .goal-stat__value { font-size: var(--font-size-2); }
+  .display-card .goal-stat__per { font-size: var(--font-size-0); }
+  .display-card .goal-stat__meta { font-size: var(--font-size-0); }
+  .display-card .goal-stat__chart { block-size: var(--size-6); }
+  .display-card .goal-stat__ring { inline-size: var(--size-8); block-size: var(--size-8); }
+  .display-card .goal-stat__ring-text { font-size: var(--font-size-0); }
+  /* Mini calendar/heat samples inside the picker cards. */
+  .display-card .goal-history__month { grid-template-columns: repeat(7, 1fr); gap: calc(var(--size-1) / 2); }
+  .display-card .goal-history__day { font-size: 0; border-radius: var(--radius-1); }
+  .display-card .goal-history__heat { gap: calc(var(--size-1) / 2); grid-auto-columns: auto; inline-size: auto; justify-content: start; }
+  .display-card .goal-history__cell { inline-size: var(--size-1); block-size: var(--size-1); border-radius: 1px; box-shadow: none; }
+  .display-card__input { position: absolute; opacity: 0; pointer-events: none; }
+  .display-card:has(.display-card__input:checked) { outline-color: var(--stat-accent); }
+  .display-card:has(.display-card__input:focus-visible) { outline-color: var(--stat-accent); outline-style: dashed; }
+
+
+  /* Completion tile: progress track + fill, with the raw numbers beneath. */
+  .goal-stat__bar {
+    block-size: var(--size-2);
+    align-self: center;
+    inline-size: 100%;
+    border-radius: var(--radius-round);
+    background: var(--fill-track);
+    overflow: hidden;
+  }
+  .goal-stat__bar-fill { block-size: 100%; background: var(--stat-accent); border-radius: inherit; }
+  .goal-stat__meta { font-size: var(--font-size-0); color: var(--ink-muted); }
+
+  /* Rate goal's period ring (Strava-shaped, current period only). */
+  .goal-stat__ringrow { display: flex; align-items: center; gap: calc(var(--u-pad) / 2); }
+  .goal-stat__ring { inline-size: calc(var(--u-pad) * 3.5); block-size: calc(var(--u-pad) * 3.5); flex-shrink: 0; }
+  .goal-stat__ring-track { stroke: var(--fill-track); stroke-width: 7; }
+  .goal-stat__ring-fill { stroke: var(--stat-accent); stroke-width: 7; stroke-linecap: round; }
+  .goal-stat__ring-text { font-size: var(--font-size-1); font-weight: var(--font-weight-8); fill: var(--ink); }
+
+  /* ── History pieces (server-rendered: the heat strip, the calendar month) ── */
+  /* Fluid cells: the columns split the available width, so a 53-week year
+     always fits its card — never a scrollbar; cells just get smaller. */
+  .goal-history__heat {
+    display: grid;
+    grid-auto-flow: column;
+    grid-template-rows: repeat(7, auto);
+    grid-auto-columns: minmax(0, 1fr);
+    gap: var(--size-1);
+    inline-size: 100%;
+    align-content: start; /* never let surplus height pad the rows apart */
+  }
+  /* GH-style cells: the faint ink tint, plus the inset ring GitHub uses —
+     the hairline is what separates a cell from the card wash, every level. */
+  .goal-history__cell {
+    aspect-ratio: 1;
+    border-radius: var(--radius-1);
+    background: color-mix(in oklab, var(--ink) 7%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--ink) 14%, transparent);
+  }
+  .goal-history__cell--pad { background: transparent; box-shadow: none; } /* week-alignment spacer */
+
+  /* GH axis furniture around the heat grid (goals/_heat_map): months across
+     the top (same fluid pitch as the week columns), Mon/Wed/Fri down the side. */
+  .goal-heat {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: var(--size-1);
+    font-size: var(--font-size-0);
+    line-height: 1; /* body's 1.65 would inflate the label column, and grid
+                       stretch then spreads the cell rows apart to match */
+    color: var(--ink-muted);
+  }
+  .goal-heat__months { grid-column: 2; display: grid; gap: var(--size-1); }
+  .goal-heat__months span { white-space: nowrap; overflow: visible; }
+  .goal-heat__days {
+    grid-column: 1;
+    grid-row: 2;
+    display: grid;
+    grid-template-rows: repeat(7, minmax(0, 1fr));
+    gap: var(--size-1);
+    align-items: center;
+    padding-inline-end: calc(var(--size-1) / 2);
+  }
+  .goal-heat .goal-history__heat { grid-column: 2; grid-row: 2; }
+
+  /* GH's legend — the real scale, zero to full, tucked bottom-right. */
+  .goal-heat__legendrow { display: flex; justify-content: space-between; align-items: center; gap: var(--u-pad); }
+  .goal-heat__legend { display: inline-flex; align-items: center; gap: var(--size-1); font-size: var(--font-size-0); color: var(--ink-muted); }
+  .goal-heat__legend .goal-history__cell { inline-size: calc(var(--u-pad) * 0.7); block-size: calc(var(--u-pad) * 0.7); flex-shrink: 0; }
+  /* Three intensity stops (a lighter read than GitHub's four): the first
+     starts at 40% so even light days register against the canvas. */
+  .goal-history__cell[data-level="1"] { background: color-mix(in oklab, var(--stat-accent) 40%, var(--canvas)); }
+  .goal-history__cell[data-level="2"] { background: color-mix(in oklab, var(--stat-accent) 70%, var(--canvas)); }
+  .goal-history__cell[data-level="3"] { background: var(--stat-accent); }
+
+  .goal-history__month { display: grid; grid-template-columns: repeat(7, calc(var(--u-pad) * 2.25)); gap: var(--size-1); justify-content: center; }
+  .goal-history__day {
+    display: grid;
+    place-items: center;
+    aspect-ratio: 1;
+    border-radius: var(--radius-ui);
+    font-size: var(--font-size-0);
+    color: var(--ink-muted);
+    /* Same idiom as the heat cells: faint ink tint + GH's inset hairline —
+       the ring is what lifts a cell off the card wash. */
+    background: color-mix(in oklab, var(--ink) 6%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--ink) 14%, transparent);
+  }
+  .goal-history__day--logged { background: var(--stat-accent); color: var(--stat-accent-ink); }
+
+  /* ── Design studies (goals/_design_studies): the theme test gallery — it
+       renders the REAL goal-stat / goal-history components on mock data, so
+       only mock-only pieces keep rules here. ── */
+  .goal-studies { margin-block-start: calc(var(--u-pad) * 3); }
+  /* Beeminder-style rate corridor — a design idea with no product component yet. */
+  .goal-study__road { fill: color-mix(in oklab, var(--stat-accent) 14%, transparent); }
+}

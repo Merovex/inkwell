@@ -7,6 +7,11 @@ class Drop < ApplicationRecord
 
   has_rich_text :body
 
+  # The reader magnet this email hands out, if any — the mailer appends a
+  # "Get {title}" claim button and mints the subscriber's Grant at send time.
+  # Carried across versions like any scalar (build_successor dups it).
+  belongs_to :magnet, optional: true
+
   validates :subject, presence: true
   validates :body, presence: true
   validates :delay_days, numericality: { only_integer: true, greater_than_or_equal_to: 0 }

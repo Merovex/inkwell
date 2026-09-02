@@ -7,11 +7,11 @@
  *   form.settings__avatar-well > label.settings__avatar (.avatar)
  */
 @layer components {
-  .settings {
-    display: grid;
-    gap: calc(var(--u-pad) * 2);
-    margin-block-start: var(--u-pad);
-  }
+  /* The page wrapper composes u-center + u-stack u-stack-double +
+     u-margin-block-start in the markup; .settings remains as the scope for
+     the rules below. */
+  /* System settings sits at a comfortable ~900px, not the narrow prose column. */
+  .settings--wide { --u-center-max: var(--measure-form-wide); }
 
   .settings__section {
     display: grid;
@@ -45,11 +45,44 @@
     flex-shrink: 0;
   }
 
-  /* System-settings logo preview: bounded so a large upload doesn't blow out
-     the form; the field below it swaps the file. */
-  .settings__logo-preview {
-    max-block-size: 4rem;
-    max-inline-size: 12rem;
+  /* Roomier gaps between fields inside a settings tab panel (:not([hidden]) so
+     the grid display doesn't override the hidden panels' display:none). */
+  .settings .tabs__panel:not([hidden]) {
+    display: grid;
+    gap: calc(var(--u-pad) * 1.5);
+    justify-items: stretch;
+  }
+
+  /* Logo upload — a centered preview + a styled "Change…" button, mirroring the
+     user-avatar control (no raw file input, no redundant "Logo" label). Double
+     gap so the three elements breathe. */
+  .logo-upload {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: calc(var(--u-pad) * 2);
+  }
+  .logo-upload__preview {
+    max-block-size: var(--size-10);
+    max-inline-size: var(--size-13);
     object-fit: contain;
+  }
+  .logo-upload__placeholder {
+    display: inline-grid;
+    place-items: center;
+    inline-size: var(--size-12);
+    block-size: var(--size-9);
+    border-radius: var(--radius-ui);
+    background: color-mix(in oklab, var(--ink) 6%, var(--canvas));
+    color: var(--ink-muted);
+  }
+  .logo-upload__remove {
+    display: inline-flex;
+    align-items: center;
+    gap: calc(var(--u-pad) / 3);
+    color: var(--ink-muted);
+    font-size: var(--font-size-0);
+    cursor: pointer;
   }
 }

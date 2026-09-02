@@ -14,16 +14,18 @@
 class MissiveMailer < ApplicationMailer
   # Route through the transactional configuration set (bounce/complaint events
   # only, no click rewriting) — the confirm link is a critical action, and the
-  # admin digest is operational mail. Mirrors SessionMailer/SubscriberMailer
-  # (ADR 0015); without it, SES sends outside the transactional stream.
+  # admin digest is operational mail. Mirrors SessionMailer (ADR 0015); without
+  # it, SES sends outside the transactional stream. Rides the platform's
+  # transactional identity, so it stamps the platform-auth tenant.
   default delivery_method_options: {
-    configuration_set_name: Rails.application.credentials.dig(:ses, :transactional_config_set)
+    configuration_set_name: Rails.application.credentials.dig(:ses, :transactional_config_set),
+    tenant_name: "platform-auth"
   }
 
   def confirmation(missive, token)
-    setting = Setting.current
+    setting = missive.account.site
     @site_name = setting.site_name
-    @confirm_url = confirm_contact_url(token: token)
+    @confirm_url = confirm_contact_url(token: token, **public_url_options(missive.account))
 
     options = { to: missive.email_address, subject: "Confirm your message to #{@site_name}" }
     options[:reply_to] = setting.contact_email if setting.contact_email.present?
@@ -34,7 +36,9 @@ class MissiveMailer < ApplicationMailer
   # in the last day; `recipients` is the domain admins' addresses. No message
   # content rides along — just the count and a link to the feed.
   def digest(recipients, count)
-    @site_name = Setting.current.site_name
+    # The digest is install-wide (cross-account sweep); the first account's
+    # identity fronts it until the multi-tenant email phase splits it up.
+    @site_name = (Current.account || Account.first).site.site_name
     @count = count
     @missives_url = admin_missives_url
 

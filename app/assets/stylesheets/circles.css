@@ -1,0 +1,139 @@
+/*
+ * .circles — the "Your circles" collection, switchable between a list of
+ * full-width rows and a grid of portrait cards (3 abreast, 3:5). The
+ * `view-toggle` Stimulus controller flips data-view; this is only the skin.
+ */
+@layer components {
+  /* The collection composes u-unlist + u-grid in the markup; only the
+     data-view column templates live here. */
+
+  /* List: one full-width row per circle (the default). */
+  .circles[data-view="list"] { grid-template-columns: 1fr; }
+
+  /* Cards: three abreast, each a 5:3 landscape with its label pinned to the
+     bottom. Collapses to two, then one, as the canvas narrows. */
+  .circles[data-view="cards"] { grid-template-columns: repeat(3, 1fr); }
+  .circles[data-view="cards"] .circles__card {
+    aspect-ratio: 5 / 3;
+    justify-content: flex-end;
+  }
+  @media (max-width: 64em) { /* --breakpoint-lg */
+    .circles[data-view="cards"] { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 48em) { /* --breakpoint-md */
+    .circles[data-view="cards"] { grid-template-columns: 1fr; }
+    .circles[data-view="cards"] .circles__card { aspect-ratio: auto; }
+  }
+
+  /* Cards compose .door (surface + hover invitation) in the markup. */
+  .circles__name { font-weight: var(--font-weight-6); }
+  .circles__meta { color: var(--ink-muted); font-size: var(--font-size-0); }
+
+  /* The pulse preview on the circle home — one big door to the pulse page:
+     question, schedule, and up to three answer cards (excerpt, face, time). */
+  .pulse-preview { display: block; color: inherit; text-decoration: none; }
+  .pulse-preview:hover .pulse-preview__question { text-decoration: underline; }
+  .pulse-preview__question { display: block; font-weight: var(--font-weight-8); color: var(--ink); }
+  .pulse-preview__schedule { display: block; color: var(--ink-muted); }
+  /* Always three slots: a lone answer sits beside dashed ghosts, so the row
+     reads as "room for more". Cards hold a 3:2 ratio. */
+  .pulse-preview__answers {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: calc(var(--u-pad) / 2);
+    margin-block-start: calc(var(--u-pad) / 2);
+  }
+  .pulse-preview__card {
+    display: grid;
+    gap: calc(var(--u-pad) / 4);
+    align-content: start;
+    aspect-ratio: 3 / 2;
+    overflow: hidden;
+    padding: calc(var(--u-pad) * 0.75);
+    background: var(--site-bg);
+    border-radius: var(--radius-card);
+  }
+  .pulse-preview__ghost {
+    aspect-ratio: 3 / 2;
+    border: var(--border-size-1) dashed var(--line);
+    border-radius: var(--radius-card);
+  }
+  @media (max-width: 48em) { /* --breakpoint-md */
+    .pulse-preview__answers { grid-template-columns: 1fr; }
+    .pulse-preview__card { aspect-ratio: auto; }
+    .pulse-preview__ghost { display: none; } /* stacked empty boxes are noise */
+  }
+  .pulse-preview__byline {
+    display: flex;
+    align-items: center;
+    gap: calc(var(--u-pad) / 3);
+    font-size: var(--font-size-0);
+    color: var(--brand-text);
+  }
+  .pulse-preview__byline .avatar { --avatar-size: var(--size-5); flex-shrink: 0; }
+  /* composes u-clamp in the markup */
+  .pulse-preview__excerpt {
+    --u-clamp-lines: 3;
+    font-size: var(--font-size-0);
+    color: var(--ink);
+  }
+
+  /* A seat on offer: the golden card leading the deck (Fizzy's golden card,
+     warm amber — Open Props yellow/choco stops). Not a door — it carries its
+     own Accept/Decline. */
+  .circles__card--invited {
+    --gold-bg:   var(--yellow-1);
+    --gold-line: var(--yellow-3);
+    --gold-ink:  var(--choco-9);
+    background: var(--gold-bg);
+    border-color: var(--gold-line);
+  }
+  .circles__card--invited .circles__meta { color: var(--gold-ink); }
+  [data-theme="dark"] .circles__card--invited {
+    --gold-bg:   var(--choco-12);
+    --gold-line: var(--choco-9);
+    --gold-ink:  var(--yellow-2);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .circles__card--invited {
+      --gold-bg: var(--choco-12); --gold-line: var(--choco-9); --gold-ink: var(--yellow-2);
+    }
+  }
+  .circles__invite-actions {
+    display: flex;
+    gap: calc(var(--u-pad) / 4);
+    margin-block-start: auto; /* pin to the card's foot in cards view */
+    padding-block-start: calc(var(--u-pad) / 4);
+  }
+
+  /* The user-lock beside a circle's name — every circle is invite-only. */
+  .circles__name > .lucide,
+  .perma-header__title > .lucide {
+    margin-inline-end: 0.35em;
+    vertical-align: -0.125em;
+    color: var(--ink-muted);
+  }
+
+  /* Circle home: the stacked sections (Pulse check, Discussions, …) need room
+     to breathe. Section heads are utility compositions in the markup
+     (u-cluster u-cluster-between + margins) — no component class. */
+  .circle-section { margin-block-start: calc(var(--u-pad) * 3.5); }
+
+  /* The "see all N discussions" line under the preview list. */
+  .section-more { margin-block-start: calc(var(--u-pad) / 2); }
+
+  /* Members section: the avatar cluster beside the invite-by-email row. */
+  .circle-members {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--u-pad);
+    margin-block-end: var(--u-pad);
+  }
+  .circle-members__invite {
+    display: flex;
+    gap: calc(var(--u-pad) / 2);
+    flex: 1;
+    min-inline-size: var(--size-13);
+  }
+}

@@ -1,0 +1,13 @@
+/*
+ * u-unlist — strip a ul/ol's list chrome (markers + UA padding) so it can be
+ * a plain layout container. Was re-rolled by nearly every list component.
+ * (Killing a <summary>'s disclosure marker is a different intent — components
+ * keep that one.)
+ */
+@layer utilities {
+  .u-unlist {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+}

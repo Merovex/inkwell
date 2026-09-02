@@ -1,0 +1,59 @@
+<% content_for :title, @goal.title %>
+
+<%= render "admin/shared/canvas_head",
+      crumbs: [["Goals", goals_path], [@goal.title, nil]],
+      edit_href: edit_goal_path(@record) do %>
+  <%= button_to "Move to trash", goal_path(@record), method: :delete, class: "menu__item",
+        form: { data: { turbo_confirm: "Trash this goal and its tallies?" } } %>
+<% end %>
+
+<header class="perma-header">
+  <h1 class="perma-header__title"><%= @goal.title %></h1>
+  <p class="perma-header__content u-text-muted">
+    <% if @goal.rate? %>
+      <%= number_with_delimiter(@goal.period_total) %> of <%= number_with_delimiter(@goal.target) %> <%= @goal.unit %> <%= goal_period_phrase(@goal) %>
+      · observes every <%= @goal.unit.singularize %>-tally across your goals
+    <% elsif @goal.target %>
+      <%= number_with_delimiter(@goal.total) %> of <%= number_with_delimiter(@goal.target) %> <%= @goal.unit %><% if @goal.deadline? %> · by <%= goal_date(@goal.ends_on) %><% end %>
+    <% else %>
+      <%= number_with_delimiter(@goal.total) %> <%= @goal.unit %> so far
+    <% end %>
+  </p>
+</header>
+
+<%# The goal's chosen views — one card each, same as its index cards
+    (a heatmap card takes the full row). %>
+<div class="u-center u-center-prose">
+  <div class="goal-stats goal-stats--page">
+    <% goal_resolved_displays(@goal).each do |display| %>
+      <div class="goal-stat<%= " goal-stat--wide" if display == "heatmap" %>">
+        <%= render "goals/progress_tile", goal: @goal, display: display %>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<div class="u-center u-center-prose u-flow">
+  <%# The logbook line, one row: date · amount · note (the note gets the
+      lion's share) · Log it. Tally rows below mirror these columns. %>
+  <%= form_with model: @tally, url: goal_tallies_path(@record), class: "logbook" do |f| %>
+    <%= f.date_field :logged_on, class: "field__control logbook__date", "aria-label": "Date" %>
+    <%= f.number_field :amount, class: "field__control logbook__amount", min: 1, required: true,
+          placeholder: @goal.unit, "aria-label": "Amount" %>
+    <%= f.text_field :note, class: "field__control logbook__note", maxlength: Tally::NOTE_MAX_LENGTH,
+          placeholder: "A short note (optional)", "aria-label": "Note" %>
+    <%= f.submit "Log it", class: "button button--primary" %>
+  <% end %>
+
+  <section id="tallies" aria-label="Tallies">
+    <% if @tallies.any? %>
+      <h2 class="comments__heading"><%= pluralize(@tallies.size, "tally") %></h2>
+      <div class="list">
+        <%= render partial: "goals/tallies/tally", collection: @tallies,
+              locals: { goal: @goal, goal_record: @record } %>
+      </div>
+    <% else %>
+      <p class="u-text-muted">Nothing logged yet.</p>
+    <% end %>
+  </section>
+</div>

@@ -1,14 +1,14 @@
-<%# locals: (record:, book:) %>
+<%# locals: (record:, book:, heading: true) %>
 <%# A book's series, with a typeahead to add more. %>
 <section class="book-series u-flow">
-  <h2 class="subhead">Series</h2>
+  <% if heading %><h2 class="subhead">Series</h2><% end %>
   <%= render "admin/installments/combobox",
-        context: "book", url: search_admin_series_index_path,
-        anchor_param: "book_record_id", selected_param: "series_record_id",
+        context: "book_series", url: search_admin_series_index_path,
+        anchor_param: "book_record_id", selected_param: "container_record_id",
         anchor_id: record.id, placeholder: "Search series to add…" %>
-  <ul class="mrows" id="book_series">
+  <ul class="mrows u-unlist" id="book_series">
     <% book.installments.each do |installment| %>
-      <% series = Series.current.find_by(record_id: installment.series_record_id) %>
+      <% series = Current.account.series.find_by(record_id: installment.container_record_id) %>
       <% next unless series %>
       <%= render "admin/books/series_row", installment: installment, series: series %>
     <% end %>

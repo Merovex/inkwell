@@ -1,0 +1,40 @@
+/* =========================================================
+   filibuster — author-site permutation engine.
+   Independent design axes, set as data-* attributes on <html>.
+   The axis vocabulary lives in data/theme.json (single source, also read by
+   the SiteDesigner and the Rails exporter's validation); every rule below
+   that keys off html[data-*] is one of the axis-conditional rules:
+     data-palette      15 dual-mode palettes (see data/theme.json)
+     data-mode         light | dark | auto
+     data-mode-toggle  yes | no (reader cycle button in the nav)
+     data-books        yes | no (no CSS — home.html omits the section)
+     data-buttons      square | crisp | soft | round (.fk-btn radius)
+     data-cards        spread | shelf | grid | panel | carousel | offset | fan
+     data-catalog      series | books
+     data-alternate    yes | no (row layouts flip even rows)
+     data-corners      square | crisp | soft | round (cover image radius)
+     data-hero         none | centered | right | many (structure only)
+     data-hero-book    straight | 3d (featured-cover rendering)
+     data-hero-many    fan | staggered (many-books cover arrangement)
+     data-hero-bg      page | gradient | scrim | cover | banner
+     data-hero-scrim   0..100 by tens (black veil opacity on cover/banner)
+     data-font         21 genre pairings (13 per verkilo.com/typography + 8 coverage additions)
+     data-avatar       none | frame | round | square | organic
+     data-avatar-side  left | right
+     data-bio-band     none | stripe | angled (band behind the bio)
+     data-bio-align    left | centered (bio text alignment)
+     data-bio-more     yes | no (the bio band's About button)
+     data-blog         grid | list | cards (home post cards)
+     data-blog-title   yes | no (home band section headings…)
+     data-books-title  yes | no
+     data-authors-title yes | no
+     data-newsletter   photo | quiet | envelope | plane | megaphone | mailbox
+     data-nav          split | centered | grand | bare
+     data-logo-size    regular | large | huge (header logo ×1 / ×1.5 / ×2)
+   ========================================================= */
+
+/* ---------- Reset ---------- */
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; }
+img { max-width: 100%; height: auto; display: block; }
+ul, ol { padding: 0; }

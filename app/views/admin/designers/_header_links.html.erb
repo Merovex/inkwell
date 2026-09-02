@@ -1,0 +1,82 @@
+<%# The header-content editors (links + CTA button) as standard modals —
+    native <dialog> + the dialog controller (Esc + backdrop close), the
+    app's .modal component. Rows are cloned from the template by the
+    designer controller; edits land in the working nav block and rebuild
+    the preview. %>
+<section class="designer__block" aria-label="Header links">
+  <h3 class="designer__block-title">Header links</h3>
+  <div class="designer__options">
+    <span data-controller="dialog">
+      <button type="button" class="button" data-action="dialog#open designer#openLinks">Edit header links</button>
+      <dialog class="modal designer__links-modal" data-dialog-target="modal" data-action="click->dialog#backdrop"
+              aria-labelledby="designer-links-title">
+        <div class="modal__header">
+          <span class="modal__title" id="designer-links-title">Header links</span>
+          <button type="button" class="button button--icon button--ghost" data-action="dialog#close" aria-label="Close">
+            <%= inline_svg_tag "lucide/x.svg", class: "lucide", size: "20px" %>
+          </button>
+        </div>
+        <div class="modal__body u-flow">
+          <ul class="designer__links u-unlist" data-designer-target="linksList"></ul>
+          <button type="button" class="button button--ghost" data-action="designer#addLink">+ Add link</button>
+        </div>
+        <div class="modal__footer">
+          <button type="button" class="button button--primary" data-action="dialog#close">Done</button>
+        </div>
+      </dialog>
+    </span>
+
+    <span data-controller="dialog">
+      <button type="button" class="button" data-action="dialog#open">Header button</button>
+      <dialog class="modal" data-dialog-target="modal" data-action="click->dialog#backdrop"
+              aria-labelledby="designer-button-title">
+        <div class="modal__header">
+          <span class="modal__title" id="designer-button-title">Header button</span>
+          <button type="button" class="button button--icon button--ghost" data-action="dialog#close" aria-label="Close">
+            <%= inline_svg_tag "lucide/x.svg", class: "lucide", size: "20px" %>
+          </button>
+        </div>
+        <div class="modal__body u-flow">
+          <p class="u-text-muted">A linked button at the end of the header. Leave the label or URL blank to keep the newsletter default.</p>
+          <label class="designer__check">
+            <input type="checkbox" checked data-designer-target="buttonVisible" data-action="designer#buttonEdited">
+            <span>Show header button</span>
+          </label>
+          <fieldset class="designer__block" data-designer-target="buttonFields">
+            <div class="field">
+              <label class="field__label" for="designer-button-label">Label</label>
+              <input type="text" id="designer-button-label" class="field__control"
+                     data-designer-target="buttonLabel" data-action="input->designer#buttonEdited">
+            </div>
+            <div class="field">
+              <label class="field__label" for="designer-button-url">URL</label>
+              <input type="url" id="designer-button-url" class="field__control" placeholder="https://www.example.com"
+                     data-designer-target="buttonUrl" data-action="input->designer#buttonEdited">
+            </div>
+            <label class="designer__check">
+              <input type="checkbox" data-designer-target="buttonNewTab" data-action="designer#buttonEdited">
+              <span>Open link in new tab</span>
+            </label>
+          </fieldset>
+        </div>
+        <div class="modal__footer">
+          <button type="button" class="button button--primary" data-action="dialog#close">Done</button>
+        </div>
+      </dialog>
+    </span>
+  </div>
+  <p class="designer__hint u-text-muted">The brand always links home; the Home item appears automatically when the Bare layout hides the brand.</p>
+</section>
+
+<template data-designer-target="linkTemplate">
+  <li class="designer__link-row">
+    <input type="checkbox" data-field="visible" data-action="designer#linksEdited" aria-label="Show link" checked>
+    <input type="text" data-field="label" data-action="input->designer#linksEdited" class="designer__link-input" aria-label="Link text">
+    <input type="url" data-field="url" data-action="input->designer#linksEdited" class="designer__link-input designer__link-url" aria-label="Link URL" placeholder="https://&hellip;">
+    <span class="u-cluster u-cluster-tight">
+      <button type="button" class="button button--small" data-action="designer#moveLink" data-designer-dir-param="-1" aria-label="Move up">&uarr;</button>
+      <button type="button" class="button button--small" data-action="designer#moveLink" data-designer-dir-param="1" aria-label="Move down">&darr;</button>
+    </span>
+    <button type="button" class="button button--small button--ghost designer__link-remove" data-action="designer#removeLink" aria-label="Remove link">&times;</button>
+  </li>
+</template>

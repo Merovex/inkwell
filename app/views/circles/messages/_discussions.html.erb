@@ -1,0 +1,29 @@
+<%# locals: (circle:, discussions:) %>
+<%# A list of discussion rows (shared by the home preview, index, and archived
+    view), each linking to its own page. The instigator fronts the row; the
+    activity line under the excerpt is the staleness indicator — comment
+    count, the commenters' faces, and how long since the last word. %>
+<% comment_records = circle.records.active.comments
+     .where(parent_id: discussions.map(&:record_id))
+     .order(:created_at).includes(creator: { avatar_attachment: :blob })
+     .group_by(&:parent_id) %>
+<div class="list">
+  <% discussions.each do |discussion| %>
+    <% comments = comment_records[discussion.record_id] || [] %>
+    <% activity = capture do %>
+      <% if comments.any? %>
+        <%= pluralize(comments.size, "comment") %> · <%= time_ago_tag(comments.last.created_at) %>
+        <%= render "shared/avatar_group", users: comments.map(&:creator).uniq, limit: 5, size: "small" %>
+      <% end %>
+    <% end %>
+    <%= render "shared/list_item",
+          href: circle_message_path(circle, discussion.record),
+          title: discussion.title,
+          author: discussion.creator.display_name,
+          avatar_user: discussion.creator,
+          date: l(discussion.created_at.to_date, format: :short),
+          excerpt: plain_excerpt(discussion.content),
+          scheduled_at: (discussion.published_at if discussion.scheduled?),
+          activity: activity.presence %>
+  <% end %>
+</div>

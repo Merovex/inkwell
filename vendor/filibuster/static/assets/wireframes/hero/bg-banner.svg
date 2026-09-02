@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 110" role="img" aria-label="Banner image background wireframe">
+  <rect width="200" height="110" fill="#dcdcd8"/>
+  <circle cx="160" cy="24" r="12" fill="#c2c2be"/>
+  <path d="M0 110 L56 48 L92 82 L136 36 L200 96 L200 110 Z" fill="#b6b6b2"/>
+  <rect x="0" y="0" width="110" height="110" fill="#f4f4f2" opacity="0.72"/>
+  <rect x="20" y="34" width="70" height="9" rx="2" fill="#8b8b87"/>
+  <rect x="20" y="50" width="80" height="4" rx="2" fill="#c2c2be"/>
+  <rect x="20" y="58" width="64" height="4" rx="2" fill="#c2c2be"/>
+  <rect x="20" y="70" width="24" height="9" rx="3" fill="#8b8b87"/>
+</svg>

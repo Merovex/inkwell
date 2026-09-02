@@ -1,25 +1,40 @@
 class Admin::PostsController < Admin::BaseController
   include PostScoped, Publishing
-  skip_before_action :set_record, only: %i[index new create]
+  skip_before_action :set_record, only: %i[index archived new create]
   before_action -> { authorize! @record, to: :view }, only: :show
   before_action -> { authorize! @record, to: :manage }, only: %i[edit update destroy]
 
   # The default view is the published feed; unpublished work (drafts +
-  # scheduled) lives behind the counted link to posts/drafts.
+  # scheduled) lives behind the counted link to posts/drafts, and archived
+  # posts behind posts/archived.
   def index
-    @posts = Post.current.published
-      .includes(:record, :creator, body: :rich_text_content).feed_ordered
+    @posts = Current.account.posts.listed.published
+      .includes(:creator, body: :rich_text_content, record: :broadcast).feed_ordered
 
-    @comment_counts = Record.active.comments
+    @comment_counts = Current.account.records.active.comments
       .where(parent_id: @posts.map(&:record_id)).group(:parent_id).count
 
-    unpublished = RecordPolicy.scope_for(Current.user, Post.current.where.not(status: :published))
+    unpublished = RecordPolicy.scope_for(Current.user, Current.account.posts.where.not(status: :published))
       .group(:status).count
     @drafts_count = unpublished["drafted"].to_i
     @scheduled_count = unpublished["scheduled"].to_i
+    @archived_count = Current.account.posts.archived.count
+  end
+
+  # Set-aside posts — permanent but out of the main feed. Open one to restore it.
+  def archived
+    @posts = Current.account.posts.archived
+      .includes(:record, :creator, body: :rich_text_content).feed_ordered
   end
 
   def show
+    # Prev/next pager across the published feed, chronologically: "Previous" is
+    # the post published just before this one, "Next" the one just after.
+    if @post.published_at
+      feed = Current.account.posts.listed.published
+      @previous_post = feed.where(published_at: ...@post.published_at).order(published_at: :desc).first
+      @next_post = feed.where(published_at: @post.published_at..).where.not(id: @post.id).order(:published_at).first
+    end
   end
 
   def new

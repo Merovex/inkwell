@@ -1,16 +1,19 @@
-# Open self-registration. Reachable only when the registration policy is :open;
-# otherwise sign-in is the only way in (invite-only).
+# Self-registration, gated by a join code (the invite is the policy — there is
+# no open-registration switch). Spam is filtered two ways: the honeypot/timing
+# trap fakes the success page without persisting anything, and a create rate
+# limit blunts code guessing on top of the code check itself.
 class SignupsController < ApplicationController
   layout "auth"
 
   allow_unauthenticated_access
-  before_action :require_open_registration
+
+  invisible_captcha only: :create, on_spam: :pretend_sent, on_timestamp_spam: :pretend_sent
 
   rate_limit to: 10, within: 3.minutes, only: :create,
     with: -> { redirect_to new_signup_path, alert: "Too many attempts. Try again later." }
 
   def new
-    @signup = Signup.new
+    @signup = Signup.new(invite_code: params[:code])
   end
 
   def create
@@ -24,11 +27,13 @@ class SignupsController < ApplicationController
 
   private
 
-  def require_open_registration
-    redirect_to new_session_path unless User.registration_open?
+  # A bot tripped the honeypot: pretend it worked, persist nothing. Same
+  # destination as a real signup, so the two are indistinguishable.
+  def pretend_sent
+    redirect_to new_session_path(sent: true)
   end
 
   def signup_params
-    params.expect(signup: :email_address)
+    params.expect(signup: [ :email_address, :invite_code ])
   end
 end

@@ -1,4 +1,16 @@
 module ApplicationHelper
+  # The product name — the one place it lives. Brands the admin <title> and any
+  # app-level chrome; never hardcode it in a view again. (Public/tenant pages
+  # brand with the author's own site_settings.site_name, not this.)
+  APP_NAME = "Kindred Quill"
+
+  # The admin document <title>: the page-specific part a view sets with
+  # `content_for :title, "Posts"`, suffixed once with the app name here →
+  # "Posts — Kindred Quill". No page title set → just the app name.
+  def document_title
+    [ content_for(:title).presence, APP_NAME ].compact.join(" — ")
+  end
+
   # Version token mixed into the public book-cover fragment cache keys
   # (books/index, books/show). Book/Series records don't change when the cover
   # *variant definition* does (see Depiction#image), so those fragments — which
@@ -29,11 +41,77 @@ module ApplicationHelper
   # app/assets/images (e.g. app/assets/images/lucide/*.svg). Never hand-write
   # icon path data here.
 
+  # Rich text as plain text. A list row reads a post's body twice — excerpt and
+  # length — so callers that need both parse once and pass the string back in.
+  def plain_text(content)
+    content.respond_to?(:to_plain_text) ? content.to_plain_text.to_s : content.to_s
+  end
+
+  # List-row excerpt from rich text (or plain_text output), truncated at a
+  # word boundary so rows never end mid-wor…
+  def plain_excerpt(content, length: 140)
+    plain_text(content).truncate(length, separator: " ")
+  end
+
+  # The length fact in a post's status line and list row: "1,840 words, about 8
+  # minutes" at ~225 wpm. The word-count Stimulus controller phrases the live
+  # count in the composer identically, so the same post reads the same
+  # everywhere. An empty body gets a bare "0 words" — estimating a read of
+  # nothing yet written is noise.
+  WORDS_PER_MINUTE = 225
+  def post_length(content)
+    words = plain_text(content).split.size
+    count = "#{number_with_delimiter(words)} #{"word".pluralize(words)}"
+    return count if words.zero?
+
+    minutes = [ (words / WORDS_PER_MINUTE.to_f).round, 1 ].max
+    "#{count}, about #{pluralize(minutes, "minute")}"
+  end
+
+  # Status chips for a post row: its state (green Published / yellow Scheduled /
+  # neutral Draft), plus an "Emailed" chip once a published post has gone out.
+  # [[label, badge_variant], …] for shared/list_item's trailing_chips.
+  def post_status_chips(post)
+    if post.published?
+      chips = [ [ "Published", "success" ] ]
+      if post.record.broadcast&.sent?
+        chips << [ safe_join([ inline_svg_tag("lucide/mail.svg", class: "lucide", size: "14px"), " Emailed" ]), nil ]
+      end
+      chips
+    elsif post.scheduled?
+      # The schedule *is* the status — a yellow "Posts on …" chip, no separate
+      # "Scheduled" word or flag row (local-time reformats it to the reader's zone).
+      at = post.published_at
+      label = safe_join([
+        inline_svg_tag("lucide/clock.svg", class: "lucide", size: "14px"),
+        " Posts on ",
+        tag.time(at.strftime("%b %-d at %-l:%M %p"), datetime: at.iso8601,
+          data: { controller: "local-time", local_time_datetime_value: at.iso8601 })
+      ])
+      [ [ label, "warning" ] ]
+    else
+      [ [ "Draft", nil ] ]
+    end
+  end
+
+  # Relative time with the receipt on hover: "3 hours ago" whose title (the
+  # native tooltip) carries the absolute timestamp. Every time-ago should
+  # render through this. suffix: "" for contexts that phrase it themselves
+  # (the bell's bare "5 minutes", a drip's time-until).
+  def time_ago_tag(time, suffix: " ago")
+    tag.time "#{time_ago_in_words(time)}#{suffix}",
+      datetime: time.iso8601, title: l(time, format: :long)
+  end
+
   # What goes inside an .avatar: the uploaded picture when there is one,
   # otherwise the monogram.
   def avatar_content(user)
     if user.avatar.attached?
-      image_tag user.avatar.variant(:thumb), alt: user.display_name, class: "avatar__img"
+      # The proxy PATH, not the URL: background renders (Turbo broadcasts —
+      # boost chips, bell rows) have no request host, so the url form points
+      # at the renderer's placeholder host (example.org) and breaks the image.
+      image_tag rails_storage_proxy_path(user.avatar.variant(:thumb)),
+        alt: user.display_name, class: "avatar__img"
     else
       avatar_initials(user)
     end
@@ -62,6 +140,20 @@ module ApplicationHelper
         tag.time(time.strftime("%b %-d at %H:%M"), datetime: time.iso8601),
         (" · Edited" if edited)
       ].compact
+    end
+  end
+
+  # Inline custom properties for a currentColor-tinted SVG logo (.logo-tint):
+  # the file rides in as a data: URI mask — the blob proxy serves SVG as
+  # application/octet-stream, which browsers refuse as an image source — and
+  # the drawing's aspect ratio sizes the mask box. Cached per blob; a new
+  # upload is a new blob, so staleness can't happen.
+  def svg_logo_style(attachment)
+    Rails.cache.fetch([ attachment.blob, "svg-logo-style" ]) do
+      bytes = attachment.download
+      style = "--logo-url: url(data:image/svg+xml;base64,#{Base64.strict_encode64(bytes)})"
+      ratio = Svg.aspect_ratio(bytes)
+      ratio ? "#{style}; --logo-ratio: #{ratio}" : style
     end
   end
 end

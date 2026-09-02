@@ -4,5 +4,5 @@
  * with u-flow; the heading itself carries no margin.
  */
 @layer components {
-  .subhead { margin: 0; font-size: 1.05rem; }
+  .subhead { margin: 0; font-size: var(--font-size-2); }
 }

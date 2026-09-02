@@ -1,0 +1,42 @@
+<% content_for :title, @page.title %>
+<% content_for :canvas_class, "canvas--fill" %>
+
+<%= render "admin/shared/canvas_head", crumbs: [["Pages", admin_pages_path], [@page.title, nil]], menu: false do %>
+  <% if @page.published? %>
+    <%= button_to "Unpublish", admin_page_publish_path(@page), method: :delete, class: "button" %>
+  <% else %>
+    <%= button_to "Publish", admin_page_publish_path(@page), class: "button" %>
+  <% end %>
+  <%= link_to "Never mind", admin_pages_path, class: "button" %>
+  <%= button_tag "Save", form: "composer", class: "button button--primary" %>
+<% end %>
+
+<%= render "admin/shared/error_summary", model: @page %>
+
+<%# The same composer posts and messages use — a page is prose, so it's
+    written at the reading measure, not in a narrow settings column. Submits
+    from the canvas-head buttons (form: "composer"); autosaved to localStorage
+    against the record, guarded by the current version id. %>
+<%= form_with model: @page, url: admin_page_path(@page), id: "composer", class: "composer",
+      data: { controller: "autosave",
+              autosave_key_value: "Record/#{@page.record_id}/edit",
+              autosave_revision_value: @page.record.recordable_id } do |f| %>
+  <%= f.text_field :title, class: "composer__title", placeholder: "Page title",
+        "aria-label": "Title", required: true %>
+
+  <%# Per-page guidance: the fixed address, then what this particular page is
+      for. Keyed by the permanent slug, so it can't drift off the set. %>
+  <% hints = {
+       "about" => "Starter copy — replace it with who you are and what you write. Also feeds the site's search-result description.",
+       "privacy" => "Starter copy, accurate to how this platform handles data — read it, make it yours, and take legal advice if you need it. Linked from the footer once it has content.",
+       "terms" => "Starter copy to review and adapt, not legal advice. Linked from the footer once it has content.",
+       "newsletter" => "The invitation above your signup form — the reason to join, not the form itself."
+     } %>
+  <p class="composer__hint u-text-muted">
+    Published at <code>/<%= @page.slug %>/</code> — the address is fixed, the title and words are yours.
+    Start with a heading: the site renders this body as the whole page.
+    <%= hints[@page.slug] %>
+  </p>
+
+  <%= f.rich_textarea :content, placeholder: "Write the page…", "aria-label": "Page body" %>
+<% end %>

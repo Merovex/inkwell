@@ -1,9 +1,10 @@
 require "net/http"
 
-# Receives Amazon SES event notifications relayed through SNS (Delivery / Open /
-# Click / Bounce / Complaint) and records them against the matching
-# BroadcastDelivery, driving the /admin/broadcasts dashboard — the SES-side
-# counterpart to Webhooks::MailgunController (ADR 0015 Phase 2).
+# Receives Amazon SES event notifications relayed through SNS, verifies them,
+# and translates each into a canonical DeliveryEvent — the SES adapter at the
+# provider boundary, counterpart to Webhooks::PostmarkController. Everything
+# downstream reads only the canonical form; this controller is the last place
+# SES's vocabulary exists.
 #
 # A machine endpoint: inherits ActionController::Base directly, so none of the
 # app's browser/auth/forgery concerns apply. Authenticity is the SNS message
@@ -21,17 +22,25 @@ class Webhooks::SesController < ActionController::Base
   # Aws::SNS::MessageVerifier is used.
   cattr_accessor :message_verifier
 
-  # SES event type → the internal event name BroadcastDelivery#record_event!
-  # understands. Bounce is handled separately (permanent vs transient);
-  # Send/Delivery-Delay carry no signal for us and fall through to a no-op.
+  # SES event type → canonical event. Bounce fans out by bounceType below.
+  # Reject is SES refusing the send (virus scan, etc.) and RenderingFailure is
+  # our own template blowing up — neither reached a mailbox, neither is the
+  # recipient's fault, so both are rejected, never bounces. Send/DeliveryDelay
+  # carry no signal for us and fall through to a no-op.
   EVENT_MAP = {
     "Delivery"         => "delivered",
     "Open"             => "opened",
     "Click"            => "clicked",
-    "Complaint"        => "complained",
-    "Reject"           => "bounced",
-    "RenderingFailure" => "bounced"
+    "Complaint"        => "complaint",
+    "Reject"           => "rejected",
+    "RenderingFailure" => "rejected"
   }.freeze
+
+  # A Permanent bounce with these subtypes never left AWS: the address was
+  # already on the account-level suppression list, so it says nothing new
+  # about the mailbox — canonical `suppressed`, and it must not suppress the
+  # subscriber (our database is authoritative, not AWS's list).
+  SUPPRESSION_SUBTYPES = %w[ Suppressed OnAccountSuppressionList ].freeze
 
   def create
     body = request.raw_post
@@ -67,23 +76,39 @@ class Webhooks::SesController < ActionController::Base
     end
 
     def ingest(event)
-      delivery = find_delivery(event.dig("mail", "tags") || {})
-      return unless delivery
+      canonical = canonical_event(event)
+      return unless canonical
 
-      internal = internal_event(event)
-      return unless internal
+      DeliveryEvent.ingest!(
+        provider: "ses",
+        event: canonical,
+        payload: event,
+        provider_message_id: event.dig("mail", "messageId"),
+        recipient: Array(event.dig("mail", "destination")).first,
+        occurred_at: timestamp(event),
+        delivery: find_delivery(event.dig("mail", "tags") || {})
+      )
+    end
 
-      first_time = delivery.record_event!(internal)
+    # Permanent splits into suppressed (never sent, see SUPPRESSION_SUBTYPES)
+    # and a true hard bounce; Transient/Undetermined are soft — SES keeps
+    # retrying, and the streak threshold (DeliveryEvent) decides when enough
+    # is enough.
+    def canonical_event(event)
+      type = event["eventType"] || event["notificationType"]
+      return EVENT_MAP[type] unless type == "Bounce"
 
-      # An SES complaint is a "mark as spam" — drop them from the list (logged in
-      # the consent trail like any other opt-out). SES has no unsubscribe event.
-      if first_time && internal == "complained"
-        delivery.subscriber.unsubscribe!(source: "ses")
+      if event.dig("bounce", "bounceType") == "Permanent"
+        event.dig("bounce", "bounceSubType").in?(SUPPRESSION_SUBTYPES) ? "suppressed" : "hard_bounce"
+      else
+        "soft_bounce"
       end
     end
 
     # Route by the id tag SES echoed: broadcasts stamp a BroadcastDelivery, drip
     # drops a DropDelivery. Both speak record_event! and belong to a subscriber.
+    # An unmatched event still records (audit trail) — it just has no delivery
+    # or subscriber to act on.
     def find_delivery(tags)
       subscriber_id = tag(tags, "subscriber_id")
       if (broadcast_id = tag(tags, "broadcast_id"))
@@ -93,20 +118,17 @@ class Webhooks::SesController < ActionController::Base
       end
     end
 
-    # Permanent bounces stamp bounced_at; transient bounces (mailbox full, etc.)
-    # are temporary — SES keeps retrying, so don't hold them against the recipient.
-    # Everything else comes from the static EVENT_MAP.
-    def internal_event(event)
-      type = event["eventType"] || event["notificationType"]
-      if type == "Bounce"
-        event.dig("bounce", "bounceType") == "Permanent" ? "bounced" : nil
-      else
-        EVENT_MAP[type]
-      end
-    end
-
     # SES message tags arrive as arrays of strings ({ "broadcast_id" => ["5"] }).
     def tag(tags, name)
       Array(tags[name]).first
+    end
+
+    # The event object's own timestamp, falling back to the send time.
+    def timestamp(event)
+      value = %w[ delivery bounce complaint open click ].lazy
+        .filter_map { |key| event.dig(key, "timestamp") }.first || event.dig("mail", "timestamp")
+      Time.iso8601(value) if value
+    rescue ArgumentError
+      nil
     end
 end

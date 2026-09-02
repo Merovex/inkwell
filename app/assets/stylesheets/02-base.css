@@ -6,10 +6,19 @@
 
   * { margin: 0; }
 
+  /* The hidden attribute must actually hide: the UA's [hidden] display:none
+     loses to any author display rule (e.g. a .goal-stat grid), so components
+     toggled via `hidden` would stay visible. !important in this early layer
+     still wins over later layers' normal declarations. */
+  [hidden] { display: none !important; }
+
   /* Background lives on html too (not just body) so the document canvas behind a
      view transition matches — otherwise the browser default (white) flashes
      through during the cross-fade in dark mode. */
-  html { -webkit-text-size-adjust: 100%; background: var(--site-bg); }
+  /* Always reserve the scrollbar gutter so centered layouts don't jump
+     sideways when a short page (no scrollbar) swaps to a long one (scrollbar) —
+     e.g. tabbing between a short and a long settings panel. */
+  html { -webkit-text-size-adjust: 100%; background: var(--site-bg); scrollbar-gutter: stable; }
 
   body {
     display: flex;
@@ -21,9 +30,9 @@
     font-size: var(--font-size-1);
     font-weight: var(--font-weight-5); /* 500 — the app's standard text weight */
     line-height: 1.65;
-    letter-spacing: 0.015em;
+    letter-spacing: var(--font-letterspacing-1);
     -webkit-font-smoothing: antialiased;
-    transition: background-color 0.2s var(--ease-3), color 0.2s var(--ease-3);
+    transition: background-color var(--speed-gentle) var(--ease-3), color var(--speed-gentle) var(--ease-3);
   }
 
   /* app shell: header / .canvas / footer stack in the body column.
@@ -37,7 +46,7 @@
 
   /* Mobile: step headings down one notch on the type scale. Body stays 1rem —
      inputs inherit it, and anything under 16px triggers iOS zoom-on-focus. */
-  @media (max-width: 640px) {
+  @media (max-width: 48em) {
     h1 { font-size: var(--font-size-5); }
     h2 { font-size: var(--font-size-3); }
     h3 { font-size: var(--font-size-2); }
@@ -58,5 +67,5 @@
 
   hr { border: none; border-block-start: var(--border-size-1) solid var(--line); }
 
-  :focus-visible { outline: var(--border-size-2) solid var(--accent); outline-offset: 2px; }
+  :focus-visible { outline: var(--border-size-2) solid var(--accent); outline-offset: var(--border-size-2); }
 }

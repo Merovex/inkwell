@@ -38,7 +38,7 @@ class Admin::ChatLinesController < Admin::BaseController
     # Member actions are yours-only: creator scoping is the authorization,
     # so someone else's line 404s rather than 403s.
     def set_record
-      @record = Record.active.chat_lines.where(creator: Current.user).find(params[:id])
+      @record = Current.account.records.active.chat_lines.where(creator: Current.user).find(params[:id])
       @chat_line = @record.recordable
     end
 

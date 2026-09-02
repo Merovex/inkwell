@@ -5,19 +5,34 @@ require "csv"
 # CSV export is the bridge to an external sender until one is wired (ADR 0011).
 class Admin::SubscribersController < Admin::BaseController
   # The roster is one state at a time; the header links between them.
-  STATES = %w[ confirmed pending unsubscribed ].freeze
+  STATES = %w[ confirmed pending unsubscribed bounced complained ].freeze
 
-  before_action :set_subscriber, only: :unsubscribe
+  before_action :set_subscriber, only: %i[ show unsubscribe resend ]
 
   def index
     @state = STATES.include?(params[:state]) ? params[:state] : "confirmed"
-    @subscribers = Subscriber.where(status: @state).order(created_at: :desc)
-    @counts = Subscriber.group(:status).count
+    # Grants feed the per-magnet "Re-send … link" row actions.
+    @subscribers = Current.account.subscribers.where(status: @state)
+      .includes(grants: :magnet).order(created_at: :desc)
+    # Seeds stay visible in the roster (badged) but out of the headline counts —
+    # they're diagnostics, not readers.
+    @counts = Current.account.subscribers.readers.group(:status).count
 
     respond_to do |format|
       format.html
       format.csv { send_data subscribers_csv, filename: "subscribers-#{@state}-#{Date.current.iso8601}.csv" }
     end
+  end
+
+  # One subscriber's detail — opened into the roster's modal frame: their
+  # lifecycle dates and what they've received/opened, newest send first.
+  def show
+    @deliveries = @subscriber.broadcast_deliveries
+      .includes(broadcast: { record: :recordable }).order(created_at: :desc)
+    @received = @deliveries.count
+    @opened = @deliveries.count { |d| d.opened_at.present? }
+    @last_opened_at = @deliveries.filter_map(&:opened_at).max
+    @grants = @subscriber.grants.joins(:magnet).includes(:magnet).merge(Magnet.ordered)
   end
 
   # Manual opt-out on someone's behalf (a reply-to-email request, say). Same
@@ -27,16 +42,31 @@ class Admin::SubscribersController < Admin::BaseController
     redirect_to admin_subscribers_path, notice: "#{@subscriber.email_address} unsubscribed."
   end
 
+  # Re-issue the double opt-in email to a still-pending subscriber — a fresh
+  # tokened confirm link (the original expires after 7 days). Useful for
+  # re-inviting people who signed up under the old sender identity. Only pending
+  # rows have anything to confirm, so anything else is a no-op with a heads-up.
+  def resend
+    if @subscriber.pending?
+      @subscriber.send_confirmation
+      redirect_to admin_subscribers_path(state: "pending"),
+        notice: "Confirmation email re-sent to #{@subscriber.email_address}."
+    else
+      redirect_to admin_subscribers_path(state: @subscriber.status),
+        alert: "#{@subscriber.email_address} isn't pending — nothing to confirm."
+    end
+  end
+
   private
     def set_subscriber
-      @subscriber = Subscriber.find(params[:id])
+      @subscriber = Current.account.subscribers.find(params[:id])
     end
 
     def subscribers_csv
       CSV.generate do |csv|
-        csv << %w[ email_address status source confirmed_at unsubscribed_at created_at ]
+        csv << %w[ email_address status source seed confirmed_at unsubscribed_at created_at ]
         @subscribers.each do |s|
-          csv << [ s.email_address, s.status, s.source, s.confirmed_at, s.unsubscribed_at, s.created_at ]
+          csv << [ s.email_address, s.status, s.source, s.seed, s.confirmed_at, s.unsubscribed_at, s.created_at ]
         end
       end
     end

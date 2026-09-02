@@ -1,0 +1,19 @@
+{{/* Materialize one page per book from data/books.json (the exporter's JSON
+     contract). Rails emits no markdown and no per-page stubs: adding a book
+     to the JSON adds a page to the site. The whole book object passes through
+     as page params; bodies arrive pre-rendered (description_html), so no
+     markdown pipeline runs here. */}}
+{{ $data := hugo.Data.books }}
+{{ if ne (int ($data.contract_version | default 0)) (int hugo.Data.theme.contract_version) }}
+  {{ errorf "books.json: theme expects contract_version %v, got %v" hugo.Data.theme.contract_version $data.contract_version }}
+{{ end }}
+{{/* Dates nest under "dates" — a top-level "date" is silently dropped. */}}
+{{ range $data.books }}
+  {{ $.AddPage (dict
+      "path" .slug
+      "title" .title
+      "dates" (dict "date" (time .publication_date))
+      "content" (dict "mediaType" "text/html" "value" .description_html)
+      "params" .
+  ) }}
+{{ end }}

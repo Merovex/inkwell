@@ -1,12 +1,19 @@
-<%# locals: (crumbs: [], menu_id: "canvas-menu", menu: true, edit_href: nil) %>
+<%# locals: (crumbs: [], menu_id: "canvas-menu", menu: true, edit_href: nil, action_href: nil, action_label: nil, action_data: {}) %>
 <%# Standard canvas head: breadcrumb (left) + contextual actions (right). %>
 <%# crumbs is an array of [label, href]; a nil href marks the current page. %>
 <%# With menu: true (default) the block yields menu items into the ... popover; %>
 <%# with menu: false the block yields buttons rendered directly (e.g. Save/Publish). %>
 <%# edit_href puts an Edit link beside the menu — the most common action, %>
-<%# pulled out of the popover (Basecamp-style). %>
+<%# pulled out of the popover (Basecamp-style). action_href/action_label is %>
+<%# one more pulled-out button beside it (e.g. the circle page's Wall toggle). %>
 <div class="canvas__head">
-  <nav class="breadcrumb" aria-label="Breadcrumb">
+  <div class="canvas__head-start">
+    <% if Current.account %>
+      <%# The site name, far left, as the home link (back to the site's admin). %>
+      <%= link_to Current.account.name, Current.account.admin_path, class: "canvas__home" %>
+      <span class="canvas__home-sep" aria-hidden="true">/</span>
+    <% end %>
+    <nav class="breadcrumb" aria-label="Breadcrumb">
     <%# No home crumb — the app header's house (top left) already covers it. %>
     <% crumbs.each_with_index do |(label, href), index| %>
       <% if index.positive? %><span class="breadcrumb__sep" aria-hidden="true">/</span><% end %>
@@ -16,20 +23,24 @@
         <span class="breadcrumb__item breadcrumb__item--current" aria-current="page"><%= label %></span>
       <% end %>
     <% end %>
-  </nav>
+    </nav>
+  </div>
 
   <%# No block content = breadcrumb only (list views — the context menu is for individual records). %>
   <% actions = block_given? ? capture { yield } : nil %>
   <% if actions.present? %>
     <% if menu %>
       <div class="canvas__head-actions">
+        <% if action_href %>
+          <%= link_to action_label, action_href, class: "button button--ghost canvas__head-action", data: action_data %>
+        <% end %>
         <% if edit_href %>
           <%= link_to "Edit", edit_href, class: "button button--ghost canvas__head-action" %>
         <% end %>
-        <button type="button" class="button button--icon button--ghost" popovertarget="<%= menu_id %>" aria-haspopup="menu" aria-label="Actions">
+        <button type="button" class="button button--icon button--ghost" popovertarget="<%= menu_id %>" aria-label="Actions">
           <%= inline_svg_tag "lucide/ellipsis-vertical.svg", class: "lucide", size: "20px" %>
         </button>
-        <div class="menu menu--context" popover id="<%= menu_id %>" role="menu" data-controller="anchored-popover" data-anchored-popover-placement-value="top">
+        <div class="menu menu--context" popover id="<%= menu_id %>" data-controller="anchored-popover" data-anchored-popover-placement-value="top">
           <button type="button" class="button button--icon button--ghost menu__close" popovertarget="<%= menu_id %>" popovertargetaction="hide" aria-label="Close menu">
             <%= inline_svg_tag "lucide/x.svg", class: "lucide", size: "20px" %>
           </button>

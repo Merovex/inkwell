@@ -1,0 +1,15 @@
+<%# A labelled, read-only value with a Copy button (shared .copy-field
+    component — see copy-field.css). Locals:
+      label:  visible label above the well (also the input's aria-label)
+      value:  the copyable text
+      hint:   optional muted line under the well %>
+<%# locals: (label:, value:, hint: nil) %>
+<div class="field">
+  <span class="field__label"><%= label %></span>
+  <div class="copy-field" data-controller="clipboard" data-clipboard-text-value="<%= value %>">
+    <input class="copy-field__value" type="text" value="<%= value %>" readonly tabindex="-1" aria-label="<%= label %>">
+    <button type="button" class="copy-field__button" data-action="clipboard#copy">Copy</button>
+    <span class="u-copied-veil" data-clipboard-target="flash" role="status" aria-hidden="true">Copied to clipboard</span>
+  </div>
+  <% if hint %><p class="field__hint u-text-muted"><%= hint %></p><% end %>
+</div>

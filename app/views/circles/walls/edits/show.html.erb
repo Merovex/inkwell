@@ -1,0 +1,38 @@
+<%# The wall's edit modal: the circle composer's two fields in a dialog. The
+    form submits _top to the ordinary messages#update (back=wall returns the
+    save to the wall, where the edited card renders fresh). %>
+<%= turbo_frame_tag "modal" do %>
+  <span data-controller="dialog" data-dialog-open-value="true">
+    <dialog class="modal wall-thread" data-dialog-target="modal" data-action="click->dialog#backdrop"
+            aria-labelledby="wall-edit-title">
+      <div class="modal__header">
+        <span class="modal__title" id="wall-edit-title">Edit message</span>
+        <button type="button" class="button button--icon button--ghost" data-action="dialog#close" aria-label="Close">
+          <%= inline_svg_tag "lucide/x.svg", class: "lucide", size: "20px" %>
+        </button>
+      </div>
+
+      <div class="modal__body">
+        <%# Fields only — the actions live in the modal footer, submitting
+            this form by id (the composer-actions pattern). %>
+        <%= form_with model: @message, url: circle_message_path(@circle, @record), method: :patch,
+              id: "wall-edit", class: "u-stack lexxy-compact",
+              data: { turbo_frame: "_top",
+                      controller: "autosave",
+                      autosave_key_value: "Record/#{@record.id}/edit",
+                      autosave_revision_value: @record.recordable_id } do |f| %>
+          <%= hidden_field_tag :back, "wall" %>
+          <div class="field">
+            <%= f.text_field :title, class: "field__control", "aria-label": "Title", required: true %>
+          </div>
+          <%= f.rich_textarea :content, "aria-label": "Body" do %><%= mention_prompt(@circle) %><% end %>
+        <% end %>
+      </div>
+
+      <footer class="modal__footer">
+        <button type="button" class="button" data-action="dialog#close">Never mind</button>
+        <%= button_tag "Save changes", form: "wall-edit", class: "button button--primary" %>
+      </footer>
+    </dialog>
+  </span>
+<% end %>

@@ -7,9 +7,9 @@ class AuthorsController < PublicController
     @record = @author.record
     return redirect_to author_page_path(@author.public_slug), status: :moved_permanently if params[:id] != @author.public_slug
 
-    @posts = Post.current.published.where(author_record_id: @record.id)
+    @posts = Current.account.posts.published.where(author_record_id: @record.id)
       .includes(record: :creator, body: :rich_text_content).feed_ordered
-    @books = Book.current.published.where(author_record_id: @record.id)
+    @books = Current.account.books.published.where(author_record_id: @record.id)
       .includes(:record, :depiction).feed_ordered
 
     fresh_when etag: [ @record, @posts, @books, site_settings ], public: true
@@ -19,7 +19,7 @@ class AuthorsController < PublicController
     # Canonical lookup is by name slug; a leading-integer slug (the old id-first
     # form) still resolves via the Record spine so shared links don't die.
     def find_author
-      Author.current.detect { |author| author.public_slug == params[:id] } ||
-        Record.active.authors.find(params[:id]).recordable
+      Current.account.authors.detect { |author| author.public_slug == params[:id] } ||
+        Current.account.records.active.authors.find(params[:id]).recordable
     end
 end

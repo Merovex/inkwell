@@ -1,0 +1,19 @@
+/*
+ * .meter — a slim completion bar on a native <progress>, styled across
+ * engines. The empty track is the shared --fill-track wash; the fill is the
+ * accent. Give the element inner text ("3 of 12") as the no-support fallback.
+ */
+@layer components {
+  .meter {
+    inline-size: 100%;
+    block-size: var(--size-2);
+    appearance: none;
+    border: 0;
+    border-radius: var(--radius-round);
+    background: var(--fill-track);
+    overflow: hidden;
+  }
+  .meter::-webkit-progress-bar { background: transparent; }
+  .meter::-webkit-progress-value { background: var(--accent); border-radius: var(--radius-round); }
+  .meter::-moz-progress-bar { background: var(--accent); }
+}

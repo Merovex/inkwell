@@ -1,26 +1,37 @@
-# Install-wide system settings — the domain admin editing the Merovex Press
-# identity. Always the singleton Setting.current, so no id in the URL (like the
-# personal Admin::User::SettingsController, but install-scoped and admin-only).
+# System settings — the domain admin editing the account's public identity.
+# Always the account's one Site (no id in the URL); contact_email rides the
+# form via Site's delegation to the account and is saved alongside.
 class Admin::SettingsController < Admin::BaseController
-  before_action :set_setting
+  before_action :set_site
 
   def show
   end
 
   def update
-    if @setting.update(setting_params)
+    # One form, two account rows (contact_email and handle delegate to the
+    # account): save both or neither. The account save is non-bang — a bad
+    # handle is a user-facing validation error, not an exception — with its
+    # errors imported onto the site so the form fields show them.
+    saved = Site.transaction do
+      (@site.update(site_params) && @site.account.save) || raise(ActiveRecord::Rollback)
+    end
+
+    if saved
       redirect_to admin_settings_path, notice: "Settings saved."
     else
+      @site.account.errors.each { |error| @site.errors.import(error) }
       render :show, status: :unprocessable_entity
     end
   end
 
   private
-    def set_setting
-      @setting = Setting.current
+    def set_site
+      @site = Current.account.site
     end
 
-    def setting_params
-      params.expect(setting: [ :site_name, :tagline, :description, :contact_email, :logo, :privacy_policy, :terms ])
+    # The logo is NOT here — it saves through its own auto-submitting
+    # resource (Admin::Settings::LogosController), never this form.
+    def site_params
+      params.expect(site: [ :site_name, :tagline, :contact_email, :handle ])
     end
 end

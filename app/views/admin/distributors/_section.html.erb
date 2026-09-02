@@ -1,11 +1,19 @@
-<%# locals: (record:) %>
-<%# The manageable distributors block for a book/series show page. %>
-<section class="distributors u-flow">
-  <h2 class="subhead">Distributors</h2>
-  <%= render "admin/distributors/form", record: record %>
-  <ul class="mrows" id="record_distributors">
+<%# locals: (record:, heading: true) %>
+<%# The manageable where-to-buy block: the linked stores, greyed prompts for
+    common ones not yet listed, and a paste-a-link form. %>
+<section class="buy u-flow">
+  <% if heading %><h2 class="subhead">Distributors</h2><% end %>
+  <ul class="buy-links u-unlist u-stack-half" id="record_distributors">
     <% record.distributors.order(:platform).each do |distributor| %>
       <%= render "admin/distributors/row", distributor: distributor, manage: true %>
     <% end %>
+    <% present = record.distributors.map(&:platform) %>
+    <% { "amazon" => "Amazon", "apple_books" => "Apple Books", "kobo" => "Kobo" }.except(*present).each_value do |name| %>
+      <li class="buy-link buy-link--missing">
+        <span class="buy-link__mark" aria-hidden="true"><%= name.scan(/[[:alpha:]]+/).map(&:first).first(2).join.upcase %></span>
+        <span class="buy-link__body u-text-muted"><%= name %> — not listed</span>
+      </li>
+    <% end %>
   </ul>
+  <%= render "admin/distributors/form", record: record %>
 </section>

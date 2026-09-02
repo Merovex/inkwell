@@ -14,6 +14,6 @@ class User::SettingsController < ApplicationController
 
   private
     def settings_params
-      params.expect(user: [ :name ])
+      params.expect(user: [ :name, :digest_cadence ])
     end
 end

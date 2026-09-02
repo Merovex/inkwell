@@ -1,0 +1,20 @@
+<% content_for :title, "#{@circle.name} — Circle" %>
+
+<%# The frame id must match what the requesting lazy frame asked for, so
+    paginated responses slot into place; the first page renders the full board. %>
+<% frame_id = params[:before_id].present? ? "wall-page-#{params[:before_id]}" : "wall-page-first" %>
+
+<% if params[:before_id].present? %>
+  <%# Pagination: just the next card frame slots in (Turbo extracts it). %>
+  <div class="wall"><%= render "circles/feed_items", frame_id: frame_id %></div>
+<% else %>
+  <% content_for :board_body do %>
+    <div class="wall">
+      <%= render "circles/feed_prelude" %>
+      <%= render "circles/feed_items", frame_id: frame_id %>
+    </div>
+  <% end %>
+  <%= render "circles/board", current: :everything,
+        action_href: circle_wall_composer_path(@circle), action_label: "New post",
+        action_data: { turbo_frame: "modal" } %>
+<% end %>
