@@ -4,6 +4,7 @@ const CONSENT_KEY = "alcovo/excerpt_suggest/consent"
 const WORKER_URL = "/excerpt_suggester_worker.js?v=2"
 const MIN_SOURCE_CHARS = 200
 const MAX_EXCERPT = 160
+const MIN_SENTENCE_CUT = 50 // the composer counter's own floor
 const LEAD_CHARS = 2500
 
 // Optional, on-device excerpt suggestions: a small summarization model
@@ -127,13 +128,20 @@ export function sourceText(raw) {
   return raw.replace(/\{%\s*tipin\s*%\}/g, " ").replace(/\s+/g, " ").trim().slice(0, LEAD_CHARS)
 }
 
-// Word-boundary trim to the excerpt cap, like plain_excerpt server-side —
-// never end mid-word, and drop trailing punctuation before the ellipsis.
+// Trim to the excerpt cap without an ellipsis: prefer ending at the last
+// complete sentence that fits, so the excerpt reads as finished prose. A
+// sentence cut below the counter's 50-char floor is probably an abbreviation
+// ("across the U.S.") masquerading as an ending — fall through to a word-
+// boundary cut with the dangling punctuation dropped, same as when not even
+// one sentence fits.
 export function trimToLimit(text, max) {
   const clean = text.trim()
   if (clean.length <= max) return clean
 
-  const cut = clean.slice(0, max - 1)
+  const cut = clean.slice(0, max)
+  const sentence = cut.match(/^[\s\S]*[.!?](?=\s|$)/)?.[0]?.trimEnd()
+  if (sentence && sentence.length >= MIN_SENTENCE_CUT) return sentence
+
   const boundary = cut.lastIndexOf(" ")
-  return (boundary > 0 ? cut.slice(0, boundary) : cut).replace(/[\s,;:.]+$/, "") + "…"
+  return (boundary > 0 ? cut.slice(0, boundary) : cut).replace(/[\s,;:.]+$/, "")
 }
