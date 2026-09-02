@@ -84,6 +84,19 @@ class PublicPagesTest < ActionDispatch::IntegrationTest
     assert_redirected_to "https://www.amazon.com/dp/B000"
   end
 
+  test "another press's buy link does not resolve here" do
+    other = Account.create!(name: "Other Press", owner: users(:alice))
+    foreign = Current.with_account(other) do
+      record = Record.create!(recordable_type: "Book", creator: users(:alice))
+      Distributor.create!(record: record, url: "https://www.amazon.com/dp/B999")
+    end
+
+    assert_no_difference -> { foreign.reload.clicks } do
+      get buy_path(foreign)
+    end
+    assert_response :not_found
+  end
+
   test "with island auth provisioned, a buy link without the Worker's header is refused" do
     record = Record.create!(recordable_type: "Book", creator: users(:alice))
     distributor = Distributor.create!(record: record, url: "https://www.amazon.com/dp/B000")

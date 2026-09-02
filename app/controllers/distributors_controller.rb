@@ -7,7 +7,9 @@ class DistributorsController < PublicController
   include IslandProtected
 
   def show
-    distributor = Distributor.find(params[:id])
+    # Tenant-scoped: a buy link only redirects on its own press's domain, so
+    # one site's ids can't be enumerated (or click-counted) from another's.
+    distributor = Current.account.distributors.find(params[:id])
     distributor.click
     redirect_to distributor.url, allow_other_host: true
   end

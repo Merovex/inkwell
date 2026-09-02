@@ -15,6 +15,8 @@ class Account < ApplicationRecord
   # is a Circle). Every Current.account.records… query keeps working through
   # this association — it just carries a bucket_type of "Account" now.
   has_many :records, as: :bucket
+  # Buy links, reachable for the public /buy/:id island's tenant-scoped lookup.
+  has_many :distributors, through: :records
   has_many :missives
   has_many :subscribers
   # Reader magnets — plain rows, not recordables, so a direct association
