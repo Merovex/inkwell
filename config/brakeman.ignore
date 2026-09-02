@@ -1,0 +1,17 @@
+{
+  "ignored_warnings": [
+    {
+      "fingerprint": "bbfa90d4edf53e687f190965379c4c2b390e72408d3ea3ade579a9070026b291",
+      "note": "rm_rf targets the Exporter's own ephemeral workspace path (a tmpdir the exporter created this request); the design params flow into the build's CONTENT, never into the path being removed."
+    },
+    {
+      "fingerprint": "c3288ca1bc6c4b1f70d11f13d8da7fcfe1f0e84ab6f134e708564491bf4da05a",
+      "note": "send_file is traversal-guarded: the resolved cleanpath must satisfy start_with?(\"#{preview_root}/\") or the action 404s, and preview_root is the per-account build tree. Brakeman doesn't connect the guard to the send_file argument."
+    },
+    {
+      "fingerprint": "9bf70927cfe6b5eb0b062fd17e7042131ec0be22aa493480f9a7b546fbb9ddb4",
+      "note": "The buy-link feature IS an off-site redirect: the URL is the tenant's own staff-entered Distributor store link (tenant-scoped lookup), not request input; params[:id] only selects which row. allow_other_host is the point."
+    }
+  ],
+  "brakeman_version": "8.0.6"
+}

@@ -11,7 +11,7 @@ class Admin::Designers::ImagesController < Admin::BaseController
     site = Current.account.site
 
     if site.update(@slot => params.expect(@slot.to_sym))
-      render json: { url: url_for(site.public_send(@slot)) }
+      render json: { url: url_for(attachment(site)) }
     else
       render json: { error: site.errors.full_messages.to_sentence }, status: :unprocessable_entity
     end
@@ -20,7 +20,7 @@ class Admin::Designers::ImagesController < Admin::BaseController
   # Synchronous purge: the designer rebuilds the preview immediately after,
   # and the exporter must see the attachment already gone.
   def destroy
-    Current.account.site.public_send(@slot).purge
+    attachment(Current.account.site).purge
     head :no_content
   end
 
@@ -28,5 +28,16 @@ class Admin::Designers::ImagesController < Admin::BaseController
     def set_slot
       @slot = params[:slot]
       head :not_found unless @slot.in?(SLOTS)
+    end
+
+    # Each slot named explicitly rather than sent — a statically readable
+    # allowlist (Brakeman flags a params-driven send even behind set_slot).
+    def attachment(site)
+      case @slot
+      when "logo"             then site.logo
+      when "banner"           then site.banner
+      when "hero_image"       then site.hero_image
+      when "newsletter_photo" then site.newsletter_photo
+      end
     end
 end
