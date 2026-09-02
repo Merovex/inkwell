@@ -93,6 +93,27 @@ class ClaimsTest < ActionDispatch::IntegrationTest
     assert_redirected_to claim_renewal_sent_path
   end
 
+  test "renewal restores a spent grant, so the link it mails actually works" do
+    Grant::DOWNLOAD_LIMIT.times { @grant.downloads.create!(format: "epub") }
+
+    get claim_path(token: @grant.claim_token)
+    assert_response :gone
+
+    travel 1.hour do
+      assert_no_difference -> { Download.count }, "renewing must not erase the download history" do
+        post claim_renewal_path, params: { email_address: "reader@example.com" }
+      end
+
+      get claim_path(token: @grant.claim_token)
+      assert_response :success
+
+      assert_difference -> { @grant.downloads.count }, 1 do
+        post claim_downloads_path(token: @grant.claim_token), params: { kind: "epub" }
+      end
+      assert_response :redirect
+    end
+  end
+
   test "renewal is silent for unknown addresses and grantless subscribers — same page either way" do
     Subscriber.create!(email_address: "grantless@example.com", status: :confirmed, confirmed_at: Time.current)
 

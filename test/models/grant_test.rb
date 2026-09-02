@@ -27,4 +27,19 @@ class GrantTest < ActiveSupport::TestCase
     assert @grant.exhausted?
     assert_equal @grant, Grant.find_by_token_for(:claim, token), "a spent grant still resolves — the page says so, the download refuses"
   end
+
+  test "renewing restores the allowance and keeps the downloads that spent it" do
+    Grant::DOWNLOAD_LIMIT.times { @grant.downloads.create!(format: "epub") }
+    assert @grant.exhausted?
+
+    travel 1.hour do
+      @grant.renew
+
+      assert_not @grant.exhausted?
+      assert_equal Grant::DOWNLOAD_LIMIT, @grant.downloads.count, "the audit trail outlives the counter"
+
+      Grant::DOWNLOAD_LIMIT.times { @grant.downloads.create!(format: "epub") }
+      assert @grant.exhausted?, "the fresh allowance is the same size, not unlimited"
+    end
+  end
 end

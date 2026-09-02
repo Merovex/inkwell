@@ -22,6 +22,17 @@ class AdminGrantClaimRenewalsTest < ActionDispatch::IntegrationTest
     assert_redirected_to admin_subscribers_path(state: "confirmed")
   end
 
+  test "a staff re-send restores the reader's spent allowance too" do
+    Grant::DOWNLOAD_LIMIT.times { @grant.downloads.create!(format: "epub") }
+
+    travel 1.hour do
+      post admin_grant_claim_renewal_path(@grant)
+    end
+
+    assert_not @grant.reload.exhausted?
+    assert_equal Grant::DOWNLOAD_LIMIT, @grant.downloads.count
+  end
+
   test "refuses an unconfirmed subscriber" do
     @subscriber.update!(status: :pending, confirmed_at: nil)
 

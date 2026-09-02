@@ -24,5 +24,16 @@ class Grant < ApplicationRecord
 
   def claim_token = generate_token_for(:claim)
 
-  def exhausted? = downloads.count >= DOWNLOAD_LIMIT
+  # Both renewal doors end here — the reader's own "send me a new link" and
+  # staff re-sending from the roster. A fresh token alone is no help to a
+  # reader whose cap is spent: the new link opens the same expired page they
+  # wrote in about. So a renewal moves the allowance window forward instead of
+  # deleting Downloads, which are the audit trail, not a counter.
+  def renew = update!(renewed_at: Time.current)
+
+  def exhausted? = downloads.where(created_at: allowance_since..).count >= DOWNLOAD_LIMIT
+
+  private
+    # Never nil: a grant that has never been renewed counts from its own birth.
+    def allowance_since = renewed_at || created_at
 end

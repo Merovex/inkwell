@@ -1,8 +1,10 @@
-# "Send me a new link" from an expired claim page: mail fresh claim links to
-# the address on file. Every outcome — links sent, unknown address, no grants
-# — lands on the same "check your inbox" page, so the form is no oracle for
-# probing which addresses subscribe. Guards mirror the newsletter signup,
-# cheapest first: island auth → honeypot → rate limit.
+# "Send me a new link" from an expired claim page: renew every grant the
+# address holds and mail fresh claim links. Renewing is half the job — the page
+# is also what a reader who has spent the download cap sees, and a fresh token
+# on a spent grant would land them right back here. Every outcome — links sent,
+# unknown address, no grants — lands on the same "check your inbox" page, so
+# the form is no oracle for probing which addresses subscribe. Guards mirror
+# the newsletter signup, cheapest first: island auth → honeypot → rate limit.
 class ClaimRenewalsController < PublicController
   include IslandProtected
 
@@ -21,7 +23,10 @@ class ClaimRenewalsController < PublicController
   def create
     subscriber = Current.account.subscribers.confirmed
       .find_by(email_address: Subscriber.normalize_value_for(:email_address, params[:email_address]))
-    MagnetMailer.renewal(subscriber).deliver_later if subscriber&.grants&.any?
+    if subscriber&.grants&.any?
+      subscriber.grants.each(&:renew)
+      MagnetMailer.renewal(subscriber).deliver_later
+    end
 
     redirect_to claim_renewal_sent_path
   end
