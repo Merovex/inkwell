@@ -34,7 +34,10 @@ Cache API from huggingface.co.
 
 transformers.js itself loads from a version-pinned jsdelivr URL rather than
 `bin/importmap pin`: import maps don't reach workers, and vendoring the JS
-would not remove the runtime wasm/weight fetches anyway. The worker lives in
+would not remove the runtime wasm/weight fetches anyway. The pin must stay on
+the 3.x line (currently 3.8.1) until the model's ONNX export is refreshed —
+4.x bundles an onnxruntime-web whose QDQ→MatMulNBits transform rejects the
+older quantized weights at session creation. The worker lives in
 `public/` (served undigested; a `?v=` query on the worker URL is the cache
 buster). The suggestion only fills the form field — the author reviews and
 saves normally. **No routes, no migrations, no gems, no server state.**

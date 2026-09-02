@@ -5,7 +5,12 @@
 // into the browser's Cache API; nothing leaves the machine. public/ is served
 // undigested, so bump the ?v= query on WORKER_URL in
 // excerpt_suggest_controller.js whenever this file changes.
-const TRANSFORMERS_URL = "https://cdn.jsdelivr.net/npm/@huggingface/transformers@4.2.0"
+// Pinned to the 3.x line: transformers.js 4.x bundles an onnxruntime-web
+// whose QDQ→MatMulNBits graph transform rejects this model's older quantized
+// export ("Missing required scale … DequantizeLinear"). Verified in-browser:
+// 4.2.0 fails to create a session, 3.8.1 loads and generates. Re-test before
+// any bump to 4.x.
+const TRANSFORMERS_URL = "https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.8.1"
 const MODEL = "Xenova/distilbart-cnn-6-6"
 
 let summarizerPromise

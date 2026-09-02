@@ -1,7 +1,7 @@
 import { Controller } from "@hotwired/stimulus"
 
 const CONSENT_KEY = "alcovo/excerpt_suggest/consent"
-const WORKER_URL = "/excerpt_suggester_worker.js?v=1"
+const WORKER_URL = "/excerpt_suggester_worker.js?v=2"
 const MIN_SOURCE_CHARS = 200
 const MAX_EXCERPT = 160
 const LEAD_CHARS = 2500
