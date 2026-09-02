@@ -53,6 +53,16 @@ class PostTipinTest < ActiveSupport::TestCase
     assert_no_match Post::TIPIN_MARKER, html
   end
 
+  test "the marker forgives spacing — {%tipin%} through {%  tipin  %}" do
+    [ "{%tipin%}", "{% tipin %}", "{%tipin %}", "{%  tipin  %}" ].each do |marker|
+      @post.update!(content: "<p>#{marker}</p>")
+
+      html = @post.email_content.to_html
+      assert_match "Grab the free novella", html, "#{marker} should splice"
+      assert_no_match(/\{%/, html, "#{marker} should be consumed")
+    end
+  end
+
   test "public_content carries neither the marker nor the tip-in" do
     @post.update!(content: "<p>Before.</p><p>{% tipin %}</p><p>After.</p>")
 
