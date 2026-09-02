@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+# Pre-commit: the checks CI runs (.github/workflows/ci.yml), scoped for
+# commit speed — rubocop only lints what's staged, and the dependency audits
+# only run when dependency files are staged. bin/ci remains the full gate
+# (it adds setup + seed replant). Bypass in a pinch: git commit --no-verify.
+#
+# Installed via `git config core.hooksPath .githooks` (bin/setup does this).
+set -euo pipefail
+cd "$(git rev-parse --show-toplevel)"
+
+staged() { git diff --cached --name-only --diff-filter=ACMR; }
+
+echo "== Style: RuboCop (staged files) =="
+if staged | grep -E '\.(rb|rake)$|^Gemfile$|^Rakefile$' > /dev/null; then
+  staged | grep -E '\.(rb|rake)$|^Gemfile$|^Rakefile$' | xargs bin/rubocop --force-exclusion
+else
+  echo "no Ruby staged — skipped"
+fi
+
+echo "== Security: Brakeman =="
+bin/brakeman --quiet --no-pager --exit-on-warn --exit-on-error
+
+echo "== Security: gem audit (Gemfile changes only) =="
+if staged | grep -E '^Gemfile' > /dev/null; then
+  bin/bundler-audit
+else
+  echo "Gemfile unchanged — skipped"
+fi
+
+echo "== Security: importmap audit (importmap/vendor changes only) =="
+if staged | grep -E '^config/importmap|^vendor/javascript' > /dev/null; then
+  bin/importmap audit
+else
+  echo "importmap unchanged — skipped"
+fi
+
+echo "== Tests: Rails =="
+bin/rails test
+
+echo "== Tests: edge Worker (edge/ changes only) =="
+if staged | grep -E '^edge/' > /dev/null; then
+  (cd edge && node test/worker.test.mjs)
+else
+  echo "edge/ unchanged — skipped"
+fi
+
+echo "pre-commit: all green"

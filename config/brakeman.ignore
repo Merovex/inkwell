@@ -11,6 +11,10 @@
     {
       "fingerprint": "9bf70927cfe6b5eb0b062fd17e7042131ec0be22aa493480f9a7b546fbb9ddb4",
       "note": "The buy-link feature IS an off-site redirect: the URL is the tenant's own staff-entered Distributor store link (tenant-scoped lookup), not request input; params[:id] only selects which row. allow_other_host is the point."
+    },
+    {
+      "fingerprint": "019933848e325e671dfd106dca71a584a9d07724fd99e0eea9b755f534733b96",
+      "note": "The delivery page IS an off-site redirect: the target is a presigned R2 URL our own storage service mints; params[:id] only selects a tenant-scoped magnet row and params[:kind] is allowlist-checked (Brakeman marks it SAFE_LITERAL). allow_other_host is the point — same acceptance as the buy-link redirect. Approved by Ben 2026-09-02."
     }
   ],
   "brakeman_version": "8.0.6"
