@@ -78,7 +78,8 @@
               frame: "modal",
               badge: drip_outcome_label(outcome),
               badge_variant: drip_outcome_variant(outcome),
-              excerpt: drip_progress_phrase(stream, steps: @drops, total: @drops.size) %>
+              excerpt: drip_progress_phrase(stream, steps: @drops, total: @drops.size),
+              actions: (render "admin/drips/pips", states: stream.step_states(steps: @drops)) %>
       <% end %>
     </div>
   <% else %>

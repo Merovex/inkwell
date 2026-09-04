@@ -1,0 +1,8 @@
+<%# locals: (states:) — one pip per campaign step, in order: a filled disc for
+    a step that went out, a muted one for a step skipped (they'd left, or were
+    suppressed, by the time it came due), and an empty circle for one still
+    ahead. Decorative on purpose: the row's own text already says "1 of 4 sent
+    · 1 skipped", so a screen reader hears the count rather than the drawing. %>
+<span class="step-pips" aria-hidden="true">
+  <% states.each do |state| %><span class="step-pips__pip step-pips__pip--<%= state %>"></span><% end %>
+</span>

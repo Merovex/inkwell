@@ -43,10 +43,25 @@ class Stream < ApplicationRecord
 
   # Where the run stands, as the admin says it: still going, finished the
   # sequence, or stopped early (and why — "unsubscribed", "bounced", …).
+  # A run closed as "completed" and one that has simply run out of steps are
+  # the same fact told twice; both read as finished.
   def outcome(steps: drip.drops)
-    if ended_at then ended_reason.presence || "stopped"
+    if ended_at then ended_reason == "completed" ? "finished" : ended_reason.presence || "stopped"
     elsif next_send_at(steps:) then "running"
     else "finished"
+    end
+  end
+
+  # Each step's fate for this run, in step order — what the progress pips draw:
+  # :sent, :skipped, or :pending (not reached yet, or recorded but unsent).
+  def step_states(steps: drip.drops)
+    by_record = deliveries.index_by(&:drop_record_id)
+    steps.map do |drop|
+      delivery = by_record[drop.record_id]
+      if delivery.nil? || delivery.status_pending? then :pending
+      elsif delivery.status_sent? then :sent
+      else :skipped
+      end
     end
   end
 
@@ -74,6 +89,8 @@ class Stream < ApplicationRecord
         delivery.update!(status: :sent, sent_at: Time.current, **DeliveryEvent.dispatch_stamp(message))
       end
     end
+
+    close_if_finished
   end
 
   # Drops whose scheduled day has arrived (enrolled_at + delay_days ≤ now) and
@@ -89,6 +106,21 @@ class Stream < ApplicationRecord
   end
 
   private
+    # A run whose every step is recorded is over — close it, so it leaves the
+    # daily tick's fan-out and the campaign's "in this campaign now" count, and
+    # lands in "finished it". Nothing used to close a completed run, which is
+    # why that number sat at 0 while people plainly had reached the end.
+    def close_if_finished
+      end!("completed") if remaining_drops.empty?
+    end
+
+    # Steps with no delivery row yet. Reloaded because advance! has just
+    # created some, and a stale association would call a finished run open.
+    def remaining_drops
+      recorded = deliveries.reload.map(&:drop_record_id)
+      drip.drops.reject { |drop| recorded.include?(drop.record_id) }
+    end
+
     def deliveries_for(steps)
       step_ids = steps.map(&:record_id)
       deliveries.select { |delivery| step_ids.include?(delivery.drop_record_id) }

@@ -46,7 +46,10 @@ module CampaignsHelper
     if (next_at = stream.next_send_at(steps: steps))
       phrase += " · next #{l next_at.to_date, format: :short}"
     elsif stream.ended_at
-      phrase += " · stopped #{l stream.ended_at.to_date, format: :short}"
+      # Reaching the last step and being pulled out early both close a run;
+      # only the second one "stopped".
+      verb = stream.ended_reason == "completed" ? "finished" : "stopped"
+      phrase += " · #{verb} #{l stream.ended_at.to_date, format: :short}"
     end
     phrase
   end

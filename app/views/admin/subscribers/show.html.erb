@@ -70,7 +70,8 @@
                       title: stream.drip.title,
                       badge: drip_outcome_label(outcome),
                       badge_variant: drip_outcome_variant(outcome),
-                      excerpt: drip_progress_phrase(stream, steps: steps, total: steps.size) %>
+                      excerpt: drip_progress_phrase(stream, steps: steps, total: steps.size),
+                      actions: (render "admin/drips/pips", states: stream.step_states(steps: steps)) %>
               <% end %>
             </div>
           </section>

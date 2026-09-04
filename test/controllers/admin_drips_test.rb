@@ -115,7 +115,8 @@ class AdminDripsTest < ActionDispatch::IntegrationTest
 
     get admin_drip_path(drip.record)
 
-    assert_select ".list__item", text: /done@example.com.*1 of 1 sent/m
+    assert_select ".list__item", { text: /done@example.com.*1 of 1 sent · finished/m },
+      "a run that reached the end finished — it wasn't stopped"
     assert_select ".list__item .badge", text: "Finished"
   end
 
@@ -155,6 +156,45 @@ class AdminDripsTest < ActionDispatch::IntegrationTest
     get admin_drip_path(drip.record)
 
     assert_select ".list__item", text: /1 of 2 sent · 1 skipped/
+  end
+
+  test "each row draws a pip per step, filled for the ones that went out" do
+    drip = originate_drip(active: true)
+    add_drop(drip, "Welcome", 0)
+    add_drop(drip, "Day two", 1)
+    reader = Subscriber.opt_in(email_address: "reader@example.com")
+    reader.confirm!
+    reader.streams.sole.advance!
+    sign_in_as users(:admin)
+
+    get admin_drip_path(drip.record)
+
+    assert_select ".list__item .step-pips__pip", 2
+    assert_select ".list__item .step-pips__pip--sent", 1
+    assert_select ".list__item .step-pips[aria-hidden=true]", 1, "the text carries the meaning"
+  end
+
+  # "finished it" sat at 0 while people plainly had finished: nothing closed a
+  # run that reached its last step, so every stream stayed active forever.
+  test "a run that reaches its last step is closed as completed" do
+    drip = originate_drip(active: true)
+    add_drop(drip, "Welcome", 0)
+    reader = Subscriber.opt_in(email_address: "reader@example.com")
+    reader.confirm!
+    stream = reader.streams.sole
+    stream.advance!
+
+    assert stream.reload.ended_at, "the sequence is over — the run should be closed"
+    assert_equal "completed", stream.ended_reason
+    assert_not_includes Stream.active, stream, "and it leaves the daily tick's fan-out"
+
+    sign_in_as users(:admin)
+    get admin_drip_path(drip.record)
+
+    stats = css_select(".stats").first.text.squish
+    assert_match(/in this campaign now\s*0/, stats, "a finished run has left the campaign")
+    assert_match(/finished it\s*1/, stats)
+    assert_select ".list__item .badge", text: "Finished"
   end
 
   test "a campaign nobody has joined says so instead of an empty list" do
