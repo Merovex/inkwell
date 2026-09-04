@@ -220,4 +220,21 @@ class SendySubscriptionsTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_empty session.to_hash
   end
+
+  # The deployment-critical case: in production APP_HOST is enforced, and this
+  # is the host BookFunnel is pointed at. A tenant domain is served by the edge
+  # Worker, whose island allowlist doesn't carry /subscribe — so the app host is
+  # the only door, and it has to answer with no account in the path.
+  test "answers on the enforced app host, where BookFunnel points" do
+    Rails.configuration.x.app_host = "app.kindredquill.example"
+    host! "app.kindredquill.example"
+
+    post subscribe_path, params: { api_key: @key, email: "reader@example.com", list: @account.slug }
+
+    assert_response :success
+    assert_equal "1", response.body
+    assert_equal 1, @account.subscribers.count
+  ensure
+    Rails.configuration.x.app_host = nil
+  end
 end

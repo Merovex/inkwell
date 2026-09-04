@@ -544,6 +544,21 @@ Rails.application.routes.draw do
   # is the account handle (or slug); the api_key is the whole authentication.
   post "subscribe" => "sendy/subscriptions#create"
 
+  # The rest of the Sendy API BookFunnel uses. The .php suffix is Sendy's, and
+  # so is answering a read over POST — these are their paths verbatim, because
+  # the caller is a Sendy client and won't ask for anything else. Verification
+  # on "Integrate" lands on the count; restricted pages and "block
+  # unsubscribers" ask for a status.
+  #
+  # ScannerBlocker refuses .php paths at the very front of the stack (position
+  # 0, before Rails logs anything), so these two are allowlisted there BY PATH.
+  # A route added here without a matching entry there answers 403 and never
+  # reaches Rails — which is exactly how the integration first failed.
+  scope :api, module: :sendy do
+    post "subscribers/active-subscriber-count.php" => "subscriber_counts#show"
+    post "subscribers/subscription-status.php" => "subscription_statuses#show"
+  end
+
   # The public site — everything below resolves per-tenant by domain.
   constraints(public_routes) do
     # Public posts. The index lists published posts only; :id on the article page

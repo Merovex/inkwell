@@ -20,11 +20,28 @@ class ScannerBlocker
 
   QUERY_PROBE = /\brest_route=/i
 
+  # The exception to "this is a Rails app, no PHP": we impersonate Sendy for
+  # BookFunnel (Sendy::BaseController and friends), and Sendy's API paths end
+  # in .php — so our own routes trip the rule above and 403 before reaching
+  # Rails. That is how the integration failed on its first day, and the reason
+  # it took a deploy to find is that a refusal here happens at position 0,
+  # ahead of Rails' logger: the request left no trace anywhere.
+  #
+  # So the allowance is Sendy's whole subscriber/list/brand API rather than
+  # only the two paths we answer. A call we haven't implemented then 404s
+  # visibly in the log instead of vanishing, which is the difference between
+  # reading the answer and guessing at it. Campaign paths stay refused — we
+  # will never answer those. This is log hygiene, not a security boundary:
+  # what these paths actually do is gated by a per-account API key.
+  SENDY_API = %r{\A/api/(?:subscribers|lists|brands)/[a-z0-9-]+\.php\z}
+
   def initialize(app)
     @app = app
   end
 
   def call(env)
+    return @app.call(env) if SENDY_API.match?(env["PATH_INFO"])
+
     if env["PATH_INFO"].to_s.match?(PROBE) || env["QUERY_STRING"].to_s.match?(QUERY_PROBE)
       [ 403, { "content-type" => "text/plain" }, [ "Forbidden\n" ] ]
     else
