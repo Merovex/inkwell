@@ -36,6 +36,10 @@ class Admin::SubscribersController < Admin::BaseController
     # Every site magnet is offerable; the grant (when one exists) dates the row.
     @magnets = Current.account.magnets.ordered
     @grants_by_magnet = @subscriber.grants.index_by(&:magnet_id)
+    # Which campaigns they're in and where each run has got to — the answer to
+    # "why did this reader get that email?", newest enrollment first.
+    @streams = @subscriber.streams.includes(:deliveries, drip_record: :recordable)
+      .order(enrolled_at: :desc)
   end
 
   # Manual opt-out on someone's behalf (a reply-to-email request, say). Same

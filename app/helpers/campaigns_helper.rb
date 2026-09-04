@@ -23,4 +23,28 @@ module CampaignsHelper
     gap = delay_days - previous
     gap.positive? ? "#{pluralize(gap, 'day')} later" : "same day"
   end
+
+  # One run's state, as a badge. Stream#outcome answers "running"/"finished" or
+  # the reason it stopped ("unsubscribed", "bounced", "complained"), and a stop
+  # is the only one that reads as trouble.
+  DRIP_OUTCOMES = {
+    "running" => [ "In progress", "accent" ],
+    "finished" => [ "Finished", "success" ]
+  }.freeze
+
+  def drip_outcome_label(outcome) = DRIP_OUTCOMES.dig(outcome, 0) || outcome.humanize
+
+  def drip_outcome_variant(outcome) = DRIP_OUTCOMES.dig(outcome, 1) || "warning"
+
+  # "2 of 4 sent · next Sep 5" — where a run has got to, and when it moves
+  # again. Steps are passed in so a roster loads the campaign's Drops once.
+  def drip_progress_phrase(stream, steps:, total:)
+    phrase = "#{stream.sent_count} of #{total} sent"
+    if (next_at = stream.next_send_at(steps: steps))
+      phrase += " · next #{l next_at.to_date, format: :short}"
+    elsif stream.ended_at
+      phrase += " · stopped #{l stream.ended_at.to_date, format: :short}"
+    end
+    phrase
+  end
 end

@@ -58,3 +58,31 @@
   <h2 class="u-microcaps u-text-muted u-margin-block-end" id="steps-heading">Steps</h2>
   <%= render "drops", record: @record, drops: @drops, step_stats: @step_stats %>
 </section>
+
+<%# Who is in the campaign, and where each of them has got to. The stats above
+    count these rows; this is the same population with names on it. %>
+<section class="u-margin-block-start" aria-labelledby="people-heading">
+  <h2 class="u-microcaps u-text-muted u-margin-block-end" id="people-heading">
+    People <span class="u-text-muted">(<%= @streams.size %>)</span>
+  </h2>
+
+  <% if @streams.any? %>
+    <div class="list">
+      <% @streams.each do |stream| %>
+        <% outcome = stream.outcome(steps: @drops) %>
+        <%= render "shared/list_item",
+              avatar: false,
+              title_tag: "span",
+              title: stream.subscriber.email_address,
+              href: admin_subscriber_path(stream.subscriber),
+              frame: "modal",
+              badge: drip_outcome_label(outcome),
+              badge_variant: drip_outcome_variant(outcome),
+              excerpt: drip_progress_phrase(stream, steps: @drops, total: @drops.size) %>
+      <% end %>
+    </div>
+  <% else %>
+    <p class="u-text-muted">Nobody is in this campaign yet. Readers join when they confirm
+       their subscription — <%= link_to "the roster", admin_subscribers_path %> shows who has.</p>
+  <% end %>
+</section>

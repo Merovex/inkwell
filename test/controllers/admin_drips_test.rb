@@ -79,9 +79,60 @@ class AdminDripsTest < ActionDispatch::IntegrationTest
     assert drip.record.reload.trashed?
   end
 
+  test "the campaign page names who is in it and where each run has got to" do
+    drip = originate_drip(active: true)
+    add_drop(drip, "Welcome", 0)
+    add_drop(drip, "Day two", 1)
+    reader = Subscriber.opt_in(email_address: "reader@example.com")
+    reader.confirm!            # enrolls
+    reader.streams.sole.advance!  # sends day-0, leaves day-1 pending
+    sign_in_as users(:admin)
+
+    get admin_drip_path(drip.record)
+
+    assert_response :success
+    assert_select ".list__item", 1
+    assert_select ".list__item", text: /reader@example.com/
+    assert_select ".list__item", text: /1 of 2 sent/
+    assert_select ".list__item .badge", text: "In progress"
+  end
+
+  test "a run that stopped early says so, and one with no steps left reads finished" do
+    drip = originate_drip(active: true)
+    add_drop(drip, "Welcome", 0)
+    gone = Subscriber.opt_in(email_address: "gone@example.com")
+    gone.confirm!
+    gone.unsubscribe!  # ends the stream
+    sign_in_as users(:admin)
+
+    get admin_drip_path(drip.record)
+
+    assert_select ".list__item .badge", text: "Unsubscribed"
+
+    done = Subscriber.opt_in(email_address: "done@example.com")
+    done.confirm!
+    done.streams.sole.advance!  # the only drop goes out → nothing left
+
+    get admin_drip_path(drip.record)
+
+    assert_select ".list__item", text: /done@example.com.*1 of 1 sent/m
+    assert_select ".list__item .badge", text: "Finished"
+  end
+
+  test "a campaign nobody has joined says so instead of an empty list" do
+    drip = originate_drip
+    add_drop(drip, "Welcome", 0)
+    sign_in_as users(:admin)
+
+    get admin_drip_path(drip.record)
+
+    assert_select ".list__item", 0
+    assert_select "p", text: /Nobody is in this campaign yet/
+  end
+
   private
-    def originate_drip
-      drip = Drip.new(title: "Welcome", trigger: "confirmed", creator: users(:admin))
+    def originate_drip(active: false)
+      drip = Drip.new(title: "Welcome", trigger: "confirmed", active: active, creator: users(:admin))
       Record.originate(drip)
       drip
     end

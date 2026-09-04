@@ -34,6 +34,11 @@ class Admin::DripsController < Admin::BaseController
     @campaign_stats = campaign_stats(@record.id)
     @span = @drops.map(&:delay_days).max || 0
     @step_stats = @drops.to_h { |drop| [ drop.record_id, step_stats(drop.record_id) ] }
+    # Who is actually in this campaign, newest enrollment first. Deliveries are
+    # preloaded because every row asks them where it has got to, and the Drops
+    # they are measured against are @drops — loaded once, passed to each row.
+    @streams = Stream.where(drip_record_id: @record.id)
+      .includes(:subscriber, :deliveries).order(enrolled_at: :desc)
   end
 
   def new

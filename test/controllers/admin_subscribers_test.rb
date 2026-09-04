@@ -139,4 +139,38 @@ class AdminSubscribersTest < ActionDispatch::IntegrationTest
     end
     assert_response :not_found
   end
+
+  test "a subscriber's card names the campaigns they're in and where each stands" do
+    drip = Drip.new(title: "Welcome Sequence", trigger: "confirmed", active: true, creator: users(:admin))
+    Record.originate(drip)
+    [ [ "Welcome", 0 ], [ "Day two", 1 ] ].each do |subject, delay_days|
+      drop = Drop.new(subject: subject, delay_days: delay_days, creator: users(:admin))
+      drop.body = "<p>#{subject}</p>"
+      Record.originate(drop, parent: drip.record)
+      drop.record.update!(position: delay_days + 1)
+    end
+
+    reader = Subscriber.opt_in(email_address: "reader@example.com")
+    reader.confirm!
+    reader.streams.sole.advance!
+    sign_in_as users(:admin)
+
+    get admin_subscriber_path(reader)
+
+    assert_response :success
+    assert_select "#campaigns", text: "Campaigns"
+    assert_select ".list__item", text: /Welcome Sequence.*1 of 2 sent/m
+    assert_select ".list__item .badge", text: "In progress"
+  end
+
+  test "a subscriber in no campaign gets no campaigns section" do
+    sign_in_as users(:admin)
+    reader = Subscriber.opt_in(email_address: "reader@example.com")
+    reader.confirm!
+
+    get admin_subscriber_path(reader)
+
+    assert_response :success
+    assert_select "#campaigns", 0
+  end
 end

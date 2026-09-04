@@ -15,6 +15,33 @@ class Stream < ApplicationRecord
 
   def drip = drip_record.recordable
 
+  # How far this run has got, for the campaign's roster and the subscriber's
+  # card. Counted in Ruby off the loaded association so a roster preloading
+  # :deliveries answers without a query per row.
+  def sent_count = deliveries.count(&:status_sent?)
+
+  # When the next Drop is due, or nil when the sequence is finished (or ended).
+  # `steps` is an argument so a roster of many streams through one campaign
+  # loads its Drops once instead of once per row.
+  def next_send_at(steps: drip.drops, now: Time.current)
+    return if ended_at
+
+    recorded = deliveries.map(&:drop_record_id)
+    steps.reject { |drop| recorded.include?(drop.record_id) }
+      .map { |drop| drop.send_at_for(self) }
+      .select { |at| at > now }
+      .min
+  end
+
+  # Where the run stands, as the admin says it: still going, finished the
+  # sequence, or stopped early (and why — "unsubscribed", "bounced", …).
+  def outcome(steps: drip.drops)
+    if ended_at then ended_reason.presence || "stopped"
+    elsif next_send_at(steps:) then "running"
+    else "finished"
+    end
+  end
+
   # Send every Drop now due to this subscriber, or record a skip if they've
   # become ineligible by the time it comes due — unsubscribed here, or on the
   # platform's cross-site suppression list for this site (Subscriber#suppressed?,
