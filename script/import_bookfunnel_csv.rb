@@ -47,13 +47,18 @@ parser = OptionParser.new do |opts|
 end
 parser.parse!
 
-csv_paths = ARGV.dup
+# Whitespace-only arguments are dropped rather than treated as filenames: a
+# stray "\" before a line break escapes the space instead of continuing the
+# line, and the shell hands us a lone " " that looks like nothing at all.
+csv_paths = ARGV.map(&:strip).reject(&:empty?)
 missing = [ ("a CSV path" if csv_paths.empty?), ("--host" if options[:host].nil?),
             ("--key" if options[:key].nil?), ("--list" if options[:list].nil?) ].compact
 if missing.any?
   abort "Missing #{missing.join(", ")}.\n\n#{parser}"
 end
-csv_paths.each { |path| abort "No such file: #{path}" unless File.exist?(path) }
+# inspect, not the bare path — an argument you cannot see is the hardest kind
+# to debug from an error message.
+csv_paths.each { |path| abort "No such file: #{path.inspect}" unless File.exist?(path) }
 
 endpoint = URI.join(options[:host], "/subscribe")
 yes = ->(value) { value.to_s.strip.casecmp?("yes") }
