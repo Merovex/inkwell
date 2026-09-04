@@ -507,13 +507,21 @@ Rails.application.routes.draw do
 
   # SES event notifications relayed via SNS (delivered/opened/clicked/bounced/
   # complained) → broadcast metrics. Authenticity is the SNS message signature,
-  # verified in the controller (ADR 0015 Phase 2). Deliberately unconstrained:
-  # the SNS subscription points at the tenant domain and stays put (ADR 0018).
+  # verified in the controller (ADR 0015 Phase 2). Host-unconstrained, and the
+  # SNS subscription points at the APP host — never a tenant domain. It pointed
+  # at merovex.press until 2026-09-04; the edge Worker took that host over at the
+  # static-serving cut-over, and every event drew a 405 from the Worker's non-GET
+  # guard for months while the dashboard read zero. Platform-wide ingest must not
+  # hang off an author's domain — those get disconnected, moved and re-certified
+  # by the custom-domain flow. See [[dynamic-islands]].
   post "webhooks/ses" => "webhooks/ses#create"
 
   # Postmark event webhooks (delivered/opened/clicked/bounced/complained) →
   # broadcast metrics. Authenticity is HTTP Basic Auth verified in the controller.
-  # Deliberately unconstrained, like the SES hook (ADR 0018).
+  # Host-unconstrained, like the SES hook — and its Postmark-console URL belongs
+  # on the app host for the same reason. This is the warm-standby recovery path;
+  # a provider flip during an SES incident is the worst moment to discover the
+  # endpoint points somewhere the Worker now answers.
   post "webhooks/postmark" => "webhooks/postmark#create"
 
   # The public site — everything below resolves per-tenant by domain.

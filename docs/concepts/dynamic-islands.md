@@ -19,12 +19,37 @@ cohwall both completed signup → confirm round-trips).
 ## The allowlist (enumerated from routes.rb, phase-2 §2.5)
 
 Live today: `POST /newsletter`, `GET /newsletter/sent|rejected`,
-`GET /newsletter/confirm|unsubscribe|keep(/:token)`. Still to add as their
-flows are hardened: `POST /contact` (+ its pages — the contacts controller
-still carries session-backed spam traps that discard static submits),
-`GET /buy/:id`, `/ahoy/*`, `POST /webhooks/ses`. Custom-domain hosts only so
-far; the platform host (`sites.kindredquill.com`) has no Rails-side hostname
-mapping yet.
+`GET /newsletter/confirm|unsubscribe|keep(/:token)`, `GET /buy/:id`, and the
+claim/download delivery pages. Still to add as their flows are hardened:
+`POST /contact` (+ its pages — the contacts controller still carries
+session-backed spam traps that discard static submits) and `/ahoy/*`.
+Custom-domain hosts only so far; the platform host (`sites.kindredquill.com`)
+has no Rails-side hostname mapping yet.
+
+**`POST /webhooks/ses` is deliberately NOT an island** (decided 2026-09-04,
+reversing the older "stays on merovex.press" note in the SES runbook). Its SNS
+subscription points at the **app host** and bypasses this Worker entirely.
+
+That note cost months of blind broadcasts. It was written when merovex.press
+*was* the Rails host — before ADR 0019 moved the app to `app.kindredquill.com`
+and before static serving handed merovex.press to this Worker. The decision
+outlived both of its premises. SNS kept POSTing to
+`https://merovex.press/webhooks/ses`, the path matched no island, the non-GET
+guard returned a flat `405`, and `delivered`/`opened`/`clicked` sat at zero on
+every broadcast while the mail itself sent perfectly. SNS still showed the
+subscription **Confirmed** the whole time — that flag records the handshake,
+not delivery — and with no DLQ configured, the dropped events are gone.
+
+Two rules fall out of it:
+
+- **Platform infrastructure never hangs off a tenant domain.** A custom domain
+  is author-owned and author-revocable: `CustomDomainsController#destroy` is a
+  KV delete, registrars change, certs lapse. Anything serving the whole
+  platform belongs on the app host, which is ours.
+- **An island only a machine calls has no user to report its breakage.** A
+  reader hitting a broken `/newsletter` complains within the hour. SNS just
+  retries and gives up. When a Rails path moves behind this Worker, the
+  allowlist entry is part of the move — never a follow-up item.
 
 ## The header contract (the hard-won part)
 

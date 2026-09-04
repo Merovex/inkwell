@@ -12,6 +12,9 @@ class BroadcastDelivery < ApplicationRecord
   # Opens and clicks count as engagement — they reset the subscriber's sunset clock.
   ENGAGEMENT = %w[ opened clicked ].freeze
 
+  # The two statuses the dashboard flags in warning ink.
+  TROUBLE = %i[ bounced complained ].freeze
+
   # Internal event name → [ this delivery's milestone column, broadcast counter ].
   # DeliveryEvent#apply! translates canonical provider events into these names;
   # the app-side unsubscribe path records "unsubscribed" directly.
@@ -24,6 +27,22 @@ class BroadcastDelivery < ApplicationRecord
     "complained"   => [ :complained_at,   :complained_count ],
     "unsubscribed" => [ :unsubscribed_at, :unsubscribed_count ]
   }.freeze
+
+  # This recipient's furthest milestone, worst news first — the dashboard's
+  # status column. `sent` is the honest gap between handing the message to the
+  # ESP and hearing back: a send whose events never arrive stays there rather
+  # than reading as delivered. It used to, and that's what hid a months-long
+  # outage — the column fell through to "Delivered" whenever nothing had gone
+  # *wrong*, so eight recipients read Delivered beside a "0 delivered" counter.
+  def status
+    return :complained if complained_at?
+    return :bounced    if bounced_at?
+    return :delivered  if delivered_at?
+    return :sent       if sent_at?
+    :pending
+  end
+
+  def trouble? = status.in?(TROUBLE)
 
   # Record an engagement event once (first-event-wins → unique opens/clicks):
   # stamp this recipient and bump the broadcast's cached counter. Unknown events

@@ -16,6 +16,31 @@ class BroadcastDeliveryTest < ActiveSupport::TestCase
     assert_equal 1, @broadcast.reload.opened_count, "unique opens only"
   end
 
+  test "status reports the furthest milestone, worst news first" do
+    assert_equal :sent, @delivery.status, "handed to the ESP, nothing heard back"
+    assert_not @delivery.trouble?
+
+    @delivery.record_event!("delivered")
+    assert_equal :delivered, @delivery.status
+
+    @delivery.record_event!("bounced")
+    assert_equal :bounced, @delivery.status, "trouble outranks a prior delivery"
+    assert @delivery.trouble?
+
+    @delivery.record_event!("complained")
+    assert_equal :complained, @delivery.status
+    assert @delivery.trouble?
+  end
+
+  test "status is pending until the fan-out stamps sent_at" do
+    assert_equal :pending, @broadcast.deliveries.build.status
+  end
+
+  test "a delivery with no events never reads as delivered" do
+    assert_not_equal :delivered, @delivery.status,
+      "the dashboard column must not treat 'no bad news' as confirmed delivery"
+  end
+
   test "unknown events are ignored" do
     assert_not @delivery.record_event!("nonsense")
     assert_equal 0, @broadcast.reload.opened_count

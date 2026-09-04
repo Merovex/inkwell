@@ -62,6 +62,22 @@ class AdminBroadcastsTest < ActionDispatch::IntegrationTest
     assert_select ".recipients__engagement--clicked", text: /Clicked/
   end
 
+  # The regression that hid a months-long event-pipe outage: the status column
+  # fell through to "Delivered" for anything that hadn't bounced or complained,
+  # so a send with no delivery events back read as eight happy Delivereds next
+  # to a "0 delivered of 8" counter. Unconfirmed must say so.
+  test "a recipient with no delivery event reads Sent, never Delivered" do
+    broadcast = records(:kickoff).create_broadcast!(sent_at: Time.current, recipients_count: 1)
+    unconfirmed = Subscriber.opt_in(email_address: "silent@example.com").tap(&:confirm!)
+    broadcast.deliveries.create!(subscriber: unconfirmed, sent_at: Time.current)
+    sign_in_as users(:admin)
+
+    get admin_broadcast_path(broadcast)
+    assert_response :success
+    assert_select ".recipients__status", text: /Sent/
+    assert_select ".recipients__status", text: /Delivered/, count: 0
+  end
+
   test "the dashboard surfaces a send's hard bounce under the post" do
     broadcast = records(:kickoff).create_broadcast!(sent_at: Time.current, recipients_count: 1)
     reader = Subscriber.opt_in(email_address: "reader@example.com").tap(&:confirm!)

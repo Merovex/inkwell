@@ -69,6 +69,12 @@
   </aside>
 <% end %>
 
+<%# BroadcastDelivery#status in reader's words. "Sent" is the one that earns its
+    keep: handed to SES, nothing heard back — distinct from a confirmed delivery,
+    so a broken event pipe shows as a column of "Sent" instead of a quiet lie. %>
+<% status_labels = { complained: "Complained", bounced: "Bounced",
+                     delivered: "Delivered", sent: "Sent", pending: "Not sent" } %>
+
 <section aria-labelledby="received-heading">
   <h2 class="u-microcaps u-text-muted u-margin-block-end" id="received-heading">Who received it</h2>
   <% if @deliveries.any? %>
@@ -76,11 +82,10 @@
       <table class="table recipients__table">
         <tbody>
           <% @deliveries.each do |delivery| %>
-            <% trouble = delivery.bounced_at || delivery.complained_at %>
             <tr>
               <td class="u-text-strong u-truncate recipients__who"><%= delivery.subscriber.email_address %></td>
-              <td data-align="end" class="recipients__status<%= " recipients__status--trouble" if trouble %>">
-                <% if delivery.complained_at %>Complained<% elsif delivery.bounced_at %>Bounced<% else %>Delivered<% end %>
+              <td data-align="end" class="recipients__status<%= " recipients__status--trouble" if delivery.trouble? %>">
+                <%= status_labels.fetch(delivery.status) %>
               </td>
               <td data-align="end" class="recipients__engagement<%= delivery.clicked_at ? " recipients__engagement--clicked" : (" recipients__status--trouble" if delivery.bounced_at) %>">
                 <% if delivery.clicked_at %>Clicked <%= delivery.clicked_at.strftime("%b %-d") %>

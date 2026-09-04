@@ -36,7 +36,7 @@ next. Check boxes as you go; this is a living doc.
 | Marketing MAIL FROM | `bounce.news.merovex.press` | SPF alignment for the news stream |
 | Tracking (redirect) domain | `click.news.merovex.press` | branded open/click links — **marketing only** |
 | Link host (email body URLs) | `merovex.press` | `default_url_options[:host]`; independent of the sending identity |
-| SNS webhook URL | `https://merovex.press/webhooks/ses` | endpoint built in Phase 2 |
+| SNS webhook URL | `https://app.kindredquill.com/webhooks/ses` | **corrected 2026-09-04** — was `merovex.press`, see Step 7 |
 | DMARC report inbox | `dmarc@merovex.com` | cross-domain → needs the `_report._dmarc` authz record on merovex.com (Step 4) |
 
 Where you edit DNS: **______** (registrar / Cloudflare / Route 53 — note it here).
@@ -245,7 +245,28 @@ message** (Phase 1). The mapping we'll wire:
 
 1. SNS → **Create topic** (Standard) e.g. `inkwell-ses-events`. Both config sets in
    Step 6 publish here (one topic is fine; the payload carries the config-set name).
-2. **Create subscription** → protocol **HTTPS** → endpoint `https://merovex.press/webhooks/ses`.
+2. **Create subscription** → protocol **HTTPS** → endpoint
+   `https://app.kindredquill.com/webhooks/ses` — the **app host**, never a
+   tenant domain.
+
+   > ⚠️ **Corrected 2026-09-04.** This said `https://merovex.press/webhooks/ses`,
+   > from when merovex.press was the Rails host. Static serving later handed that
+   > domain to the edge Worker, which answers only its island allowlist: every SES
+   > event drew a `405` and `delivered`/`opened`/`clicked` read zero on every
+   > broadcast for months while mail sent normally. The subscription showed
+   > **Confirmed** throughout — that flag records the handshake, not delivery.
+   > With no DLQ, those events are unrecoverable. Never point platform ingest at
+   > an author's domain.
+   >
+   > Two gotchas when repointing: an SNS subscription's **endpoint is immutable**
+   > (create a new one, let it confirm, then delete the old — overlapping is safe,
+   > `DeliveryEvent.ingest!` dedupes on `[provider, message id, event]`), and the
+   > console's endpoint field rejects pasted URLs carrying invisible characters
+   > with a bare "Enter a valid HTTPS endpoint" — retype it by hand.
+
+   **Verify delivery, not just status:** CloudWatch → SNS →
+   `NumberOfNotificationsFailed` for the topic should be flat, and a test
+   broadcast should move `delivered` within seconds.
 3. ⚠️ **Ordering gotcha:** SNS immediately sends a `SubscriptionConfirmation` to
    that URL and stays **PendingConfirmation** until the endpoint confirms it.
    That endpoint is built in **Phase 2**. So either:

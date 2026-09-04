@@ -114,10 +114,16 @@ criterion. No per-tenant buckets; the prefix is the tenancy.
   below still to land, each with its own hardening pass.* The list: `POST /newsletter` + `GET /newsletter/confirm|unsubscribe|
   keep/:token` + `GET /newsletter/sent`, `POST /contact` +
   `GET /contact/confirm/:token` + `GET /contact/sent`, `GET /buy/:id`
-  (click counting), `POST /webhooks/ses` (stays on merovex.press per
-  standing decision), and the **ahoy tracking endpoints** (`/ahoy/*` —
+  (click counting), and the **ahoy tracking endpoints** (`/ahoy/*` —
   visits/events are client-posted; miss this and analytics silently die at
   cut-over). Explicit allowlist; everything else static.
+  *2026-09-04: `POST /webhooks/ses` is struck from this list — it moved to the
+  app host and bypasses the Worker. It had been pointed at merovex.press, which
+  this Worker took over, so SNS 405'd for months and every broadcast statistic
+  read zero. Platform ingest doesn't belong on a tenant domain; see
+  [[dynamic-islands]]. `/ahoy/*` is the same trap still armed — analytics are
+  client-posted to a host the Worker now answers, so check whether they've been
+  flatlining too.*
 - The Worker never renders; it routes bytes.
 - **Asset caching (2026-08-23).** Theme CSS/JS and the font sheet are
   fingerprinted by the Hugo build (`css/06-sections.<sha256>.css`, `js/…`,
