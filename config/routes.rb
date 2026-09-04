@@ -378,6 +378,16 @@ Rails.application.routes.draw do
       # local part on the shared sending lane (<handle>@kindredquill.email).
       resources :sending_domains, only: %i[index create destroy]
 
+      # The Integrations tab: the three values a reader-magnet partner
+      # (BookFunnel today, anything speaking Sendy tomorrow) asks for — host
+      # URL, API key, list ID. The key is a resource of its own so rotating it
+      # is an update to the key, not a verb on the page; PATCH mints a new one
+      # and the old stops working the moment it lands.
+      resource :integration, only: :show
+      namespace :integrations do
+        resource :sendy_key, only: :update
+      end
+
       # The Identity tab's handle typeahead: show answers "is this handle
       # free?" (and counter-offers a suggestion when it isn't). The handle
       # itself saves through the settings form (Site delegates to account).
@@ -523,6 +533,16 @@ Rails.application.routes.draw do
   # a provider flip during an SES incident is the worst moment to discover the
   # endpoint points somewhere the Worker now answers.
   post "webhooks/postmark" => "webhooks/postmark#create"
+
+  # BookFunnel pushes each new reader here, speaking Sendy's subscribe API
+  # (sendy.co/api). The integration appends /subscribe to whatever host URL it
+  # is given, so the path is fixed and must sit at the root — not under a
+  # namespace. Host-unconstrained like the webhooks above, and BookFunnel is
+  # pointed at the APP host, which Rails serves directly: a tenant domain would
+  # take a 405 from the edge Worker, whose island allowlist doesn't carry this
+  # path (the same trap that swallowed SES events, above). The Sendy "list ID"
+  # is the account handle (or slug); the api_key is the whole authentication.
+  post "subscribe" => "sendy/subscriptions#create"
 
   # The public site — everything below resolves per-tenant by domain.
   constraints(public_routes) do

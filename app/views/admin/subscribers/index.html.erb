@@ -72,7 +72,7 @@
                 <span class="badge badge--warning">Nudged</span>
               <% end %>
             </td>
-            <td class="u-text-muted"><%= subscriber.source.presence&.humanize || "—" %></td>
+            <td class="u-text-muted"><%= subscriber.source_label || "—" %></td>
             <td class="u-text-muted"><%= subscriber.created_at.strftime("%b %-d") %></td>
             <td class="u-text-muted"><%= subscriber.last_engaged_at ? subscriber.last_engaged_at.strftime("%b %-d") : "—" %></td>
             <td data-align="end">

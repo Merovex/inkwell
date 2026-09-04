@@ -3,7 +3,14 @@ require "rake"
 
 class BroadcastResetTaskTest < ActiveSupport::TestCase
   setup do
-    Inkwell::Application.load_tasks unless Rake::Task.task_defined?("broadcast:reset")
+    # Load only this task's file. Rails.application.load_tasks would pull in
+    # every .rake file, re-running their constant assignments in a process that
+    # already has them ("already initialized constant" warnings mid-suite).
+    # The suite has booted the app, so :environment stands in as a no-op.
+    unless Rake::Task.task_defined?("broadcast:reset")
+      Rake::Task.define_task(:environment) unless Rake::Task.task_defined?(:environment)
+      load Rails.root.join("lib/tasks/broadcast.rake")
+    end
     Rake::Task["broadcast:reset"].reenable
     @record = records(:kickoff)
     @subscriber = Subscriber.create!(email_address: "reader@example.com", status: :confirmed)

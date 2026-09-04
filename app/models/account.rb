@@ -225,6 +225,28 @@ class Account < ApplicationRecord
   # debugging is unchanged. Keys: credentials active_record_encryption.
   encrypts :turnstile_secret_key
 
+  # The credential a reader-magnet partner presents to the Sendy-compatible
+  # subscribe endpoint (Sendy::SubscriptionsController). Per account on purpose:
+  # the key is what decides whose list a push may join, so one shared key would
+  # let any holder write to any site by changing the list field.
+  #
+  # Deterministic so the endpoint can look an account up by the key it was
+  # handed; the author has to be able to read it back to paste it into their
+  # integration, so this is encryption at rest, not a digest.
+  encrypts :sendy_api_key, deterministic: true
+
+  # Minted the first time the author opens the Integrations tab, so a site that
+  # never connects a partner never stores a credential. Rotating is the same
+  # act: mint a new one, and the old key stops working the moment it lands.
+  def sendy_api_key!
+    sendy_api_key.presence || rotate_sendy_api_key!
+  end
+
+  def rotate_sendy_api_key!
+    update!(sendy_api_key: SecureRandom.alphanumeric(32))
+    sendy_api_key
+  end
+
   # The address this site's broadcast mail sends from: its live BYOD domain
   # when one exists, else the shared lane. The Email tab shows the bare
   # address; mailers use broadcast_from, which wraps it in the public site's

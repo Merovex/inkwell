@@ -179,4 +179,74 @@ class SubscriberTest < ActiveSupport::TestCase
     assert_nil Subscriber.rejection_reason("reader@example.com")
     assert_nil Subscriber.rejection_reason("check@mail-tester.com"), "allow-listed seeds aren't 'disposable'"
   end
+
+  # ── opt_in_confirmed: a partner's pre-consented push (BookFunnel) ──────────
+
+  # This path must send nothing; the mailer assertions live in ActionMailer's
+  # helper, which the model case doesn't carry by default.
+  include ActionMailer::TestHelper
+
+  test "opt_in_confirmed lands confirmed, with both consent events and the evidence" do
+    subscriber = Subscriber.opt_in_confirmed(
+      email_address: " Reader@Example.COM ", source: "bookfunnel", ip: "103.219.21.105",
+      country_code: "GB", gdpr_country: true, source_url: "https://dl.bookfunnel.com/the-bargain"
+    )
+
+    assert subscriber.confirmed?, "the partner already confirmed and holds the consent"
+    assert subscriber.confirmed_at
+    assert_equal "reader@example.com", subscriber.email_address, "normalized"
+    assert_equal "bookfunnel", subscriber.source
+    assert_equal "103.219.21.105", subscriber.consent_ip
+    assert_equal "GB", subscriber.country_code
+    assert subscriber.gdpr_country
+    assert_equal "https://dl.bookfunnel.com/the-bargain", subscriber.source_url
+    assert_equal %w[subscribed confirmed], subscriber.events.pluck(:action)
+  end
+
+  test "opt_in_confirmed sends no confirmation email and is idempotent" do
+    assert_no_enqueued_emails do
+      first = Subscriber.opt_in_confirmed(email_address: "reader@example.com", source: "bookfunnel")
+      again = Subscriber.opt_in_confirmed(email_address: "reader@example.com", source: "bookfunnel")
+
+      assert_equal first.id, again.id
+      assert_equal %w[subscribed confirmed], again.events.pluck(:action), "no second consent event"
+    end
+  end
+
+  test "opt_in_confirmed starts the drips, and never for a seed inbox" do
+    drip = Drip.new(title: "Welcome", trigger: "confirmed", active: true, creator: users(:admin))
+    Record.originate(drip)
+
+    reader = Subscriber.opt_in_confirmed(email_address: "reader@example.com", source: "bookfunnel")
+    assert_equal 1, reader.streams.count, "a confirmed reader enrolls, same as a clicked confirmation"
+
+    seed = Subscriber.opt_in_confirmed(email_address: "check@mail-tester.com", source: "bookfunnel")
+    assert seed.seed?
+    assert_empty seed.streams, "a diagnostic inbox joins the list but runs no campaign"
+  end
+
+  test "opt_in_confirmed refuses to revive anyone who opted out here" do
+    %i[unsubscribe! mark_complained! mark_bounced!].each_with_index do |departure, index|
+      email = "reader#{index}@example.com"
+      subscriber = Subscriber.opt_in(email_address: email)
+      subscriber.confirm!
+      subscriber.public_send(departure)
+      was = subscriber.status
+
+      assert_nil Subscriber.opt_in_confirmed(email_address: email, source: "bookfunnel"),
+        "a partner's word cannot undo a withdrawal made here"
+      assert_equal was, subscriber.reload.status
+    end
+  end
+
+  test "opt_in_confirmed leaves suppressions standing, where confirm! lifts them" do
+    subscriber = Subscriber.opt_in(email_address: "reader@example.com")
+    Suppression.impose!(person: subscriber.person, reason: :hard_bounce)
+
+    Subscriber.opt_in_confirmed(email_address: "reader@example.com", source: "bookfunnel")
+
+    assert subscriber.reload.confirmed?
+    assert Suppression.in_force_for.exists?(person: subscriber.person),
+      "nothing in a partner's payload proves the mailbox is alive again"
+  end
 end

@@ -70,6 +70,22 @@ class Subscriber < ApplicationRecord
   # address (ADR 0027) — the one question every broadcast and drip send asks.
   def suppressed? = person.suppressed_for?(account)
 
+  # Where an address came from. A site opt-in names the CTA that carried it
+  # ("nav", "hero", "footer"); a partner integration names itself, and owns its
+  # capitalization — humanize would file BookFunnel as "Bookfunnel".
+  INTEGRATION_SOURCES = { "bookfunnel" => "BookFunnel" }.freeze
+
+  # For the roster column and the filter.
+  def source_label = INTEGRATION_SOURCES[source] || source&.humanize
+
+  # For the detail card, where the label completes a sentence: a site form is a
+  # place on the site, a partner is someone who sent them.
+  def source_description
+    return if source.blank?
+
+    INTEGRATION_SOURCES.key?(source) ? "via #{source_label}" : "from the #{source} form"
+  end
+
   # Engagement-based sunset thresholds (ADR 0014). "Engagement" is any open or
   # click; any of them resets the clock. Ask ("still want these?") at the later
   # of DAYS/EMAILS since last engagement, but no later than the ask cap; then, if
@@ -136,6 +152,67 @@ class Subscriber < ApplicationRecord
     end
 
     subscriber.send_confirmation if subscriber.pending?
+    subscriber
+  end
+
+  # A pre-consented opt-in pushed by a trusted integration (BookFunnel, through
+  # the Sendy-compatible endpoint — see Sendy::SubscriptionsController). The
+  # reader ticked the author's mailing-list box on the partner's page, and the
+  # partner only pushes readers it has already confirmed AND recorded consent
+  # for, so there is no confirmation click of ours to wait for: the row lands
+  # :confirmed and the drips run. What the partner sends about the consent —
+  # their IP at signup, the country, whether that country is under GDPR, the
+  # page that asked — rides along as the evidence, because our own double
+  # opt-in isn't there to be it (ADR 0011).
+  #
+  # Two things this deliberately does NOT do, because a third party's word is
+  # not the evidence a click from the mailbox is:
+  #   * it never revives an unsubscribed, complained or bounced row — an
+  #     opt-out here outranks a partner's signup, and a withdrawal must stick;
+  #   * it never lifts a Suppression the way confirm! does (ADR 0027) — nothing
+  #     in the payload proves the mailbox is alive or a complaint withdrawn.
+  #
+  # Idempotent, because the partner retries: pushing an address that is already
+  # confirmed refreshes the evidence and logs nothing. Returns the subscriber,
+  # or nil when the address is one we may not add back.
+  def self.opt_in_confirmed(email_address:, source:, ip: nil, country_code: nil, gdpr_country: nil, source_url: nil)
+    newly_confirmed = false
+
+    subscriber = transaction do
+      person = Person.find_or_create_by!(email_address: normalize_value_for(:email_address, email_address))
+      record = Current.account.subscribers.find_or_initialize_by(person: person)
+
+      if record.unsubscribed? || record.complained? || record.bounced?
+        nil
+      else
+        first_contact  = record.new_record?
+        newly_confirmed = !record.confirmed?
+
+        record.email_address = person.email_address
+        record.source        = source
+        record.consent_ip    = ip if ip.present?
+        record.country_code  = country_code if country_code.present?
+        record.gdpr_country  = gdpr_country unless gdpr_country.nil?
+        record.source_url    = source_url if source_url.present?
+        record.status        = :confirmed
+        record.confirmed_at ||= Time.current
+        record.save!
+
+        # The same two facts the site's own flow logs, minus the wait between
+        # them: they asked, and the consent is proven — by the partner, here.
+        record.log_event!("subscribed", ip:, source:) if first_contact
+        record.log_event!("confirmed", ip:, source:) if newly_confirmed
+        record
+      end
+    end
+
+    # Enrollment after the consent commits, and seeds (diagnostic inboxes) get
+    # the list but never a drip — both as in confirm!.
+    if newly_confirmed && !subscriber.seed?
+      Drip.enroll(subscriber)
+      subscriber.streams.active.find_each { |stream| DripAdvanceJob.perform_later(stream) }
+    end
+
     subscriber
   end
 

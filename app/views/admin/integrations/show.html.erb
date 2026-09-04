@@ -1,0 +1,73 @@
+<% content_for :title, "Integrations — System settings" %>
+
+<%= render "admin/shared/canvas_head", crumbs: [["System settings", admin_settings_path], ["Integrations", nil]] %>
+
+<header class="perma-header">
+  <h1 class="perma-header__title">System settings</h1>
+</header>
+
+<%# The Integrations tab — a sibling page wearing the same segmented control as
+    Domain and Email, because the rotate button is its own form and can't nest
+    inside the settings form. %>
+<div class="settings u-stack u-stack-double u-margin-block-start settings--wide u-center">
+  <% integrations_panel = capture do %>
+  <div class="u-stack u-stack-double u-full-width">
+    <section class="card" aria-label="BookFunnel">
+      <header class="card__header">
+        <h2 class="card__title">BookFunnel</h2>
+      </header>
+      <div class="card__body u-stack">
+        <p>BookFunnel can put every reader who claims one of your books straight
+           onto this site's list, the moment they sign up. In BookFunnel, go to
+           <strong>Integrations → Add Integration</strong>, choose the
+           <strong>Sendy</strong> platform, and paste these three values.</p>
+
+        <div class="field">
+          <%= label_tag :sendy_host_url, "Sendy Host URL", class: "field__label" %>
+          <%= text_field_tag :sendy_host_url, @host_url, class: "field__control", readonly: true %>
+        </div>
+
+        <div class="field">
+          <%= label_tag :sendy_api_key, "Sendy API Key", class: "field__label" %>
+          <%= text_field_tag :sendy_api_key, @api_key, class: "field__control", readonly: true,
+                autocapitalize: "off", autocorrect: "off", spellcheck: "false" %>
+          <p class="field__hint u-text-muted">Yours alone — it writes to this site's list and no other.
+             Treat it like a password.</p>
+        </div>
+
+        <div class="field">
+          <%= label_tag :sendy_list_id, "Sendy Primary List ID", class: "field__label" %>
+          <%= text_field_tag :sendy_list_id, @list_id, class: "field__control", readonly: true %>
+          <p class="field__hint u-text-muted">BookFunnel also asks for a
+             <strong>List Name</strong> — that one is its own label for the list, so anything you'll
+             recognize will do.</p>
+        </div>
+
+        <p class="u-text-muted">Readers arrive already confirmed: BookFunnel only sends people who
+           opted in and consented on its page, so they skip our confirmation email and start your
+           welcome sequence right away. Anyone who has unsubscribed here stays unsubscribed.</p>
+      </div>
+    </section>
+
+    <section class="card" aria-label="Rotate the API key">
+      <header class="card__header">
+        <h2 class="card__title">Rotate the key</h2>
+      </header>
+      <div class="card__body u-stack">
+        <p>If the key is ever exposed, replace it. The old key stops working immediately, so any
+           integration still using it will stop adding readers until you paste in the new one.</p>
+        <%= button_to "Generate a new key", admin_integrations_sendy_key_path, method: :patch, class: "button",
+              data: { turbo_confirm: "Replace the API key? BookFunnel stops adding readers until you paste the new one in." } %>
+      </div>
+    </section>
+  </div>
+  <% end %>
+
+  <%= segmented_tabs [
+        { id: "identity", label: "Identity", href: admin_settings_path },
+        { id: "pages", label: "Pages", href: admin_pages_path },
+        { id: "domain", label: "Domain", href: admin_custom_domains_path },
+        { id: "email", label: "Email", href: admin_sending_domains_path },
+        { id: "integrations", label: "Integrations", panel: integrations_panel },
+      ], aria_label: "Settings sections" %>
+</div>

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.2].define(version: 2026_09_02_110001) do
+ActiveRecord::Schema[8.2].define(version: 2026_09_04_130000) do
   create_table "account_users", force: :cascade do |t|
     t.integer "account_id", null: false
     t.integer "user_id", null: false
@@ -35,10 +35,12 @@ ActiveRecord::Schema[8.2].define(version: 2026_09_02_110001) do
     t.string "handle"
     t.string "turnstile_site_key"
     t.string "turnstile_secret_key"
+    t.string "sendy_api_key"
     t.index ["domain"], name: "index_accounts_on_domain", unique: true
     t.index ["handle"], name: "index_accounts_on_handle", unique: true
     t.index ["name"], name: "index_accounts_on_name", unique: true
     t.index ["owner_id"], name: "index_accounts_on_owner_id"
+    t.index ["sendy_api_key"], name: "index_accounts_on_sendy_api_key", unique: true
     t.index ["slug"], name: "index_accounts_on_slug", unique: true
   end
 
@@ -780,6 +782,9 @@ ActiveRecord::Schema[8.2].define(version: 2026_09_02_110001) do
     t.integer "account_id", null: false
     t.integer "person_id", null: false
     t.boolean "seed", default: false, null: false
+    t.string "country_code"
+    t.boolean "gdpr_country"
+    t.string "source_url"
     t.index ["account_id", "status"], name: "index_subscribers_on_account_id_and_status"
     t.index ["email_address"], name: "index_subscribers_on_email_address"
     t.index ["person_id", "account_id"], name: "index_subscribers_on_person_id_and_account_id", unique: true

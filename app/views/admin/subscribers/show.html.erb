@@ -23,12 +23,24 @@
           </div>
           <div class="facts__row">
             <dt>Signed up</dt>
-            <dd><%= l @subscriber.created_at.to_date, format: :long %><% if @subscriber.source.present? %> · from the <%= @subscriber.source %> form<% end %></dd>
+            <dd><%= l @subscriber.created_at.to_date, format: :long %><% if @subscriber.source_description %> · <%= @subscriber.source_description %><% end %></dd>
           </div>
           <% if @subscriber.confirmed_at %>
             <div class="facts__row">
               <dt>Confirmed</dt>
               <dd><%= l @subscriber.confirmed_at.to_date, format: :long %></dd>
+            </div>
+          <% end %>
+          <%# Consent evidence a partner sent with the opt-in (Subscriber.
+              opt_in_confirmed) — the answer to "on what basis is this address
+              on the list?", where anyone answering a reader would look. %>
+          <% if @subscriber.country_code.present? %>
+            <div class="facts__row">
+              <dt>Signed up from</dt>
+              <dd>
+                <%= @subscriber.country_code %>
+                <% if @subscriber.gdpr_country %><span class="badge badge--accent">GDPR</span><% end %>
+              </dd>
             </div>
           <% end %>
           <div class="facts__row">
