@@ -39,10 +39,14 @@ class Admin::CustomDomainsController < Admin::BaseController
     # The status poll's chain is finite; authors publish DNS on their own clock,
     # so a row can validate after the poll stops and freeze short of live. The
     # author opening this page is the natural retry signal — restart the poll
-    # when a row's gone stale (the job touches last_checked_at every pass, so
-    # this can't storm). Rows the chain gave up on (error) are included: that
-    # status means "nothing is watching", which is precisely when a visit
+    # when a row's gone stale. Rows the chain gave up on (error) are included:
+    # that status means "nothing is watching", which is precisely when a visit
     # should start watching again.
+    #
+    # last_checked_at only paces this; it does not stop a second chain, because
+    # the poll's backoff outgrows the windows below by attempt 6. Deduplication
+    # lives in the job, which is the only place that can see one chain from
+    # another — see CustomDomainStatusJob#resume.
     def repoll_if_stale
       return unless @domains.any? { |domain| pollable?(domain) }
       CustomDomainStatusJob.perform_later(Current.account)

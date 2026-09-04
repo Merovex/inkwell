@@ -27,6 +27,14 @@ class CustomDomain < ApplicationRecord
   scope :connected, -> { where.not(status: "disconnected") }
   scope :unresolved, -> { where(status: UNRESOLVED_STATUSES) }
 
+  # The two halves of unresolved, split by whether a poll chain is watching.
+  # That is the whole difference between them (see STATUSES), and naming it is
+  # what lets a chain tell "still my job" from "another chain already gave up
+  # on these" — the check that stops a page visit's redundant fork from
+  # re-alerting on a stall someone already reported.
+  scope :watched, -> { where(status: "verifying") }
+  scope :unwatched, -> { where(status: "error") }
+
   STATUSES.each { |s| define_method("#{s}?") { status == s } }
 
   # The DV TXT records Cloudflare is still waiting on, as value objects rather

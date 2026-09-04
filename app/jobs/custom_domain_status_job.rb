@@ -18,8 +18,13 @@ class CustomDomainStatusJob < ApplicationJob
   MAX_ATTEMPTS = 30
 
   def perform(account, attempt: 1)
+    resume(account) if attempt == 1
+
     unresolved = account.custom_domains.unresolved
     return if unresolved.empty?
+    # Every row this would watch has already been given up on by someone else,
+    # so this chain is a duplicate — see the resume/redundancy note below.
+    return if unresolved.watched.none?
 
     unresolved.each { |domain| refresh(domain) }
 
@@ -37,6 +42,24 @@ class CustomDomainStatusJob < ApplicationJob
   end
 
   private
+    # Starting a chain is starting a watch, so rows a previous chain gave up on
+    # come back under watch here — which is also what makes the redundancy
+    # check above mean something.
+    #
+    # Every entry point (DomainConnection.connect, the domains page's
+    # repoll_if_stale, the Check again button) starts a fresh chain at attempt
+    # 1, and none of them can tell whether one is already running. A chain's
+    # backoff passes the page's 10-minute staleness window at attempt 6, so
+    # from there on every visit reliably forked another 23-hour chain: N
+    # visits, N chains, N× the Cloudflare polling and N× the "never
+    # provisioned" alert (observed 2026-08-29, two alerts 18 minutes apart for
+    # merovex.press). Rather than track chains, let them recognise each other
+    # through the rows: the first to give up marks them unwatched, and the rest
+    # stop on their next wake-up instead of re-reporting the same stall.
+    def resume(account)
+      account.custom_domains.connected.unwatched.update_all(status: "verifying", updated_at: Time.current)
+    end
+
     def refresh(domain)
       hostname = cf_client.get_custom_hostname(domain.cloudflare_id)
       domain.update!(cloudflare_status: hostname.status,
@@ -98,7 +121,12 @@ class CustomDomainStatusJob < ApplicationJob
     # a later check (CustomDomain::UNRESOLVED_STATUSES), so this is a pause the
     # author can end, not a dead end.
     def give_up(account)
-      stalled = account.custom_domains.connected.unresolved
+      # Only rows this chain was actually watching: a row already marked
+      # unwatched was reported when the chain that gave up on it did so, and
+      # announcing it again says nothing new.
+      stalled = account.custom_domains.connected.watched.to_a
+      return if stalled.empty?
+
       Honeybadger.notify("Custom domain never provisioned",
         context: { account_id: account.id,
                    domains: stalled.map { |d|

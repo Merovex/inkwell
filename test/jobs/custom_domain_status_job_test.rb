@@ -117,6 +117,54 @@ class CustomDomainStatusJobTest < ActiveSupport::TestCase
     assert domain.reload.error?
   end
 
+  test "a second chain forked by a page visit stops instead of re-reporting a stall" do
+    account = accounts(:merovex)
+    domain = account.custom_domains.create!(hostname: "merovex.press", status: "verifying", cloudflare_id: "id-apex")
+    CustomDomainStatusJob.client_override = FakeClient.new(status: "pending", ssl_status: "pending_validation")
+
+    capturing_alerts do |alerts|
+      # The chain that gets there first reports the stall and marks the row.
+      CustomDomainStatusJob.perform_now(account, attempt: CustomDomainStatusJob::MAX_ATTEMPTS)
+      assert_equal 1, alerts.size
+      assert domain.reload.error?
+
+      # A duplicate chain forked by an earlier page visit reaches the same
+      # point later. Nothing is watching these rows any more, so it has
+      # nothing to add — and must not page us a second time.
+      assert_no_enqueued_jobs(only: CustomDomainStatusJob) do
+        CustomDomainStatusJob.perform_now(account, attempt: CustomDomainStatusJob::MAX_ATTEMPTS)
+      end
+
+      assert_equal 1, alerts.size
+    end
+  end
+
+  test "a duplicate chain mid-flight stops once another has given up on its rows" do
+    account = accounts(:merovex)
+    account.custom_domains.create!(hostname: "merovex.press", status: "error", cloudflare_id: "id-apex")
+    CustomDomainStatusJob.client_override = FakeClient.new(status: "pending", ssl_status: "pending_validation")
+
+    # Waking mid-chain (attempt > 1) is not a new watch, so the row stays
+    # unwatched and the chain ends here rather than running out its own clock.
+    assert_no_enqueued_jobs(only: CustomDomainStatusJob) do
+      CustomDomainStatusJob.perform_now(account, attempt: 5)
+    end
+  end
+
+  test "starting a chain resumes the watch on rows a previous one gave up on" do
+    account = accounts(:merovex)
+    domain = account.custom_domains.create!(hostname: "merovex.press", status: "error", cloudflare_id: "id-apex")
+    CustomDomainStatusJob.client_override = FakeClient.new(status: "pending", ssl_status: "pending_validation")
+
+    # Pressing "Check again" runs the job at attempt 1: the row goes back
+    # under watch, and the page stops saying checking has stopped.
+    assert_enqueued_with(job: CustomDomainStatusJob) do
+      CustomDomainStatusJob.perform_now(account)
+    end
+
+    assert domain.reload.verifying?
+  end
+
   test "a domain the chain gave up on is still polled, and can still go live" do
     account = accounts(:merovex)
     account.update!(domain: nil)
