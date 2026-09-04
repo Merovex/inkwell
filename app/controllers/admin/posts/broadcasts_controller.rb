@@ -14,6 +14,9 @@ class Admin::Posts::BroadcastsController < Admin::BaseController
       redirect_to admin_post_path(@record), alert: "Publish or schedule the post before emailing it."
     elsif @record.broadcast
       redirect_to admin_post_path(@record), alert: "This post has already been emailed to subscribers."
+    elsif !scheduling? && !@post.published?
+      redirect_to admin_post_path(@record),
+        alert: "This post isn't live yet — schedule the email for after it publishes."
     elsif scheduling? && !send_at&.future?
       redirect_to admin_post_path(@record), alert: "That send time has already passed — pick a later one."
     elsif scheduling? && before_publication?

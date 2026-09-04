@@ -38,6 +38,23 @@
         <%= hidden_field_tag "scheduled_posting", "false" %>
         <%= submit_tag "Unschedule", class: "u-unbutton u-link" %>
       <% end %>
+
+      <%# The email, bookable before the post is out — schedule-only, since an
+          immediate send would mail a link to a post the site doesn't carry
+          yet. The picker opens on the post's own day and hour, which the :30
+          grid turns into "half an hour after it goes live". %>
+      <% if broadcast&.scheduled? %>
+        <%= button_to "Cancel email", admin_post_broadcast_path(@record), method: :delete,
+              class: "u-unbutton u-link", form_class: "post-banner__form" %>
+      <% elsif broadcast.nil? %>
+        <%= form_with url: admin_post_broadcast_path(@record), method: :post, id: "broadcast-form", class: "post-banner__form" do %>
+          <%= render "admin/shared/scheduler", form: "broadcast-form", noun: "email", minute: 30,
+                at: @post.published_at, panel_id: "broadcast-scheduler",
+                heading: "When should we email this to subscribers?",
+                schedule_label: "Schedule email", trigger_label: "Email subscribers",
+                note: broadcast_scheduler_note(@post) %>
+        <% end %>
+      <% end %>
     </div>
   </aside>
 

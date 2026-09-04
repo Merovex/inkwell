@@ -1,4 +1,6 @@
-<%# locals: (form:, schedulable: nil, panel_id: "scheduler-panel", drafts_href: nil, drafts_label: "Post Drafts", noun: "post", heading: nil, schedule_label: "Schedule and save", note: nil, trigger_label: nil, minute: 0) %>
+<%# locals: (form:, schedulable: nil, panel_id: "scheduler-panel", drafts_href: nil, drafts_label: "Post Drafts", noun: "post", heading: nil, schedule_label: "Schedule and save", note: nil, trigger_label: nil, minute: 0, at: nil) %>
+<%# at: preselect this time's day and hour without entering editing mode — %>
+<%# how the email picker opens on its post's own publish slot. %>
 <%# minute: the minutes past the hour this picker books. Content publishes on %>
 <%# the hour (0); a broadcast books at :30 so the email can never beat its post %>
 <%# to the site — the options say ":30" because that is what gets booked %>
@@ -15,19 +17,23 @@
 <%# the popover opens (controls-disabler), so ordinary saves never carry them. %>
 <% drafts_href ||= admin_drafts_path %>
 <% scheduled = schedulable&.scheduled? %>
-<% selected_date = scheduled ? schedulable.published_at.to_date.iso8601 : Date.tomorrow.iso8601 %>
-<% selected_hour = scheduled ? schedulable.published_at.hour : 9 %>
+<% preselect = at || (schedulable.published_at if scheduled) %>
+<% selected_date = preselect ? preselect.to_date.iso8601 : Date.tomorrow.iso8601 %>
+<% selected_hour = preselect ? preselect.hour : 9 %>
 
+<%# A labelled trigger names itself — adding an aria-label would override the %>
+<%# visible text with different words, which is the one thing a label must not %>
+<%# do. Only the icon-only trigger needs one. %>
 <button type="button" class="button <%= trigger_label ? "button--small" : "button--icon" %>" popovertarget="<%= panel_id %>"
-        title="<%= scheduled ? "Edit scheduled posting" : "Schedule this to post later" %>"
-        aria-label="<%= scheduled ? "Edit scheduled posting…" : "Post later…" %>">
+        title="<%= trigger_label || (scheduled ? "Edit scheduled posting" : "Schedule this to post later") %>"
+        <% unless trigger_label %>aria-label="<%= scheduled ? "Edit scheduled posting…" : "Post later…" %>"<% end %>>
   <%= inline_svg_tag "lucide/clock.svg", class: "lucide", size: "16px" %><% if trigger_label %> <%= trigger_label %><% end %>
 </button>
 
 <div class="menu scheduler" popover id="<%= panel_id %>"
      data-controller="anchored-popover set-input controls-disabler schedule-defaults"
      data-anchored-popover-placement-value="below"
-     data-schedule-defaults-at-value="<%= schedulable.published_at.iso8601 if scheduled %>"
+     data-schedule-defaults-at-value="<%= preselect&.iso8601 %>"
      data-action="toggle->controls-disabler#sync">
   <p class="scheduler__heading"><%= heading || "When would you like to post this?" %></p>
 

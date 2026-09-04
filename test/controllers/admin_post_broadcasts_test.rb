@@ -262,4 +262,57 @@ class AdminPostBroadcastsTest < ActionDispatch::IntegrationTest
     assert_equal sent, record.reload.broadcast, "a send that happened is history"
     assert_no_match "email was cleared", flash[:notice].to_s
   end
+
+  # The gap that made all of this invisible: the email panel only existed in
+  # the published branch of the status banner, so a scheduled post — the exact
+  # case you'd want to book an email for — offered no way to do it.
+  test "a scheduled post offers the email picker, opened on its own publish slot" do
+    sign_in_as users(:admin)
+    record = records(:kickoff)
+    publish_at = 1.week.from_now.change(hour: 9, min: 0)
+    record.recordable.schedule(at: publish_at)
+
+    get admin_post_path(record)
+
+    assert_response :success
+    assert_select "#broadcast-scheduler", 1, "a scheduled post can book its email"
+    assert_select "button[popovertarget=broadcast-scheduler]" do |trigger|
+      assert_equal "Email subscribers", trigger.first.text.squish
+      assert_nil trigger.first["aria-label"], "the visible label is the accessible name"
+    end
+    # Opened on the post's own day and hour — which the :30 grid books as half
+    # an hour after it goes live. (A message can't ride these assertions: the
+    # argument after a ? substitution is read as the expected text.)
+    assert_select "#broadcast-scheduler select#scheduled_posting_at_date option[selected][value=?]",
+      publish_at.to_date.iso8601
+    assert_select "#broadcast-scheduler select#scheduled_posting_at_hour option[selected][value=?]",
+      publish_at.hour.to_s
+  end
+
+  test "a scheduled post with a booked email offers to cancel it, not book another" do
+    sign_in_as users(:admin)
+    record = records(:kickoff)
+    publish_at = 1.week.from_now.change(hour: 9, min: 0)
+    record.recordable.schedule(at: publish_at)
+    record.create_broadcast!(scheduled_at: publish_at + 30.minutes)
+
+    get admin_post_path(record)
+
+    assert_select "#broadcast-scheduler", 0
+    assert_select "form[action=?][method=post]", admin_post_broadcast_path(record) do
+      assert_select "input[name=_method][value=delete]"
+    end
+  end
+
+  test "an unpublished post can't be emailed right now, only scheduled" do
+    sign_in_as users(:admin)
+    record = records(:kickoff)
+    record.recordable.schedule(at: 1.week.from_now.change(hour: 9, min: 0))
+
+    assert_no_difference -> { Broadcast.count } do
+      post admin_post_broadcast_path(record)   # no scheduled_posting → an immediate send
+    end
+
+    assert_match "isn't live yet", flash[:alert]
+  end
 end
