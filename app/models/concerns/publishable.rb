@@ -93,7 +93,13 @@ module Publishable
 
   # Schedule: an event version holding the appointment in published_at; the
   # content stays mutable until Record::PublishLaterJob publishes it then.
+  # Moving an existing appointment clears a pending email — a send booked
+  # against the old date would fire while the post is still unpublished, and
+  # moving it silently would be a schedule nobody agreed to. Saving the panel
+  # without changing the time leaves the email alone.
   def schedule(at:, creator: Current.user, **changes)
+    cancel_pending_broadcast if published_at&.to_i != at&.to_i
+
     record.revise(event: :scheduled, status: :scheduled, published_at: at,
       creator: creator, **changes).tap do |version|
       Record::PublishLaterJob.set(wait_until: at).perform_later(record) if version.persisted?
@@ -102,13 +108,22 @@ module Publishable
 
   # Cancel the appointment: back to a plain draft. published_at clears — it
   # was never a real publish date, just the booking (the enqueued job no-ops
-  # once the content is no longer scheduled).
+  # once the content is no longer scheduled) — and so does any pending email,
+  # which has nothing left to announce.
   def unschedule(creator: Current.user, **changes)
+    cancel_pending_broadcast
     record.revise(event: :unscheduled, status: :drafted, published_at: nil,
       creator: creator, **changes)
   end
 
+  # Back to a draft. A pending email goes with it — there is no publication for
+  # it to announce. published_at deliberately stays: a post pulled down, fixed
+  # and re-published keeps its original date (see #publish, and the tests that
+  # pin it for posts and messages alike). Only a *scheduled* post's date clears
+  # on the way back to draft, in #unschedule, because that date was never a
+  # publication — just a booking.
   def unpublish
+    cancel_pending_broadcast
     record.revise(event: :unpublished, status: :drafted)
   end
 
@@ -121,6 +136,17 @@ module Publishable
   end
 
   private
+    # Drop an email that is booked but hasn't gone out — a transition away from
+    # "will publish at T" leaves it announcing nothing. A send already made is
+    # history and stays.
+    def cancel_pending_broadcast
+      broadcast = record.broadcast
+      return if broadcast.nil? || broadcast.sent?
+
+      broadcast.destroy
+      record.reload_broadcast
+    end
+
     # Bodies are shared between versions; only delete one when its last
     # referencing version goes.
     def discard_orphaned_body

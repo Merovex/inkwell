@@ -68,11 +68,12 @@ class Admin::PostsController < Admin::BaseController
   # policy — transitions and the drafts-mutate/published-version regime —
   # lives in Record#save_edit.
   def update
+    booked_email = @record.broadcast&.scheduled?
     @post = @record.save_edit(**post_params.to_h.symbolize_keys,
       publish: publishing?, schedule_at: (scheduled_at if scheduling?), unschedule: unscheduling?)
 
     if @post.errors.none?
-      redirect_to admin_post_path(@record)
+      redirect_to admin_post_path(@record), notice: cleared_email_notice(booked_email)
     else
       render :edit, status: :unprocessable_entity
     end
@@ -88,6 +89,15 @@ class Admin::PostsController < Admin::BaseController
   private
     def post_params
       params.expect(post: [ :title, :content, :excerpt, :tipin, :author_record_id ])
+    end
+
+    # Moving or cancelling an appointment drops a booked email (Publishable),
+    # and a send that silently disappears is worse than one that never existed
+    # — say so, and say it has to be booked again.
+    def cleared_email_notice(booked_email)
+      return unless booked_email && @record.reload.broadcast.nil?
+
+      "The scheduled email was cleared — schedule it again if you still want one."
     end
 
     def create_notice

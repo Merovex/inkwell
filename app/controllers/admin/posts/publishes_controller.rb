@@ -10,7 +10,11 @@ class Admin::Posts::PublishesController < Admin::BaseController
   end
 
   def destroy
+    booked_email = @record.broadcast&.scheduled?
     @post.unpublish
-    redirect_to admin_post_path(@record), notice: "Post reverted to a draft."
+
+    notice = "Post reverted to a draft."
+    notice += " The scheduled email was cleared too." if booked_email && @record.reload.broadcast.nil?
+    redirect_to admin_post_path(@record), notice: notice
   end
 end

@@ -46,7 +46,7 @@ class AdminPostBroadcastsTest < ActionDispatch::IntegrationTest
     assert_response :not_found
   end
 
-  test "scheduling via the day/hour picker defers the send" do
+  test "scheduling via the day/hour picker defers the send to half past" do
     sign_in_as users(:admin)
     date = 1.week.from_now.to_date
 
@@ -61,7 +61,44 @@ class AdminPostBroadcastsTest < ActionDispatch::IntegrationTest
 
     broadcast = records(:kickoff).reload.broadcast
     assert broadcast.scheduled?
-    assert_equal Time.utc(date.year, date.month, date.day, 9), broadcast.scheduled_at
+    assert_equal Time.utc(date.year, date.month, date.day, 9, 30), broadcast.scheduled_at,
+      "an email books at half past, so it can't beat a post published on the hour"
+  end
+
+  test "an email can't be booked before its post publishes" do
+    sign_in_as users(:admin)
+    record = records(:kickoff)
+    publish_at = 1.week.from_now.change(hour: 9, min: 0)
+    record.recordable.schedule(at: publish_at)
+
+    assert_no_difference -> { Broadcast.count } do
+      post admin_post_broadcast_path(record), params: {
+        scheduled_posting: "true",
+        scheduled_posting_at_date: publish_at.to_date.iso8601,
+        scheduled_posting_at_hour: "8",   # 8:30 — before the 9:00 publish
+        scheduled_posting_at_zone: Time.zone.name
+      }
+    end
+
+    assert_match "before the post publishes", flash[:alert]
+  end
+
+  test "the post's own publish hour is bookable — half past lands after it" do
+    sign_in_as users(:admin)
+    record = records(:kickoff)
+    publish_at = 1.week.from_now.change(hour: 9, min: 0)
+    record.recordable.schedule(at: publish_at)
+
+    post admin_post_broadcast_path(record), params: {
+      scheduled_posting: "true",
+      scheduled_posting_at_date: publish_at.to_date.iso8601,
+      scheduled_posting_at_hour: "9",
+      scheduled_posting_at_zone: Time.zone.name
+    }
+
+    broadcast = record.reload.broadcast
+    assert broadcast.scheduled?
+    assert_equal publish_at + 30.minutes, broadcast.scheduled_at
   end
 
   test "a past send time is rejected" do
@@ -140,5 +177,89 @@ class AdminPostBroadcastsTest < ActionDispatch::IntegrationTest
     assert_select "form[action='#{admin_post_broadcast_path(records(:kickoff))}']", count: 0
     assert_select ".post-banner__permalink", text: /merovex\.press/
     assert_select ".perma-header__content", text: /Emailed to 5 subscribers/
+  end
+
+  # An email booked against a date the post no longer keeps would fire while
+  # the post is still unpublished — so a transition away from that date drops
+  # it, loudly.
+  test "rescheduling the post clears a booked email and says so" do
+    sign_in_as users(:admin)
+    record = records(:kickoff)
+    publish_at = 1.week.from_now.change(hour: 9, min: 0)
+    record.recordable.schedule(at: publish_at)
+    record.create_broadcast!(scheduled_at: publish_at + 30.minutes)
+
+    patch admin_post_path(record), params: {
+      post: { title: record.recordable.title },
+      scheduled_posting: "true",
+      scheduled_posting_at_date: (publish_at + 2.days).to_date.iso8601,
+      scheduled_posting_at_hour: "9",
+      scheduled_posting_at_zone: Time.zone.name
+    }
+
+    assert_nil record.reload.broadcast, "the send was booked against the old date"
+    assert_match "scheduled email was cleared", flash[:notice]
+  end
+
+  test "saving the scheduler without moving the date leaves the email alone" do
+    sign_in_as users(:admin)
+    record = records(:kickoff)
+    publish_at = 1.week.from_now.change(hour: 9, min: 0)
+    record.recordable.schedule(at: publish_at)
+    record.create_broadcast!(scheduled_at: publish_at + 30.minutes)
+
+    patch admin_post_path(record), params: {
+      post: { title: record.recordable.title },
+      scheduled_posting: "true",
+      scheduled_posting_at_date: publish_at.to_date.iso8601,
+      scheduled_posting_at_hour: publish_at.hour.to_s,
+      scheduled_posting_at_zone: Time.zone.name
+    }
+
+    assert record.reload.broadcast&.scheduled?, "nothing moved, so nothing should be cleared"
+    assert_no_match "email was cleared", flash[:notice].to_s
+  end
+
+  test "unscheduling the post clears a booked email" do
+    sign_in_as users(:admin)
+    record = records(:kickoff)
+    publish_at = 1.week.from_now.change(hour: 9, min: 0)
+    record.recordable.schedule(at: publish_at)
+    record.create_broadcast!(scheduled_at: publish_at + 30.minutes)
+
+    patch admin_post_path(record), params: {
+      post: { title: record.recordable.title }, scheduled_posting: "false"
+    }
+
+    assert record.reload.recordable.drafted?
+    assert_nil record.reload.broadcast
+    assert_match "scheduled email was cleared", flash[:notice]
+  end
+
+  test "reverting a published post to a draft clears its booked email" do
+    sign_in_as users(:admin)
+    record = records(:kickoff)
+    record.recordable.publish
+    record.create_broadcast!(scheduled_at: 2.days.from_now)
+
+    delete admin_post_publish_path(record)
+
+    post_now = record.reload.recordable
+    assert post_now.drafted?
+    assert post_now.published_at, "a published post keeps its date across a revert — see post_test"
+    assert_nil record.reload.broadcast
+    assert_match "scheduled email was cleared", flash[:notice]
+  end
+
+  test "an email already sent is never cleared by a later transition" do
+    sign_in_as users(:admin)
+    record = records(:kickoff)
+    record.recordable.publish
+    sent = record.create_broadcast!(sent_at: Time.current, recipients_count: 3)
+
+    delete admin_post_publish_path(record)
+
+    assert_equal sent, record.reload.broadcast, "a send that happened is history"
+    assert_no_match "email was cleared", flash[:notice].to_s
   end
 end

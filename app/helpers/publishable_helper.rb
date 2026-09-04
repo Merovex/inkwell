@@ -2,6 +2,18 @@
 # the history feed lines and the counted drafts link. `noun` is how the type
 # reads in a sentence ("post", "message").
 module PublishableHelper
+  # What the email scheduler's panel says, which differs by whether the post is
+  # already out: a scheduled post's email can only be booked from its publish
+  # hour onward, and lands at half past.
+  def broadcast_scheduler_note(post)
+    if post.scheduled?
+      "Emails send at half past the hour, so this lands after the post goes live. " \
+        "It can't be booked before the post publishes."
+    else
+      "The post stays live on the web — only the email send is scheduled. Emails send at half past the hour."
+    end
+  end
+
   # The history feed line for a version, derived from the delta against its
   # predecessor: the event tag narrates transitions; content and title changes
   # are detected by column comparison (body_id / title) — no rich text loads.

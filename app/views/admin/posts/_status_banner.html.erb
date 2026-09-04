@@ -73,10 +73,12 @@
       </div>
       <%= form_with url: admin_post_broadcast_path(@record), method: :post, id: "broadcast-form", class: "post-banner__form" do %>
         <%= submit_tag "Email it", class: "button button--primary button--small" %>
-        <%= render "admin/shared/scheduler", form: "broadcast-form", noun: "email",
+        <%# minute: 30 — an email books at half past, so a send booked for the
+            post's own publish hour still lands after the post is on the site. %>
+        <%= render "admin/shared/scheduler", form: "broadcast-form", noun: "email", minute: 30,
               panel_id: "broadcast-scheduler", heading: "When should we email this to subscribers?",
               schedule_label: "Schedule email",
-              note: "The post stays live on the web — only the email send is scheduled." %>
+              note: broadcast_scheduler_note(@post) %>
       <% end %>
     </aside>
   <% end %>

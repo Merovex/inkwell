@@ -24,11 +24,17 @@ module Publishing
     # tampered or missing date or hour parses to nil rather than a 500
     # (Date::Error and zone.local's out-of-range are both ArgumentErrors);
     # callers treat nil like a past time and reject the schedule.
-    def scheduled_at
-      @scheduled_at ||= begin
+    #
+    # minute: content publishes on the hour, a broadcast rides the same picker
+    # at :30 — so an email booked for its post's hour lands half an hour after
+    # the post goes live, and can never beat it to the site. The scheduler
+    # panel is given the same minute, so the dropdown says what it books.
+    def scheduled_at(minute: 0)
+      @scheduled_at ||= {}
+      @scheduled_at[minute] ||= begin
         zone = Time.find_zone(params[:scheduled_posting_at_zone]) || Time.zone
         date = Date.iso8601(params[:scheduled_posting_at_date].to_s)
-        zone.local(date.year, date.month, date.day, params[:scheduled_posting_at_hour].to_i)
+        zone.local(date.year, date.month, date.day, params[:scheduled_posting_at_hour].to_i, minute)
       rescue ArgumentError
         nil
       end

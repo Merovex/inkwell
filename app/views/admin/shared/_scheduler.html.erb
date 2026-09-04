@@ -1,4 +1,8 @@
-<%# locals: (form:, schedulable: nil, panel_id: "scheduler-panel", drafts_href: nil, drafts_label: "Post Drafts", noun: "post", heading: nil, schedule_label: "Schedule and save", note: nil, trigger_label: nil) %>
+<%# locals: (form:, schedulable: nil, panel_id: "scheduler-panel", drafts_href: nil, drafts_label: "Post Drafts", noun: "post", heading: nil, schedule_label: "Schedule and save", note: nil, trigger_label: nil, minute: 0) %>
+<%# minute: the minutes past the hour this picker books. Content publishes on %>
+<%# the hour (0); a broadcast books at :30 so the email can never beat its post %>
+<%# to the site — the options say ":30" because that is what gets booked %>
+<%# (Publishing#scheduled_at is given the same minute). %>
 <%# trigger_label: give the clock trigger a text label (e.g. "Reschedule") %>
 <%# instead of the bare icon — for banner actions rather than composer toolbars. %>
 <%# "When would you like to post this?" — native-popover panel anchored to a %>
@@ -46,7 +50,7 @@
               form="<%= form %>" aria-label="Hour"
               data-controls-disabler-target="control" data-schedule-defaults-target="hour" disabled>
         <% 24.times do |hour| %>
-          <option value="<%= hour %>" <%= "selected" if hour == selected_hour %>><%= "#{hour}:00" %></option>
+          <option value="<%= hour %>" <%= "selected" if hour == selected_hour %>><%= format("%d:%02d", hour, minute) %></option>
         <% end %>
       </select>
       <%= inline_svg_tag "lucide/chevron-down.svg", class: "lucide", size: "16px" %>

@@ -218,4 +218,16 @@ class PostsSchedulingTest < ActionDispatch::IntegrationTest
         record.reload
       end
     end
+
+  test "the email picker shows the :30 slots it actually books, the post picker :00" do
+    sign_in_as users(:admin)
+    record = records(:kickoff)
+    record.recordable.publish   # a live post shows the broadcast panel
+
+    get admin_post_path(record)
+    assert_select "#broadcast-scheduler select#scheduled_posting_at_hour option[value=9]", text: "9:30"
+
+    get new_admin_post_path   # the composer's own picker still books on the hour
+    assert_select "select#scheduled_posting_at_hour option[value=9]", text: "9:00"
+  end
 end
