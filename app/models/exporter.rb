@@ -46,8 +46,17 @@ class Exporter
   private
     attr_reader :account, :theme
 
+    # A millisecond stamp is not unique: two builds for one account starting in
+    # the same millisecond share the directory, and the second link_theme dies
+    # with EEXIST on a symlink the first already made. That collides for real
+    # (a save and a preview landing together) and constantly under parallel
+    # test workers, where every worker exports the same fixture account. The
+    # random suffix gives each build its own workspace. Nothing reads this name
+    # — the workspace is ephemeral, and the published build id that IS sorted
+    # is minted separately in Publisher.
     def workspace
-      @workspace ||= Pathname(builds_path).join(account.slug, Time.current.utc.strftime("%Y%m%d%H%M%S%L"))
+      @workspace ||= Pathname(builds_path)
+        .join(account.slug, "#{Time.current.utc.strftime("%Y%m%d%H%M%S%L")}-#{SecureRandom.hex(3)}")
     end
 
     # Production sets BUILDS_PATH (the /var/cache/inkwell/builds bind mount,

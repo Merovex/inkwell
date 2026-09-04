@@ -5,10 +5,12 @@
 class Depiction < ApplicationRecord
   # The public cover slot renders at ~220px wide, so a 480px-wide WebP covers it
   # crisply on 2× displays at a fraction of the old 600px JPG's bytes.
-  # preprocessed: true builds it in a job at upload time, so a visitor's request
+  # process: :later builds it in a job at upload time, so a visitor's request
   # is never the one that triggers (slow, synchronous) variant generation.
+  # (Was preprocessed: true, deprecated in Rails 8.2 and gone in 9.0 — :later
+  # is what that option resolved to.)
   has_one_attached :image do |attachable|
-    attachable.variant :cover, resize_to_limit: [ 480, 720 ], format: :webp, preprocessed: true
+    attachable.variant :cover, resize_to_limit: [ 480, 720 ], format: :webp, process: :later
     attachable.variant :thumb, resize_to_limit: [ 256, 256 ], format: :webp
   end
 end
