@@ -61,13 +61,13 @@
 
 <%# Who is in the campaign, and where each of them has got to. The stats above
     count these rows; this is the same population with names on it. %>
-<section class="u-margin-block-start" aria-labelledby="people-heading">
+<section class="campaign-people" aria-labelledby="people-heading">
   <h2 class="u-microcaps u-text-muted u-margin-block-end" id="people-heading">
     People <span class="u-text-muted">(<%= @streams.size %>)</span>
   </h2>
 
   <% if @streams.any? %>
-    <div class="list">
+    <div class="list list--compact">
       <% @streams.each do |stream| %>
         <% outcome = stream.outcome(steps: @drops) %>
         <%= render "shared/list_item",

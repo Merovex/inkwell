@@ -39,7 +39,10 @@ module CampaignsHelper
   # "2 of 4 sent · next Sep 5" — where a run has got to, and when it moves
   # again. Steps are passed in so a roster loads the campaign's Drops once.
   def drip_progress_phrase(stream, steps:, total:)
-    phrase = "#{stream.sent_count} of #{total} sent"
+    phrase = "#{stream.sent_count(steps: steps)} of #{total} sent"
+    if (skipped = stream.skipped_count(steps: steps)).positive?
+      phrase += " · #{skipped} skipped"
+    end
     if (next_at = stream.next_send_at(steps: steps))
       phrase += " · next #{l next_at.to_date, format: :short}"
     elsif stream.ended_at

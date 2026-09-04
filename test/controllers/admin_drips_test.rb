@@ -119,6 +119,44 @@ class AdminDripsTest < ActionDispatch::IntegrationTest
     assert_select ".list__item .badge", text: "Finished"
   end
 
+  # The "5 of 4 sent" a live campaign showed: deliveries for a step that was
+  # later trashed outlive it, and counting them ran the numerator past the total.
+  test "a step moved to trash stops counting toward a run's progress" do
+    drip = originate_drip(active: true)
+    add_drop(drip, "Welcome", 0)
+    retired = add_drop(drip, "Retired step", 1)
+    reader = Subscriber.opt_in(email_address: "reader@example.com")
+    reader.confirm!
+    reader.streams.sole.advance!(now: 2.days.from_now)  # both steps go out
+    assert_equal 2, reader.streams.sole.deliveries.count
+
+    retired.record.trash
+    sign_in_as users(:admin)
+
+    get admin_drip_path(drip.record)
+
+    assert_select ".list__item", text: /1 of 1 sent/
+    assert_select ".list__item", text: /2 of 1 sent/, count: 0
+  end
+
+  test "a run that skipped a step says so, rather than looking short" do
+    drip = originate_drip(active: true)
+    add_drop(drip, "Welcome", 0)
+    add_drop(drip, "Day two", 1)
+    reader = Subscriber.opt_in(email_address: "reader@example.com")
+    reader.confirm!
+    stream = reader.streams.sole
+    stream.advance!                       # day-0 sends
+    reader.unsubscribe!                   # ends the run
+    stream.update!(ended_at: nil)         # ...but leave it open so the next drop is reached
+    stream.advance!(now: 2.days.from_now) # day-1 is skipped, not sent
+
+    sign_in_as users(:admin)
+    get admin_drip_path(drip.record)
+
+    assert_select ".list__item", text: /1 of 2 sent · 1 skipped/
+  end
+
   test "a campaign nobody has joined says so instead of an empty list" do
     drip = originate_drip
     add_drop(drip, "Welcome", 0)

@@ -18,6 +18,16 @@
   .campaign-card__desc { margin-block-start: calc(var(--u-pad) / 2); color: var(--ink-muted); }
   .campaign-card__stats { margin-block-start: var(--u-pad); }
 
+  /* The enrolled roster below the timeline (13b). Its own hairline and pad so
+     it reads as a section in its own right — the way Steps reads as separate
+     from the stats above it, which .stats draws with the same line. Rows are
+     the shared .list in its --compact rhythm; nothing here styles them. */
+  .campaign-people {
+    margin-block-start: var(--u-pad);
+    padding-block-start: var(--u-pad);
+    border-block-start: var(--border-size-1) solid var(--line);
+  }
+
   /* ── One campaign (13b): the step timeline ───────────────────────────────
      rail (STEP n · Day · relative) │ node (dot + connector) │ step card.
      The <ol> composes u-unlist in the markup. */

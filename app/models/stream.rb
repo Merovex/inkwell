@@ -16,9 +16,17 @@ class Stream < ApplicationRecord
   def drip = drip_record.recordable
 
   # How far this run has got, for the campaign's roster and the subscriber's
-  # card. Counted in Ruby off the loaded association so a roster preloading
-  # :deliveries answers without a query per row.
-  def sent_count = deliveries.count(&:status_sent?)
+  # card — measured against the campaign AS IT STANDS. A step moved to trash
+  # leaves Record.active, and so leaves #drops, but its delivery rows survive;
+  # counting those told a reader they were "5 of 4 sent". Counted in Ruby off
+  # the loaded association so a roster preloading :deliveries answers without a
+  # query per row.
+  def sent_count(steps: drip.drops) = deliveries_for(steps).count(&:status_sent?)
+
+  # Steps this run reached but didn't send — they'd unsubscribed or were
+  # suppressed by the time it came due. Worth showing: it's why a finished run
+  # can read "3 of 4 sent" without anything being wrong.
+  def skipped_count(steps: drip.drops) = deliveries_for(steps).count(&:status_skipped?)
 
   # When the next Drop is due, or nil when the sequence is finished (or ended).
   # `steps` is an argument so a roster of many streams through one campaign
@@ -79,4 +87,10 @@ class Stream < ApplicationRecord
   def end!(reason)
     update!(ended_at: Time.current, ended_reason: reason) unless ended_at
   end
+
+  private
+    def deliveries_for(steps)
+      step_ids = steps.map(&:record_id)
+      deliveries.select { |delivery| step_ids.include?(delivery.drop_record_id) }
+    end
 end
