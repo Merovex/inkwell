@@ -7,7 +7,7 @@ require "vips" # measured dimensions ride image_sizes.json (not only variants)
 # theme. Writes a fresh workspace under BUILDS_PATH and returns its path.
 # The render/publish steps belong to the Renderer/Publisher.
 class Exporter
-  CONTRACT_VERSION = 2
+  CONTRACT_VERSION = 3
 
   # design is the full SiteDesign bundle (axes + content blocks + escape
   # valves), raw as the author saved it — defaults to the account's persisted
@@ -125,7 +125,6 @@ class Exporter
       {
         name: site.site_name,
         tagline: site.tagline,
-        contact_email: account.contact_email,
         logo: copy_image(site.logo, "logo"),
         **svg_logo_extras(site),
         banner: copy_image(site.banner, "banner"),
@@ -153,7 +152,8 @@ class Exporter
 
     # The newsletter band's signup wiring (bot-protection plan §3): the theme
     # renders a real form only when the account can actually send the
-    # confirmation email; otherwise it keeps its mailto fallback. provider
+    # confirmation email; otherwise its button just links to the newsletter
+    # island (it used to be a mailto against contact_email — ADR 0029). provider
     # names the theme partial that renders the form (ses-newsletter today;
     # mailchimp etc. slot in beside it later). The honeypot field name is the
     # shared Subscriber constant so the baked form and the server can never

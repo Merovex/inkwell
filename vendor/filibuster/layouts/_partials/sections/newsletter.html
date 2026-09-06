@@ -44,7 +44,11 @@
              slots in beside it when other email providers integrate). */}}
         {{ partial (printf "%s-newsletter.html" (or $signup.provider "ses")) (dict "signup" $signup "nl" $nl) }}
         {{ else }}
-        <a class="fk-btn fk-btn-primary" href="mailto:{{ $site.contact_email }}?subject=Newsletter%20signup">{{ or $nl.button_label "Join the list" }}</a>
+        {{/* No signup block configured: send readers to the newsletter island
+             rather than publishing the author's address as a mailto. That
+             address is for replies to mail we send, never for the open web
+             (ADR 0029) — a mailto on a public page is scraped at scale. */}}
+        <a class="fk-btn fk-btn-primary" href="{{ "newsletter" | relURL }}">{{ or $nl.button_label "Join the list" }}</a>
         {{ end }}
       </div>
     </div>

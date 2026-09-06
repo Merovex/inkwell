@@ -21,10 +21,12 @@ class SubscriberMailer < ApplicationMailer
     @confirm_url = confirm_newsletter_url(token: token, **url_options)
     @unsubscribe_url = unsubscribe_newsletter_url(token: subscriber.generate_token_for(:unsubscribe), **url_options)
 
-    options = { to: subscriber.email_address, subject: "Confirm your #{@site_name} subscription",
-      from: broadcast_from(subscriber.account), delivery_method_options: transactional_options(subscriber.account) }
-    options[:reply_to] = setting.contact_email if setting.contact_email.present?
-    mail(options)
+    # No reply_to here, deliberately (ADR 0029): this is the one mail that goes
+    # to an address nobody has verified — typos, bot signups, harvest traps —
+    # and the author's own inbox shouldn't be handed to that population. Every
+    # other mail from us reaches someone who confirmed, and carries it.
+    mail(to: subscriber.email_address, subject: "Confirm your #{@site_name} subscription",
+      from: broadcast_from(subscriber.account), delivery_method_options: transactional_options(subscriber.account))
   end
 
   # The one-time "still want these?" nudge sent to a cold subscriber before we

@@ -48,19 +48,31 @@ class SubscriberMailerTest < ActionMailer::TestCase
     end
   end
 
-  test "confirmation sends from the site's broadcast address and replies to the contact email" do
+  test "confirmation sends from the site's broadcast address and carries no reply-to" do
     accounts(:merovex).update!(contact_email: "press@example.com")
     subscriber = Subscriber.create!(email_address: "reader@example.com")
 
     email = SubscriberMailer.confirmation(subscriber, subscriber.generate_token_for(:confirmation))
 
     # From must be the site's own broadcast address (shared lane here — no
-    # handle, no BYOD), not the raw contact address; replies still route to
-    # the site.
-    assert_equal [ "press@example.com" ], email.reply_to
+    # handle, no BYOD), not the raw contact address. And NO reply_to: this mail
+    # goes to an address nobody has verified yet, which is the one population
+    # that shouldn't be handed the author's inbox (ADR 0029).
+    assert_nil email.reply_to
     assert_not_equal [ "press@example.com" ], email.from
     assert_equal [ "noreply@#{Account.shared_sending_domain}" ], email.from
     # Transactional stream, never the bulk Broadcast stream.
     assert_equal "outbound", email["message-stream"].value
+  end
+
+  # The division ADR 0029 draws: author-voice mail to confirmed readers carries
+  # the reply address; mail to an unverified address does not.
+  test "the re-engagement nudge still replies to the author — it only reaches confirmed people" do
+    accounts(:merovex).update!(contact_email: "press@example.com")
+    subscriber = Subscriber.create!(email_address: "reader@example.com", status: :confirmed, confirmed_at: Time.current)
+
+    email = SubscriberMailer.re_engagement(subscriber, subscriber.generate_token_for(:unsubscribe))
+
+    assert_equal [ "press@example.com" ], email.reply_to
   end
 end

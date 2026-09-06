@@ -31,7 +31,7 @@ class ExporterTest < ActiveSupport::TestCase
   test "site.json carries identity and the theme manifest's design defaults" do
     site = data("site")
     assert_equal "Merovex Press", site["name"]
-    assert_equal "hello@merovex.press", site["contact_email"]
+    assert_nil site["contact_email"], "the reader-reply address never rides a public build (ADR 0029)"
     assert_equal Theme.current.defaults, site["design"]
   end
 

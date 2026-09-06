@@ -27,9 +27,9 @@ class MissiveMailer < ApplicationMailer
     @site_name = setting.site_name
     @confirm_url = confirm_contact_url(token: token, **public_url_options(missive.account))
 
-    options = { to: missive.email_address, subject: "Confirm your message to #{@site_name}" }
-    options[:reply_to] = setting.contact_email if setting.contact_email.present?
-    mail(options)
+    # No reply_to (ADR 0029): a contact-form submitter is an unverified stranger
+    # until this link is clicked, and the author's address shouldn't reach one.
+    mail(to: missive.email_address, subject: "Confirm your message to #{@site_name}")
   end
 
   # A once-daily nudge to the admins. `count` is the number of messages confirmed
