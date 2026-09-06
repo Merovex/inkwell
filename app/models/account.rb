@@ -22,6 +22,7 @@ class Account < ApplicationRecord
   # Reader magnets — plain rows, not recordables, so a direct association
   # rather than a records.active projection.
   has_many :magnets, dependent: :destroy
+  has_many :promotions, dependent: :destroy
   has_many :categories
   has_many :broadcasts, through: :records
   has_many :ahoy_visits, class_name: "Ahoy::Visit"

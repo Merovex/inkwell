@@ -43,6 +43,14 @@
               </dd>
             </div>
           <% end %>
+          <% if @subscriber.source_url.present? %>
+            <div class="facts__row">
+              <dt>Signup page</dt>
+              <%# Partner-supplied, so it's only ever a link when it is really a
+                  web address; anything else shows as the text it is. %>
+              <dd><%= signup_page @subscriber.source_url %></dd>
+            </div>
+          <% end %>
           <div class="facts__row">
             <dt>Received</dt>
             <dd><%= pluralize(@received, "post") %></dd>
@@ -54,6 +62,39 @@
             </div>
           <% end %>
         </dl>
+
+        <%# Which promotion brought them in. Matched from the partner's token at
+            first contact; anything else is attributed here by hand, and says so. %>
+        <section class="u-stack-half" aria-labelledby="promotion">
+          <h3 class="u-microcaps u-text-muted" id="promotion">Promotion</h3>
+          <% if @subscriber.promotion %>
+            <div class="list">
+              <%= render "shared/list_item",
+                    avatar: false,
+                    title_tag: "span",
+                    title: @subscriber.promotion.title,
+                    href: admin_promotion_path(@subscriber.promotion),
+                    frame: "_top",
+                    excerpt: (@subscriber.attributed_by ? "Attributed by #{@subscriber.attributed_by.name}." : "Matched from the signup page."),
+                    actions: (button_to "Remove", admin_subscriber_attribution_path(@subscriber), method: :delete,
+                          class: "button button--small",
+                          form: { data: { turbo_frame: "_top",
+                            turbo_confirm: "Stop counting #{@subscriber.email_address} against #{@subscriber.promotion.title}?" } }) %>
+            </div>
+          <% elsif @promotions.any? %>
+            <%= form_with url: admin_subscriber_attribution_path(@subscriber), method: :post,
+                  class: "u-cluster", data: { turbo_frame: "_top" } do %>
+              <%= label_tag :promotion_id, "Attribute to", class: "u-visually-hidden" %>
+              <%= select_tag :promotion_id,
+                    options_from_collection_for_select(@promotions, :id, :title),
+                    class: "field__control" %>
+              <%= submit_tag "Attribute", class: "button button--small" %>
+            <% end %>
+            <p class="u-text-muted">Nothing in their signup named a promotion. Pick one if you know where they came from.</p>
+          <% else %>
+            <p class="u-text-muted">No promotions yet — <%= link_to "name one", admin_promotions_path, data: { turbo_frame: "_top" } %> and readers arriving through its link are counted automatically.</p>
+          <% end %>
+        </section>
 
         <%# Campaigns they're enrolled in. A reader joins on confirmation, so a
             missing campaign here means it wasn't live when they confirmed. %>

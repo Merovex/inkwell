@@ -11,7 +11,8 @@ class Admin::SubscribersController < Admin::BaseController
 
   def index
     @state = STATES.include?(params[:state]) ? params[:state] : "confirmed"
-    @subscribers = Current.account.subscribers.where(status: @state).order(created_at: :desc)
+    @subscribers = Current.account.subscribers.where(status: @state)
+      .includes(:promotion).order(created_at: :desc)
     # The site's magnets feed the per-magnet "Send … link" row actions — every
     # confirmed reader is sendable, grant or no grant (create mints one).
     @magnets = Current.account.magnets.ordered
@@ -37,6 +38,8 @@ class Admin::SubscribersController < Admin::BaseController
     # Every site magnet is offerable; the grant (when one exists) dates the row.
     @magnets = Current.account.magnets.ordered
     @grants_by_magnet = @subscriber.grants.index_by(&:magnet_id)
+    # Where they came from, and what else they could be attributed to by hand.
+    @promotions = Current.account.promotions.ordered
     # Which campaigns they're in and where each run has got to — the answer to
     # "why did this reader get that email?", newest enrollment first.
     @streams = @subscriber.streams.includes(:deliveries, drip_record: :recordable)

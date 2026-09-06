@@ -1,0 +1,61 @@
+<% content_for :title, "Promotions" %>
+
+<%= render "admin/shared/canvas_head", crumbs: [["Promotions", nil]], menu: false do %>
+  <%= link_to new_admin_promotion_path, class: "button button--primary" do %>
+    <%= inline_svg_tag "lucide/plus.svg", class: "lucide", size: "16px" %> New promotion
+  <% end %>
+<% end %>
+
+<header class="perma-header">
+  <h1 class="perma-header__title">Promotions</h1>
+</header>
+
+<% if @promotions.any? %>
+  <div class="list">
+    <% @promotions.each do |promotion| %>
+      <% readers = @counts[promotion.id].to_i %>
+      <% asserted = @asserted[promotion.id].to_i %>
+      <%= render "shared/list_item",
+            href: admin_promotion_path(promotion),
+            title: promotion.title,
+            avatar: false,
+            chips: [ promotion.ref ].compact,
+            date: (l(promotion.shared_on, format: :long) if promotion.shared_on),
+            excerpt: promotion.notes,
+            actions: (capture do
+              concat tag.span(pluralize(readers, "reader"), class: "badge")
+              concat " "
+              concat tag.span("#{asserted} by hand", class: "badge badge--warning") if asserted.positive?
+            end),
+            discard_path: admin_promotion_path(promotion),
+            discard_title: "Remove",
+            discard_aria: "Remove #{promotion.title}",
+            discard_confirm: "Remove #{promotion.title}? Its readers stay on the list — they just stop being counted against it." %>
+    <% end %>
+  </div>
+<% else %>
+  <div class="empty">
+    <span class="empty__icon"><%= inline_svg_tag "lucide/megaphone.svg", class: "lucide", size: "40px" %></span>
+    <p class="empty__title">No promotions yet</p>
+    <p class="empty__text">Name the promos, swaps and links your readers arrive through, and the roster can tell you which ones bring readers who stay — instead of one undifferentiated count.</p>
+    <div class="empty__actions"><%= link_to "New promotion", new_admin_promotion_path, class: "button button--primary" %></div>
+  </div>
+<% end %>
+
+<%# Tokens that have brought readers in but nobody has named. Naming one claims
+    the readers already carrying it, so this list empties itself. %>
+<% if @unnamed.any? %>
+  <section class="u-stack-half u-margin-block-start" aria-labelledby="unnamed">
+    <h2 class="u-microcaps u-text-muted" id="unnamed">Not yet named</h2>
+    <div class="list">
+      <% @unnamed.each do |ref, count| %>
+        <%= render "shared/list_item",
+              title: ref,
+              title_tag: "span",
+              avatar: false,
+              excerpt: "#{pluralize(count, "reader")} arrived through this link.",
+              actions: (link_to "Name this", new_admin_promotion_path(ref: ref), class: "button button--small") %>
+      <% end %>
+    </div>
+  </section>
+<% end %>

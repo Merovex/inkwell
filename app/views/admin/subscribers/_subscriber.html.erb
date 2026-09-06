@@ -1,0 +1,30 @@
+<%# locals: (subscriber:, meta: nil, actions: nil) %>
+<%# THE subscriber table row. Both the roster and a promotion's reader list
+    render through this — never hand-roll the <tr> (see CLAUDE.md on components
+    drifting once they're copied).
+    meta: the second cell. Defaults to where they came from — the promotion when
+    one has claimed them, else the raw source label. A promotion's own page
+    passes how the attribution was made instead, since the promotion is a given
+    there.
+    actions: captured HTML for the trailing cell (the roster's menu, a
+    promotion page's Remove button). Omitted, the cell renders empty. %>
+<% redacted = redacted_email(subscriber.email_address) %>
+<tr data-filter-target="item" data-filter-text="<%= "#{subscriber.email_address} #{subscriber.source} #{subscriber.promotion}".downcase %>">
+  <td>
+    <%# Both forms live in the cell; the Mask toggle shows one via CSS.
+        When masked the full address isn't rendered — screenshot-safe. %>
+    <%= link_to admin_subscriber_path(subscriber), class: "subscriber-address u-text-strong", data: { turbo_frame: "modal" } do %>
+      <span class="subscriber-address__full"><%= subscriber.email_address %></span>
+      <span class="subscriber-address__masked"><%= redacted %></span>
+    <% end %>
+    <% if subscriber.seed? %>
+      <span class="badge badge--accent">Seed</span>
+    <% elsif subscriber.confirmed? && subscriber.re_engagement_sent_at %>
+      <span class="badge badge--warning">Nudged</span>
+    <% end %>
+  </td>
+  <td class="u-text-muted"><%= meta || subscriber.promotion&.title || subscriber.source_label || "—" %></td>
+  <td class="u-text-muted"><%= subscriber.created_at.strftime("%b %-d") %></td>
+  <td class="u-text-muted"><%= subscriber.last_engaged_at ? subscriber.last_engaged_at.strftime("%b %-d") : "—" %></td>
+  <td data-align="end"><%= actions %></td>
+</tr>

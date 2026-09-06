@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.2].define(version: 2026_09_04_130000) do
+ActiveRecord::Schema[8.2].define(version: 2026_09_06_120001) do
   create_table "account_users", force: :cascade do |t|
     t.integer "account_id", null: false
     t.integer "user_id", null: false
@@ -605,6 +605,20 @@ ActiveRecord::Schema[8.2].define(version: 2026_09_04_130000) do
     t.index ["status", "published_at"], name: "index_posts_on_status_and_published_at"
   end
 
+  create_table "promotions", force: :cascade do |t|
+    t.integer "account_id", null: false
+    t.integer "creator_id", null: false
+    t.string "title", null: false
+    t.string "ref"
+    t.date "shared_on"
+    t.text "notes"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "ref"], name: "index_promotions_on_account_id_and_ref", unique: true
+    t.index ["account_id"], name: "index_promotions_on_account_id"
+    t.index ["creator_id"], name: "index_promotions_on_creator_id"
+  end
+
   create_table "pulse_subscriptions", force: :cascade do |t|
     t.integer "pulse_record_id", null: false
     t.integer "user_id", null: false
@@ -785,10 +799,14 @@ ActiveRecord::Schema[8.2].define(version: 2026_09_04_130000) do
     t.string "country_code"
     t.boolean "gdpr_country"
     t.string "source_url"
+    t.integer "promotion_id"
+    t.integer "attributed_by_id"
     t.index ["account_id", "status"], name: "index_subscribers_on_account_id_and_status"
+    t.index ["attributed_by_id"], name: "index_subscribers_on_attributed_by_id"
     t.index ["email_address"], name: "index_subscribers_on_email_address"
     t.index ["person_id", "account_id"], name: "index_subscribers_on_person_id_and_account_id", unique: true
     t.index ["person_id"], name: "index_subscribers_on_person_id"
+    t.index ["promotion_id"], name: "index_subscribers_on_promotion_id"
     t.index ["status", "last_engaged_at"], name: "index_subscribers_on_status_and_last_engaged_at"
   end
 
@@ -879,6 +897,8 @@ ActiveRecord::Schema[8.2].define(version: 2026_09_04_130000) do
   add_foreign_key "posts", "bodies"
   add_foreign_key "posts", "records"
   add_foreign_key "posts", "users", column: "creator_id"
+  add_foreign_key "promotions", "accounts"
+  add_foreign_key "promotions", "users", column: "creator_id"
   add_foreign_key "pulse_subscriptions", "users"
   add_foreign_key "records", "records", column: "parent_id"
   add_foreign_key "records", "users", column: "creator_id"
@@ -894,6 +914,8 @@ ActiveRecord::Schema[8.2].define(version: 2026_09_04_130000) do
   add_foreign_key "subscriber_snapshots", "accounts"
   add_foreign_key "subscribers", "accounts"
   add_foreign_key "subscribers", "people"
+  add_foreign_key "subscribers", "promotions"
+  add_foreign_key "subscribers", "users", column: "attributed_by_id"
   add_foreign_key "subscription_events", "subscribers"
   add_foreign_key "users", "users", column: "inviter_id"
 end

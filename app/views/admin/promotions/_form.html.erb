@@ -1,0 +1,34 @@
+<%# locals: (promotion:, url:) %>
+<%= render "admin/shared/error_summary", model: promotion %>
+
+<%= form_with model: promotion, url: url, class: "settings" do |f| %>
+  <div class="field">
+    <%= f.label :title, "Name", class: "field__label" %>
+    <%= f.text_field :title, class: "field__control", required: true, placeholder: "October SFF Giveaway" %>
+    <span class="field__hint">What you'll recognize it by on the roster — the promo's name, the partner's name, or "my own site".</span>
+  </div>
+
+  <div class="field">
+    <%= f.label :ref, "Link", class: "field__label" %>
+    <%= f.text_field :ref, class: "field__control", placeholder: "https://dl.bookfunnel.com/wzpbv5o1z2",
+          autocapitalize: "off", autocorrect: "off", spellcheck: "false" %>
+    <span class="field__hint">Paste the BookFunnel link for this promo — the whole URL or just its code. Every reader who
+      signs up through it is counted here, including the ones who already have. Leave it empty for a promotion with
+      nothing to track, and attribute its readers by hand.</span>
+  </div>
+
+  <div class="field">
+    <%= f.label :shared_on, "Shared on", class: "field__label" %>
+    <%= f.date_field :shared_on, class: "field__control" %>
+    <span class="field__hint">The date the promo went out. Readers arriving long afterward are drift, not this promo.</span>
+  </div>
+
+  <div class="field">
+    <%= f.label :notes, "Notes", class: "field__label" %>
+    <%= f.text_area :notes, class: "field__control", rows: 3, placeholder: "Who organized it, what the terms were…" %>
+  </div>
+
+  <div class="form__action">
+    <%= f.submit "Save", class: "button button--primary" %>
+  </div>
+<% end %>

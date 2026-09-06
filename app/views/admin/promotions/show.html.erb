@@ -1,0 +1,88 @@
+<% content_for :title, @promotion.title %>
+
+<%= render "admin/shared/canvas_head", crumbs: [["Promotions", admin_promotions_path], [@promotion.title, nil]], menu: false do %>
+  <%= link_to "Edit", edit_admin_promotion_path(@promotion), class: "button" %>
+<% end %>
+
+<%# The .subscribers wrapper is what arms the address mask (subscribers.css).
+    This page lists the same addresses as the roster, so it offers the same
+    screenshot safety — and the toggle has to sit inside the wrapper. %>
+<div class="subscribers">
+  <header class="perma-header">
+    <h1 class="perma-header__title"><%= @promotion.title %></h1>
+    <% if @subscribers.any? %>
+      <div class="perma-header__content">
+        <div class="perma-header__toolbar">
+          <label class="switch mask-toggle">
+            <input class="switch__input" type="checkbox" id="mask-addresses" checked>
+            Mask addresses
+          </label>
+        </div>
+      </div>
+    <% end %>
+  </header>
+
+  <dl class="facts">
+    <% if @promotion.ref %>
+      <div class="facts__row">
+        <dt>Link code</dt>
+        <dd><%= @promotion.ref %></dd>
+      </div>
+    <% end %>
+    <% if @promotion.shared_on %>
+      <div class="facts__row">
+        <dt>Shared on</dt>
+        <dd><%= tag.time l(@promotion.shared_on, format: :long), datetime: @promotion.shared_on.iso8601 %></dd>
+      </div>
+    <% end %>
+    <div class="facts__row">
+      <dt>Readers</dt>
+      <%# The split that keeps the number honest: matched from what the partner
+          reported, versus asserted by someone here. %>
+      <dd><%= pluralize(@subscribers.size, "reader") %><% if @asserted.positive? %> · <%= @asserted %> attributed by hand<% end %></dd>
+    </div>
+    <% if @promotion.notes.present? %>
+      <div class="facts__row">
+        <dt>Notes</dt>
+        <dd><%= @promotion.notes %></dd>
+      </div>
+    <% end %>
+  </dl>
+
+  <% if @subscribers.any? %>
+    <div class="table-scroll u-margin-block-start">
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">Address</th>
+            <th scope="col">Attributed</th>
+            <th scope="col">Joined</th>
+            <th scope="col">Last opened</th>
+            <th scope="col"><span class="u-visually-hidden">Actions</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @subscribers.each do |subscriber| %>
+            <%= render "admin/subscribers/subscriber", subscriber: subscriber,
+                  meta: (subscriber.attributed_by ? "By hand · #{subscriber.attributed_by.name}" : "Matched"),
+                  actions: (button_to "Remove", admin_subscriber_attribution_path(subscriber), method: :delete,
+                        class: "button button--small",
+                        form: { data: { turbo_confirm: "Stop counting this reader against #{@promotion.title}? They stay on the list." } }) %>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% else %>
+    <div class="empty">
+      <span class="empty__icon"><%= inline_svg_tag "lucide/inbox.svg", class: "lucide", size: "40px" %></span>
+      <p class="empty__title">No readers yet</p>
+      <p class="empty__text">
+        <% if @promotion.ref %>
+          Readers who sign up through this link will be counted here automatically.
+        <% else %>
+          This promotion has no link code, so readers can only be attributed to it by hand — from a subscriber's detail card.
+        <% end %>
+      </p>
+    </div>
+  <% end %>
+</div>

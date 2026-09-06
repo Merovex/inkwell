@@ -1,0 +1,11 @@
+<% content_for :title, "Edit #{@promotion.title}" %>
+
+<%= render "admin/shared/canvas_head", crumbs: [["Promotions", admin_promotions_path], [@promotion.title, admin_promotion_path(@promotion)], ["Edit", nil]] %>
+
+<header class="perma-header">
+  <h1 class="perma-header__title">Edit <%= @promotion.title %></h1>
+</header>
+
+<div class="u-center u-center-narrow">
+  <%= render "form", promotion: @promotion, url: admin_promotion_path(@promotion) %>
+</div>

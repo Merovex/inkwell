@@ -439,6 +439,12 @@ Rails.application.routes.draw do
         patch :unsubscribe, on: :member
         post  :resend, on: :member
         resource :seed, only: %i[create destroy], module: :subscribers
+        # Attributing a reader to a promotion by hand, for the arrivals no
+        # token can name (a swap with no trackable link, a reader who wrote in
+        # to say where they found you). POST attributes, DELETE undoes — the
+        # automatic path stamps the same column at first contact and never
+        # touches it again, so a hand-made attribution stands.
+        resource :attribution, only: %i[create destroy], module: :subscribers
         # Reactivation lifts a delivery suppression: a bounced subscriber
         # returns to confirmed (mailbox trouble — consent was never revoked);
         # a complained one is re-invited via a fresh double opt-in instead,
@@ -455,6 +461,12 @@ Rails.application.routes.draw do
           end
         end
       end
+      # Where readers come from — a BookFunnel promo, a newsletter swap, your
+      # own permanent link. Creating one is also how it claims the readers who
+      # arrived under its token before it was named (Promotion#claim_arrivals),
+      # so there's no separate assign step: plain CRUD, domain-admin only.
+      resources :promotions
+
       # The platform's cross-site suppression list as it bears on this site's
       # readers — read-only (ADR 0027). Nothing to manage: rows are imposed by
       # bounces and complaints and lifted by a fresh opt-in or Reactivate.

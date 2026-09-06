@@ -14,6 +14,14 @@ class Subscriber < ApplicationRecord
   # creation path (opt-in, imports, tests) stays one call.
   before_validation :assign_person
 
+  # Where this reader came from, when it can be named: the promotion whose ref
+  # their source_url carried (Promotion.matching), or one an admin picked by
+  # hand. attributed_by is nil in the ordinary, matched case — set, it names who
+  # asserted the attribution, which is what keeps the promotion report honest
+  # about which of its numbers were measured.
+  belongs_to :promotion, optional: true
+  belongs_to :attributed_by, class_name: "User", optional: true
+
   has_many :events, -> { order(:created_at) }, class_name: "SubscriptionEvent", dependent: :destroy
   has_many :broadcast_deliveries, dependent: :destroy
   has_many :streams, dependent: :destroy
@@ -60,6 +68,9 @@ class Subscriber < ApplicationRecord
   # to look like a real profile field so bots fill it.
   HONEYPOT_FIELD = "website"
 
+  # Readers no promotion has claimed — what a newly named one adopts, and what
+  # the promotions index reads to list the tokens still going by their code.
+  scope :unattributed, -> { where(promotion_id: nil) }
   # The people, as opposed to the diagnostics: everyone who isn't a seed.
   # Roster counts count readers.
   scope :readers, -> { where(seed: false) }
@@ -199,6 +210,10 @@ class Subscriber < ApplicationRecord
         record.country_code  = country_code if country_code.present?
         record.gdpr_country  = gdpr_country unless gdpr_country.nil?
         record.source_url    = source_url if source_url.present?
+        # Which promotion sent them, matched from the token the partner
+        # reported. First contact only: a later push must never overwrite an
+        # attribution, least of all one an admin made by hand.
+        record.promotion     = Current.account.promotions.matching(source_url) if first_contact && source_url.present?
         record.status        = :confirmed
         record.confirmed_at ||= Time.current
         record.save!
