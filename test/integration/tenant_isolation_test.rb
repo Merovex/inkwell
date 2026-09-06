@@ -66,8 +66,10 @@ class TenantIsolationTest < ActionDispatch::IntegrationTest
   end
 
   test "audience data is per-account: subscribers, broadcasts, visits" do
+    # A local part no page copy could contain: the check below is a substring
+    # search, and "reader@" once collided with the roster's own "readers" stat.
     merovex_subscriber = Current.with_account(@merovex) do
-      Subscriber.create!(email_address: "reader@example.com", status: "confirmed", confirmed_at: Time.current)
+      Subscriber.create!(email_address: "sixfold-quince@example.com", status: "confirmed", confirmed_at: Time.current)
     end
     Ahoy::Visit.create!(visit_token: "v1", visitor_token: "p1", started_at: 1.hour.ago, account_id: @merovex.id)
 

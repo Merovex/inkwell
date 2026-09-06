@@ -75,8 +75,13 @@ class Subscriber < ApplicationRecord
   # capitalization — humanize would file BookFunnel as "Bookfunnel".
   INTEGRATION_SOURCES = { "bookfunnel" => "BookFunnel" }.freeze
 
-  # For the roster column and the filter.
-  def source_label = INTEGRATION_SOURCES[source] || source&.humanize
+  # For the roster column and the filter. The class-level form is what the
+  # roll-ups group by, where there's a source string but no row in hand.
+  def self.label_for_source(source)
+    INTEGRATION_SOURCES[source] || source.presence&.humanize || "Direct"
+  end
+
+  def source_label = source.presence && self.class.label_for_source(source)
 
   # For the detail card, where the label completes a sentence: a site form is a
   # place on the site, a partner is someone who sent them.

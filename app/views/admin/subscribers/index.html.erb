@@ -42,6 +42,33 @@
   </div>
 </header>
 
+<%# The headline: how big the list is, how it moved this month and from where,
+    and how many chose to go this quarter. Departures are a count, not a rate —
+    one leaver out of a dozen readers is 8%, which alarms without informing. %>
+<dl class="stats">
+  <div class="stat">
+    <dt class="stat__label">readers</dt>
+    <dd class="stat__value"><%= @movement.sendable %></dd>
+  </div>
+  <div class="stat">
+    <dt class="stat__label">net, last 30 days</dt>
+    <dd class="stat__value"><%= signed_count(@movement.net) %></dd>
+  </div>
+  <% if @movement.departures.positive? %>
+    <div class="stat stat--trouble">
+      <dt class="stat__label">left, last 90 days</dt>
+      <dd class="stat__value"><%= @movement.departures %></dd>
+    </div>
+  <% end %>
+</dl>
+
+<% if @movement.joined_by_source.any? %>
+  <p class="u-text-muted u-margin-block-end">
+    This month's arrivals:
+    <%= @movement.joined_by_source.map { |source, count| "#{count} from #{source}" }.to_sentence %>.
+  </p>
+<% end %>
+
 <% if @subscribers.any? %>
   <div class="table-scroll" data-filter-target="section">
     <table class="table">

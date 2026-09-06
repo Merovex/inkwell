@@ -156,4 +156,11 @@ module ApplicationHelper
       ratio ? "#{style}; --logo-ratio: #{ratio}" : style
     end
   end
+  # A change, with its direction on the front: "+6", "-2", or a plain "0" —
+  # a signed zero reads as a result when it's really an absence of one.
+  def signed_count(number)
+    return number.to_s unless number.positive?
+
+    "+#{number}"
+  end
 end

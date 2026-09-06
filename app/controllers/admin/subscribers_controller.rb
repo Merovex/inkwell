@@ -18,6 +18,7 @@ class Admin::SubscribersController < Admin::BaseController
     # Seeds stay visible in the roster (badged) but out of the headline counts —
     # they're diagnostics, not readers.
     @counts = Current.account.subscribers.readers.group(:status).count
+    @movement = SubscriberMovement.new(Current.account)
 
     respond_to do |format|
       format.html

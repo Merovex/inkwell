@@ -19,6 +19,12 @@ class SubscriptionEvent < ApplicationRecord
 
   belongs_to :subscriber
 
+  # One site's consent movement — the anchor every roll-up starts from (the
+  # weekly snapshot, the roster's headline). Filtering on subscribers.account_id
+  # is also what satisfies the tenancy guard, since events aren't tenanted
+  # themselves.
+  scope :for_account, ->(account) { joins(:subscriber).where(subscribers: { account_id: account.id }) }
+
   validates :action, inclusion: { in: ACTIONS }
 
   before_create { self.source_fingerprint ||= self.class.fingerprint(ip_address) }

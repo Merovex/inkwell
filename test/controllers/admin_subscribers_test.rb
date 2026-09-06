@@ -173,4 +173,47 @@ class AdminSubscribersTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "#campaigns", 0
   end
+
+  test "the roster headlines the list size, the month's change, and where they came from" do
+    2.times { |i| Subscriber.opt_in_confirmed(email_address: "bf#{i}@example.com", source: "bookfunnel") }
+    Subscriber.opt_in(email_address: "web@example.com", source: "nav").confirm!
+    sign_in_as users(:admin)
+
+    get admin_subscribers_path
+
+    assert_response :success
+    assert_select ".stats .stat", 2, "readers and the 30-day change; nobody has left"
+    assert_select ".stat", text: /readers/ do
+      assert_select ".stat__value", text: "3"
+    end
+    assert_select ".stat", text: /net, last 30 days/ do
+      assert_select ".stat__value", text: "+3"
+    end
+    assert_select "p", text: /2 from BookFunnel and 1 from Nav/
+  end
+
+  test "the departures stat stays off the page until somebody has left" do
+    subscriber = Subscriber.opt_in(email_address: "reader@example.com")
+    subscriber.confirm!
+    sign_in_as users(:admin)
+
+    get admin_subscribers_path
+    assert_select ".stat", text: /left, last 90 days/, count: 0
+
+    subscriber.unsubscribe!
+    get admin_subscribers_path
+    assert_select ".stat--trouble", text: /left, last 90 days/ do
+      assert_select ".stat__value", text: "1"
+    end
+  end
+
+  test "an empty list reads zero rather than a signed zero" do
+    sign_in_as users(:admin)
+
+    get admin_subscribers_path
+
+    assert_select ".stat", text: /net, last 30 days/ do
+      assert_select ".stat__value", text: "0"
+    end
+  end
 end

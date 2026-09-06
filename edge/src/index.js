@@ -186,14 +186,14 @@ export default {
 
     if (request.method === "HEAD") {
       const head = await env.SITES.head(prefix + key);
-      if (!head) return missing(env, prefix, buildId, preview);
+      if (!head) return missing(env, prefix, buildId, preview, siteBase(pathHost, url.pathname));
       return new Response(null, { headers: headersFor(head, key, buildId, preview) });
     }
 
     const object = await env.SITES.get(prefix + key, {
       onlyIf: request.headers,
     });
-    if (!object) return missing(env, prefix, buildId, preview);
+    if (!object) return missing(env, prefix, buildId, preview, siteBase(pathHost, url.pathname));
 
     const headers = headersFor(object, key, buildId, preview);
     if (!("body" in object) || object.body === null) {
@@ -314,7 +314,17 @@ function cacheControlFor(key) {
   return "public, max-age=86400, stale-while-revalidate=604800";
 }
 
-async function missing(env, prefix, buildId, preview = false) {
+// The site's own 404 page, served for whatever path missed. It is the one page
+// ever served from somewhere other than its own URL, and the build is made with
+// Hugo's relativeURLs (so one build serves both at a domain root and under
+// /<handle>/) — so its "./assets/css/..." resolve against the REQUESTED path.
+// Served at /posts/some-slug/ that means /posts/some-slug/assets/css/..., and
+// the reader gets unstyled HTML with broken links.
+//
+// A <base> pointing at the site root fixes every relative URL on the page at
+// once — assets, nav, and the "head back home" link — for both host shapes:
+// "/" on a custom domain, "/<handle>/" on the platform path host.
+async function missing(env, prefix, buildId, preview = false, base = "/") {
   const custom = await env.SITES.get(prefix + "404.html");
   if (!custom) return plain404("Not found.");
   const h = new Headers();
@@ -322,7 +332,25 @@ async function missing(env, prefix, buildId, preview = false) {
   h.set("cache-control", "no-store");
   h.set("x-kq-build", buildId);
   if (preview) h.set("x-robots-tag", "noindex");
-  return new Response(custom.body, { status: 404, headers: h });
+
+  // Buffered rather than streamed through HTMLRewriter: an error page is small
+  // and no-store anyway, and a plain string keeps this file runnable under node
+  // (test/worker.test.mjs), where the Workers-only HTMLRewriter doesn't exist.
+  const html = await custom.text();
+  return new Response(html.replace(/<head(\s[^>]*)?>/i, (tag) => tag + `<base href="${base}">`), {
+    status: 404,
+    headers: h,
+  });
+}
+
+// Where this site's root sits in the URL space: "/" on a custom domain, and
+// "/<handle>/" on the platform and preview hosts, which carry the site in the
+// first path segment. Taken from the requested path, so it is whatever the
+// reader actually typed (handle or raw slug) and links stay on that spelling.
+function siteBase(pathHost, pathname) {
+  if (!pathHost) return "/";
+  const segment = pathname.match(SLUG);
+  return segment ? `/${segment[1]}/` : "/";
 }
 
 function plain404(message) {

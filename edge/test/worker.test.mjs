@@ -7,6 +7,8 @@ import worker from "../src/index.js";
 const htmlObject = (body) => ({
   body,
   httpEtag: '"etag"',
+  // R2ObjectBody's own reader — the 404 path buffers the page to inject <base>.
+  text: async () => body,
   writeHttpMetadata(h) {
     h.set("content-type", "text/html; charset=utf-8");
   },
@@ -28,6 +30,8 @@ const store = {
   "sites/MEROVEXPRESS/builds/PROD1/css/legacy.css": cssObject(".old{}"),
   "sites/MEROVEXPRESS/preview/pointer.json": { json: async () => ({ build_id: "PREV1" }) },
   "sites/MEROVEXPRESS/builds/PROD1/index.html": htmlObject("<html>production</html>"),
+  "sites/MEROVEXPRESS/builds/PROD1/404.html": htmlObject(
+    '<html><head><link rel=stylesheet href=./assets/css/01-reset.css></head><body>gone</body></html>'),
   "sites/MEROVEXPRESS/preview/builds/PREV1/index.html": htmlObject("<html>draft preview</html>"),
 };
 
@@ -226,6 +230,34 @@ await check("old apex newsletter links 301 to the sites host, path intact", asyn
 
 await check("other apex paths are the static site's business — plain 404 here", async () => {
   const res = await call("https://kindredquill.com/anything-else");
+  assert.equal(res.status, 404);
+});
+
+// The 404 is the only page served from a path that isn't its own, and the build
+// uses relativeURLs — so without a <base> its "./assets/..." resolve against
+// whatever deep path missed, and the reader gets unstyled HTML.
+const domainEnv = {
+  ...env,
+  HOSTNAMES: { get: async (k) => (k === "merovex.press" ? "MEROVEXPRESS" : null) },
+};
+const domain = (url, method = "GET") => worker.fetch(new Request(url, { method }), domainEnv);
+
+await check("a custom domain's 404 carries a base pointing at the site root", async () => {
+  const res = await domain("https://merovex.press/posts/86-champaign-in-space/");
+  assert.equal(res.status, 404);
+  const body = await res.text();
+  assert.match(body, /<base href="\/">/);
+});
+
+await check("the platform host's 404 bases on the site's own path segment", async () => {
+  const res = await call("https://sites.kindredquill.com/merovexpress/posts/86-nope/");
+  assert.equal(res.status, 404);
+  const body = await res.text();
+  assert.match(body, /<base href="\/merovexpress\/">/);
+});
+
+await check("a HEAD miss answers 404 without inventing a body", async () => {
+  const res = await domain("https://merovex.press/posts/86-nope/", "HEAD");
   assert.equal(res.status, 404);
 });
 
