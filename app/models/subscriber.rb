@@ -191,7 +191,7 @@ class Subscriber < ApplicationRecord
   # Idempotent, because the partner retries: pushing an address that is already
   # confirmed refreshes the evidence and logs nothing. Returns the subscriber,
   # or nil when the address is one we may not add back.
-  def self.opt_in_confirmed(email_address:, source:, ip: nil, country_code: nil, gdpr_country: nil, source_url: nil)
+  def self.opt_in_confirmed(email_address:, source:, ip: nil, country_code: nil, gdpr_country: nil, source_url: nil, promo: nil)
     newly_confirmed = false
 
     subscriber = transaction do
@@ -210,10 +210,12 @@ class Subscriber < ApplicationRecord
         record.country_code  = country_code if country_code.present?
         record.gdpr_country  = gdpr_country unless gdpr_country.nil?
         record.source_url    = source_url if source_url.present?
-        # Which promotion sent them, matched from the token the partner
-        # reported. First contact only: a later push must never overwrite an
-        # attribution, least of all one an admin made by hand.
-        record.promotion     = Current.account.promotions.matching(source_url) if first_contact && source_url.present?
+        # Which promotion sent them. A `promo` the partner's page declares wins
+        # over the landing-page URL: it says what the author meant, not what the
+        # link happened to be. First contact only, so a later push can never
+        # overwrite an attribution — least of all one an admin made by hand.
+        declared            = promo.presence || source_url
+        record.promotion     = Current.account.promotions.matching(declared) if first_contact && declared.present?
         record.status        = :confirmed
         record.confirmed_at ||= Time.current
         record.save!

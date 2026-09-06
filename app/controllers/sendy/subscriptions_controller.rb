@@ -23,6 +23,17 @@ class Sendy::SubscriptionsController < Sendy::BaseController
   # contract has no field that names the integration.
   SOURCE = "bookfunnel"
 
+  # The custom field a signup page declares to name the promotion that sent the
+  # reader (BookFunnel: Advanced Settings -> "Send custom fields when adding
+  # readers to my mailing list", authors.bookfunnel.com/help/custom-fields/).
+  # The author types both the name and the value, so this is the one name we
+  # ask them to type exactly: `promo`, whose value is the Promotion's ref.
+  #
+  # Preferred over the landing-page URL because it says what the author meant
+  # instead of what the link happened to be — a page relinked or reused between
+  # promos still reports the promotion it belongs to.
+  PROMO_FIELD = "promo"
+
   def create
     return render_sendy(MISSING_FIELDS) if params[:email].blank? || params[:list].blank?
     return render_sendy(INVALID_LIST) unless names_the_account?(params[:list])
@@ -48,9 +59,19 @@ class Sendy::SubscriptionsController < Sendy::BaseController
           ip: params[:ipaddress].presence,
           country_code: country_code,
           gdpr_country: gdpr_country,
-          source_url: params[:referrer].presence
+          source_url: params[:referrer].presence,
+          promo: declared_promo
         )
       end
+    end
+
+    # BookFunnel sends the field under whatever Name the author typed, so the
+    # key is matched case-insensitively — "Promo" and "promo" are the same
+    # intent, and a mismatch would fail silently: the reader would land
+    # unattributed with nothing in the request to say why.
+    def declared_promo
+      key = params.keys.find { it.casecmp?(PROMO_FIELD) }
+      params[key].presence if key
     end
 
     # Sendy defines `country` as a 2-letter code; BookFunnel also sends its own

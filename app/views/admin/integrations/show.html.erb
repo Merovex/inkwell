@@ -43,6 +43,17 @@
              recognize will do.</p>
         </div>
 
+        <%# How a landing page names the promotion that sent the reader —
+            Sendy::SubscriptionsController::PROMO_FIELD. %>
+        <h3 class="u-microcaps u-text-muted">Naming the promotion</h3>
+        <p>To count readers per promo rather than in one lump, tag each BookFunnel landing page.
+           On the page, open <strong>Advanced Settings</strong>, tick
+           <strong>Send custom fields when adding readers to my mailing list</strong>, and add a
+           field named <strong>promo</strong> whose value is the promotion's link code here.</p>
+        <p>Then <%= link_to "add the promotion", admin_promotions_path %> with that same code. Readers
+           who signed up before you named it are counted too. A page with no <strong>promo</strong>
+           field still gets matched by its BookFunnel link, so this is worth doing but not required.</p>
+
         <p class="u-text-muted">Readers arrive already confirmed: BookFunnel only sends people who
            opted in and consented on its page, so they skip our confirmation email and start your
            welcome sequence right away. Anyone who has unsubscribed here stays unsubscribed.</p>

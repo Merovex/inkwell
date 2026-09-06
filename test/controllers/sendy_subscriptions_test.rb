@@ -237,4 +237,59 @@ class SendySubscriptionsTest < ActionDispatch::IntegrationTest
   ensure
     Rails.configuration.x.app_host = nil
   end
+
+  # The custom field a landing page declares (BookFunnel Advanced Settings).
+  # It names the promotion outright, so it beats guessing from the link.
+  test "a declared promo attributes the reader to that promotion" do
+    promotion = @account.promotions.create!(creator: users(:admin), title: "October SFF", ref: "oct26-milsf")
+
+    post subscribe_path, params: {
+      api_key: @key, email: "reader@example.com", list: @account.slug, promo: "oct26-milsf"
+    }
+
+    assert_equal promotion, Subscriber.find_by(email_address: "reader@example.com").promotion
+  end
+
+  test "the declared promo wins over the landing-page URL" do
+    declared = @account.promotions.create!(creator: users(:admin), title: "October SFF", ref: "oct26-milsf")
+    @account.promotions.create!(creator: users(:admin), title: "Direct traffic", ref: "s00a53gmdn")
+
+    post subscribe_path, params: {
+      api_key: @key, email: "reader@example.com", list: @account.slug,
+      promo: "oct26-milsf", referrer: "https://dl.bookfunnel.com/s00a53gmdn"
+    }
+
+    assert_equal declared, Subscriber.find_by(email_address: "reader@example.com").promotion
+  end
+
+  test "the field name is matched however the author capitalized it" do
+    promotion = @account.promotions.create!(creator: users(:admin), title: "October SFF", ref: "oct26-milsf")
+
+    post subscribe_path, params: {
+      api_key: @key, email: "reader@example.com", list: @account.slug, Promo: "oct26-milsf"
+    }
+
+    assert_equal promotion, Subscriber.find_by(email_address: "reader@example.com").promotion
+  end
+
+  test "a promo naming no promotion of ours leaves the reader unattributed" do
+    post subscribe_path, params: {
+      api_key: @key, email: "reader@example.com", list: @account.slug, promo: "never-heard-of-it"
+    }
+
+    subscriber = Subscriber.find_by(email_address: "reader@example.com")
+    assert subscriber.confirmed?, "an unknown promo must never cost us the subscriber"
+    assert_nil subscriber.promotion
+  end
+
+  test "the landing-page URL still attributes when no promo is declared" do
+    promotion = @account.promotions.create!(creator: users(:admin), title: "Direct traffic", ref: "s00a53gmdn")
+
+    post subscribe_path, params: {
+      api_key: @key, email: "reader@example.com", list: @account.slug,
+      referrer: "https://dl.bookfunnel.com/s00a53gmdn"
+    }
+
+    assert_equal promotion, Subscriber.find_by(email_address: "reader@example.com").promotion
+  end
 end
