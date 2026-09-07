@@ -39,6 +39,13 @@ class Sendy::SubscriptionsController < Sendy::BaseController
     return render_sendy(INVALID_LIST) unless names_the_account?(params[:list])
     return render_sendy(INVALID_EMAIL) if Subscriber.rejection_reason(params[:email])
 
+    # TEMPORARY — remove once the custom-field experiment has settled whether
+    # BookFunnel scopes Advanced Settings per landing page or per book. Keys
+    # only, plus the declared promo: never the values, which carry a reader's
+    # address and IP. Without this a field that doesn't arrive is indis-
+    # tinguishable from one that arrives under a key we don't read.
+    Rails.logger.info { "[bookfunnel] keys=#{params.keys.sort.inspect} promo=#{declared_promo.inspect}" }
+
     subscribe_to(@account)
     # Already subscribed, and an address we may not add back (an opt-out here),
     # both answer success: Sendy would say so itself for the first, and for the

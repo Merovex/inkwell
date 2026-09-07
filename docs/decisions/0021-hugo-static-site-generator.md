@@ -4,7 +4,7 @@ title: Hugo renders the public sites — templates leave Rails
 status: accepted
 tags: [static-serving, hugo, phase-2, themes, r2]
 created: 2026-07-29
-updated: 2026-07-29
+updated: 2026-09-07
 sources: [hugo-build-pipeline.md, phase-2-static-serving.md]
 ---
 
@@ -77,7 +77,10 @@ The load-bearing properties:
 - **ERB extraction (the phase-2 draft)** — fastest to the invariant lift and
   a free byte-diff cut-over check, but presentation stays a Rails deploy
   concern and the Hugo migration happens later, under live tenants. Rejected
-  because themes-per-tenant is core product, not speculation.
+  because themes-per-tenant is core product, not speculation. *(This is also
+  the answer for Phlex/ViewComponent, which is the same alternative in newer
+  clothing: a nicer authoring surface does not change the fact that
+  presentation stays behind a Rails deploy.)*
 - **Jekyll** — Liquid's sandbox only matters for author-authored templates
   (a non-goal); brings a Ruby gem environment onto the build path and
   10–50× slower builds.
@@ -86,6 +89,56 @@ The load-bearing properties:
   that coupling.
 - **Cloudflare Pages builds** — repo-per-project model and quotas collapse
   at multi-tenant scale; Cloudflare stays the serving layer only.
+
+### The JavaScript engines *(added 2026-09-07)*
+
+Not evaluated when this ADR was written; recorded now because both keep
+coming up. Both were **measured**, not estimated — same machine, same real
+contract payload (`posts.json` + `books.json` from a Merovex Press build),
+cold process per run. Neither is close, and the gap understates the case:
+the JS builds rendered 25 pages through trivial single-file templates with
+no partials, no minification, no image handling, and none of the 12-axis
+logic, while Hugo rendered the full filibuster theme.
+
+| Engine | Cold build | Pages rendered | Toolchain on the build path |
+|---|---|---|---|
+| Hugo 0.164.0 | **50–61 ms** | 37 (full theme, minified, 127 files) | one static binary, pinned by SHA256 |
+| Eleventy 3 | 348–364 ms | 25 (trivial templates) | Node + 22 MB `node_modules` |
+| Astro 7.3.1 | 746–979 ms | 25 (trivial templates) | Node + 149 MB `node_modules` |
+
+- **Astro** — the headline features are for a problem this product does not
+  have. Islands and partial hydration pay off when a theme is built from
+  framework components needing selective hydration; filibuster is 21 layouts,
+  one 1,104-line stylesheet, and 48 lines of vanilla JS, and its ~18k design
+  permutations resolve through CSS attribute selectors on `<html>`, not
+  through component variants. What it would cost is concrete: **~15× the
+  build time** — which lands directly on the SiteDesigner, where
+  `Admin::Designers::PreviewsController#create` runs a *full site build
+  synchronously inside the HTTP request* on every design change; a 50 ms
+  round trip reads as live, a 750 ms one (more, at filibuster's real
+  complexity) reads as lag, and the fix is re-architecting the designer into
+  async polling or holding a long-running `astro dev` process per author —
+  stateful per-tenant processes on the VM, which is exactly what this
+  pipeline is shaped to avoid. It also puts a 149 MB dependency tree in the
+  deploy image with no audit gate (`bin/ci` runs brakeman and bundler-audit;
+  there is no JS equivalent), and makes a theme upgrade a dependency
+  resolution rather than a tag bump. In fairness, one common argument against
+  it does *not* hold: `getStaticPaths` over the JSON contract matches Hugo's
+  content adapters fine, and Rails would still emit no per-page stubs. That
+  part is a tie.
+- **Eleventy** — the steelman for the Node direction and the better of the
+  two on every axis that matters here: ~2× faster than Astro, 7× smaller to
+  install, and its global data files map onto the JSON contract as directly
+  as content adapters do. It is the one to pick *if* we are ever forced onto
+  Node. It still loses on the same two grounds — ~7× Hugo's build time on a
+  strictly easier workload, and a second ecosystem (lockfile, CVE surface,
+  upgrade cadence) maintained by a one-person team alongside Ruby — and
+  neither of those is a gap that closes with tuning.
+
+Note that neither engine changes the serving layer or its cost: R2 plus the
+Worker is identical either way, with no egress charge. The whole difference
+lands on the build tier, where it compounds — see [[hugo-build-pipeline]] §8
+for the fleet-rebuild math a theme-version bump has to absorb.
 
 ## Links
 

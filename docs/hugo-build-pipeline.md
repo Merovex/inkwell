@@ -1,7 +1,7 @@
 # Static Site Build Pipeline: Rails + Hugo + R2
 
 **Status:** Accepted ([ADR 0021](decisions/0021-hugo-static-site-generator.md)); revised
-**Date:** 2026-07-28 (drafted) / 2026-07-29 (accepted) / 2026-07-30 (revised: Docker binary provisioning, design axes §6.1–6.2, purge step reinstated, open questions re-opened) / 2026-07-30 (theme v1 landed: `filibuster` in the kindred-quill repo; manifest is `data/theme.json`, §6.1) / 2026-07-31 (switcher retired — [ADR 0022](decisions/0022-sitedesigner-design-json-sovereignty.md); §6.2 superseded by the SiteDesigner preview model in [site-designer.md](site-designer.md))
+**Date:** 2026-07-28 (drafted) / 2026-07-29 (accepted) / 2026-07-30 (revised: Docker binary provisioning, design axes §6.1–6.2, purge step reinstated, open questions re-opened) / 2026-07-30 (theme v1 landed: `filibuster` in the kindred-quill repo; manifest is `data/theme.json`, §6.1) / 2026-07-31 (switcher retired — [ADR 0022](decisions/0022-sitedesigner-design-json-sovereignty.md); §6.2 superseded by the SiteDesigner preview model in [site-designer.md](site-designer.md)) / 2026-09-07 (§9: Astro and Eleventy recorded as rejected alternatives, with measured build times)
 **Decision:** Rails orchestrates; Hugo renders; R2 serves. Templates live in Hugo themes, not in Rails. Data crosses the boundary as JSON only.
 
 *This doc is the build-pipeline design for Phase 2
@@ -464,6 +464,8 @@ The invariant throughout: **a failed build can never degrade a live site.** The 
 | Hugo | ERB extraction of Rails views | See [ADR 0021](decisions/0021-hugo-static-site-generator.md) — the engine decision proper. |
 | Hugo | Jekyll | 10–50× build speed; single binary; no Ruby gem env on the build path. Jekyll's Liquid sandbox only matters for author-authored templates, which are a non-goal. |
 | Hugo | Zola | Zola has no content-adapter equivalent; Rails would emit per-page stubs, moving structure back into Rails. Tera is nicer than Go templates, but the coupling cost wins. |
+| Hugo | Astro | Measured 2026-09-07 on the real contract payload: 746–979ms cold vs Hugo's 50–61ms, and the JS build rendered 25 trivial pages against Hugo's 37 real ones. Islands solve a problem filibuster doesn't have (48 lines of JS; design varies by CSS attribute selectors, not components). The ~15× lands on the SiteDesigner, which builds synchronously inside a request. 149MB `node_modules` in the image, unaudited by `bin/ci`. |
+| Hugo | Eleventy | The strongest Node option — 2× faster than Astro, 22MB install, global data files map cleanly onto the contract — and still 348–364ms against Hugo's 50–61ms on an easier workload, plus a second ecosystem to maintain. The pick *if* forced onto Node; not a reason to go there. |
 | Build on VM | Cloudflare Pages builds | Pages requires git-repo-per-project, ignores POST bodies on deploy hooks, and quotas collapse at multi-tenant scale. Cloudflare is the serving layer only. |
 | Pre-rendered HTML bodies in JSON | Markdown in JSON | One renderer (Rails) means admin preview and public page cannot disagree; no sanitizer on the Hugo side. |
 | Pointer-flip deploys | Sync-over-live | Atomic cutover, instant rollback, no torn deploys. |

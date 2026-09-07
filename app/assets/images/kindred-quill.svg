@@ -1,9 +1,24 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100" role="img" aria-label="Kindred Quill">
-  <rect width="100" height="100" rx="22" fill="#F4EFE6"/>
-  <g transform="translate(9 8) scale(0.82)" fill="none" stroke="#2B5D59" stroke-width="7" stroke-linecap="round" stroke-linejoin="round">
-    <circle cx="50" cy="50" r="34"/>
-    <path d="M34 24 V76"/>
-    <path d="M34 50 Q60.1 48.9 68 24 Q41.9 25.1 34 50 Z"/>
-    <path d="M34 50 Q48.7 80.8 82 88 Q67.3 57.2 34 50 Z"/>
-  </g>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-128 -128 256 256" width="256" height="256" role="img" aria-label="Kindred Quill">
+  <!-- Single-color mark: the ink shapes (ring, quill, nib) are painted once in
+       currentColor, and the detail that used to be drawn in cream on top of
+       them (feather barbs, spine, nib line, and the gap separating quill from
+       ring) is knocked out of the mask instead — so it reads as transparent
+       against whatever surface the mark sits on, in either theme, rather than
+       matching one hard-coded background. The #fff/#000 below are mask
+       luminance channels, not design colors. -->
+  <mask id="kq-mark-cut">
+    <g transform="scale(0.92)">
+      <circle r="86" fill="none" stroke="#fff" stroke-width="28"></circle>
+      <g transform="rotate(-42) scale(1.02) translate(0 128)">
+        <g transform="scale(-1 1)">
+          <path d="M-8 -160 C-30 -140 -42 -118 -44 -96 L-34 -100 L-42 -78 L-32 -80 L-36 -60 L-4 -46 C10 -80 8 -130 -8 -160 Z" fill="#fff" stroke="#000" stroke-width="7" stroke-linejoin="round"></path>
+          <path d="M-7 -130 L-30 -120 M-7 -110 L-34 -98 M-6 -90 L-30 -78 M-5 -70 L-26 -62" fill="none" stroke="#000" stroke-width="4" stroke-linecap="round"></path>
+          <path d="M-8 -150 L-4 -46 L0 -14" fill="none" stroke="#000" stroke-width="7" stroke-linecap="round"></path>
+          <polygon points="0,0 -8,-22 8,-22" fill="#fff" stroke="#000" stroke-width="6" stroke-linejoin="round"></polygon>
+          <path d="M0 0 L0 -12" fill="none" stroke="#000" stroke-width="3" stroke-linecap="round"></path>
+        </g>
+      </g>
+    </g>
+  </mask>
+  <rect x="-128" y="-128" width="256" height="256" fill="currentColor" mask="url(#kq-mark-cut)"></rect>
 </svg>
