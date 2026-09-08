@@ -52,6 +52,15 @@ class Record < ApplicationRecord
   # stable identity so it survives edits; present ⇒ already broadcast. See Broadcast.
   has_one :broadcast, dependent: :destroy
 
+  # The per-subscriber send rows for this record when it's a Drop (a drip step).
+  # Like boosts and distributors they hang off the stable identity so a step
+  # survives its own edits — which means nothing else clears them when the
+  # identity is purged, and the FK on drop_deliveries.drop_record_id aborted the
+  # whole nightly sweep. :destroy, not :delete_all, so DropDelivery's own
+  # dependent: :nullify unstamps the delivery events instead of orphaning them.
+  has_many :drop_deliveries, foreign_key: :drop_record_id, inverse_of: :drop_record,
+    dependent: :destroy
+
   scope :active,  -> { where(trashed_at: nil) }
   scope :trashed, -> { where.not(trashed_at: nil) }
   scope :purgeable, -> { trashed.where(purge_after: ..Time.current) }
