@@ -35,6 +35,16 @@ class ScannerBlocker
   # what these paths actually do is gated by a per-account API key.
   SENDY_API = %r{\A/api/(?:subscribers|lists|brands)/[a-z0-9-]+\.php\z}
 
+  # Headers that only a Next.js client would send. Next-Action names a Server
+  # Action to invoke, and what sends it to a Rails app is the React Server
+  # Components RCE scanner (late 2025 onwards): a multipart POST to any path.
+  # It must be refused *here*, before anything reads the body, because the
+  # probe's form parts declare charset=utf-16le and Rack 3.2's multipart
+  # parser force-encodes the field *name* to match — then Rack::MethodOverride,
+  # which parses every form POST looking for _method and sits ahead of Rails'
+  # exception handling, trips over it and the probe 500s (issue #32).
+  PROBE_HEADERS = %w[ HTTP_NEXT_ACTION ].freeze
+
   def initialize(app)
     @app = app
   end
@@ -42,10 +52,17 @@ class ScannerBlocker
   def call(env)
     return @app.call(env) if SENDY_API.match?(env["PATH_INFO"])
 
-    if env["PATH_INFO"].to_s.match?(PROBE) || env["QUERY_STRING"].to_s.match?(QUERY_PROBE)
+    if probe?(env)
       [ 403, { "content-type" => "text/plain" }, [ "Forbidden\n" ] ]
     else
       @app.call(env)
     end
   end
+
+  private
+    def probe?(env)
+      env["PATH_INFO"].to_s.match?(PROBE) ||
+        env["QUERY_STRING"].to_s.match?(QUERY_PROBE) ||
+        PROBE_HEADERS.any? { |header| env.key?(header) }
+    end
 end

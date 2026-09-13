@@ -66,10 +66,20 @@ class ScannerBlockerTest < ActiveSupport::TestCase
     end
   end
 
+  # The Next.js Server Actions scanner (issue #32): it POSTs to real paths,
+  # so only the header gives it away. Refusing it here keeps its utf-16le
+  # multipart body from ever reaching Rack's form parser.
+  test "403s Next.js server-action probes by their header, whatever the path" do
+    [ "/", "/session/new" ].each do |path|
+      status, _headers, _body = call(path, method: "POST", headers: { "HTTP_NEXT_ACTION" => "x" })
+      assert_equal 403, status, "expected the probe to #{path} to be refused"
+    end
+  end
+
   private
-    def call(path, method: "GET")
+    def call(path, method: "GET", headers: {})
       app = ->(env) { [ 200, {}, [] ] }
-      env = Rack::MockRequest.env_for("https://app.kindredquill.com#{path}", method: method)
+      env = Rack::MockRequest.env_for("https://app.kindredquill.com#{path}", method: method).merge(headers)
       ScannerBlocker.new(app).call env
     end
 end
