@@ -1,7 +1,7 @@
 require "test_helper"
 
 class HostnameTest < ActiveSupport::TestCase
-  test "normalises scheme, path, port, case, and stray dots" do
+  test "normalizes scheme, path, port, case, and stray dots" do
     assert_equal "merovex.press", Hostname.new("HTTPS://Merovex.Press/blog/").normalized
     assert_equal "merovex.press", Hostname.new("  merovex.press.  ").normalized
     assert_equal "merovex.press", Hostname.new("merovex.press:443").normalized

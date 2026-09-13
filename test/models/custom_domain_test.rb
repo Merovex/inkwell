@@ -1,7 +1,7 @@
 require "test_helper"
 
 class CustomDomainTest < ActiveSupport::TestCase
-  test "normalises the hostname through Hostname on create" do
+  test "normalizes the hostname through Hostname on create" do
     domain = accounts(:merovex).custom_domains.create!(hostname: "HTTPS://WWW.Example.com/")
     assert_equal "www.example.com", domain.hostname
   end

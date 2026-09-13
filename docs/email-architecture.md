@@ -10,7 +10,7 @@ the reputation-firewall question, the last structural argument for a
 second ESP. The isolation Postmark bought is delivered instead by a
 dedicated AWS account for `verify.*` — which costs nothing — created
 when needed, not now. One account carries the platform (Quill) and
-Merovex Press until then. Postmark is cancelled after the cutover
+Merovex Press until then. Postmark is canceled after the cutover
 proves out; the substrate keeps the provider flip as the recovery
 path.
 

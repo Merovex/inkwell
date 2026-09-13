@@ -146,7 +146,7 @@ Do this on **each** identity:
    - **MX**: `bounce.news.merovex.press` → `feedback-smtp.<region>.amazonses.com` (priority 10)
    - **TXT (SPF)**: `bounce.news.merovex.press` → `"v=spf1 include:amazonses.com ~all"`
 
-Leave the on-failure behaviour as **"Use amazonses.com as fallback"** until each verifies.
+Leave the on-failure behavior as **"Use amazonses.com as fallback"** until each verifies.
 
 **Verify:** MAIL FROM shows **Verified** on both identities.
 
@@ -236,7 +236,7 @@ message** (Phase 1). The mapping we'll wire:
 3. **Event destination** → SNS. Subscribe to **Delivery, Bounce, Complaint,
    Reject, Rendering Failure** — **omit Open and Click**. Because the destination
    doesn't publish open/click, SES **won't inject the pixel or rewrite links** on
-   magic-link mail (confirmed behaviour). Bounces/complaints still protect us.
+   magic-link mail (confirmed behavior). Bounces/complaints still protect us.
 
 **Verify:** both sets exist; marketing lists Open+Click, transactional does not.
 

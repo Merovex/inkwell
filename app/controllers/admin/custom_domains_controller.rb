@@ -1,5 +1,5 @@
 # Connect-your-domain, the admin side of the Cloudflare-for-SaaS onboarding
-# (docs/custom-domain-onboarding.md). The heavy lifting — normalise, uniqueness
+# (docs/custom-domain-onboarding.md). The heavy lifting — normalize, uniqueness
 # gate, create custom hostnames, write KV, enqueue the poll — lives in
 # DomainConnection; this just runs it and renders status + DNS instructions.
 class Admin::CustomDomainsController < Admin::BaseController

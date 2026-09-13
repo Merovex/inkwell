@@ -50,7 +50,7 @@ Code map: `DomainConnection` orchestrates; `Cloudflare::Client` makes the API +
 KV calls; `CustomDomain` is the per-hostname row; `CustomDomainStatusJob` polls.
 
 ### Step 1 — Author enters the domain (`CustomDomainsController#create`)
-`Hostname` normalises the input: downcase, strip scheme/path/port/trailing dot,
+`Hostname` normalizes the input: downcase, strip scheme/path/port/trailing dot,
 require an ASCII (or punycode) registrable hostname, and **reject anything under
 `kindredquill.com`** (our namespace). A **UNIQUE index on `custom_domains.
 hostname`** plus a pre-check rejects a domain already connected to another
@@ -128,7 +128,7 @@ answer is how that advice reached a working domain.
 
 `merovex.press` is a zone in this same Cloudflare account, and it currently has
 live Pages projects. Two cautions when testing on it:
-- Create the `www` CNAME → `sites.kindredquill.com` as **DNS only (grey cloud)**.
+- Create the `www` CNAME → `sites.kindredquill.com` as **DNS only (gray cloud)**.
   A proxied record here is orange-to-orange, which misbehaves for SaaS.
 - Pick a hostname that isn't already serving something — don't test on a name a
   Pages project is using.

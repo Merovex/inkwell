@@ -7,7 +7,7 @@
  */
 @layer components {
   /* The address cell is the link into the detail modal — reads as text, not a
-     coloured link, with a hover underline. Sits inline with the state badge. */
+     colored link, with a hover underline. Sits inline with the state badge. */
   .subscriber-address { color: inherit; text-decoration: none; }
   .subscriber-address:hover { text-decoration: underline; }
   .subscriber-address + .badge { margin-inline-start: calc(var(--u-pad) / 2); }

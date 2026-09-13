@@ -119,7 +119,7 @@ Preserved so it need not be re-derived:
 ## Alternatives considered
 
 - **(2) tokened link into Inkwell** — rejected for now. It teaches every
-  author's readers a new behaviour on every device, and its write-only page is
+  author's readers a new behavior on every device, and its write-only page is
   the piece that gets thrown away once inbound exists. Going 1 → 3 is likely
   cheaper than 1 → 2 → 3.
 - **(3) inbound email** — rejected for now on product maturity, not cost. Six to

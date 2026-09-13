@@ -91,7 +91,7 @@ class Admin::PostsController < Admin::BaseController
       params.expect(post: [ :title, :content, :excerpt, :tipin, :author_record_id ])
     end
 
-    # Moving or cancelling an appointment drops a booked email (Publishable),
+    # Moving or canceling an appointment drops a booked email (Publishable),
     # and a send that silently disappears is worse than one that never existed
     # — say so, and say it has to be booked again.
     def cleared_email_notice(booked_email)

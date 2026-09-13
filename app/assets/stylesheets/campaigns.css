@@ -60,7 +60,7 @@
   .campaign-step__delta { color: var(--ink-muted); font-size: var(--font-size-0); }
 
   /* Node column: a filled dot on the card's top line, with a connector running
-     from this dot's centre to the next dot's centre. The dot centre sits
+     from this dot's center to the next dot's center. The dot center sits
      1.5·pad below the row top (pad top-margin + half the dot); consecutive dots
      are one row + one gap (pad) apart, so the line ends 2.5·pad past this
      node's box — a distance that cancels the card height, so it always meets

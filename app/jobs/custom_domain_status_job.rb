@@ -53,7 +53,7 @@ class CustomDomainStatusJob < ApplicationJob
     # from there on every visit reliably forked another 23-hour chain: N
     # visits, N chains, N× the Cloudflare polling and N× the "never
     # provisioned" alert (observed 2026-08-29, two alerts 18 minutes apart for
-    # merovex.press). Rather than track chains, let them recognise each other
+    # merovex.press). Rather than track chains, let them recognize each other
     # through the rows: the first to give up marks them unwatched, and the rest
     # stop on their next wake-up instead of re-reporting the same stall.
     def resume(account)

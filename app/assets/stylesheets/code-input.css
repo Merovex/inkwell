@@ -1,7 +1,7 @@
 /*
  * .code-input — segmented one-time code entry: eight single-character boxes in a
  * row, split 4 + 4 by a dash, with large mono glyphs. Backed by a hidden field;
- * behaviour lives in controllers/code_field_controller.js.
+ * behavior lives in controllers/code_field_controller.js.
  */
 @layer components {
   .code-input {

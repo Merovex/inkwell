@@ -2,7 +2,7 @@
 # the runbook lays out, in one place so the controller stays thin and tests can
 # inject a fake Cloudflare client.
 #
-#   connect: normalise → uniqueness gate → for each hostname (apex + www):
+#   connect: normalize → uniqueness gate → for each hostname (apex + www):
 #     create the custom hostname, THEN write KV (so the Worker is ready the
 #     instant DNS arrives), THEN persist the row → enqueue the status poll.
 #   disconnect: delete the KV key AND the custom hostname (both, or the

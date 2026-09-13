@@ -55,7 +55,7 @@ export default class extends Controller {
     if (code.length === this.boxTargets.length) this.element.closest("form")?.requestSubmit()
   }
 
-  // Neighbour box in the given direction (+1 next, -1 previous), or undefined.
+  // Neighbor box in the given direction (+1 next, -1 previous), or undefined.
   nextBox(box, step = 1) {
     return this.boxTargets[this.boxTargets.indexOf(box) + step]
   }

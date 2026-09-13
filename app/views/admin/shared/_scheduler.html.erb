@@ -21,7 +21,7 @@
 <% selected_date = preselect ? preselect.to_date.iso8601 : Date.tomorrow.iso8601 %>
 <% selected_hour = preselect ? preselect.hour : 9 %>
 
-<%# A labelled trigger names itself — adding an aria-label would override the %>
+<%# A labeled trigger names itself — adding an aria-label would override the %>
 <%# visible text with different words, which is the one thing a label must not %>
 <%# do. Only the icon-only trigger needs one. %>
 <button type="button" class="button <%= trigger_label ? "button--small" : "button--icon" %>" popovertarget="<%= panel_id %>"

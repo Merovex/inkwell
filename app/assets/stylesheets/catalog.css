@@ -149,7 +149,7 @@
     flex-direction: column;
     gap: calc(var(--u-pad) / 2);
   }
-  /* Title spans the row; the × sits top-right, not vertically centred. */
+  /* Title spans the row; the × sits top-right, not vertically centered. */
   .collection-card__head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--u-pad); }
   .collection-card__title { text-decoration: none; min-inline-size: 0; }
   .collection-card__detail { display: flex; align-items: center; gap: var(--u-pad); }

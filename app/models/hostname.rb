@@ -1,4 +1,4 @@
-# Normalises and validates a hostname the author typed into the "Connect your
+# Normalizes and validates a hostname the author typed into the "Connect your
 # domain" form (onboarding step 1). The rules mirror the runbook: downcase,
 # strip any scheme / path / port / trailing dot, and reject anything that isn't
 # a plain registrable hostname. Our own namespace (kindredquill.com and its

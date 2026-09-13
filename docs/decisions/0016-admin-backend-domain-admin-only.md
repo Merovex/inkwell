@@ -57,7 +57,7 @@ the things that aren't admin actions out of the namespace.
   page hosting them yet, only admins exercise them in practice.
 - Tests reflect the new model: the content-fixture author (`alice`) is now a
   `domain_admin`; `bob` is the member used to prove non-admins are denied.
-- **Deploying this is a behaviour change**: sign-in moves from
+- **Deploying this is a behavior change**: sign-in moves from
   `/admin/session/new` to `/session/new`, and non-admins lose `/admin`.
 
 ## Alternatives considered
