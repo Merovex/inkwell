@@ -1,14 +1,10 @@
 # Inkwell — conventions for Claude
 
-## Never deploy — Kamal is Ben's alone
+## Deploying
 
-**Never run `kamal` in any form**: `deploy`, `redeploy`, `rollback`,
-`app exec`, the console/shell aliases, or anything else that reaches the
-production server. This holds even when asked to deploy in the moment — finish
-the work, commit and push if asked, then hand over the exact command plus any
-pre-deploy notes (irreversible migrations, backup needs). Enforced by
-`permissions.deny` in `.claude/settings.json`; if a task seems to require Kamal,
-stop and ask rather than finding another route to the server.
+`kamal deploy` is allowed when asked. Before running it, note anything
+irreversible in the release (migrations, data backfills) and verify the result
+against production afterward.
 
 ## Rails standards: rails-best-practices-core is ALWAYS in force
 
