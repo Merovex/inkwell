@@ -250,6 +250,16 @@
   --link: var(--color-pine-300);                /* light teal link on the dark canvas */
   --ink-on-soft: var(--color-pine-100);         /* light teal on pine-800 (avatar, accent badge) */
   --brand-text: var(--color-pine-300);          /* teal-tinted body text on dark */
+  /* Semantic surfaces flip to deep tints so inherited --ink (12:1), --link
+     (6.7:1), and --ink-muted (4.8:1) stay legible on them; the inks lift to
+     light tints for the fixed badge/alert pairs (9:1) and for use on the
+     canvas (8.5:1). Without these the light surfaces put --ink at 1.1:1. */
+  --success-surface: oklch(26% 0.05 150);
+  --success-ink:     oklch(85% 0.12 150);
+  --warning-surface: oklch(26% 0.05 80);
+  --warning-ink:     oklch(85% 0.12 85);
+  --danger-surface:  oklch(26% 0.06 25);
+  --danger-ink:      oklch(85% 0.10 25);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -279,5 +289,11 @@
     --link: var(--color-pine-300);
     --ink-on-soft: var(--color-pine-100);
     --brand-text: var(--color-pine-300);
+    --success-surface: oklch(26% 0.05 150);
+    --success-ink:     oklch(85% 0.12 150);
+    --warning-surface: oklch(26% 0.05 80);
+    --warning-ink:     oklch(85% 0.12 85);
+    --danger-surface:  oklch(26% 0.06 25);
+    --danger-ink:      oklch(85% 0.10 25);
   }
 }
