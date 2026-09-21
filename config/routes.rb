@@ -388,6 +388,15 @@ Rails.application.routes.draw do
         resource :sendy_key, only: :update
       end
 
+      # The Export tab: the author's copy of their site. POST requests one
+      # (ExportJob builds the zip and emails when it's ready); fetching a
+      # built one is a download created under it — a POST, like every
+      # download here, so the fetch is counted; the zip streams through the
+      # owner's session rather than 302ing to a storage URL.
+      resources :exports, only: %i[index create] do
+        resource :download, only: :create, module: :exports
+      end
+
       # The Identity tab's handle typeahead: show answers "is this handle
       # free?" (and counter-offers a suggestion when it isn't). The handle
       # itself saves through the settings form (Site delegates to account).

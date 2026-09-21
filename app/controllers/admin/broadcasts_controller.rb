@@ -46,8 +46,8 @@ class Admin::BroadcastsController < Admin::BaseController
       CSV.generate do |csv|
         csv << %w[ post sent_at recipients delivered opened clicked bounced complained unsubscribed ]
         @broadcasts.each do |b|
-          csv << [ b.post&.title, b.sent_at, b.recipients_count, b.delivered_count,
-                   b.opened_count, b.clicked_count, b.bounced_count, b.complained_count, b.unsubscribed_count ]
+          csv << SpreadsheetSafe.row([ b.post&.title, b.sent_at, b.recipients_count, b.delivered_count,
+                   b.opened_count, b.clicked_count, b.bounced_count, b.complained_count, b.unsubscribed_count ])
         end
       end
     end

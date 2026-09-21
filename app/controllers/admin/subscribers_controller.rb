@@ -77,7 +77,8 @@ class Admin::SubscribersController < Admin::BaseController
       CSV.generate do |csv|
         csv << %w[ email_address status source seed confirmed_at unsubscribed_at created_at ]
         @subscribers.each do |s|
-          csv << [ s.email_address, s.status, s.source, s.seed, s.confirmed_at, s.unsubscribed_at, s.created_at ]
+          # SpreadsheetSafe: addresses and sources are text strangers typed.
+          csv << SpreadsheetSafe.row([ s.email_address, s.status, s.source, s.seed, s.confirmed_at, s.unsubscribed_at, s.created_at ])
         end
       end
     end

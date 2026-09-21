@@ -74,11 +74,5 @@
   </div>
   <% end %>
 
-  <%= segmented_tabs [
-        { id: "identity", label: "Identity", href: admin_settings_path },
-        { id: "pages", label: "Pages", href: admin_pages_path },
-        { id: "domain", label: "Domain", href: admin_custom_domains_path },
-        { id: "email", label: "Email", href: admin_sending_domains_path },
-        { id: "integrations", label: "Integrations", panel: integrations_panel },
-      ], aria_label: "Settings sections" %>
+  <%= settings_tabs "integrations", integrations_panel %>
 </div>

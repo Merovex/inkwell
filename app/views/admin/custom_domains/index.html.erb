@@ -142,13 +142,5 @@
   </div>
   <% end %>
 
-  <%= segmented_tabs [
-        { id: "identity", label: "Identity", href: admin_settings_path },
-        { id: "about", label: "About", href: admin_settings_path(tab: "about") },
-        { id: "privacy", label: "Privacy", href: admin_settings_path(tab: "privacy") },
-        { id: "terms", label: "Terms", href: admin_settings_path(tab: "terms") },
-        { id: "domain", label: "Domain", panel: domain_panel, narrow: true },
-        { id: "email", label: "Email", href: admin_sending_domains_path },
-        { id: "integrations", label: "Integrations", href: admin_integration_path },
-      ], aria_label: "Settings sections" %>
+  <%= settings_tabs "domain", domain_panel, narrow: true %>
 </div>

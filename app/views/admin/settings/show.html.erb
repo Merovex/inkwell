@@ -90,13 +90,7 @@
           own forms can't nest inside this one); ?tab= deep-links back from
           them. The About/Privacy/Terms copy that used to be edited here lives
           on those Pages now. %>
-      <%= segmented_tabs [
-            { id: "identity", label: "Identity", panel: identity_panel },
-            { id: "pages", label: "Pages", href: admin_pages_path },
-            { id: "domain", label: "Domain", href: admin_custom_domains_path },
-            { id: "email", label: "Email", href: admin_sending_domains_path },
-            { id: "integrations", label: "Integrations", href: admin_integration_path },
-          ], aria_label: "Settings sections", selected: params[:tab] %>
+      <%= settings_tabs "identity", identity_panel, selected: params[:tab] %>
 
       <div class="form__action">
         <%= f.submit "Save", class: "button button--primary", data: { dirty_form_target: "submit" } %>

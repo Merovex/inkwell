@@ -1,0 +1,23 @@
+<%# One item of the archive (Export::Archive#page): a title, its facts, an
+    optional cover, and one or more bodies — a drip's sections are its emails.
+    Bodies are rich text already rendered and sanitized by Action Text. %>
+<% content_for :title, title %>
+<article>
+  <header>
+    <h1><%= title %></h1>
+    <% if facts.any? %>
+      <dl>
+        <% facts.each do |label, value| %>
+          <div><dt><%= label %></dt><dd><%= value %></dd></div>
+        <% end %>
+      </dl>
+    <% end %>
+  </header>
+  <% if cover %><img src="<%= cover %>" alt="" class="cover"><% end %>
+  <% sections.each do |heading, html| %>
+    <section class="prose">
+      <% if heading %><h2><%= heading %></h2><% end %>
+      <%= html.to_s.html_safe %>
+    </section>
+  <% end %>
+</article>

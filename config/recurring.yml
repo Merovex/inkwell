@@ -55,6 +55,12 @@ production:
     class: MissivePurgeJob
     schedule: at 4am every day America/New_York
 
+  # Site exports carry the subscriber list, so they don't linger: destroyed
+  # (zip and all) 7 days after the request. See ExportExpiryJob.
+  expire_exports:
+    class: ExportExpiryJob
+    schedule: at 4am every day America/New_York
+
   # The bell is a doorbell, not an archive: read notifications go after 30 days.
   prune_notifications:
     class: NotificationPruneJob

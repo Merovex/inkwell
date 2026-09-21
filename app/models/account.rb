@@ -103,6 +103,7 @@ class Account < ApplicationRecord
   def authors  = Author.where(id: records.active.authors.select(:recordable_id))
   def chat_lines = ChatLine.where(id: records.active.chat_lines.select(:recordable_id))
   def pages    = Page.where(id: records.active.pages.select(:recordable_id))
+  def exports  = Export.where(id: records.active.exports.select(:recordable_id))
 
   # The standing page at a path — the record carries the slug (identity), the
   # recordable carries the words. Seeded at creation, so a nil here means the

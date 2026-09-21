@@ -1,0 +1,27 @@
+<%# The archive's front page: every section Export::Archive wrote, as links. %>
+<h1><%= content[:site][:name] %></h1>
+<p><%= content[:site][:tagline] %></p>
+<p>Exported <time datetime="<%= content[:exported_at] %>"><%= Time.iso8601(content[:exported_at]).to_date.to_fs(:long) %></time>.
+   See <a href="README.txt">README.txt</a> for what each file is for.</p>
+
+<% index.each do |folder, entries| %>
+  <section>
+    <h2><%= folder.humanize %></h2>
+    <ul>
+      <% entries.each do |title, path, note| %>
+        <li><a href="<%= path %>"><%= title %></a><% if note.present? %> <small>(<%= note %>)</small><% end %></li>
+      <% end %>
+    </ul>
+  </section>
+<% end %>
+
+<section>
+  <h2>Data files</h2>
+  <ul>
+    <li><a href="content.json">content.json</a> — everything above, machine-readable</li>
+    <li><a href="wordpress.xml">wordpress.xml</a> — posts and pages, for WordPress, Ghost, or Substack</li>
+    <li><a href="subscribers/subscribers.csv">subscribers/subscribers.csv</a> — confirmed readers you may email</li>
+    <li><a href="subscribers/suppressions.csv">subscribers/suppressions.csv</a> — never email these addresses</li>
+    <li><a href="subscribers/consent_events.csv">subscribers/consent_events.csv</a> — proof of each reader's opt-in</li>
+  </ul>
+</section>

@@ -1,0 +1,12 @@
+<h1>Your export is ready</h1>
+
+<p>The copy of <strong><%= @site_name %></strong> you asked for is built: every post,
+   page, book, newsletter, and drip, plus your subscriber list.</p>
+
+<p><a href="<%= @exports_url %>">Sign in to download it</a></p>
+
+<p>It includes your readers' email addresses, so it's only available to you, signed in, and
+   it's deleted on <%= @export.expires_at.to_date.to_fs(:long) %>. You can request a fresh
+   one any time.</p>
+
+<p>— Kindred Quill</p>

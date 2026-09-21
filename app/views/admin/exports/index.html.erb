@@ -1,0 +1,60 @@
+<% content_for :title, "Export — System settings" %>
+
+<%= render "admin/shared/canvas_head", crumbs: [["System settings", admin_settings_path], ["Export", nil]] %>
+
+<header class="perma-header">
+  <h1 class="perma-header__title">System settings</h1>
+</header>
+
+<%# The Export tab — a sibling page wearing the same segmented control as
+    Domain, Email, and Integrations (settings_tabs). %>
+<div class="settings u-stack u-stack-double u-margin-block-start settings--wide u-center">
+  <% export_panel = capture do %>
+  <div class="u-stack u-stack-double u-full-width">
+    <section class="card" aria-label="Export your site">
+      <header class="card__header">
+        <h2 class="card__title">Take your work with you</h2>
+      </header>
+      <div class="card__body u-stack">
+        <p>Your writing and your readers are yours. An export is one zip file with everything in it:</p>
+        <ul>
+          <li><strong>Pages you can read</strong> — every post, page, book, newsletter, and drip email as
+              plain HTML that opens in any browser, drafts included.</li>
+          <li><strong>A WordPress file</strong> — your posts and pages in the import format WordPress, Ghost,
+              and Substack all accept.</li>
+          <li><strong>Your subscribers</strong> — the readers you may email, a separate do-not-email list,
+              and the record of when each reader opted in.</li>
+          <li><strong>The full record</strong> — a data file a developer can use to rebuild anything else.</li>
+        </ul>
+        <p class="u-text-muted">Building takes a few minutes; we'll email you when it's ready. Because it contains
+           your readers' email addresses, only you can download it, and it's deleted after
+           <%= Export::RETENTION.in_days.to_i %> days. Items in the trash aren't included.</p>
+        <%= button_to "Build an export", admin_exports_path, class: "button button--primary" %>
+      </div>
+    </section>
+
+    <% if @exports.any? %>
+      <section aria-label="Recent exports" class="u-stack">
+        <h2 class="u-microcaps u-text-muted">Recent exports</h2>
+        <div class="list">
+          <% @exports.each do |export| %>
+            <% download = capture do %>
+              <% if export.downloadable? %>
+                <%= button_to "Download", admin_export_download_path(export), class: "button button--small",
+                      data: { turbo: false } %>
+              <% end %>
+            <% end %>
+            <%= render "shared/list_item", avatar: false,
+                  title: "Requested #{export.created_at.to_date.to_fs(:long)}",
+                  badge: export_status_label(export), badge_variant: export_status_variant(export),
+                  excerpt: export_status_detail(export),
+                  actions: download.presence %>
+          <% end %>
+        </div>
+      </section>
+    <% end %>
+  </div>
+  <% end %>
+
+  <%= settings_tabs "export", export_panel %>
+</div>

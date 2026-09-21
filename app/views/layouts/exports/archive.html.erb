@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <%# Item pages sit one folder down; base points every relative URL
+      (style.css, media/…, index.html) back at the archive root. %>
+  <% if @base %><base href="<%= @base %>"><% end %>
+  <title><%= [ yield(:title).presence, @site_name ].compact.join(" — ") %></title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <nav aria-label="Archive"><a href="index.html"><%= @site_name %> — archive</a></nav>
+  </header>
+  <main>
+    <%= yield %>
+  </main>
+</body>
+</html>

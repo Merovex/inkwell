@@ -1,0 +1,17 @@
+/* The exported archive's own stylesheet — it ships inside the zip and has no
+   access to the App's tokens, so this is deliberately plain, self-contained
+   CSS: a readable measure and nothing else. */
+:root { color-scheme: light dark; }
+body { font-family: Georgia, "Times New Roman", serif; line-height: 1.6; margin: 0 auto; max-width: 68ch; padding: 1.5rem; }
+header nav { font-family: system-ui, sans-serif; font-size: 0.875rem; margin-block-end: 2rem; }
+h1, h2, h3 { font-family: system-ui, sans-serif; line-height: 1.2; }
+dl { font-family: system-ui, sans-serif; font-size: 0.875rem; }
+dl div { display: flex; gap: 0.5rem; }
+dt { font-weight: 600; }
+dt::after { content: ":"; }
+dd { margin: 0; overflow-wrap: anywhere; }
+img { height: auto; max-width: 100%; }
+.cover { display: block; margin-block: 1.5rem; max-height: 28rem; }
+.prose + .prose { border-block-start: 1px solid; margin-block-start: 2rem; padding-block-start: 1rem; }
+figure { margin-inline: 0; }
+small { opacity: 0.7; }

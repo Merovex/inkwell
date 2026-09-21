@@ -545,6 +545,7 @@ DEPENDENCIES
   rails!
   rubocop-rails-omakase
   ruby-vips (~> 2.3)
+  rubyzip (~> 3.0)
   schematist (~> 1.1)
   selenium-webdriver
   solid_cable

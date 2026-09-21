@@ -88,6 +88,9 @@ gem "diff-lcs", "~> 2.0"
 # CSV — a bundled gem since Ruby 3.4; used for the subscriber export.
 gem "csv"
 
+# Zip — packs an author's site export into one download (Export::Archive).
+gem "rubyzip", "~> 3.0", require: "zip"
+
 # Spam protection for public forms: a honeypot field plus a time-to-submit trap
 # [https://github.com/markets/invisible_captcha]
 gem "invisible_captcha"

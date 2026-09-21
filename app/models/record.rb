@@ -11,7 +11,7 @@ class Record < ApplicationRecord
   has_many :notifications, as: :source, dependent: :nullify
 
   # Content types that may live in the envelope; grows as recordables are added.
-  RECORDABLE_TYPES = %w[ Post Comment ChatLine Message Book Series Collection Author Drip Drop Site Pulse Beat Goal Tally Bulletin Page ]
+  RECORDABLE_TYPES = %w[ Post Comment ChatLine Message Book Series Collection Author Drip Drop Site Pulse Beat Goal Tally Bulletin Page Export ]
   # Platform content belongs to the App itself, not any bucket — a NIL bucket
   # is its tenancy (originate with an explicit bucket: nil).
   PLATFORM_TYPES = %w[ Bulletin ].freeze
@@ -84,6 +84,7 @@ class Record < ApplicationRecord
   scope :tallies, -> { where(recordable_type: "Tally") }
   scope :bulletins, -> { where(recordable_type: "Bulletin") }
   scope :pages, -> { where(recordable_type: "Page") }
+  scope :exports, -> { where(recordable_type: "Export") }
 
   before_destroy :destroy_versions
 

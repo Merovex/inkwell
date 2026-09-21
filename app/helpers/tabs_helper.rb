@@ -15,6 +15,31 @@
 #           panel: render("admin/books/series_membership", record: @record, book: @book) },
 #       ] %>
 module TabsHelper
+  # System settings' section control, single-sourced: Identity, Domain, Email,
+  # Integrations, and Export are sibling pages wearing the same segmented
+  # control (each owns forms that can't nest in another's), and five copies of
+  # this list had already drifted apart. `current` is the page being
+  # rendered, whose tab carries `panel`; every other tab is a link.
+  SETTINGS_TABS = {
+    "identity" => "Identity", "pages" => "Pages", "domain" => "Domain",
+    "email" => "Email", "integrations" => "Integrations", "export" => "Export"
+  }.freeze
+
+  def settings_tabs(current, panel, narrow: false, selected: nil)
+    hrefs = { "identity" => admin_settings_path, "pages" => admin_pages_path,
+              "domain" => admin_custom_domains_path, "email" => admin_sending_domains_path,
+              "integrations" => admin_integration_path, "export" => admin_exports_path }
+
+    # Export is the owner's alone (OwnerOnly) — root staff browsing a site's
+    # settings don't get a tab that would 404.
+    labels = Current.account.owner == Current.user ? SETTINGS_TABS : SETTINGS_TABS.except("export")
+
+    tabs = labels.map do |id, label|
+      id == current ? { id: id, label: label, panel: panel, narrow: narrow } : { id: id, label: label, href: hrefs[id] }
+    end
+    segmented_tabs tabs, aria_label: "Settings sections", selected: selected
+  end
+
   def segmented_tabs(tabs, aria_label: "Sections", selected: nil)
     selected_id = tabs.find { |t| t[:panel] && t[:id].to_s == selected.to_s }&.dig(:id) ||
       tabs.find { |t| t[:panel] }&.dig(:id)
