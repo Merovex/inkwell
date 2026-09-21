@@ -70,7 +70,9 @@ module AccountHost
       unless AccountHost.enforced?
         # Single-tenant legacy mode pins the first account (the plan's 1.3
         # "constant resolution") so controllers rely on Current.account
-        # uniformly whether or not host-role enforcement is on.
+        # uniformly whether or not host-role enforcement is on. Dev and test
+        # only: production refuses to boot without APP_HOST
+        # (config/initializers/app_host_required.rb).
         return Current.with_account(Account.first) { @app.call(env) }
       end
 
