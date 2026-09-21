@@ -19,6 +19,16 @@ development_environments:
 # You can override this by explicitly setting report_data to true.
 # report_data: true
 
+# Kamal always runs production inside a container; a bare shell in
+# RAILS_ENV=production (e.g. testing config/initializers/app_host_required.rb
+# locally) never does. Without this, every local "pretend production" run
+# gets reported as a real incident (fault 134436611) even though the actual
+# deploy is fine.
+<% if Rails.env.production? %>
+report_data: <%= File.exist?(ENV.fetch("HONEYBADGER_CONTAINER_MARKER", "/.dockerenv")) %>
+<% end %>
+
+
 # The current Git revision of your project. Defaults to the last commit hash.
 # revision: null
 
