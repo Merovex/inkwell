@@ -147,6 +147,45 @@ class TenantIsolationTest < ActionDispatch::IntegrationTest
     end
   end
 
+  # Signed tokens resolve globally, so each tokened action checks the token's
+  # site against the host it was opened on (the ClaimScoped rule).
+  test "a reader's token only works on their own site's domain" do
+    reader = Current.with_account(@rival) { Subscriber.create!(email_address: "theirs@example.com") }
+
+    host! @merovex.domain
+    get confirm_newsletter_path(token: reader.generate_token_for(:confirmation))
+    assert_response :not_found
+    assert reader.reload.pending?, "a token opened on another site's domain must not confirm"
+
+    host! @rival.domain
+    get confirm_newsletter_path(token: reader.generate_token_for(:confirmation))
+    assert_response :success
+    assert reader.reload.confirmed?
+
+    host! @merovex.domain
+    get unsubscribe_newsletter_path(token: reader.generate_token_for(:unsubscribe))
+    assert_response :not_found
+    get keep_newsletter_path(token: reader.generate_token_for(:unsubscribe))
+    assert_response :not_found
+    assert reader.reload.confirmed?, "nor unsubscribe"
+  end
+
+  test "a contact-form confirmation only works on the site it was sent through" do
+    missive = Current.with_account(@rival) do
+      Missive.create!(name: "Fan", email_address: "fan@example.com", subject: "Hi", body: "hello")
+    end
+
+    host! @merovex.domain
+    get confirm_contact_path(token: missive.generate_token_for(:confirmation))
+    assert_response :not_found
+    assert_not missive.reload.confirmed?
+
+    host! @rival.domain
+    get confirm_contact_path(token: missive.generate_token_for(:confirmation))
+    assert_response :success
+    assert missive.reload.confirmed?
+  end
+
   test "each domain serves only its own public site" do
     host! @rival.domain
     get "/posts"

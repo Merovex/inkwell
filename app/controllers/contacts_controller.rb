@@ -31,7 +31,9 @@ class ContactsController < PublicController
 
   def confirm
     missive = Missive.find_by_token_for(:confirmation, params[:token])
-    if missive.nil?
+    # A signed token resolves globally; one minted through another site's
+    # contact form is no good here (the ClaimScoped rule).
+    if missive.nil? || missive.account != Current.account
       render :invalid_token, status: :not_found
     else
       # Already confirmed (a re-click or an email-scanner prefetch got here first)

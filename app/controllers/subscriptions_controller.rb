@@ -57,7 +57,7 @@ class SubscriptionsController < PublicController
   end
 
   def confirm
-    subscriber = Subscriber.find_by_token_for(:confirmation, params[:token])
+    subscriber = resolve_subscriber(:confirmation)
     if subscriber.nil?
       render :invalid_token, status: :not_found
     else
@@ -71,7 +71,7 @@ class SubscriptionsController < PublicController
   end
 
   def unsubscribe
-    subscriber = Subscriber.find_by_token_for(:unsubscribe, params[:token])
+    subscriber = resolve_subscriber(:unsubscribe)
     if subscriber
       subscriber.unsubscribe!(ip: request.remote_ip)
       attribute_to_broadcast(subscriber)
@@ -84,7 +84,7 @@ class SubscriptionsController < PublicController
   # "Keep me subscribed" from a re-engagement nudge: reset the engagement clock
   # so the sunset sweep leaves them alone.
   def keep
-    subscriber = Subscriber.find_by_token_for(:unsubscribe, params[:token])
+    subscriber = resolve_subscriber(:unsubscribe)
     if subscriber&.confirmed?
       subscriber.mark_engaged!
       render :kept
@@ -94,6 +94,15 @@ class SubscriptionsController < PublicController
   end
 
   private
+    # A signed token resolves globally, so one minted for a reader of one
+    # site must never act on another site's domain (the ClaimScoped rule).
+    # Links are always generated on the reader's own site, so a mismatch is
+    # a tampered link — it gets the same invalid-token page as a bad one.
+    def resolve_subscriber(purpose)
+      subscriber = Subscriber.find_by_token_for(purpose, params[:token])
+      subscriber if subscriber && subscriber.account == Current.account
+    end
+
     # When the link came from a broadcast email (carries b=<broadcast_id>),
     # record the opt-out against that issue's delivery so it shows on the
     # broadcasts dashboard. Metrics only; a missing/mismatched delivery is a no-op.
