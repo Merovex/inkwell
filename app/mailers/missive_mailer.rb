@@ -6,7 +6,7 @@
 #     name/subject/body. That closes the abuse vector where someone submits a
 #     victim's address plus attacker text and makes us email it to them.
 #
-#   digest — sent to the domain admins, a COUNT only ("you have X new messages")
+#   digest — sent to the site's owner, a COUNT only ("you have X new messages")
 #     plus a link to /admin/missives. The actual messages are read in the admin
 #     UI; replies go from the admin's own mail client, never through this app.
 #
@@ -32,17 +32,16 @@ class MissiveMailer < ApplicationMailer
     mail(to: missive.email_address, subject: "Confirm your message to #{@site_name}")
   end
 
-  # A once-daily nudge to the admins. `count` is the number of messages confirmed
-  # in the last day; `recipients` is the domain admins' addresses. No message
-  # content rides along — just the count and a link to the feed.
-  def digest(recipients, count)
-    # The digest is install-wide (cross-account sweep); the first account's
-    # identity fronts it until the multi-tenant email phase splits it up.
-    @site_name = (Current.account || Account.first).site.site_name
+  # A once-daily nudge to one site's owner. `count` is the number of that
+  # site's messages confirmed in the last day. No message content rides along
+  # — just the count and a link to the feed, which lives on the app host
+  # under the site's slug (Account#admin_path).
+  def digest(account, count)
+    @site_name = account.site.site_name
     @count = count
-    @missives_url = admin_missives_url
+    @missives_url = admin_missives_url(script_name: "/#{account.slug}", **app_url_options)
 
-    subject = "#{count} new contact #{'message'.pluralize(count)} — #{@site_name}"
-    mail(to: recipients, subject: subject)
+    mail to: account.owner.email_address,
+      subject: "#{count} new contact #{'message'.pluralize(count)} — #{@site_name}"
   end
 end

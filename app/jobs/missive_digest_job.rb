@@ -1,18 +1,21 @@
-# Once-daily nudge to the domain admins: "you have X new contact messages",
-# where X counts Missives confirmed in the last day. No message content rides
-# along — just the count and a link to /admin/missives. Skips the send entirely
-# when nothing new arrived, or when there are no admins to tell. Runs each
-# morning (config/recurring.yml).
+# Once-daily nudge to each site's owner: "you have X new contact messages",
+# where X counts that site's Missives confirmed in the last day. No message
+# content rides along — just the count and a link to the site's
+# /admin/missives. A site with nothing new gets no email. Runs each morning
+# (config/recurring.yml).
+#
+# Platform missives (no account — mail to the support desk) aren't digested:
+# staff read those in the support desk view.
 class MissiveDigestJob < ApplicationJob
   def perform
-    # Cross-account count for now — the digest goes install-wide to domain
-    # admins; a per-account digest belongs to the multi-tenant email phase.
-    count = Current.allowing_unscoped_tenancy { Missive.confirmed.where(confirmed_at: 24.hours.ago..).count }
-    return if count.zero?
+    # A deliberate cross-account sweep to find who has news; each email is
+    # then one account's count, sent to that account's owner.
+    counts = Current.allowing_unscoped_tenancy do
+      Missive.confirmed.where(confirmed_at: 24.hours.ago..).where.not(account_id: nil).group(:account_id).count
+    end
 
-    recipients = User.root.pluck(:email_address)
-    return if recipients.empty?
-
-    MissiveMailer.digest(recipients, count).deliver_later
+    Account.where(id: counts.keys).includes(:owner).find_each do |account|
+      MissiveMailer.digest(account, counts[account.id]).deliver_later
+    end
   end
 end

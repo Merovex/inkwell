@@ -43,8 +43,9 @@ production:
     class: DripTickJob
     schedule: at 7am every day America/New_York
 
-  # Daily contact-form digest to the domain admins ("X new messages"), counting
-  # missives confirmed in the last 24h. Skips the send when there's nothing new.
+  # Daily contact-form digest, one per site to its owner ("X new messages"),
+  # counting that site's missives confirmed in the last 24h. A site with
+  # nothing new gets no email.
   missive_digest:
     class: MissiveDigestJob
     schedule: at 8am every day America/New_York
