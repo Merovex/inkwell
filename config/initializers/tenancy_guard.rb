@@ -8,6 +8,11 @@
 # when a deliberate sweep declares itself via
 # Current.allowing_unscoped_tenancy { ... }.
 #
+# Removal criterion (set 2026-09-21, after the multitenancy audit): once the
+# audit's fixes — the AccountMember gate, per-site missive digest, and
+# host-checked tokens — have run in production for a month with no
+# isolation bug reported, this file can go.
+#
 # Scaffolding, not architecture: delete after the audit has soaked clean
 # (the permanent artifact is test/integration/tenant_isolation_test.rb).
 if Rails.env.local?
