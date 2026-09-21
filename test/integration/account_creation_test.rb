@@ -31,14 +31,18 @@ class AccountCreationTest < ActionDispatch::IntegrationTest
     assert_response :success, "a plain-member owner administers their own press"
   end
 
-  test "a taken or blank name re-renders with errors, creating nothing" do
+  test "a blank name re-renders with errors, creating nothing" do
     assert_no_difference [ "Account.count", "AccountUser.count" ] do
-      post accounts_path, params: { account: { name: accounts(:merovex).name.upcase } }
-      assert_response :unprocessable_entity
-
       post accounts_path, params: { account: { name: "" } }
       assert_response :unprocessable_entity
     end
+  end
+
+  test "a name another site already uses is fine — the name is a label, not an identity" do
+    assert_difference "Account.count", 1 do
+      post accounts_path, params: { account: { name: accounts(:merovex).name } }
+    end
+    assert_response :redirect
   end
 
   test "a member with no site lands in circles, never a bare picker" do

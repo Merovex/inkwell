@@ -40,6 +40,13 @@ class AccountTest < ActiveSupport::TestCase
     assert_not Account.new(name: "No Owner").valid?
   end
 
+  test "two sites may share a name — identity is the slug, handle, and domain" do
+    twin = Account.create!(name: accounts(:merovex).name, owner: users(:bob))
+
+    assert twin.persisted?
+    assert_not_equal accounts(:merovex).slug, twin.slug
+  end
+
   test "domain uniqueness is enforced by the database" do
     assert_raises ActiveRecord::RecordNotUnique do
       Account.create!(name: "Copycat", owner: users(:bob), domain: "merovex.press")

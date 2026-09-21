@@ -46,7 +46,10 @@ class Account < ApplicationRecord
   has_one :published_design, -> { published }, class_name: "SiteDesignVersion"
   after_create :seed_design_versions, :seed_pages
 
-  validates :name, presence: true, uniqueness: { case_sensitive: false }
+  # A private label, deliberately not unique: identity is the slug, handle,
+  # and domain. Wherever names are listed, the public address rides along so
+  # two same-named sites stay tellable apart.
+  validates :name, presence: true
 
   # The author-chosen Kindred Quill name — Buttondown's shape, on two
   # surfaces: the shared-lane From (<handle>@kindredquill.email) and the

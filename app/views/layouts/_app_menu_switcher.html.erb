@@ -37,7 +37,9 @@
             <div class="switcher__switch">
               <span class="u-microcaps">Switch site</span>
               <% sites.where.not(id: site.id).each do |other| %>
-                <%= link_to other.name, other.admin_path %>
+                <%= link_to other.admin_path do %>
+                  <%= other.name %> <span class="u-text-muted"><%= other.public_address %></span>
+                <% end %>
               <% end %>
             </div>
           <% end %>

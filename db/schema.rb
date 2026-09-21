@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.2].define(version: 2026_09_21_150000) do
+ActiveRecord::Schema[8.2].define(version: 2026_09_21_170000) do
   create_table "account_users", force: :cascade do |t|
     t.integer "account_id", null: false
     t.integer "user_id", null: false
@@ -38,7 +38,7 @@ ActiveRecord::Schema[8.2].define(version: 2026_09_21_150000) do
     t.string "sendy_api_key"
     t.index ["domain"], name: "index_accounts_on_domain", unique: true
     t.index ["handle"], name: "index_accounts_on_handle", unique: true
-    t.index ["name"], name: "index_accounts_on_name", unique: true
+    t.index ["name"], name: "index_accounts_on_name"
     t.index ["owner_id"], name: "index_accounts_on_owner_id"
     t.index ["sendy_api_key"], name: "index_accounts_on_sendy_api_key", unique: true
     t.index ["slug"], name: "index_accounts_on_slug", unique: true
