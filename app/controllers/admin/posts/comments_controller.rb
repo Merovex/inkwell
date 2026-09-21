@@ -2,6 +2,7 @@
 # CommentActions; member actions (edit/update/destroy) are shallow, see
 # Admin::CommentsController.
 class Admin::Posts::CommentsController < ApplicationController
+  include AccountMember
   include PostScoped
   # Commenting follows visibility: you can't reply to a draft you can't see.
   before_action -> { authorize! @record, to: :view }

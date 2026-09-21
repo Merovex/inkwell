@@ -2,6 +2,7 @@
 # lives in CommentActions; member actions are shallow, see
 # Admin::CommentsController.
 class Admin::Messages::CommentsController < ApplicationController
+  include AccountMember
   include MessageScoped
   # Commenting follows visibility: you can't reply to a draft you can't see.
   before_action -> { authorize! @record, to: :view }

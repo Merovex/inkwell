@@ -113,6 +113,13 @@ class User < ApplicationRecord
     root? || account&.owner_id == id
   end
 
+  # One of the account's people: a member (account_users) or whoever
+  # administers it. The floor for touching anything inside a site — see the
+  # AccountMember controller gate and RecordPolicy.
+  def member_of?(account)
+    account.present? && (administers?(account) || account_users.exists?(account: account))
+  end
+
   # Who may hold a join code: root always; everyone once the hard-coded
   # open-beta switch flips (config.x.join_codes.open).
   def can_invite?

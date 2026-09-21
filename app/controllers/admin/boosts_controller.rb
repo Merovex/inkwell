@@ -1,6 +1,8 @@
 # Removing a boost — only ever your own. The Current.user scope is the
 # entire authorization: someone else's boost id 404s rather than 403s.
 class Admin::BoostsController < ApplicationController
+  include AccountMember
+
   def destroy
     boost = Current.user.boosts.find(params[:id])
     record = boost.record

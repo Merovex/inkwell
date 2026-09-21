@@ -105,6 +105,48 @@ class TenantIsolationTest < ActionDispatch::IntegrationTest
     assert_not_includes @rival.records.messages.pluck(:id), record.id
   end
 
+  # Writes, not just reads: the member-level corners of the admin namespace
+  # (comments, boosts) sit outside AdminOnly, so "signed in" once meant
+  # "signed in to Kindred Quill" — an author from another site could write
+  # onto this one's published posts and forum. AccountMember closes that.
+  test "an author from another site can't comment on or boost this site's content" do
+    host! APP_HOST
+    sign_in_as @rival_owner
+
+    assert_no_difference -> { Comment.count } do
+      post "/#{@merovex.slug}/admin/posts/#{records(:kickoff).id}/comments", params: { comment: { content: "<p>drive-by</p>" } }
+      assert_response :not_found
+
+      post "/#{@merovex.slug}/admin/forum/#{records(:welcome).id}/comments", params: { comment: { content: "<p>drive-by</p>" } }
+      assert_response :not_found
+    end
+
+    assert_no_difference -> { Boost.count } do
+      post "/#{@merovex.slug}/admin/records/#{records(:kickoff).id}/boosts", params: { boost: { content: "👍" } }
+      assert_response :not_found
+    end
+
+    get "/#{@merovex.slug}/admin/posts/#{records(:kickoff).id}/comments/new"
+    assert_response :not_found
+  end
+
+  test "a site's own member can still comment and boost (the gate isn't vacuous)" do
+    host! APP_HOST
+    sign_in_as users(:bob) # a plain member of merovex (account_users fixture), not its admin
+
+    assert_difference -> { Comment.count } => 1, -> { Boost.count } => 1 do
+      post "/#{@merovex.slug}/admin/posts/#{records(:kickoff).id}/comments", params: { comment: { content: "<p>well said</p>" } }
+      post "/#{@merovex.slug}/admin/records/#{records(:kickoff).id}/boosts", params: { boost: { content: "👍" } }
+    end
+  end
+
+  test "the record policy refuses a non-member whatever account is ambient" do
+    Current.with_account(@rival) do
+      assert_not RecordPolicy.new(@rival_owner, records(:kickoff)).view?
+      assert RecordPolicy.new(@rival_owner, @rival_post).view?
+    end
+  end
+
   test "each domain serves only its own public site" do
     host! @rival.domain
     get "/posts"

@@ -3,6 +3,8 @@
 # submission fails validation and simply adds nothing — no error ceremony
 # for a sixteen-character input.
 class Admin::Records::BoostsController < ApplicationController
+  include AccountMember
+
   def create
     @record = Current.account.records.active.find(params[:record_id])
     # Boosting follows visibility: no cheering for a draft you can't see.
