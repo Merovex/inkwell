@@ -58,6 +58,11 @@ env:
     # apex 301s here. Rollback is commenting this line out and redeploying.
     APP_HOST: app.kindredquill.com
 
+    # Engagement-based sunset (ADR 0014): arms SubscriberSunsetJob (Mondays 8am
+    # ET) now that open/click tracking is live. Rollback is commenting this
+    # line out and redeploying.
+    NEWSLETTER_SUNSET: true
+
     # Set number of processes dedicated to Solid Queue (default: 1)
     # JOB_CONCURRENCY: 3
 
