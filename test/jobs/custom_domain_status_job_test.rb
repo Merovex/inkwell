@@ -8,10 +8,13 @@ class CustomDomainStatusJobTest < ActiveSupport::TestCase
   # about — injected through the job's client_override seam. `validations` are
   # the txt_value strings Cloudflare is still listing, in the shape it uses.
   class FakeClient
+    attr_reader :retried_validation
+
     def initialize(status:, ssl_status:, validations: [])
       @status = status
       @ssl_status = ssl_status
       @validations = validations
+      @retried_validation = []
     end
 
     def get_custom_hostname(id)
@@ -21,6 +24,8 @@ class CustomDomainStatusJobTest < ActiveSupport::TestCase
                      { "txt_name" => "_acme-challenge.merovex.press", "txt_value" => value }
                    } })
     end
+
+    def retry_validation(id) = @retried_validation << id
   end
 
   # Answers as though the hostname's CNAME already points at the platform
@@ -59,6 +64,32 @@ class CustomDomainStatusJobTest < ActiveSupport::TestCase
     end
 
     assert account.custom_domains.reload.all?(&:verifying?)
+  end
+
+  test "asks Cloudflare to retry validation once its own DCV attempt has timed out" do
+    account = accounts(:merovex)
+    account.custom_domains.create!(hostname: "merovex.press", status: "verifying", cloudflare_id: "id-apex")
+
+    fake = FakeClient.new(status: "pending", ssl_status: "validation_timed_out")
+    CustomDomainStatusJob.client_override = fake
+
+    CustomDomainStatusJob.perform_now(account)
+
+    assert_equal [ "id-apex" ], fake.retried_validation
+    # Still polling, not given up — a retry is a nudge, not a resolution.
+    assert account.custom_domains.reload.all?(&:verifying?)
+  end
+
+  test "does not ask Cloudflare to retry validation while it is still in progress" do
+    account = accounts(:merovex)
+    account.custom_domains.create!(hostname: "merovex.press", status: "verifying", cloudflare_id: "id-apex")
+
+    fake = FakeClient.new(status: "pending", ssl_status: "pending_validation")
+    CustomDomainStatusJob.client_override = fake
+
+    CustomDomainStatusJob.perform_now(account)
+
+    assert_empty fake.retried_validation
   end
 
   test "bridges the build target as soon as DNS routes, without waiting on the certificate" do

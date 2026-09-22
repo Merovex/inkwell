@@ -66,6 +66,7 @@ class CustomDomainStatusJob < ApplicationJob
         ssl_status: hostname.ssl_status, last_checked_at: Time.current,
         validation_records: validations_for(domain, hostname))
       domain.update!(status: "live") if domain.provisioned?
+      cf_client.retry_validation(domain.cloudflare_id) if hostname.ssl_status == "validation_timed_out"
     rescue Cloudflare::Client::Error => error
       Rails.logger.warn("[custom-domain] poll failed for #{domain.hostname}: #{error.message}")
     end

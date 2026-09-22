@@ -33,6 +33,16 @@ module Cloudflare
       true
     end
 
+    # Cloudflare stops attempting DCV once ssl.status times out — polling
+    # get_custom_hostname after that returns the same stuck status forever.
+    # Its documented unstick is a PATCH with ssl config matching what's
+    # already there, which tells Cloudflare to make another DCV attempt.
+    def retry_validation(id)
+      request(Net::HTTP::Patch, "/zones/#{zone_id}/custom_hostnames/#{id}",
+        json_body: { ssl: { method: "txt", type: "dv" } })
+      true
+    end
+
     # KV contract: the key is the bare lowercase hostname, the value is the plain
     # account slug — no JSON wrapper (edge/src/index.js reads a bare string).
     def kv_put(hostname, slug)
