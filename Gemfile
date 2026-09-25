@@ -89,7 +89,7 @@ gem "diff-lcs", "~> 2.0"
 gem "csv"
 
 # Zip — packs an author's site export into one download (Export::Archive).
-gem "rubyzip", "~> 3.0", require: "zip"
+gem "rubyzip", "~> 3.7", require: "zip"
 
 # Spam protection for public forms: a honeypot field plus a time-to-submit trap
 # [https://github.com/markets/invisible_captcha]
