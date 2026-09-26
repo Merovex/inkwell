@@ -188,4 +188,17 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
     end
     assert record.reload.recordable.cover?
   end
+
+  test "a cover upload that isn't an image is refused" do
+    post admin_books_path, params: { book: { title: "Cover Book", content: "x" }, publish: "1" }
+    record = Record.books.order(:id).last
+
+    assert_no_difference -> { Depiction.count } do
+      post admin_book_depiction_path(record),
+        params: { depiction: fixture_file_upload("avatar.txt", "text/plain") }
+    end
+    assert_redirected_to admin_book_path(record)
+    assert_equal "Please choose an image file.", flash[:alert]
+    assert_not record.reload.recordable.cover?
+  end
 end
