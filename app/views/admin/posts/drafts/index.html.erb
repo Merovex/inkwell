@@ -20,6 +20,7 @@
             author: post.record.creator.display_name,
             date: l(post.updated_at.to_date, format: :short),
             trailing_chips: post_status_chips(post),
+            actions: newsletter_archive_action(post),
             excerpt: plain_excerpt(post.content),
             discard_path: admin_draft_path(post.record),
             discard_confirm: post.ever_published? ? "Move this once-published post to the trash?" : "Delete this draft forever? There's no undo." %>

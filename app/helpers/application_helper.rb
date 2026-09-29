@@ -78,6 +78,19 @@ module ApplicationHelper
     sanitize_content_attachment(html.to_s).html_safe
   end
 
+  # A post row's trailing newsletter-archive link, once its email is scheduled
+  # or sent — the page promo partners check (live before the send). nil when
+  # the post has no email, so shared/list_item renders no action zone.
+  def newsletter_archive_action(post)
+    broadcast = post.record.broadcast or return
+
+    link_to issue_url(broadcast, **AccountHost.public_url_options(Current.account)),
+      class: "button button--icon button--ghost", title: "Newsletter archive",
+      "aria-label": "Newsletter archive for #{post.title}", target: "_blank", rel: "noopener" do
+      inline_svg_tag("lucide/mail.svg", class: "lucide", size: "16px")
+    end
+  end
+
   # Status chips for a post row: its state (green Published / yellow Scheduled /
   # neutral Draft), plus an "Emailed" chip once a published post has gone out.
   # [[label, badge_variant], …] for shared/list_item's trailing_chips.

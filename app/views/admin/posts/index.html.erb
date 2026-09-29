@@ -42,6 +42,7 @@
               date: l(post.published_at.to_date, format: :short),
               length: post_length(body),
               trailing_chips: post_status_chips(post),
+              actions: newsletter_archive_action(post),
               excerpt: plain_excerpt(body),
               comment_count: @comment_counts[post.record_id].to_i,
               pinned: post.pinned_at.present?,

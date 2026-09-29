@@ -15,6 +15,24 @@ class PostsDraftsTest < ActionDispatch::IntegrationTest
     assert_select ".canvas__head button[popovertarget]", count: 0
   end
 
+  test "a post row with a scheduled or sent email links to its newsletter archive" do
+    schedule records(:typography)
+    scheduled = records(:typography).create_broadcast!(scheduled_at: 3.days.from_now)
+    sent = records(:kickoff).create_broadcast!(sent_at: 1.day.ago).tap(&:issue!)
+
+    get admin_drafts_path
+    assert_select "a[href=?][aria-label=?]", "https://merovex.press/newsletters/#{scheduled.to_param}",
+      "Newsletter archive for #{posts(:typography).title}"
+
+    get admin_posts_path
+    assert_select "a[href=?]", "https://merovex.press/newsletters/#{sent.to_param}"
+  end
+
+  test "a post row with no email carries no archive link" do
+    get admin_posts_path
+    assert_select "a[href*='/newsletters/']", count: 0
+  end
+
   test "scheduled-only wording" do
     schedule records(:typography)
 
