@@ -193,6 +193,21 @@ await check("delivery page proxies slugged GETs and its files POST, GET-files st
   assert.equal(proxied, undefined);
 });
 
+await check("newsletter archive proxies slugged GETs only", async () => {
+  proxied = undefined;
+  const res = await island("https://merovex.press/newsletters/champagne-in-space-K7TXM4");
+  assert.equal(res.status, 200); // proxied, NOT an R2 404
+  assert.equal(proxied.url, "https://app.kindredquill.com/newsletters/champagne-in-space-K7TXM4");
+
+  proxied = undefined;
+  await island("https://merovex.press/newsletters/champagne-in-space-K7TXM4", "POST");
+  assert.equal(proxied, undefined);
+
+  proxied = undefined;
+  await island("https://merovex.press/newsletters/a/b"); // deeper paths are not islands
+  assert.equal(proxied, undefined);
+});
+
 await check("claim renewal form POST and its sent page proxy, prefixed on the platform host", async () => {
   proxied = undefined;
   await island("https://merovex.press/claim_renewal", "POST");

@@ -68,6 +68,15 @@ module ApplicationHelper
     "#{count}, about #{pluralize(minutes, "minute")}"
   end
 
+  # A broadcast's frozen issue HTML (Broadcast#issue!). It was sanitized when
+  # Action Text rendered it; this re-sanitizes with Action Text's allowlist on
+  # the way out, since it now comes back from a plain text column. The string
+  # goes to the sanitizer as-is — wrapping it in ActionText::Content would
+  # canonicalize the rendered attachments back to empty sgid tags.
+  def frozen_issue(broadcast)
+    sanitize_content_attachment(broadcast.issue_html.to_s).html_safe
+  end
+
   # Status chips for a post row: its state (green Published / yellow Scheduled /
   # neutral Draft), plus an "Emailed" chip once a published post has gone out.
   # [[label, badge_variant], …] for shared/list_item's trailing_chips.

@@ -85,6 +85,9 @@ const ISLANDS = [
   // files POST 302s to a presigned R2 URL, handed straight to the browser.
   { method: "GET", pattern: /^\/download\/[^/]+$/ },
   { method: "POST", pattern: /^\/download\/[^/]+\/files$/ },
+  // Newsletter archive: one broadcast's browser view, frozen as it went out
+  // (the slugged link in every issue's "View this on the web" footer).
+  { method: "GET", pattern: /^\/newsletters\/[^/]+$/ },
 ];
 
 function isIsland(method, pathname) {

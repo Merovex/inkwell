@@ -1,5 +1,7 @@
-# Emails one published post to one subscriber — the newsletter issue. The post's
-# public blog page doubles as the "view in browser" archive (HEY World). Carries
+# Emails one published post to one subscriber — the newsletter issue, built
+# from the copy frozen on the broadcast (Broadcast#issue!), so every recipient
+# gets the same bytes even if the post is edited mid-send. "View this on the
+# web" is that same frozen copy's archive page, tip-in and all. Carries
 # the subscriber's stable unsubscribe token both in the body and as a
 # List-Unsubscribe header (RFC 8058 one-click) for deliverability. Sends from
 # the site's own broadcast address (BYOD sending domain or the shared lane —
@@ -7,14 +9,14 @@
 # + contact address ride along as the display label and Reply-To.
 class PostBroadcastMailer < ApplicationMailer
   def issue(broadcast, subscriber)
-    @post = broadcast.post
+    @broadcast = broadcast
     account = broadcast.record.bucket
     setting = account.site
     @site_name = setting.site_name
     # Reader-facing links live on the press's public address (custom domain or
     # apex slug path), never the app host.
     url_options = public_url_options(account)
-    @web_url = post_url(broadcast.record.to_slug, **url_options)
+    @web_url = issue_url(broadcast, **url_options)
     # Carry the broadcast so an unsubscribe from *this* issue attributes to it on
     # the dashboard (metrics only — see SubscriptionsController#unsubscribe).
     @unsubscribe_url = unsubscribe_newsletter_url(token: subscriber.generate_token_for(:unsubscribe), broadcast: broadcast.id, **url_options)
@@ -24,7 +26,7 @@ class PostBroadcastMailer < ApplicationMailer
 
     options = {
       to: subscriber.email_address,
-      subject: @post.title,
+      subject: broadcast.issue_title,
       from: broadcast_from(account),
       # Bulk mail rides Postmark's Broadcast stream (required — Postmark won't
       # send bulk on the transactional stream).

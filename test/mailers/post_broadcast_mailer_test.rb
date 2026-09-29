@@ -1,15 +1,15 @@
 require "test_helper"
 
 class PostBroadcastMailerTest < ActionMailer::TestCase
-  test "issue carries the post, view-in-browser link, and unsubscribe" do
+  test "issue carries the frozen post, the archive link, and unsubscribe" do
     subscriber = Subscriber.create!(email_address: "reader@example.com", status: :confirmed)
-    broadcast = records(:kickoff).create_broadcast!
+    broadcast = records(:kickoff).create_broadcast!.tap(&:issue!)
 
     email = PostBroadcastMailer.issue(broadcast, subscriber)
 
     assert_equal [ "reader@example.com" ], email.to
     assert_equal posts(:kickoff).title, email.subject
-    assert_match records(:kickoff).to_slug, email.text_part.decoded
+    assert_match "/newsletters/#{broadcast.to_param}", email.text_part.decoded
     assert_match %r{/newsletter/unsubscribe/}, email.text_part.decoded
     assert_match "List-Unsubscribe=One-Click", email["List-Unsubscribe-Post"].to_s
   end
@@ -23,7 +23,7 @@ class PostBroadcastMailerTest < ActionMailer::TestCase
       io: file_fixture("avatar.png").open, filename: "avatar.png", content_type: "image/png"
     )
     posts(:kickoff).update!(content: %(<action-text-attachment sgid="#{blob.attachable_sgid}"></action-text-attachment>))
-    broadcast = records(:kickoff).create_broadcast!
+    broadcast = records(:kickoff).create_broadcast!.tap(&:issue!)
 
     email = PostBroadcastMailer.issue(broadcast, subscriber)
 
@@ -33,7 +33,7 @@ class PostBroadcastMailerTest < ActionMailer::TestCase
   test "issue splices the tip-in at the marker, in both parts" do
     subscriber = Subscriber.create!(email_address: "reader@example.com", status: :confirmed)
     posts(:kickoff).update!(content: "<p>Hello.</p><p>{% tipin %}</p>", tipin: "<p>Free novella inside.</p>")
-    broadcast = records(:kickoff).create_broadcast!
+    broadcast = records(:kickoff).create_broadcast!.tap(&:issue!)
 
     email = PostBroadcastMailer.issue(broadcast, subscriber)
 
@@ -44,20 +44,20 @@ class PostBroadcastMailerTest < ActionMailer::TestCase
 
   test "issue's reader-facing links land on the account's own domain, never the app host" do
     subscriber = Subscriber.create!(email_address: "reader@example.com", status: :confirmed)
-    broadcast = records(:kickoff).create_broadcast!
+    broadcast = records(:kickoff).create_broadcast!.tap(&:issue!)
 
     email = PostBroadcastMailer.issue(broadcast, subscriber)
 
     # The merovex fixture carries domain: merovex.press — every public link
-    # (view-in-browser, unsubscribe, one-click header) must ride it.
-    assert_match %r{https://merovex\.press/.*#{records(:kickoff).to_slug}}, email.text_part.decoded
+    # (the archive, unsubscribe, one-click header) must ride it.
+    assert_match "https://merovex.press/newsletters/#{broadcast.to_param}", email.text_part.decoded
     assert_match %r{https://merovex\.press/newsletter/unsubscribe/}, email.text_part.decoded
     assert_match %r{\Ahttps://merovex\.press/}, email["List-Unsubscribe"].to_s.delete_prefix("<")
   end
 
   test "issue rides Postmark's broadcast stream with tracking and id metadata" do
     subscriber = Subscriber.create!(email_address: "reader@example.com", status: :confirmed)
-    broadcast = records(:kickoff).create_broadcast!
+    broadcast = records(:kickoff).create_broadcast!.tap(&:issue!)
 
     email = PostBroadcastMailer.issue(broadcast, subscriber)
 
@@ -72,7 +72,7 @@ class PostBroadcastMailerTest < ActionMailer::TestCase
 
   test "issue tags the message with the SES config set and message tags for event mapping" do
     subscriber = Subscriber.create!(email_address: "reader@example.com", status: :confirmed)
-    broadcast = records(:kickoff).create_broadcast!
+    broadcast = records(:kickoff).create_broadcast!.tap(&:issue!)
 
     email = PostBroadcastMailer.issue(broadcast, subscriber)
     settings = email.delivery_method.settings
@@ -81,5 +81,18 @@ class PostBroadcastMailerTest < ActionMailer::TestCase
     tags = settings[:email_tags].index_by { |t| t[:name] }
     assert_equal broadcast.id.to_s, tags["broadcast_id"][:value]
     assert_equal subscriber.id.to_s, tags["subscriber_id"][:value]
+  end
+
+  test "issue sends the frozen copy, not an edit made after the freeze" do
+    subscriber = Subscriber.create!(email_address: "reader@example.com", status: :confirmed)
+    broadcast = records(:kickoff).create_broadcast!.tap(&:issue!)
+    frozen_title = broadcast.issue_title
+    posts(:kickoff).update!(title: "Retitled mid-send", content: "<p>Edited after the freeze.</p>")
+
+    email = PostBroadcastMailer.issue(broadcast.reload, subscriber)
+
+    assert_equal frozen_title, email.subject
+    assert_no_match "Edited after the freeze", email.html_part.decoded
+    assert_no_match "Edited after the freeze", email.text_part.decoded
   end
 end

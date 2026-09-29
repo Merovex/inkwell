@@ -33,4 +33,38 @@ class BroadcastTest < ActiveSupport::TestCase
     assert_nil empty.delivery_rate
     assert_nil empty.open_rate
   end
+
+  test "issue! freezes the title and the body with its tip-in, once" do
+    posts(:kickoff).update!(content: "<p>Hello.</p>", tipin: "<p>Free novella inside.</p>")
+    broadcast = records(:kickoff).create_broadcast!
+
+    broadcast.issue!
+    assert broadcast.issued?
+    assert_equal posts(:kickoff).title, broadcast.issue_title
+    assert_match "Free novella inside", broadcast.issue_html
+
+    posts(:kickoff).update!(title: "Retitled", content: "<p>Changed.</p>")
+    assert_no_changes -> { broadcast.reload.attributes.slice("issue_title", "issue_html", "issued_at") } do
+      broadcast.issue!
+    end
+  end
+
+  test "issue! renders embedded images at the mailer host, not the static tenant host" do
+    blob = ActiveStorage::Blob.create_and_upload!(
+      io: file_fixture("avatar.png").open, filename: "avatar.png", content_type: "image/png")
+    posts(:kickoff).update!(content: %(<action-text-attachment sgid="#{blob.attachable_sgid}"></action-text-attachment>))
+    broadcast = records(:kickoff).create_broadcast!
+
+    broadcast.issue!
+
+    host = Rails.application.config.action_mailer.default_url_options[:host]
+    assert_match %r{<img[^>]+src="https?://#{Regexp.escape(host)}/rails/active_storage/}, broadcast.issue_html
+  end
+
+  test "to_param leads with the frozen title and ends in the permanent slug" do
+    broadcast = records(:kickoff).create_broadcast!.tap(&:issue!)
+    posts(:kickoff).update!(title: "Retitled")
+
+    assert_equal "kickoff-notes-for-the-winter-issue-#{broadcast.slug}", broadcast.reload.to_param
+  end
 end

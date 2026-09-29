@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.2].define(version: 2026_09_21_170000) do
+ActiveRecord::Schema[8.2].define(version: 2026_09_29_120000) do
   create_table "account_users", force: :cascade do |t|
     t.integer "account_id", null: false
     t.integer "user_id", null: false
@@ -234,7 +234,12 @@ ActiveRecord::Schema[8.2].define(version: 2026_09_21_170000) do
     t.integer "bounced_count", default: 0, null: false
     t.integer "complained_count", default: 0, null: false
     t.integer "unsubscribed_count", default: 0, null: false
+    t.string "slug", null: false
+    t.string "issue_title"
+    t.text "issue_html"
+    t.datetime "issued_at"
     t.index ["record_id"], name: "index_broadcasts_on_record_id", unique: true
+    t.index ["slug"], name: "index_broadcasts_on_slug", unique: true
   end
 
   create_table "bulletins", force: :cascade do |t|

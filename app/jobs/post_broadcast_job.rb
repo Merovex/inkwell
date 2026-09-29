@@ -6,12 +6,18 @@
 # and idempotent: each recipient gets a BroadcastDelivery row (unique per
 # subscriber), and anyone already stamped sent_at is skipped — so a retried or
 # half-finished job never double-mails. Stamps the broadcast when done.
+# The issue is frozen first (Broadcast#issue!) so edits mid-send can't split
+# recipients across versions.
 class PostBroadcastJob < ApplicationJob
   # A scheduled broadcast may have been canceled (row deleted) before its time
   # came — the wait_until job then just no-ops, like Record::PublishLaterJob.
   discard_on ActiveJob::DeserializationError
 
   def perform(broadcast)
+    # Freeze the issue before the first email: every recipient, and the
+    # archive page, get this one copy. A no-op on a resumed run.
+    broadcast.issue!
+
     broadcast.record.bucket.subscribers.sendable.find_each do |subscriber|
       if subscriber.suppressed?
         Rails.logger.info "PostBroadcastJob: broadcast=#{broadcast.id} subscriber=#{subscriber.id} skipped — suppressed"

@@ -42,4 +42,11 @@ class PostBroadcastJobTest < ActiveSupport::TestCase
     end
     assert_equal 2, @broadcast.reload.deliveries.count
   end
+
+  test "freezes the issue before mailing, so the archive shows what went out" do
+    PostBroadcastJob.perform_now(@broadcast)
+
+    assert @broadcast.reload.issued?
+    assert_equal posts(:kickoff).title, @broadcast.issue_title
+  end
 end

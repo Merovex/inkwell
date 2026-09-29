@@ -651,6 +651,12 @@ Rails.application.routes.draw do
     get  "download/:id" => "deliveries#show", as: :delivery
     post "download/:id/files" => "deliveries/files#create", as: :delivery_files
 
+    # The newsletter archive: each broadcast's browser view, frozen as it went
+    # out (tip-in included) — the link partners and promo organizers check.
+    # :id is the broadcast's Sluggable to_param (<title>-<slug>), permanent
+    # through edits and republishing. A Worker-proxied island.
+    resources :issues, path: "newsletters", only: :show
+
     # Contact form (anonymous, double opt-in) at /contact. create records an
     # unconfirmed Missive and emails a fixed-template confirmation; the token link
     # confirms it. Content is only ever read in /admin/missives, never emailed out.

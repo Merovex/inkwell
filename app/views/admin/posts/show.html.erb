@@ -55,6 +55,10 @@
         <% broadcast = @record.broadcast %>
         <% if broadcast&.sent? %>
           · Emailed to <%= pluralize(broadcast.recipients_count, "subscriber") %> on <%= l broadcast.sent_at.to_date, format: :long %>
+          <% if broadcast.issued? %>
+            · <%= link_to "Newsletter archive", issue_url(broadcast, **AccountHost.public_url_options(Current.account)),
+                  target: "_blank", rel: "noopener" %>
+          <% end %>
         <% else %>
           · Not emailed
         <% end %>
