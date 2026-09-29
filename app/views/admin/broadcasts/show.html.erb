@@ -16,7 +16,7 @@
     <% if @broadcast.sent? %>
       Sent <time datetime="<%= @broadcast.sent_at.iso8601 %>"><%= @broadcast.sent_at.strftime("%B %-d, %Y at %-l:%M %p") %></time>
       to <%= pluralize(@broadcast.recipients_count, "subscriber") %>
-      <% if live && @broadcast.issued? %>
+      <% if live %>
         · <%= link_to "See the email as they received it",
               issue_url(@broadcast, **AccountHost.public_url_options(Current.account)),
               class: "u-text-strong", target: "_blank", rel: "noopener" %>

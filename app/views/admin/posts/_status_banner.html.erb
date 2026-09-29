@@ -100,3 +100,18 @@
     </aside>
   <% end %>
 <% end %>
+
+<%# A scheduled email's newsletter archive link — live before the send, so it
+    can go to promo partners early (it shows the issue as it stands until the
+    send freezes it). Same shape as the "Live at" share banner. %>
+<% if broadcast&.scheduled? %>
+  <% archive_url = issue_url(broadcast, **AccountHost.public_url_options(Current.account)) %>
+  <aside class="post-banner" data-controller="clipboard" data-clipboard-text-value="<%= archive_url %>">
+    <p class="post-banner__lead">Newsletter archive at
+      <a class="post-banner__permalink" href="<%= archive_url %>" target="_blank" rel="noopener"><%= archive_url.sub(%r{\Ahttps?://}, "") %></a></p>
+    <div class="post-banner__actions">
+      <button type="button" class="button button--small" data-action="clipboard#copy">Copy link</button>
+      <span class="u-copied-veil" data-clipboard-target="flash" role="status" aria-hidden="true">Copied to clipboard</span>
+    </div>
+  </aside>
+<% end %>

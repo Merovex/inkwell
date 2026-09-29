@@ -33,10 +33,21 @@ class Broadcast < ApplicationRecord
     scheduled_at.present? && !sent?
   end
 
-  # The archive's title half of to_param: the frozen title once issued, the
-  # live post's before.
+  # The archive's title half of to_param.
   def to_s
-    issue_title.presence || post&.title
+    archive_title
+  end
+
+  # What the archive page shows: the frozen issue once the send has started;
+  # before that (a scheduled send, whose link may already be with a promo
+  # partner), the issue as it stands, rendered live — so edits until the send
+  # still show, and the page settles on exactly what went out.
+  def archive_title
+    issued? ? issue_title : post&.title
+  end
+
+  def archive_html
+    issued? ? issue_html : render_issue
   end
 
   def issued?

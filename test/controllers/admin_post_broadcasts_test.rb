@@ -315,4 +315,15 @@ class AdminPostBroadcastsTest < ActionDispatch::IntegrationTest
 
     assert_match "isn't live yet", flash[:alert]
   end
+
+  test "a scheduled email's post page offers its newsletter archive link to copy" do
+    sign_in_as users(:admin)
+    broadcast = records(:kickoff).create_broadcast!(scheduled_at: 2.days.from_now)
+
+    get admin_post_path(records(:kickoff))
+
+    archive = "https://merovex.press/newsletters/#{broadcast.to_param}"
+    assert_select "aside[data-clipboard-text-value=?]", archive
+    assert_select "a.post-banner__permalink[href=?]", archive
+  end
 end

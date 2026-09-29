@@ -1,15 +1,20 @@
-<% content_for :title, "#{@broadcast.issue_title} — #{site_settings.site_name}" %>
-<% sent_on = (@broadcast.sent_at || @broadcast.issued_at).to_date %>
+<% content_for :title, "#{@broadcast.archive_title} — #{site_settings.site_name}" %>
 
 <article class="press-shell press-body u-full-width u-flow">
   <header class="u-flow-half">
     <p class="press-meta">
-      Sent <time datetime="<%= sent_on.iso8601 %>"><%= sent_on.strftime("%B %-d, %Y") %></time>
-      <% if @broadcast.sent? %>to <%= number_with_delimiter(@broadcast.recipients_count) %> <%= "subscriber".pluralize(@broadcast.recipients_count) %><% end %>
+      <% if @broadcast.sent? %>
+        Sent <time datetime="<%= @broadcast.sent_at.to_date.iso8601 %>"><%= @broadcast.sent_at.strftime("%B %-d, %Y") %></time>
+        to <%= number_with_delimiter(@broadcast.recipients_count) %> <%= "subscriber".pluralize(@broadcast.recipients_count) %>
+      <% elsif @broadcast.scheduled? %>
+        Goes out <time datetime="<%= @broadcast.scheduled_at.to_date.iso8601 %>"><%= @broadcast.scheduled_at.strftime("%B %-d, %Y") %></time>
+      <% else %>
+        Going out now
+      <% end %>
       · <%= site_settings.site_name %> newsletter
     </p>
-    <h1 class="press-display-lg"><%= @broadcast.issue_title %></h1>
+    <h1 class="press-display-lg"><%= @broadcast.archive_title %></h1>
   </header>
 
-  <%= frozen_issue(@broadcast) %>
+  <%= issue_body(@broadcast.archive_html) %>
 </article>

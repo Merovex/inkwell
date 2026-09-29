@@ -40,12 +40,20 @@ class IssuesTest < ActionDispatch::IntegrationTest
     assert_response :moved_permanently
   end
 
-  test "a broadcast that hasn't been issued yet 404s" do
-    @broadcast.update!(issue_title: nil, issue_html: nil, issued_at: nil)
+  test "a scheduled issue is live before the send, showing the issue as it stands" do
+    @broadcast.update!(sent_at: nil, scheduled_at: Time.zone.local(2026, 10, 1, 9, 30),
+      issue_title: nil, issue_html: nil, issued_at: nil)
+    posts(:kickoff).update!(title: "Edited before the send")
 
-    get issue_path(@broadcast)
+    get issue_path(@broadcast.reload)
 
-    assert_response :not_found
+    assert_response :success
+    assert_select "h1", text: "Edited before the send"
+    assert_select "article", text: /Free novella inside/
+    assert_select "time[datetime=?]", "2026-10-01", text: "October 1, 2026"
+    assert_match "Goes out", response.body
+    assert_no_match "subscribers", response.body
+    assert_equal "noindex", response.headers["X-Robots-Tag"]
   end
 
   test "a trashed post's archive 404s" do
