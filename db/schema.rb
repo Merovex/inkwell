@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.2].define(version: 2026_09_29_120000) do
+ActiveRecord::Schema[8.2].define(version: 2026_10_01_200000) do
   create_table "account_users", force: :cascade do |t|
     t.integer "account_id", null: false
     t.integer "user_id", null: false
@@ -789,6 +789,19 @@ ActiveRecord::Schema[8.2].define(version: 2026_09_29_120000) do
     t.index ["subscriber_id"], name: "index_streams_on_subscriber_id"
   end
 
+  create_table "subscriber_imports", force: :cascade do |t|
+    t.integer "account_id", null: false
+    t.integer "creator_id", null: false
+    t.string "source", null: false
+    t.string "status", default: "uploaded", null: false
+    t.json "tally"
+    t.datetime "invited_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id"], name: "index_subscriber_imports_on_account_id"
+    t.index ["creator_id"], name: "index_subscriber_imports_on_creator_id"
+  end
+
   create_table "subscriber_snapshots", force: :cascade do |t|
     t.integer "account_id", null: false
     t.date "week_of", null: false
@@ -930,6 +943,7 @@ ActiveRecord::Schema[8.2].define(version: 2026_09_29_120000) do
   add_foreign_key "sites", "users", column: "creator_id"
   add_foreign_key "streams", "records", column: "drip_record_id"
   add_foreign_key "streams", "subscribers"
+  add_foreign_key "subscriber_imports", "accounts"
   add_foreign_key "subscriber_snapshots", "accounts"
   add_foreign_key "subscribers", "accounts"
   add_foreign_key "subscribers", "people"

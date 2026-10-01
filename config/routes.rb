@@ -444,6 +444,14 @@ Rails.application.routes.draw do
       # re-issues the confirmation email to a still-pending subscriber. Seed
       # status is a resource: POST flags a deliverability-seed inbox, DELETE
       # returns it to a real reader.
+      # Importing a partner's sign-up CSV: create uploads and previews, the
+      # invitation POST confirms and sends the double opt-in emails. Declared
+      # before resources :subscribers so "imports" isn't read as a subscriber id.
+      namespace :subscribers do
+        resources :imports, only: %i[new create show] do
+          resource :invitation, only: :create, module: :imports
+        end
+      end
       resources :subscribers, only: %i[index show] do
         patch :unsubscribe, on: :member
         post  :resend, on: :member

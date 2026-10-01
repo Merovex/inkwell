@@ -1,0 +1,52 @@
+<% content_for :title, "Import from #{@import.source_label}" %>
+
+<%= render "admin/shared/canvas_head", crumbs: [["Subscribers", admin_subscribers_path], ["Import", nil]] %>
+
+<header class="perma-header">
+  <h1 class="perma-header__title">Import from <%= @import.source_label %></h1>
+</header>
+
+<div class="u-center u-center-narrow u-stack u-stack-double">
+  <dl class="facts">
+    <div class="facts__row">
+      <dt>File</dt>
+      <dd><%= @import.file.filename %> · <%= pluralize(@import.emails.size, "address") %></dd>
+    </div>
+    <div class="facts__row">
+      <dt>Uploaded</dt>
+      <dd><time datetime="<%= @import.created_at.iso8601 %>"><%= l @import.created_at, format: :long %></time> by <%= @import.creator.name.presence || @import.creator.email_address %></dd>
+    </div>
+    <% if @import.invited_at %>
+      <div class="facts__row">
+        <dt>Sent</dt>
+        <dd><time datetime="<%= @import.invited_at.iso8601 %>"><%= l @import.invited_at, format: :long %></time></dd>
+      </div>
+    <% end %>
+  </dl>
+
+  <section class="u-stack" aria-labelledby="import-outcomes">
+    <h2 id="import-outcomes" class="u-microcaps u-text-muted"><%= @import.invited? ? "What happened" : "What will happen" %></h2>
+    <dl class="facts">
+      <% @import.summary.sort_by { |outcome, _| subscriber_import_outcome_order(outcome) }.each do |outcome, count| %>
+        <div class="facts__row">
+          <dt><%= subscriber_import_outcome_label(outcome, sent: @import.invited?) %></dt>
+          <dd><%= count %></dd>
+        </div>
+      <% end %>
+    </dl>
+  </section>
+
+  <% if @import.uploaded? %>
+    <% if @import.invitation_count.positive? %>
+      <p>Each new reader gets one confirmation email and joins your list when they click it.</p>
+      <%= button_to "Send #{pluralize(@import.invitation_count, "invitation")}",
+            admin_subscribers_import_invitation_path(@import), class: "button button--primary" %>
+    <% else %>
+      <p>Everyone in this file is already accounted for, so there's nobody to invite.</p>
+    <% end %>
+  <% elsif @import.inviting? %>
+    <p role="status">Invitations are going out now. Refresh this page in a moment to see the results.</p>
+  <% end %>
+
+  <p><%= link_to "Back to subscribers", admin_subscribers_path(state: "pending") %></p>
+</div>

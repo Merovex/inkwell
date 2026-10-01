@@ -1,0 +1,33 @@
+<% content_for :title, "Import subscribers" %>
+
+<%= render "admin/shared/canvas_head", crumbs: [["Subscribers", admin_subscribers_path], ["Import", nil]] %>
+
+<header class="perma-header">
+  <h1 class="perma-header__title">Import subscribers</h1>
+</header>
+
+<div class="u-center u-center-narrow u-stack">
+  <p>Bring in readers who signed up somewhere else — a StoryOrigin reader magnet, a BookFunnel page — before
+     that service was connected. Upload its CSV export and you'll see what would happen to each address
+     before anything is sent.</p>
+  <p class="u-text-muted">Each new reader gets a confirmation email and joins the list once they click it.
+     Anyone already on your list is left alone, including readers who unsubscribed.</p>
+
+  <%= render "admin/shared/error_summary", model: @import %>
+
+  <%= form_with model: @import, url: admin_subscribers_imports_path, class: "settings" do |f| %>
+    <div class="field">
+      <%= f.label :source, "Where they signed up", class: "field__label" %>
+      <%= f.select :source, SubscriberImport::SOURCES.map { [ Subscriber.label_for_source(it), it ] }, {}, class: "field__control" %>
+      <span class="field__hint">Shown on each reader's roster entry, so you can tell later where they came from.</span>
+    </div>
+
+    <div class="field">
+      <%= f.label :file, "CSV file", class: "field__label" %>
+      <%= f.file_field :file, accept: ".csv,text/csv", required: true, class: "field__control" %>
+      <span class="field__hint">Needs an Email column. Up to <%= SubscriberImport::MAX_SIZE / 1.megabyte %> MB.</span>
+    </div>
+
+    <%= f.submit "Preview import", class: "button button--primary" %>
+  <% end %>
+</div>

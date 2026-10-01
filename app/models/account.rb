@@ -19,6 +19,7 @@ class Account < ApplicationRecord
   has_many :distributors, through: :records
   has_many :missives
   has_many :subscribers
+  has_many :subscriber_imports, dependent: :destroy
   # Reader magnets — plain rows, not recordables, so a direct association
   # rather than a records.active projection.
   has_many :magnets, dependent: :destroy

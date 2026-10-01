@@ -84,7 +84,7 @@ class Subscriber < ApplicationRecord
   # Where an address came from. A site opt-in names the CTA that carried it
   # ("nav", "hero", "footer"); a partner integration names itself, and owns its
   # capitalization — humanize would file BookFunnel as "Bookfunnel".
-  INTEGRATION_SOURCES = { "bookfunnel" => "BookFunnel" }.freeze
+  INTEGRATION_SOURCES = { "bookfunnel" => "BookFunnel", "storyorigin" => "StoryOrigin", "import" => "CSV import" }.freeze
 
   # For the roster column and the filter. The class-level form is what the
   # roll-ups group by, where there's a source string but no row in hand.
