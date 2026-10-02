@@ -106,6 +106,38 @@ globalThis.fetch = async (target, init) => {
 const island = (url, method = "GET") =>
   worker.fetch(new Request(url, { method }), islandEnv);
 
+// ---- live hosting: every tenant request goes to the app ------------------
+const liveEnv = { ...islandEnv, LIVE_SITES: "true" };
+const live = (url, method = "GET") => worker.fetch(new Request(url, { method }), liveEnv);
+
+await check("live hosting forwards pages, assets and the preview host to the app", async () => {
+  for (const url of [
+    "https://sites.kindredquill.com/merovexpress/",
+    "https://sites.kindredquill.com/merovexpress/posts",
+    `https://sites.kindredquill.com/merovexpress/css/06-sections.${SHA}.css`,
+    "https://merovex.press/authors/ben-wilson/",
+    "https://unknown.example/",
+    "https://preview.kindredquill.com/merovexpress/",
+  ]) {
+    proxied = undefined;
+    const res = await live(url);
+    assert.equal(res.status, 200, url);
+    const u = new URL(url);
+    assert.equal(proxied?.url, `https://app.kindredquill.com${u.pathname}`, url);
+    assert.equal(proxied.init.headers.get("x-island-host"), u.hostname);
+    assert.equal(proxied.init.headers.get("x-island-auth"), "sekrit");
+  }
+});
+
+await check("live hosting still leaves the apex and passthrough hosts alone", async () => {
+  proxied = undefined;
+  assert.equal((await live("https://kindredquill.com/whatever")).status, 404);
+  assert.equal(proxied, undefined);
+  proxied = undefined;
+  await live("https://docs.kindredquill.com/x");
+  assert.ok(proxied?.url.startsWith("https://inkwell-support.pages.dev/"), "docs pass through to Pages");
+});
+
 await check("platform-host island proxies the ORIGINAL prefixed path, not slash-mangled", async () => {
   proxied = undefined;
   const res = await island("https://sites.kindredquill.com/merovexpress/newsletter/confirm/tok123");

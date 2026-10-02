@@ -130,6 +130,14 @@ export default {
       return plain404("Not found.");
     }
 
+    // Live hosting (Merovex/inkwell-rust#16): the app serves whole sites —
+    // pages from its own build store, islands as before — and the Worker only
+    // forwards, with the same island headers so the app knows the tenant.
+    // Unset LIVE_SITES to fall back to serving the R2 builds below.
+    if (env.LIVE_SITES === "true" && env.RAILS_ORIGIN) {
+      return proxyIsland(request, env, host, url.pathname, url);
+    }
+
     // The platform and preview hosts both take the account slug from the first
     // path segment; custom domains resolve through KV.
     const preview = PREVIEW_HOSTS.has(host);
