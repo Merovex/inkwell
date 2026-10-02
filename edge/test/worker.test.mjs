@@ -230,6 +230,16 @@ await check("contact form pages proxy; deeper paths stay static", async () => {
   assert.equal(proxied, undefined);
 });
 
+await check("the page-view beacon POST proxies; a GET stays static", async () => {
+  proxied = undefined;
+  await island("https://merovex.press/views", "POST");
+  assert.equal(proxied?.url, "https://app.kindredquill.com/views");
+
+  proxied = undefined;
+  await island("https://merovex.press/views"); // GET is a (missing) static page
+  assert.equal(proxied, undefined);
+});
+
 await check("one-click unsubscribe POSTs proxy; a bare POST does not", async () => {
   proxied = undefined;
   await island("https://merovex.press/newsletter/unsubscribe/tok%2Fen--sig?broadcast=7", "POST");

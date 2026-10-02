@@ -59,8 +59,7 @@ function siteRoot(slug, preview) {
 
 // Dynamic islands — the enumerated allowlist of Rails-backed paths the
 // Worker proxies to the origin (docs/phase-2-static-serving.md §2.5,
-// enumerated from routes.rb). Everything else is static bytes. Ahoy stays
-// out: the static sites don't load ahoy.js.
+// enumerated from routes.rb). Everything else is static bytes.
 const ISLANDS = [
   { method: "POST", pattern: /^\/newsletter$/ },
   { method: "GET", pattern: /^\/newsletter\/(sent|rejected)$/ },
@@ -69,6 +68,9 @@ const ISLANDS = [
   // List-Unsubscribe URL, and the Rust app unsubscribes on POST only (link
   // scanners were unsubscribing readers on GET).
   { method: "POST", pattern: /^\/newsletter\/unsubscribe\/[^/]+$/ },
+  // The cookieless page-view beacon the theme sends once per view (the Rust
+  // app's controllers/page_views.rs; Ahoy's tables).
+  { method: "POST", pattern: /^\/views$/ },
   // Contact form (anonymous, double opt-in). The form page is proxied, not
   // static, so its spam stamp is minted per render: the Rust form signs a
   // timestamp into the page; Rails' invisible_captcha keeps it in the
