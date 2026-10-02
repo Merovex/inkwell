@@ -7,6 +7,10 @@ workers_dev = false
 # Rails origin the dynamic islands proxy to (phase-2 §2.5). Empty = islands
 # stay off and the Worker serves static bytes only, exactly as before.
 RAILS_ORIGIN = "https://app.kindredquill.com"
+# Live hosting (Merovex/inkwell-rust#16): forward whole sites to the app,
+# which serves pages from its own build store. Remove (and redeploy) to fall
+# back to serving the R2 builds.
+LIVE_SITES = "true"
 
 # Secrets (set with `wrangler secret put <NAME>`, never in this file):
 #   ISLAND_AUTH — the shared island-auth header value; the same secret lives
