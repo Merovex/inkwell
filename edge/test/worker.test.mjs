@@ -208,6 +208,39 @@ await check("newsletter archive proxies slugged GETs only", async () => {
   assert.equal(proxied, undefined);
 });
 
+await check("contact form pages proxy; deeper paths stay static", async () => {
+  for (const [path, method] of [
+    ["/contact", "GET"],
+    ["/contact", "POST"],
+    ["/contact/sent", "GET"],
+    ["/contact/confirm", "GET"],
+    ["/contact/confirm/abc--def", "GET"],
+  ]) {
+    proxied = undefined;
+    await island(`https://merovex.press${path}`, method);
+    assert.equal(proxied?.url, `https://app.kindredquill.com${path}`, `${method} ${path}`);
+  }
+
+  proxied = undefined;
+  await island("https://merovex.press/contact/sent", "POST");
+  assert.equal(proxied, undefined);
+
+  proxied = undefined;
+  await island("https://merovex.press/contact/confirm/a/b");
+  assert.equal(proxied, undefined);
+});
+
+await check("one-click unsubscribe POSTs proxy; a bare POST does not", async () => {
+  proxied = undefined;
+  await island("https://merovex.press/newsletter/unsubscribe/tok%2Fen--sig?broadcast=7", "POST");
+  assert.equal(proxied.url, "https://app.kindredquill.com/newsletter/unsubscribe/tok%2Fen--sig?broadcast=7");
+  assert.equal(proxied.init.method, "POST");
+
+  proxied = undefined;
+  await island("https://merovex.press/newsletter/unsubscribe", "POST");
+  assert.equal(proxied, undefined);
+});
+
 await check("claim renewal form POST and its sent page proxy, prefixed on the platform host", async () => {
   proxied = undefined;
   await island("https://merovex.press/claim_renewal", "POST");
