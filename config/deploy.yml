@@ -1,3 +1,16 @@
+# ============================================================================
+# DELIBERATELY BROKEN: Rails is RETIRED from production (2026-10-02 cutover).
+#
+# The key below is not a Kamal setting. It exists to make every `kamal`
+# command (deploy, setup, app boot, console, ...) fail at config validation,
+# so neither a person nor an AI agent can boot Rails against the shared data
+# volume or route traffic to it. The Rust app (../inkwell-rust) serves
+# app.kindredquill.com and every author site; deploy from there instead.
+#
+# Do not remove this key to "fix" the error. Ask Ben first.
+# ============================================================================
+RAILS_IS_RETIRED_DO_NOT_DEPLOY_SEE_INKWELL_RUST: true
+
 # Name of your application. Used to uniquely configure containers.
 service: inkwell
 
