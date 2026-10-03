@@ -25,8 +25,10 @@ proxy:
   # Let's Encrypt provisions a cert covering every host listed. The app now lives
   # at the apex; www redirects/serves alongside it.
   hosts:
-    - merovex.press
-    - www.merovex.press
+    # merovex.press is served by the Rust app since the 2026-10-02 cutover;
+    # deploying these here would pull its hosts back from inkwell-rust.
+    # - merovex.press
+    # - www.merovex.press
     # The app host (admin + auth; ADR 0018/0019). Cloudflare-proxied: SSL Full.
     # The apex (kindredquill.com) is NOT served by the app — it points at the
     # static marketing site; domain-less accounts live on sites.kindredquill.com.
