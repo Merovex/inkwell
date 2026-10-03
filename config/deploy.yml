@@ -20,19 +20,23 @@ servers:
 #
 # Don't use this when deploying to multiple web servers (then you have to terminate SSL at your load balancer).
 #
-proxy:
-  ssl: true
-  # Let's Encrypt provisions a cert covering every host listed. The app now lives
-  # at the apex; www redirects/serves alongside it.
-  hosts:
-    # merovex.press is served by the Rust app since the 2026-10-02 cutover;
-    # deploying these here would pull its hosts back from inkwell-rust.
-    # - merovex.press
-    # - www.merovex.press
-    # The app host (admin + auth; ADR 0018/0019). Cloudflare-proxied: SSL Full.
-    # The apex (kindredquill.com) is NOT served by the app — it points at the
-    # static marketing site; domain-less accounts live on sites.kindredquill.com.
-    - app.kindredquill.com
+# WARNING: Rails is RETIRED from production (2026-10-02 cutover).
+# The Rust app (../inkwell-rust) serves every host below. Do NOT uncomment
+# this block or `kamal deploy` this app: kamal-proxy would move
+# app.kindredquill.com and merovex.press back to a Rails container.
+# proxy:
+#   ssl: true
+#   # Let's Encrypt provisions a cert covering every host listed. The app now lives
+#   # at the apex; www redirects/serves alongside it.
+#   hosts:
+#     # merovex.press is served by the Rust app since the 2026-10-02 cutover;
+#     # deploying these here would pull its hosts back from inkwell-rust.
+#     # - merovex.press
+#     # - www.merovex.press
+#     # The app host (admin + auth; ADR 0018/0019). Cloudflare-proxied: SSL Full.
+#     # The apex (kindredquill.com) is NOT served by the app — it points at the
+#     # static marketing site; domain-less accounts live on sites.kindredquill.com.
+#     - app.kindredquill.com
 
 # Where you keep your container images.
 registry:
