@@ -2,9 +2,15 @@
 
 ## Deploying
 
-`kamal deploy` is allowed when asked. Before running it, note anything
-irreversible in the release (migrations, data backfills) and verify the result
-against production afterward.
+**This Rails app is retired from production (2026-10-02 cutover). Do not
+deploy it.** The Rust app in `../inkwell-rust` serves `app.kindredquill.com`
+and every author site; production deploys happen there (`kamal deploy` from
+that repo, when asked). `config/deploy.yml` here is broken on purpose — an
+unknown top-level key makes every `kamal` command fail — so never remove that
+key or work around the error; ask Ben instead.
+
+The edge Worker (`edge/`) still lives in this repo and still fronts every
+author site; `wrangler deploy` from `edge/` remains allowed when asked.
 
 ## Rails standards: rails-best-practices-core is ALWAYS in force
 
